@@ -50,4 +50,5 @@ No account or login is needed. Drag a finger in a circle on the bronze knob at t
 
 ## Screenshots
 
-Upload `screenshots/1-morning.png` to `5-rain.png` under iPhone 6.9" Display.
+- iPhone 6.9" Display (1320 × 2868): `screenshots/6.9-inch/1-morning.png` to `5-rain.png`
+- iPhone 6.3" and 6.1" Display (1206 × 2622): `screenshots/6.3-inch/1-morning.png` to `5-rain.png`
