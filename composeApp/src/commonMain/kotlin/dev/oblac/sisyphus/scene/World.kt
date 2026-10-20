@@ -1,0 +1,244 @@
+package dev.oblac.sisyphus.scene
+
+import dev.oblac.sisyphus.game.Weather
+import dev.oblac.sisyphus.gfx.rgb
+import kotlin.math.abs
+import kotlin.math.exp
+import kotlin.math.floor
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.random.Random
+
+class Cloud(var x: Double, val y: Int, val w: Int, val h: Int, val cells: ByteArray, val depth: Double) {
+    companion object {
+        const val LIGHT: Byte = 1
+        const val BODY: Byte = 2
+        const val SHADOW: Byte = 3
+    }
+}
+
+class Bird(var x: Double, val y: Double, val vx: Double, val flap: Double)
+
+/** [stick] is 1 for things lying on the ground: they slide away with the hill. */
+class Particle(
+    var x: Double, var y: Double,
+    var vx: Double, var vy: Double,
+    var life: Double, val maxLife: Double,
+    val gravity: Double, val stick: Double, val color: Int,
+)
+
+class Drop(var x: Double, var y: Double, val speed: Double)
+
+class ShootingStar(var x: Double, var y: Double, val vx: Double, val vy: Double, var life: Double)
+
+private val DUST = rgb(0xC8A878)
+private val SWEAT = rgb(0xBFE4FF)
+private val SPLASH = rgb(0xB8C8E0)
+private const val DROPS = 90
+
+/** Everything in the display that moves by itself: clouds, birds, rain, dust. */
+class World(seed: Int) {
+    private val random = Random(seed)
+
+    var geo = SceneGeometry(1, 1)
+        private set
+    val clouds = ArrayList<Cloud>()
+    val birds = ArrayList<Bird>()
+    val particles = ArrayList<Particle>()
+    val drops = ArrayList<Drop>()
+    var shootingStar: ShootingStar? = null
+        private set
+    /** 0 is dry, 1 is pouring. Follows the weather slowly. */
+    var rain = 0.0
+        private set
+    var overcast = 0f
+        private set
+
+    private var dust = 0.0
+
+    fun reset(geo: SceneGeometry, weather: Weather) {
+        this.geo = geo
+        clouds.clear()
+        repeat(weather.clouds) { clouds += cloud(random.nextDouble(-8.0, geo.width - 6.0), weather) }
+        drops.clear()
+        repeat(DROPS) {
+            drops += Drop(
+                random.nextDouble(0.0, geo.width + 20.0),
+                random.nextDouble(-geo.height.toDouble(), geo.height.toDouble()),
+                random.nextDouble(80.0, 110.0),
+            )
+        }
+        birds.clear()
+        particles.clear()
+        rain = if (weather.rain) 1.0 else 0.0
+        overcast = weather.overcast
+    }
+
+    fun update(dt: Double, moved: Double, speed: Double, p: Int, weather: Weather, timeOfDay: Double, stars: Float) {
+        val ease = 1 - exp(-dt * 0.5)
+        rain += ((if (weather.rain) 1.0 else 0.0) - rain) * ease
+        overcast += ((weather.overcast - overcast) * ease).toFloat()
+        updateClouds(dt, moved, weather)
+        updateBirds(dt, moved, weather, timeOfDay)
+        updateRain(dt, moved, p)
+        updateParticles(dt, moved, speed)
+        updateShootingStar(dt, stars)
+    }
+
+    private fun updateClouds(dt: Double, moved: Double, weather: Weather) {
+        val it = clouds.iterator()
+        while (it.hasNext()) {
+            val c = it.next()
+            c.x -= weather.wind * (0.5 + c.depth) * dt + moved * c.depth * 0.3
+            if (c.x + c.w < -6) it.remove()
+            else if (c.x > geo.width + 40) c.x = -c.w - 4.0 - random.nextDouble(0.0, 20.0)
+        }
+        if (clouds.size < weather.clouds && random.nextDouble() < dt * 0.25) {
+            clouds += cloud(geo.width + random.nextDouble(2.0, 16.0), weather)
+        }
+    }
+
+    private fun cloud(x: Double, weather: Weather): Cloud {
+        val big = weather.rain || (weather == Weather.CLOUDY && random.nextBoolean())
+        val h = if (big) random.nextInt(9, 14) else random.nextInt(6, 11)
+        val w = (h * random.nextDouble(2.2, 3.4)).toInt()
+        val maxY = max(3, geo.horizon - h - 24)
+        return Cloud(x, random.nextInt(2, maxY + 1), w, h, cloudCells(w, h), 0.2 + w / 60.0)
+    }
+
+    /** A cumulus: round bumps sitting on a flat base, the biggest in the middle. */
+    private fun cloudCells(w: Int, h: Int): ByteArray {
+        val cells = ByteArray(w * h)
+        val bumps = 3 + random.nextInt(3)
+        val mid = (bumps - 1) / 2.0
+        val r = DoubleArray(bumps) {
+            val center = 1 - abs(it - mid) / (mid + 1)
+            (h - 0.4) * (0.22 + 0.27 * center) + random.nextDouble(-0.3, 0.3)
+        }
+        val cx = DoubleArray(bumps) { r[it] + 0.5 + (w - 1 - 2 * r[it]) * it / (bumps - 1) }
+        for (y in 0 until h) for (x in 0 until w) {
+            val px = x + 0.5
+            val py = y + 0.5
+            var inside = py > h - 2.5 && px > cx[0] && px < cx[bumps - 1]
+            for (k in 0 until bumps) {
+                val dx = px - cx[k]
+                val dy = py - (h - r[k] - 0.2)
+                if (dx * dx + dy * dy <= r[k] * r[k]) inside = true
+            }
+            if (inside) cells[y * w + x] = Cloud.BODY
+        }
+        fun empty(x: Int, y: Int) = y < 0 || cells[y * w + x] == 0.toByte()
+        for (y in 0 until h) for (x in 0 until w) {
+            if (empty(x, y)) continue
+            cells[y * w + x] = when {
+                y >= h - 2 || (y < h - 1 && empty(x, y + 1)) -> Cloud.SHADOW
+                empty(x, y - 1) || (h >= 8 && empty(x, y - 2) && x < w * 0.7) -> Cloud.LIGHT
+                else -> Cloud.BODY
+            }
+        }
+        return cells
+    }
+
+    private fun updateBirds(dt: Double, moved: Double, weather: Weather, timeOfDay: Double) {
+        if (timeOfDay in 0.3..0.72 && birds.isEmpty() && random.nextDouble() < weather.birds * dt) flock(weather)
+        val it = birds.iterator()
+        while (it.hasNext()) {
+            val b = it.next()
+            b.x += b.vx * dt - moved * 0.35
+            if (b.x < -30 || b.x > geo.width + 30) it.remove()
+        }
+    }
+
+    private fun flock(weather: Weather) {
+        val n = random.nextInt(2, 6)
+        val dir = if (random.nextBoolean()) 1.0 else -1.0
+        val vx = dir * random.nextDouble(9.0, 14.0) - weather.wind * 0.5
+        val y0 = random.nextDouble(8.0, max(10.0, geo.horizon - 34.0))
+        val x0 = if (dir > 0) -8.0 else geo.width + 8.0
+        for (i in 0 until n) {
+            val rank = (i + 1) / 2
+            val side = if (i % 2 == 0) 1 else -1
+            birds += Bird(x0 - dir * rank * 6, y0 + side * rank * 3.0, vx, random.nextDouble(0.0, 1.0))
+        }
+    }
+
+    private fun updateRain(dt: Double, moved: Double, p: Int) {
+        val active = (drops.size * rain).toInt()
+        val span = geo.width + 8.0
+        for (i in drops.indices) {
+            val d = drops[i]
+            d.y += d.speed * dt
+            d.x -= d.speed * 0.3 * dt + moved * 0.5
+            if (d.x < -4) d.x += span
+            if (d.x > geo.width + 4) d.x -= span
+            val xi = floor(d.x).toInt()
+            val ground = if (xi in 0 until geo.width) min(geo.surfaceY(xi, p), geo.height) else geo.height
+            if (d.y >= ground) {
+                if (i < active && ground < geo.height && random.nextDouble() < 0.6) splash(xi, ground - 1)
+                d.y -= geo.height + random.nextDouble(0.0, 30.0)
+            }
+        }
+    }
+
+    private fun splash(x: Int, y: Int) {
+        repeat(2) {
+            val dir = if (it == 0) -1 else 1
+            particles += Particle(
+                x + 0.5, y + 0.5, dir * random.nextDouble(8.0, 16.0), -random.nextDouble(10.0, 18.0),
+                0.18, 0.18, 60.0, 1.0, SPLASH,
+            )
+        }
+    }
+
+    private fun updateParticles(dt: Double, moved: Double, speed: Double) {
+        if (moved > 0) {
+            dust += moved
+            while (dust > 2.5) {
+                dust -= 2.5
+                val life = random.nextDouble(0.35, 0.7)
+                particles += Particle(
+                    geo.heroX - 3.5 + random.nextDouble(-1.0, 1.5), geo.baseY + 1.0,
+                    random.nextDouble(-9.0, -3.0), random.nextDouble(-7.0, -2.0),
+                    life, life, 14.0, 1.0, DUST,
+                )
+            }
+        }
+        if (speed > 22 && random.nextDouble() < dt * 1.6) {
+            particles += Particle(
+                geo.heroX + 4.5, geo.baseY - 17.0,
+                random.nextDouble(-12.0, -5.0), random.nextDouble(-16.0, -8.0),
+                0.6, 0.6, 45.0, 0.0, SWEAT,
+            )
+        }
+        val it = particles.iterator()
+        while (it.hasNext()) {
+            val q = it.next()
+            q.life -= dt
+            if (q.life <= 0) {
+                it.remove()
+                continue
+            }
+            q.vy += q.gravity * dt
+            q.x += q.vx * dt - moved * q.stick
+            q.y += q.vy * dt + moved * q.stick * 0.5
+        }
+    }
+
+    private fun updateShootingStar(dt: Double, stars: Float) {
+        val s = shootingStar
+        if (s == null) {
+            if (stars > 0.6f && random.nextDouble() < dt / 40) {
+                val dir = if (random.nextBoolean()) 1.0 else -1.0
+                shootingStar = ShootingStar(
+                    random.nextDouble(10.0, geo.width - 10.0), random.nextDouble(4.0, geo.horizon * 0.4),
+                    dir * random.nextDouble(45.0, 65.0), random.nextDouble(14.0, 22.0), 0.7,
+                )
+            }
+            return
+        }
+        s.x += s.vx * dt
+        s.y += s.vy * dt
+        s.life -= dt
+        if (s.life <= 0) shootingStar = null
+    }
+}

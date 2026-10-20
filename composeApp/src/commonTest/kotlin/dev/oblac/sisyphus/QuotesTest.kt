@@ -1,0 +1,56 @@
+package dev.oblac.sisyphus
+
+import dev.oblac.sisyphus.game.PX_PER_TURN
+import dev.oblac.sisyphus.game.QUOTES
+import dev.oblac.sisyphus.game.QuoteBox
+import dev.oblac.sisyphus.game.TUTORIAL
+import dev.oblac.sisyphus.gfx.PixelFont
+import kotlin.random.Random
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotSame
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
+
+/** Text width of the quote panel on the narrowest phone (iPhone mini: 135 virtual pixels). */
+private const val NARROWEST_TEXT = 119
+
+class QuotesTest {
+    private val all = QUOTES + TUTORIAL
+
+    @Test
+    fun everyCharacterHasAGlyph() {
+        for (q in all) for (ch in q.text + q.author) assertTrue(PixelFont.hasGlyph(ch), "missing '$ch' in \"${q.text}\"")
+    }
+
+    @Test
+    fun everyQuoteFitsTheNarrowestPanel() {
+        for (q in all) {
+            val lines = PixelFont.wrap(q.text, NARROWEST_TEXT)
+            assertTrue(lines.size <= 3, "too long: \"${q.text}\" -> $lines")
+            assertTrue(lines.all { PixelFont.width(it) <= NARROWEST_TEXT }, "word too wide in \"${q.text}\"")
+            assertTrue(PixelFont.width("— ${q.author}") <= NARROWEST_TEXT, "author too wide: ${q.author}")
+        }
+    }
+
+    @Test
+    fun wrapKeepsAllWords() {
+        val text = "The way up and the way down are one and the same."
+        assertEquals(text, PixelFont.wrap(text, 60).joinToString(" "))
+    }
+
+    @Test
+    fun theTutorialLeavesAfterTheFirstTurn() {
+        val box = QuoteBox(Random(1), firstTime = true)
+        assertSame(TUTORIAL, box.quote)
+        repeat(300) { box.update(1 / 60.0, 0.0, 0.0) }
+        assertEquals(QuoteBox.Phase.SHOWING, box.phase)
+        repeat(120) { box.update(1 / 60.0, PX_PER_TURN / 60, 0.0) }
+        assertNotSame(TUTORIAL, box.quote)
+    }
+
+    @Test
+    fun aReturningPlayerGetsWisdomRightAway() {
+        assertNotSame(TUTORIAL, QuoteBox(Random(1), firstTime = false).quote)
+    }
+}
