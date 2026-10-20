@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sisyphus</title>
+<meta name="description" content="A small pixel-art game for iPhone. Turn the knob, push the rock.">
+<link rel="icon" href="img/icon.png">
+<link rel="apple-touch-icon" href="img/icon.png">
+<style>
+  :root { --bg: #17110d; --text: #f1e4c8; --dim: #b9a98c; --terra: #c8643c; --light: #f29a62; }
+  * { box-sizing: border-box; }
+  html { background: var(--bg); }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  main { max-width: 680px; margin: 0 auto; padding: 48px 16px 64px; }
+  a { color: var(--light); }
+  h1 { font-size: 36px; line-height: 1.15; margin: 18px 0 6px; letter-spacing: .5px; }
+  h2 { font-size: 20px; margin: 36px 0 8px; }
+  .tagline { color: var(--light); margin: 0; font-size: 19px; }
+  .icon { width: 112px; height: 112px; border-radius: 25px; display: block; }
+  .meander { height: 27px; margin: 32px 0; background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%227%22%20height%3D%229%22%20shape-rendering%3D%22crispEdges%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%221%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%222%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%223%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%224%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%225%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%226%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%226%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%221%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%222%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%223%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%224%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%226%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%221%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%224%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%226%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%221%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%223%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%224%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%226%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%221%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%226%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%221%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%222%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%223%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%224%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%225%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23c8643c%22/%3E%3Crect%20x%3D%220%22%20y%3D%228%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%237a3a22%22/%3E%3Crect%20x%3D%221%22%20y%3D%228%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%237a3a22%22/%3E%3Crect%20x%3D%222%22%20y%3D%228%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%237a3a22%22/%3E%3Crect%20x%3D%223%22%20y%3D%228%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%237a3a22%22/%3E%3Crect%20x%3D%224%22%20y%3D%228%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%237a3a22%22/%3E%3Crect%20x%3D%225%22%20y%3D%228%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%237a3a22%22/%3E%3Crect%20x%3D%226%22%20y%3D%228%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%237a3a22%22/%3E%3C/svg%3E") repeat-x; background-size: 21px 27px;
+             image-rendering: pixelated; }
+  .shots { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 8px; }
+  .shots img { width: calc((100% - 28px) / 3); min-width: 180px; height: auto; border-radius: 16px; flex: none; }
+  ul { padding-left: 20px; }
+  li { margin: 4px 0; }
+  .muted { color: var(--dim); }
+  footer { color: var(--dim); font-size: 14px; margin-top: 48px; }
+</style>
+</head>
+<body>
+<main>
+
+<img class="icon" src="img/icon.png" alt="Sisyphus app icon">
+<h1>Sisyphus</h1>
+<p class="tagline">Turn the knob. Push the rock.</p>
+<div class="meander"></div>
+<p>A small, calm pixel-art game for iPhone. Turn the bronze knob, and Sisyphus pushes his boulder up an endless Greek hill. Time moves only while he works: the sun rises over the sea, crosses the sky and sets behind the hill. Wise words appear as you climb.</p>
+<div class="shots">
+  <img src="img/1-morning.png" alt="Morning by the sea, day 3">
+  <img src="img/3-sunset.png" alt="Sunset by an umbrella pine, day 12">
+  <img src="img/4-night.png" alt="Full moon at night, day 13">
+</div>
+<ul>
+  <li>Days pass only when you push. Each day has its own weather.</li>
+  <li>Nearly a hundred wise words, from Heraclitus to the Rock itself.</li>
+  <li>Clicks and haptics with every turn of the knob.</li>
+  <li>No ads, no accounts, no data collected.</li>
+</ul>
+<h2>Support</h2>
+<p>Found a bug or have a question? <a href="https://github.com/igr/sisyphus/issues">Open an issue on GitHub</a>.</p>
+<h2>Privacy</h2>
+<p>Sisyphus collects no data. <a href="privacy.html">Read the privacy policy</a>.</p>
+
+<footer>&copy; 2026 Igor Spasi&#263; &middot; <a href="https://github.com/igr/sisyphus">Source code</a> &middot; <a href="privacy.html">Privacy</a></footer>
+</main>
+</body>
+</html>
