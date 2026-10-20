@@ -5,6 +5,8 @@ Turn the knob, and Sisyphus pushes the rock up the hill. The knob clicks at each
 The sun moves only while he works.
 Each day has its own weather. Wise words appear under the display as you push.
 
+Website, support and privacy policy: https://igr.github.io/sisyphus/ (from the `gh-pages` branch).
+
 ## Run
 
 - iOS: open `iosApp/iosApp.xcodeproj`, select the **Sisyphus** scheme and an iPhone simulator, then Run.
