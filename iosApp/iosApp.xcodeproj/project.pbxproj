@@ -6,12 +6,14 @@
     objects = {
         B10000000000000000000001 = {isa = PBXBuildFile; fileRef = B20000000000000000000001; };
         B10000000000000000000002 = {isa = PBXBuildFile; fileRef = B20000000000000000000003; };
+        B10000000000000000000003 = {isa = PBXBuildFile; fileRef = B20000000000000000000005; };
         B20000000000000000000001 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SisyphusApp.swift; sourceTree = "<group>"; };
         B20000000000000000000002 = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
         B20000000000000000000003 = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
         B20000000000000000000004 = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sisyphus.app; sourceTree = BUILT_PRODUCTS_DIR; };
+        B20000000000000000000005 = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
         B30000000000000000000001 = {isa = PBXGroup; children = (B30000000000000000000002, B30000000000000000000003); sourceTree = "<group>"; };
-        B30000000000000000000002 = {isa = PBXGroup; children = (B20000000000000000000001, B20000000000000000000003, B20000000000000000000002); path = iosApp; sourceTree = "<group>"; };
+        B30000000000000000000002 = {isa = PBXGroup; children = (B20000000000000000000001, B20000000000000000000003, B20000000000000000000002, B20000000000000000000005); path = iosApp; sourceTree = "<group>"; };
         B30000000000000000000003 = {isa = PBXGroup; children = (B20000000000000000000004); name = Products; sourceTree = "<group>"; };
         B40000000000000000000001 = {
             isa = PBXNativeTarget;
@@ -52,7 +54,7 @@
         };
         B60000000000000000000002 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B10000000000000000000001); runOnlyForDeploymentPostprocessing = 0; };
         B60000000000000000000003 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
-        B60000000000000000000004 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (B10000000000000000000002); runOnlyForDeploymentPostprocessing = 0; };
+        B60000000000000000000004 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (B10000000000000000000002, B10000000000000000000003); runOnlyForDeploymentPostprocessing = 0; };
         B70000000000000000000001 = {
             isa = XCBuildConfiguration;
             buildSettings = {

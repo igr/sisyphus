@@ -139,7 +139,7 @@ class SnapshotTest {
     @Test
     fun appIcon() {
         val geo = SceneGeometry(64, 64)
-        val game = Game(MemoryStore(mapOf("effort" to effortAt(1, 0.705), "position" to 3.0)), seed = 3)
+        val game = Game(MemoryStore(mapOf("effort" to effortAt(1, 0.705), "position" to 962.0)), seed = 3)
         val world = World(9).apply { reset(geo, Weather.CLEAR) }
         val icon = Pixels(64, 64)
         SceneRenderer(geo).render(icon, game, world, banner = 0.0, hud = false)
