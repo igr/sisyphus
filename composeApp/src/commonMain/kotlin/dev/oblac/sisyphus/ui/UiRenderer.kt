@@ -38,6 +38,26 @@ private val MEANDER = listOf(
     ".######",
 )
 
+private val SPEAKER_ON = listOf(
+    "...#....#..",
+    "..##..#..#.",
+    "####...#..#",
+    "####...#..#",
+    "####...#..#",
+    "..##..#..#.",
+    "...#....#..",
+)
+
+private val SPEAKER_OFF = listOf(
+    "...#.......",
+    "..##..#...#",
+    "####...#.#.",
+    "####....#..",
+    "####...#.#.",
+    "..##..#...#",
+    "...#.......",
+)
+
 /** Draws everything around the display: the frame, the ornament, the wise words and the knob. */
 class UiRenderer {
     private var grain: Pixels? = null
@@ -101,6 +121,13 @@ class UiRenderer {
         }
         val typing = box.phase == QuoteBox.Phase.TYPING && cursorX >= 0
         if (typing && floor(clock * 4).toInt() % 2 == 0) px.fillRect(cursorX, cursorY, 3, PixelFont.CAP_HEIGHT, TERRA)
+    }
+
+    fun speaker(px: Pixels, r: Rect, on: Boolean) {
+        val color = if (on) TERRA else TERRA_DARK
+        for ((y, row) in (if (on) SPEAKER_ON else SPEAKER_OFF).withIndex()) {
+            for ((x, ch) in row.withIndex()) if (ch == '#') px[r.x + x, r.y + y] = color
+        }
     }
 
     fun knob(px: Pixels, layout: Layout, game: Game) {

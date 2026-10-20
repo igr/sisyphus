@@ -293,15 +293,12 @@ class SceneRenderer(private val geo: SceneGeometry) {
         val to = (geo.worldX(px.width, p) + 20).floorDiv(PROP_SLOT)
         for (slot in from..to) {
             val h = hash(slot, 0, 61)
-            if ((h and 0xFF) > 90) continue
-            val prop = when ((h shr 8) and 0xF) {
-                in 0..5 -> OLIVE
-                in 6..9 -> CYPRESS
-                in 10..11 -> COLUMN
-                else -> BUSH
-            }
-            val x = slot * PROP_SLOT + ((h shr 12) and 0x1F) - p + geo.heroX
-            px.draw(prop.sprite, x - prop.sprite.width / 2, geo.surfaceY(x, p) - prop.base, light = atm.light)
+            if ((h and 0xFF) > 110) continue
+            val prop = propFor(h ushr 8)
+            val sprite = prop.sprite
+            val x = slot * PROP_SLOT + (hash(slot, 1, 61) and 0x1F) - p + geo.heroX
+            val top = geo.surfaceY(x, p) - (sprite.height - 1)
+            px.draw(sprite, x - sprite.width / 2, top, flipX = hash(slot, 2, 61) < 0, light = atm.light)
         }
     }
 

@@ -4,13 +4,23 @@ import dev.oblac.sisyphus.game.DAY_LENGTH
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.START_TIME
 import dev.oblac.sisyphus.game.Weather
+import dev.oblac.sisyphus.audio.SAMPLE_RATE
+import dev.oblac.sisyphus.audio.click
 import dev.oblac.sisyphus.gfx.Pixels
+import dev.oblac.sisyphus.gfx.rgb
+import dev.oblac.sisyphus.scene.PROPS
 import dev.oblac.sisyphus.scene.SceneGeometry
 import dev.oblac.sisyphus.scene.SceneRenderer
 import dev.oblac.sisyphus.scene.World
 import java.awt.image.BufferedImage
+import java.io.ByteArrayInputStream
 import java.io.File
 import javax.imageio.ImageIO
+import javax.sound.sampled.AudioFileFormat
+import javax.sound.sampled.AudioFormat
+import javax.sound.sampled.AudioInputStream
+import javax.sound.sampled.AudioSystem
+import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.test.Test
@@ -83,6 +93,47 @@ class SnapshotTest {
         val s = Screen(Game(MemoryStore(), seed = 3), seed = 5).apply { resize(1179, 2556, 177, 102) }
         s.idle(3.25)
         write(s.render(), "0-first-launch", 3)
+        val l = s.layout!!
+        s.press((l.soundIcon.x + 2f) * s.scale + s.offsetX, (l.soundIcon.y + 2f) * s.scale + s.offsetY)
+        write(s.render(), "0-sound-off", 3)
+    }
+
+    /** A slow turn of the knob, to listen to: afplay composeApp/build/snapshots/clicks.wav */
+    @Test
+    fun clicks() {
+        val gap = SAMPLE_RATE / 14
+        val sound = FloatArray(gap * 12)
+        for (k in 0 until 12) click(k).copyInto(sound, k * gap)
+        val pcm = pcm16(sound)
+        val format = AudioFormat(SAMPLE_RATE.toFloat(), 16, 1, true, false)
+        AudioInputStream(ByteArrayInputStream(pcm), format, sound.size.toLong()).use {
+            AudioSystem.write(it, AudioFileFormat.Type.WAVE, File(out, "clicks.wav"))
+        }
+        val wave = click(0)
+        val plot = Pixels(wave.size / 2, 101)
+        plot.clear(rgb(0x101010))
+        plot.hline(0, plot.width - 1, 50, rgb(0x404040))
+        for (x in 0 until plot.width) {
+            val v = maxOf(abs(wave[2 * x]), abs(wave[2 * x + 1]))
+            plot.vline(x, 50 - (v * 50).toInt(), 50 + (v * 50).toInt(), rgb(0xF29A62))
+        }
+        write(plot, "click-wave", 2)
+    }
+
+    @Test
+    fun propSheet() {
+        val gap = 4
+        val width = PROPS.sumOf { it.sprite.width + gap } + gap
+        val height = PROPS.maxOf { it.sprite.height } + 6
+        val sheet = Pixels(width, height)
+        sheet.clear(rgb(0x9CC8EE))
+        sheet.fillRect(0, height - 4, width, 4, rgb(0x82A048))
+        var x = gap
+        for (prop in PROPS) {
+            sheet.draw(prop.sprite, x, height - 4 - prop.sprite.height + 1)
+            x += prop.sprite.width + gap
+        }
+        write(sheet, "props", 6)
     }
 
     @Test

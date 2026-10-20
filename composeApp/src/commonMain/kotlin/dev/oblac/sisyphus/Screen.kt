@@ -15,8 +15,13 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlin.random.Random
 
+enum class Touch { NONE, KNOB, SOUND }
+
 /** The whole screen is one small framebuffer, scaled up by a whole number so every pixel stays sharp. */
 private const val TARGET_WIDTH = 144f
+
+/** Extra virtual pixels around small icons, so they are easy to hit with a finger. */
+private const val TOUCH_SLOP = 6
 
 /**
  * Owns the framebuffer and maps real screen pixels to virtual ones.
@@ -82,19 +87,25 @@ class Screen(val game: Game, seed: Int = Random.nextInt()) {
         ui.band(pixels, l.band)
         ui.quote(pixels, l.quote, game.quotes, game.clock)
         ui.knob(pixels, l, game)
+        ui.speaker(pixels, l.soundIcon, game.soundOn)
         return pixels
     }
 
-    /** Returns true when the touch grabs the knob. */
-    fun press(xPx: Float, yPx: Float): Boolean {
-        val l = layout ?: return false
+    /** Handles a finger touching the screen and tells what it touched. */
+    fun press(xPx: Float, yPx: Float): Touch {
+        val l = layout ?: return Touch.NONE
         val x = (xPx - offsetX) / scale
         val y = (yPx - offsetY) / scale
+        val icon = l.soundIcon
+        if (x >= icon.x - TOUCH_SLOP && x < icon.right + TOUCH_SLOP && y >= icon.y - TOUCH_SLOP && y < icon.bottom + TOUCH_SLOP) {
+            game.toggleSound()
+            return Touch.SOUND
+        }
         val dx = x - (l.knobX + 0.5)
         val dy = y - (l.knobY + 0.5)
-        if (y < l.quote.bottom && sqrt(dx * dx + dy * dy) > l.knobR * 1.4) return false
+        if (y < l.quote.bottom && sqrt(dx * dx + dy * dy) > l.knobR * 1.4) return Touch.NONE
         game.knob.grab(touchAngle(dx, dy, l))
-        return true
+        return Touch.KNOB
     }
 
     fun move(xPx: Float, yPx: Float) {

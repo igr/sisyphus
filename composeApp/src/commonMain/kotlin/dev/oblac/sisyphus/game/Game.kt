@@ -22,6 +22,11 @@ private const val TICKS_PER_TURN = 24
 private const val TICK_ANGLE = 2 * PI / TICKS_PER_TURN
 private const val KEY_EFFORT = "effort"
 private const val KEY_POSITION = "position"
+private const val KEY_SOUND = "sound"
+private const val KEY_KNOB = "knob"
+private const val KEY_QUOTE_SEED = "quoteSeed"
+private const val KEY_QUOTES_DRAWN = "quotesDrawn"
+private const val SAVE_EVERY = 1.0
 
 fun wrapAngle(a: Double): Double {
     var x = a
@@ -31,8 +36,8 @@ fun wrapAngle(a: Double): Double {
 }
 
 /** A heavy knob: it follows the finger, and coasts for a short while after a flick. */
-class Knob {
-    var angle = 0.0
+class Knob(angle: Double = 0.0) {
+    var angle = angle
         private set
     var velocity = 0.0
         private set
@@ -109,9 +114,10 @@ enum class Weather(val clouds: Int, val wind: Double, val overcast: Float, val r
 /**
  * The state of the push. The knob moves Sisyphus. Only forward pushing counts as effort,
  * and effort is what moves the sun: days pass only when he works.
+ * Everything the player can see comes back from [store] when the game starts again.
  */
 class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt()) {
-    val knob = Knob()
+    val knob = Knob(store.load(KEY_KNOB) ?: 0.0)
 
     var position = store.load(KEY_POSITION) ?: 0.0
         private set
@@ -129,10 +135,14 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     var clock = 0.0
         private set
 
-    val quotes = QuoteBox(Random(seed), firstTime = effort == 0.0)
+    var soundOn = store.load(KEY_SOUND) != 0.0
+        private set
+
+    private val quoteSeed = store.load(KEY_QUOTE_SEED)?.toInt() ?: seed
+    val quotes = QuoteBox(quoteSeed, drawn = store.load(KEY_QUOTES_DRAWN)?.toInt() ?: 0, firstTime = effort == 0.0)
     var onTick: () -> Unit = {}
 
-    private var lastTick = 0
+    private var lastTick = floor(knob.angle / TICK_ANGLE).toInt()
     private var tickCooldown = 0.0
     private var sinceSave = 0.0
     private var dirty = false
@@ -152,9 +162,11 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         if (dt > 0) speed += (moved / dt - speed) * (1 - exp(-dt * 8))
         stillFor = if (abs(moved) > 1e-4) 0.0 else stillFor + dt
         tick(dt)
+        val drawn = quotes.drawn
         quotes.update(dt, max(0.0, moved), stillFor)
+        if (quotes.drawn != drawn) dirty = true
         sinceSave += dt
-        if (dirty && sinceSave > 3) save()
+        if (dirty && sinceSave > SAVE_EVERY) save()
     }
 
     private fun tick(dt: Double) {
@@ -168,9 +180,17 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         }
     }
 
+    fun toggleSound() {
+        soundOn = !soundOn
+        store.save(KEY_SOUND, if (soundOn) 1.0 else 0.0)
+    }
+
     fun save() {
         store.save(KEY_EFFORT, effort)
         store.save(KEY_POSITION, position)
+        store.save(KEY_KNOB, knob.angle)
+        store.save(KEY_QUOTE_SEED, quoteSeed.toDouble())
+        store.save(KEY_QUOTES_DRAWN, quotes.drawn.toDouble())
         dirty = false
         sinceSave = 0.0
     }

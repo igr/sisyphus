@@ -24,8 +24,12 @@ private class IosHaptics : Haptics {
 class SisyphusController {
     private val game = Game(DefaultsStore())
     private val haptics = IosHaptics()
+    private val sound = EngineSound()
 
-    fun viewController(): UIViewController = ComposeUIViewController { SisyphusApp(game, haptics) }
+    fun viewController(): UIViewController = ComposeUIViewController { SisyphusApp(game, haptics, sound) }
 
-    fun pause() = game.save()
+    fun pause() {
+        game.save()
+        sound.pause()
+    }
 }

@@ -5,7 +5,6 @@ import dev.oblac.sisyphus.game.QUOTES
 import dev.oblac.sisyphus.game.QuoteBox
 import dev.oblac.sisyphus.game.TUTORIAL
 import dev.oblac.sisyphus.gfx.PixelFont
-import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotSame
@@ -41,7 +40,7 @@ class QuotesTest {
 
     @Test
     fun theTutorialLeavesAfterTheFirstTurn() {
-        val box = QuoteBox(Random(1), firstTime = true)
+        val box = QuoteBox(seed = 1, drawn = 0, firstTime = true)
         assertSame(TUTORIAL, box.quote)
         repeat(300) { box.update(1 / 60.0, 0.0, 0.0) }
         assertEquals(QuoteBox.Phase.SHOWING, box.phase)
@@ -51,6 +50,21 @@ class QuotesTest {
 
     @Test
     fun aReturningPlayerGetsWisdomRightAway() {
-        assertNotSame(TUTORIAL, QuoteBox(Random(1), firstTime = false).quote)
+        assertNotSame(TUTORIAL, QuoteBox(seed = 1, drawn = 0, firstTime = false).quote)
+    }
+
+    @Test
+    fun aRoundShowsEveryQuoteOnce() {
+        val round = (1..QUOTES.size).map { QuoteBox(seed = 7, drawn = it, firstTime = false).quote }
+        assertEquals(QUOTES.toSet(), round.toSet())
+    }
+
+    @Test
+    fun aRestartShowsTheLastQuoteAgainFullyTyped() {
+        val box = QuoteBox(seed = 3, drawn = 0, firstTime = false)
+        val again = QuoteBox(seed = 3, drawn = box.drawn, firstTime = false)
+        assertSame(box.quote, again.quote)
+        assertEquals(QuoteBox.Phase.SHOWING, again.phase)
+        assertEquals(again.length.toDouble(), again.typed)
     }
 }

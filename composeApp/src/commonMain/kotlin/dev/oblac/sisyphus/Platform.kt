@@ -25,6 +25,18 @@ object NoHaptics : Haptics {
     override fun tick() {}
 }
 
+interface Sound {
+    /** Called when a finger touches the knob, before the first click. */
+    fun prepare() {}
+    fun click()
+    /** Releases the audio hardware until the next click. */
+    fun pause() {}
+}
+
+object Silence : Sound {
+    override fun click() {}
+}
+
 /** Turns the framebuffer into an image that Compose can draw. */
 fun interface FrameUploader {
     fun upload(pixels: Pixels): ImageBitmap

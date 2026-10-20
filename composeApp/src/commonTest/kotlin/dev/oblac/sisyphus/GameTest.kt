@@ -10,6 +10,7 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 private const val DT = 1 / 60.0
@@ -110,6 +111,23 @@ class GameTest {
         game.onTick = { ticks++ }
         game.turn(2 * PI)
         assertTrue(ticks in 22..24, "ticks: $ticks")
+    }
+
+    @Test
+    fun aRestartedGameIsWhereItEnded() {
+        val store = MemoryStore()
+        val game = Game(store, seed = 1)
+        game.turn(40 * PI)
+        repeat(60) { game.update(DT) }
+        game.save()
+
+        val again = Game(store, seed = 2)
+        assertEquals(game.day, again.day)
+        assertEquals(game.timeOfDay, again.timeOfDay, 1e-9)
+        assertEquals(game.position, again.position, 1e-9)
+        assertEquals(game.knob.angle, again.knob.angle, 1e-9)
+        assertTrue(game.quotes.drawn > 0)
+        assertSame(game.quotes.quote, again.quotes.quote)
     }
 
     @Test

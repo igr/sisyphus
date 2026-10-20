@@ -25,6 +25,9 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     val band = Rect(left, display.bottom + 4, right - left, BAND_HEIGHT)
     val quote = Rect(left + 2, band.bottom + 4, right - left - 4, PixelFont.LINE_HEIGHT * 4)
 
+    /** The speaker in the bottom-left corner that turns the sound on and off. */
+    val soundIcon = Rect(left + 2, bottom - SPEAKER_HEIGHT - 1, SPEAKER_WIDTH, SPEAKER_HEIGHT)
+
     val knobX: Int
     val knobY: Int
     val knobR: Int
@@ -40,5 +43,7 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     companion object {
         const val BEZEL = 3
         const val BAND_HEIGHT = 9
+        const val SPEAKER_WIDTH = 11
+        const val SPEAKER_HEIGHT = 7
     }
 }

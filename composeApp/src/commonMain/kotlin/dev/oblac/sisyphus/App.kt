@@ -28,13 +28,16 @@ private const val BUSY_FRAME = 14_000_000L
 private const val IDLE_FRAME = 31_000_000L
 
 @Composable
-fun SisyphusApp(game: Game, haptics: Haptics = NoHaptics) {
+fun SisyphusApp(game: Game, haptics: Haptics = NoHaptics, sound: Sound = Silence) {
     val screen = remember(game) { Screen(game) }
     val uploader = remember { frameUploader() }
     var frame by remember { mutableLongStateOf(0L) }
 
-    DisposableEffect(game, haptics) {
-        game.onTick = haptics::tick
+    DisposableEffect(game, haptics, sound) {
+        game.onTick = {
+            haptics.tick()
+            if (game.soundOn) sound.click()
+        }
         onDispose { game.onTick = {} }
     }
 
@@ -63,8 +66,19 @@ fun SisyphusApp(game: Game, haptics: Haptics = NoHaptics) {
             .pointerInput(screen) {
                 awaitEachGesture {
                     val down = awaitFirstDown()
-                    if (!screen.press(down.position.x, down.position.y)) return@awaitEachGesture
-                    haptics.prepare()
+                    when (screen.press(down.position.x, down.position.y)) {
+                        Touch.NONE -> return@awaitEachGesture
+                        Touch.SOUND -> {
+                            down.consume()
+                            haptics.tick()
+                            if (game.soundOn) sound.click() else sound.pause()
+                            return@awaitEachGesture
+                        }
+                        Touch.KNOB -> {
+                            haptics.prepare()
+                            if (game.soundOn) sound.prepare()
+                        }
+                    }
                     down.consume()
                     try {
                         while (true) {
