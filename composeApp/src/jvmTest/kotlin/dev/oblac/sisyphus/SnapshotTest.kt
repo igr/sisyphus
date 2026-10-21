@@ -55,8 +55,8 @@ class SnapshotTest {
 
     private fun Screen.idle(seconds: Double) = repeat((seconds * 60).toInt()) { update(1 / 60.0) }
 
-    private fun write(px: Pixels, name: String, scale: Int) {
-        val img = BufferedImage(px.width * scale, px.height * scale, BufferedImage.TYPE_INT_RGB)
+    private fun write(px: Pixels, name: String, scale: Int, width: Int = px.width * scale, height: Int = px.height * scale) {
+        val img = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
         for (y in 0 until img.height) for (x in 0 until img.width) img.setRGB(x, y, px[x / scale, y / scale])
         ImageIO.write(img, "png", File(out, "$name.png"))
     }
@@ -144,6 +144,17 @@ class SnapshotTest {
         val icon = Pixels(64, 64)
         SceneRenderer(geo).render(icon, game, world, banner = 0.0, hud = false)
         write(icon, "icon-1024", 16)
+    }
+
+    /** The Google Play feature graphic: a wide view of the hill, 1024 x 500. */
+    @Test
+    fun featureGraphic() {
+        val geo = SceneGeometry(205, 100)
+        val game = Game(MemoryStore(mapOf("effort" to effortAt(1, 0.745), "position" to 900.0)), seed = 3)
+        val world = World(9).apply { reset(geo, Weather.FAIR) }
+        val px = Pixels(205, 100)
+        SceneRenderer(geo).render(px, game, world, banner = 0.0, hud = false)
+        write(px, "feature-graphic", 5, width = 1024)
     }
 
     @Test
