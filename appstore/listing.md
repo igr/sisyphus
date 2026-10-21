@@ -37,7 +37,7 @@ Sisyphus is a small, calm pixel-art game. Under a window to a Greek hillside sit
 
 - Time moves only when you push. The sun rises over the sea, crosses the sky and sets behind the hill. Then come the moon and the stars.
 - Every day has its own weather: clear skies, drifting clouds, windy days with gulls, and rain.
-- Wise words appear as you climb: nearly a hundred lines from Heraclitus, Seneca, Marcus Aurelius, Homer, Lao Tzu and more, and a few from Sisyphus, the Rock and the Hill themselves.
+- Wise words appear as you climb: almost 150 lines from Camus, Heraclitus, Seneca, Marcus Aurelius, Homer, Lao Tzu and more, and many from Sisyphus, the Rock and the Hill themselves.
 - Olive trees, umbrella pines, cypresses, almond trees in bloom and broken columns pass by on the way up.
 - Every step of the knob clicks, with a light tap of haptics. Sound can be turned off.
 - Your day, the sun and your place on the hill are saved. Come back anytime.
