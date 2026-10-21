@@ -11,7 +11,7 @@ Website, support and privacy policy: https://igr.github.io/sisyphus/ (from the `
 
 - iOS: open `iosApp/iosApp.xcodeproj`, select the **Sisyphus** scheme and an iPhone simulator, then Run.
   For a real iPhone, set your signing team in the target settings.
-- Desktop window, for quick checks: `./gradlew :composeApp:run`
+- Desktop window on a Mac, for quick checks: `just run` (or `./gradlew :composeApp:run`)
 - Tests: `./gradlew :composeApp:jvmTest`. The tests also write PNG snapshots and `clicks.wav`
   to `composeApp/build/snapshots`.
 

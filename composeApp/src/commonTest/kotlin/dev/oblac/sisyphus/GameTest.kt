@@ -82,11 +82,11 @@ class GameTest {
     }
 
     @Test
-    fun walkingBackDoesNotMoveTheSun() {
+    fun turningBackAlsoPushesUp() {
         val game = Game(seed = 1)
         game.turn(-2 * PI)
-        assertTrue(game.position < -PX_PER_TURN + 0.5)
-        assertEquals(0.0, game.effort)
+        assertEquals(PX_PER_TURN, game.position, 0.3)
+        assertEquals(game.position, game.effort, 1e-9)
     }
 
     @Test

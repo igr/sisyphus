@@ -154,7 +154,7 @@ class SnapshotTest {
             val l = s.layout!!
             val px = s.render()
             val x0 = l.scene.x + l.scene.w / 2 - 30
-            val y0 = l.scene.y + (l.scene.h * 0.70).toInt() - 36
+            val y0 = l.scene.y + SceneGeometry(l.scene.w, l.scene.h).baseY - 36
             Pixels(52, 44).also { crop ->
                 for (y in 0 until crop.height) for (x in 0 until crop.width) crop[x, y] = px[x0 + x, y0 + y]
             }

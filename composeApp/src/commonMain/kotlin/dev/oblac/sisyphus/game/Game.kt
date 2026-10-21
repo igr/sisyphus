@@ -7,7 +7,6 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.floor
-import kotlin.math.max
 import kotlin.random.Random
 
 /** How far Sisyphus walks, in pixels, for one full turn of the knob. */
@@ -112,8 +111,8 @@ enum class Weather(val clouds: Int, val wind: Double, val overcast: Float, val r
 }
 
 /**
- * The state of the push. The knob moves Sisyphus. Only forward pushing counts as effort,
- * and effort is what moves the sun: days pass only when he works.
+ * The state of the push. The knob moves Sisyphus up the hill, whichever way it turns.
+ * Effort is what moves the sun: days pass only when he works.
  * Everything the player can see comes back from [store] when the game starts again.
  */
 class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt()) {
@@ -124,7 +123,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     var effort = store.load(KEY_EFFORT) ?: 0.0
         private set
 
-    /** Pixels walked during the last update. Negative when walking back down. */
+    /** Pixels walked up during the last update. */
     var moved = 0.0
         private set
     /** Smoothed walking speed, in pixels per second. */
@@ -155,15 +154,15 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     fun update(dt: Double) {
         clock += dt
         val turn = knob.update(dt)
-        moved = turn / (2 * PI) * PX_PER_TURN
+        moved = abs(turn) / (2 * PI) * PX_PER_TURN
         position += moved
-        if (moved > 0) effort += moved
+        effort += moved
         if (moved != 0.0) dirty = true
         if (dt > 0) speed += (moved / dt - speed) * (1 - exp(-dt * 8))
-        stillFor = if (abs(moved) > 1e-4) 0.0 else stillFor + dt
+        stillFor = if (moved > 1e-4) 0.0 else stillFor + dt
         tick(dt)
         val drawn = quotes.drawn
-        quotes.update(dt, max(0.0, moved), stillFor)
+        quotes.update(dt, moved, stillFor)
         if (quotes.drawn != drawn) dirty = true
         sinceSave += dt
         if (dirty && sinceSave > SAVE_EVERY) save()
