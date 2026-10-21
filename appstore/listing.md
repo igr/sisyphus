@@ -44,6 +44,12 @@ Sisyphus is a small, calm pixel-art game. Under a window to a Greek hillside sit
 
 No ads. No accounts. No data collected. Just the hill, the rock and you.
 
+## What's New in 1.1 (140/4000)
+
+- Sisyphus now climbs whichever way you turn the knob.
+- A new view of the hill, with more sky.
+- 50 new wise words, from Camus to the Rain.
+
 ## Notes for App Review
 
 No account or login is needed. Drag a finger in a circle on the bronze knob at the bottom of the screen to push the rock. The speaker icon in the bottom-left corner turns the sound on and off.
