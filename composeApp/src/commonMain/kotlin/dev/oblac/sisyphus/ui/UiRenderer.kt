@@ -22,7 +22,7 @@ import kotlin.math.sqrt
 val BACKGROUND = rgb(0x17110D)
 
 /** Text and coins in the Agora that the obols cannot buy yet. */
-val DISABLED = rgb(0x5A5048)
+private val DISABLED = rgb(0x5A5048)
 private val BACKGROUND_GRAIN = rgb(0x1D1611)
 private val OUTLINE = rgb(0x0A0705)
 private val TERRA = rgb(0xC8643C)
@@ -175,17 +175,18 @@ class UiRenderer {
         val bright = next == null || shop.obols >= next.price
         PixelFont.draw(px, LINE_TITLES[line.ordinal], r.x, r.y, TERRA)
         val y = r.y + PixelFont.LINE_HEIGHT
-        PixelFont.draw(px, item.name, r.x, y, if (bright) CREAM else DISABLED)
+        PixelFont.draw(px, item.name, r.x, y, CREAM)
         if (next != null) {
             val price = next.price.toString()
             coin(px, r.right - Layout.COIN_SIZE, y, if (bright) COIN_COLORS else COIN_GRAY)
             PixelFont.draw(px, price, r.right - Layout.COIN_SIZE - 2 - PixelFont.width(price), y, if (bright) TERRA_LIGHT else DISABLED)
         }
         val noteY = y + PixelFont.LINE_HEIGHT
-        PixelFont.draw(px, item.note, r.x, noteY, if (bright) TERRA_LIGHT else DISABLED)
+        PixelFont.draw(px, item.note, r.x, noteY, TERRA_LIGHT)
         for (k in 0 until 3) {
             val pip = Rect(r.right - 11 + k * 4, noteY + 2, 3, 3)
-            if (k < shop.tier(line)) px.fillRect(pip.x, pip.y, pip.w, pip.h, TERRA_LIGHT) else frame(px, pip, TERRA_DARK)
+            if (k < shop.tier(line)) px.fillRect(pip.x, pip.y, pip.w, pip.h, if (bright) TERRA_LIGHT else DISABLED)
+            else frame(px, pip, if (bright) TERRA else DISABLED)
         }
     }
 

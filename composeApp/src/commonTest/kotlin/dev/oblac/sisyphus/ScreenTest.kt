@@ -5,7 +5,6 @@ import dev.oblac.sisyphus.game.ITEMS
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.gfx.PixelFont
-import dev.oblac.sisyphus.ui.DISABLED
 import dev.oblac.sisyphus.ui.Rect
 import kotlin.math.cos
 import kotlin.math.sin
@@ -91,17 +90,29 @@ class ScreenTest {
     }
 
     @Test
-    fun rowsYouCannotAffordAreGrayedOut() {
-        fun grayIn(obols: Double): Int {
+    fun onlyThePriceAndTheSquaresShowWhatYouCannotAfford() {
+        /** The pixels of the rock row: its price, its three squares, and the rest. */
+        fun rockRow(obols: Double): Map<String, List<Int>> {
             val s = screen(MemoryStore(mapOf("obols" to obols)))
             val l = s.layout!!
             s.tap(l.coinIcon)
             val px = s.render()
             val r = l.agoraRow(Line.ROCK.ordinal)
-            return (r.y until r.bottom).sumOf { y -> (r.x until r.right).count { x -> px[x, y] == DISABLED } }
+            val nameY = r.y + PixelFont.LINE_HEIGHT
+            val noteY = nameY + PixelFont.LINE_HEIGHT
+            return (r.y until r.bottom).flatMap { y -> (r.x until r.right).map { x -> x to y } }.groupBy({ (x, y) ->
+                when {
+                    x >= r.right - 20 && y in nameY until noteY -> "price"
+                    x >= r.right - 11 && y >= noteY -> "squares"
+                    else -> "rest"
+                }
+            }, { (x, y) -> px[x, y] })
         }
-        assertTrue(grayIn(0.0) > 0)
-        assertEquals(0, grayIn(100.0))
+        val poor = rockRow(0.0)
+        val rich = rockRow(100.0)
+        assertEquals(rich["rest"], poor["rest"])
+        assertNotEquals(rich["price"], poor["price"])
+        assertNotEquals(rich["squares"], poor["squares"])
     }
 
     @Test
