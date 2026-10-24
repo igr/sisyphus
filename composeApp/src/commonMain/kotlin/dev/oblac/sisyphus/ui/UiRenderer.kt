@@ -171,12 +171,27 @@ class UiRenderer {
     }
 
     /** The Agora: what the obols can buy next, line by line, and the sound setting. */
-    fun agora(px: Pixels, layout: Layout, shop: Shop, soundOn: Boolean) {
+    fun agora(px: Pixels, layout: Layout, shop: Shop, soundOn: Boolean, dev: Boolean = false) {
         val t = layout.agoraTitle
-        PixelFont.draw(px, "Agora Market", t.x, t.y, CREAM)
+        PixelFont.draw(px, if (dev) "Dev" else "Agora Market", t.x, t.y, CREAM)
         px.hline(t.x, t.right - 1, t.bottom + 2, TERRA_DARK)
-        for (line in Line.entries) row(px, layout.agoraRow(line.ordinal), line, shop)
+        if (dev) devScreen(px, layout) else for (line in Line.entries) row(px, layout.agoraRow(line.ordinal), line, shop)
         speaker(px, layout.agoraSound, soundOn)
+    }
+
+    /** In dev builds only: buttons that add or take away obols, and one that resets the shop. */
+    private fun devScreen(px: Pixels, layout: Layout) {
+        val obols = layout.agoraRow(0)
+        PixelFont.draw(px, "Obols", obols.x, obols.y, TERRA)
+        DEV_STEPS.forEachIndexed { i, step -> button(px, layout.devStep(i), if (step > 0) "+$step" else "$step") }
+        val shop = layout.agoraRow(1)
+        PixelFont.draw(px, "Shop", shop.x, shop.y, TERRA)
+        button(px, layout.devReset, "Reset")
+    }
+
+    private fun button(px: Pixels, r: Rect, label: String) {
+        frame(px, r, TERRA)
+        PixelFont.draw(px, label, r.x + (r.w - PixelFont.width(label) + 1) / 2, r.y + 3, CREAM)
     }
 
     private fun row(px: Pixels, r: Rect, line: Line, shop: Shop) {

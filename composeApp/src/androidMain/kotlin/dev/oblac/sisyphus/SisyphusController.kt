@@ -1,6 +1,7 @@
 package dev.oblac.sisyphus
 
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.view.HapticFeedbackConstants
 import android.view.View
 import androidx.compose.runtime.Composable
@@ -23,7 +24,7 @@ class SisyphusController(context: Context, view: View) {
     private val game = Game(PrefsStore(context))
     private val haptics = ViewHaptics(view)
     private val sound = TrackSound()
-    private val screen = Screen(game)
+    private val screen = Screen(game, dev = context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0)
 
     @Composable
     fun Content() = SisyphusApp(game, haptics, sound, screen)

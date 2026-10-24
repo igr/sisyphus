@@ -58,5 +58,15 @@ class Shop(tiers: Map<Line, Int> = emptyMap(), obols: Double = 0.0) {
         obols += turns / workPerObol
     }
 
+    /** For dev builds: adds [obols], or takes them away, but never below zero. */
+    fun add(obols: Double) {
+        this.obols = (this.obols + obols).coerceAtLeast(0.0)
+    }
+
+    /** For dev builds: everything bought goes back to the market. */
+    fun reset() {
+        for (line in Line.entries) tiers[line] = 0
+    }
+
     private fun owned(line: Line): Item? = ITEMS.firstOrNull { it.line == line && it.tier == tier(line) }
 }

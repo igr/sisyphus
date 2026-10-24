@@ -237,6 +237,18 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         return true
     }
 
+    /** For dev builds: adds [step] obols, or takes them away, but never below zero. */
+    fun addObols(step: Int) {
+        shop.add(step.toDouble())
+        save()
+    }
+
+    /** For dev builds: the shop starts over. */
+    fun resetShop() {
+        shop.reset()
+        save()
+    }
+
     fun toggleSound() {
         soundOn = !soundOn
         store.save(KEY_SOUND, if (soundOn) 1.0 else 0.0)

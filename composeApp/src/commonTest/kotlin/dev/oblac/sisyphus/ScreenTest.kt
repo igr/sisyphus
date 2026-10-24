@@ -132,6 +132,73 @@ class ScreenTest {
         assertEquals(0, drawn(20, Layout.COIN_SIZE))
     }
 
+    private fun devScreen(store: Store = MemoryStore()) =
+        Screen(Game(store, seed = 1), seed = 2, dev = true).apply { resize(1179, 2556, 177, 102) }
+
+    /** Opens the Agora, then the dev screen in it. */
+    private fun Screen.openDev() {
+        tap(layout!!.coinIcon)
+        tap(layout!!.agoraTitle)
+    }
+
+    @Test
+    fun onlyADevBuildOpensTheDevScreen() {
+        val plain = screen()
+        plain.tap(plain.layout!!.coinIcon)
+        assertEquals(Touch.NONE, plain.tap(plain.layout!!.agoraTitle))
+        assertFalse(plain.devOpen)
+
+        val dev = devScreen()
+        dev.tap(dev.layout!!.coinIcon)
+        assertEquals(Touch.DEV, dev.tap(dev.layout!!.agoraTitle))
+        assertTrue(dev.devOpen)
+    }
+
+    @Test
+    fun theDevScreenSetsTheObols() {
+        val store = MemoryStore()
+        val s = devScreen(store)
+        val l = s.layout!!
+        s.openDev()
+        for (button in listOf(4, 3, 3, 1)) assertEquals(Touch.DEV, s.tap(l.devStep(button)))
+        assertEquals(119.0, s.game.shop.obols, 1e-9)
+        assertEquals(119.0, store.load("obols"))
+        repeat(13) { s.tap(l.devStep(0)) }
+        assertEquals(0.0, s.game.shop.obols)
+    }
+
+    @Test
+    fun theDevScreenResetsTheShop() {
+        val store = MemoryStore(mapOf("shop.rock" to 3.0, "shop.alone" to 2.0))
+        val s = devScreen(store)
+        s.openDev()
+        assertEquals(Touch.DEV, s.tap(s.layout!!.devReset))
+        assertTrue(Line.entries.all { s.game.shop.tier(it) == 0 })
+        assertEquals(0.0, store.load("shop.rock"))
+    }
+
+    @Test
+    fun closingTheAgoraLeavesTheDevScreen() {
+        val s = devScreen()
+        s.openDev()
+        s.tap(s.layout!!.coinIcon)
+        s.tap(s.layout!!.coinIcon)
+        assertTrue(s.agoraOpen)
+        assertFalse(s.devOpen)
+        s.tap(s.layout!!.agoraTitle)
+        assertTrue(s.back())
+        assertFalse(s.devOpen)
+    }
+
+    @Test
+    fun theDevButtonsFitTheSmallestPhone() {
+        val l = smallest().layout!!
+        assertTrue(PixelFont.width("+100") + 4 <= l.devStep(0).w)
+        assertTrue(l.devStep(4).right <= l.agoraRow(0).right)
+        assertTrue(l.devStep(0).bottom <= l.agoraRow(0).bottom)
+        assertTrue(l.devReset.bottom <= l.agoraRow(1).bottom)
+    }
+
     @Test
     fun backClosesTheAgora() {
         val s = screen()

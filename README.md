@@ -16,6 +16,8 @@ Website, support and privacy policy: https://igr.github.io/sisyphus/ (from the `
   The Android SDK path goes in `local.properties` (`sdk.dir=...`).
   The Google Play bundle: `./gradlew :androidApp:bundleRelease` (see `playstore/listing.md`).
 - Desktop window on a Mac, for quick checks: `just run` (or `./gradlew :composeApp:run`)
+- Dev screen: in debug builds (Run in Xcode, `installDebug`, `just run`), tap the "Agora Market" title
+  to add or take away obols, or to reset the shop. Release builds do not have it.
 - Tests: `./gradlew :composeApp:jvmTest`. The tests also write PNG snapshots and `clicks.wav`
   to `composeApp/build/snapshots`.
 

@@ -7,6 +7,7 @@ import dev.oblac.sisyphus.scene.SceneGeometry
 import dev.oblac.sisyphus.scene.SceneRenderer
 import dev.oblac.sisyphus.scene.World
 import dev.oblac.sisyphus.scene.atmosphere
+import dev.oblac.sisyphus.ui.DEV_STEPS
 import dev.oblac.sisyphus.ui.Layout
 import dev.oblac.sisyphus.ui.Rect
 import dev.oblac.sisyphus.ui.UiRenderer
@@ -17,7 +18,7 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlin.random.Random
 
-enum class Touch { NONE, KNOB, SOUND, SHOP, BUY }
+enum class Touch { NONE, KNOB, SOUND, SHOP, BUY, DEV }
 
 /** The whole screen is one small framebuffer, scaled up by a whole number so every pixel stays sharp. */
 private const val TARGET_WIDTH = 144f
@@ -29,7 +30,7 @@ private const val TOUCH_SLOP = 6
  * Owns the framebuffer and maps real screen pixels to virtual ones.
  * Platform code only forwards touches and shows [pixels].
  */
-class Screen(val game: Game, seed: Int = Random.nextInt()) {
+class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Boolean = false) {
     var scale = 1
         private set
     var offsetX = 0
@@ -42,6 +43,9 @@ class Screen(val game: Game, seed: Int = Random.nextInt()) {
         private set
     /** The Agora, the shop, covers the whole screen while it is open. */
     var agoraOpen = false
+        private set
+    /** In dev builds, tapping the Agora's title shows the dev screen in its place: it sets the obols and resets the shop. */
+    var devOpen = false
         private set
 
     val world = World(seed)
@@ -87,7 +91,7 @@ class Screen(val game: Game, seed: Int = Random.nextInt()) {
         val renderer = sceneRenderer ?: return pixels
         ui.background(pixels)
         if (agoraOpen) {
-            ui.agora(pixels, l, game.shop, game.soundOn)
+            ui.agora(pixels, l, game.shop, game.soundOn, devOpen)
         } else {
             renderer.render(scene, game, world, banner)
             pixels.draw(scene, l.scene.x, l.scene.y)
@@ -107,12 +111,26 @@ class Screen(val game: Game, seed: Int = Random.nextInt()) {
         val y = (yPx - offsetY) / scale
         if (l.coinIcon.near(x, y, TOUCH_SLOP)) {
             agoraOpen = !agoraOpen
+            devOpen = false
             return Touch.SHOP
         }
         if (agoraOpen) {
             if (l.agoraSound.near(x, y, TOUCH_SLOP)) {
                 game.toggleSound()
                 return Touch.SOUND
+            }
+            if (dev && l.agoraTitle.near(x, y, 0)) {
+                devOpen = !devOpen
+                return Touch.DEV
+            }
+            if (devOpen) {
+                val step = DEV_STEPS.indices.firstOrNull { l.devStep(it).near(x, y, 0) }
+                when {
+                    step != null -> game.addObols(DEV_STEPS[step])
+                    l.devReset.near(x, y, 0) -> game.resetShop()
+                    else -> return Touch.NONE
+                }
+                return Touch.DEV
             }
             val row = Line.entries.indices.firstOrNull { l.agoraRow(it).near(x, y, 0) } ?: return Touch.NONE
             return if (game.buy(Line.entries[row])) Touch.BUY else Touch.NONE
@@ -137,6 +155,7 @@ class Screen(val game: Game, seed: Int = Random.nextInt()) {
     fun back(): Boolean {
         if (!agoraOpen) return false
         agoraOpen = false
+        devOpen = false
         return true
     }
 

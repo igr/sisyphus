@@ -44,6 +44,16 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
         return Rect(agoraTitle.x, y0 + index * h, agoraTitle.w, h)
     }
 
+    /** In the dev screen, the button for one of [DEV_STEPS], below the "Obols" title. */
+    fun devStep(index: Int): Rect {
+        val r = agoraRow(0)
+        val w = (r.w - 2 * (DEV_STEPS.size - 1)) / DEV_STEPS.size
+        return Rect(r.x + index * (w + 2), r.y + PixelFont.LINE_HEIGHT, w, BUTTON_HEIGHT)
+    }
+
+    /** In the dev screen, the button that empties the shop, below the "Shop" title. */
+    val devReset = agoraRow(1).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("Reset") + 8, BUTTON_HEIGHT) }
+
     val knobX: Int
     val knobY: Int
     val knobR: Int
@@ -62,5 +72,9 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
         const val SPEAKER_WIDTH = 11
         const val SPEAKER_HEIGHT = 7
         const val COIN_SIZE = 7
+        const val BUTTON_HEIGHT = 13
     }
 }
+
+/** The obols each button of the dev screen adds or takes away, from the left. */
+val DEV_STEPS = listOf(-10, -1, 1, 10, 100)

@@ -24,6 +24,6 @@ fun main() = application {
         title = "Sisyphus",
         state = rememberWindowState(width = 393.dp, height = 852.dp),
     ) {
-        SisyphusApp(game, sound = remember { ClipSound() })
+        SisyphusApp(game, sound = remember { ClipSound() }, screen = remember { Screen(game, dev = true) })
     }
 }
