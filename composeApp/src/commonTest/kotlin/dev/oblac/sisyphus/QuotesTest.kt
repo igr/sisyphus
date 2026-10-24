@@ -63,8 +63,8 @@ class QuotesTest {
     @Test
     fun anAnnouncementComesFirstAndTheRoundGoesOn() {
         val box = QuoteBox(seed = 3, drawn = 5, firstTime = false)
-        box.announce(Quote("A goat pushed 6 times while you were away.", "Hermes"))
-        assertEquals("A goat pushed 6 times while you were away.", box.quote.text)
+        box.announce(Quote("Amalthea pushed 6 times while you were away.", "Hermes"))
+        assertEquals("Amalthea pushed 6 times while you were away.", box.quote.text)
         assertEquals(QuoteBox.Phase.TYPING, box.phase)
         assertEquals(0.0, box.typed)
         assertEquals(5, box.drawn)

@@ -78,7 +78,7 @@ private val COIN = listOf(
 private val COIN_COLORS = mapOf('#' to BRONZE[1], 'h' to BRONZE[5], 'f' to BRONZE[4], 's' to BRONZE[3])
 private val COIN_GRAY = mapOf('#' to rgb(0x2E2924), 'h' to rgb(0x7A7068), 'f' to DISABLED, 's' to rgb(0x4A423A))
 
-private val LINE_TITLES = listOf("Rock", "Beside him", "On their own", "Blessings", "Beauty")
+private val LINE_TITLES = listOf("Rock", "Sidekicks", "Gods", "Blessings", "Beauty")
 
 /** Draws everything around the display: the frame, the ornament, the wise words, the knob and the Agora. */
 class UiRenderer {

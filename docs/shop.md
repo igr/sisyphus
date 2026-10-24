@@ -43,8 +43,8 @@ Each line is bought from left to right (I, then II, then III). A newer item repl
 | Line | I | II | III |
 |---|---|---|---|
 | **Rock**: your turns count more | River stone of Asopus · 2 obols · 1.5× | Pumice from Hephaestus' forge · 5 · 2× | Sphere of Daedalus · 9 · 3× |
-| **Beside him**: help only while you push | Merope, his wife · 3 · 1.25× | Bellerophon, his grandson · 6 · 1.5× | Heracles · 10 · 2× |
-| **On their own**: push all the time, also with the app closed | Goat · 1 · 6 turns an hour | Pan · 4 · 12 turns an hour | Thanatos, who never sleeps · 8 · 24 turns an hour |
+| **Sidekicks**: help only while you push | Merope, his wife · 3 · 1.25× | Bellerophon, his grandson · 6 · 1.5× | Heracles · 10 · 2× |
+| **Gods**: push all the time, also with the app closed | Amalthea, the goat who nursed Zeus · 1 · 6 turns an hour | Pan · 4 · 12 turns an hour | Thanatos, who never sleeps · 8 · 24 turns an hour |
 | **Blessings**: more obols | Purse of Hermes · 2 · an obol per 7 days of work | Gift of Tyche · 6 · per 5 days | Wealth of Plutus · 10 · per 3 days |
 | **Beauty**: in the background, no effect on progress | Dolphins of Poseidon · 3 | Pegasus · 7 | The Pleiades · 11 |
 
@@ -95,7 +95,7 @@ Order of purchases at 5 minutes a day, buying the cheapest affordable item: Goat
 ## Later
 
 - More in the Agora: a small picture of each item, the map of new places, the quotes you have seen, and stats.
-- Draw the helpers on the hill: Merope, Bellerophon and Heracles pushing beside Sisyphus; the goat, Pan and Thanatos somewhere on the hill.
+- Draw the helpers on the hill: Merope, Bellerophon and Heracles pushing beside Sisyphus; Amalthea, Pan and Thanatos somewhere on the hill.
 - The Lyre of Orpheus: music from a sound file, like the click. It can become a beauty item when it is built.
 
 ## The second project (later)

@@ -19,7 +19,7 @@ val ITEMS = listOf(
     Item(Line.BESIDE, 1, "Merope", "helps push 1.25x", 3, 1.25),
     Item(Line.BESIDE, 2, "Bellerophon", "helps push 1.5x", 6, 1.5),
     Item(Line.BESIDE, 3, "Heracles", "helps push 2x", 10, 2.0),
-    Item(Line.ALONE, 1, "A goat", "6 pushes an hour", 1, 6.0),
+    Item(Line.ALONE, 1, "Amalthea", "6 pushes an hour", 1, 6.0),
     Item(Line.ALONE, 2, "Pan", "12 pushes an hour", 4, 12.0),
     Item(Line.ALONE, 3, "Thanatos", "24 pushes an hour", 8, 24.0),
     Item(Line.BLESSING, 1, "Purse of Hermes", "obol per 7 days", 2, 504.0),
