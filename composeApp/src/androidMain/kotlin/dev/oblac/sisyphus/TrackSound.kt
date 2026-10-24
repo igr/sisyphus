@@ -3,18 +3,20 @@ package dev.oblac.sisyphus
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
-import dev.oblac.sisyphus.audio.CLICKS
 import dev.oblac.sisyphus.audio.SAMPLE_RATE
-import dev.oblac.sisyphus.audio.click
 
-/** Plays the knob clicks: one short track per click variant, restarted at each detent. Without audio it stays silent. */
+/** Plays the knob click: three short tracks take turns, each restarted at a detent. Without audio it stays silent. */
 internal class TrackSound : Sound {
-    private val tracks: List<AudioTrack> = try {
-        List(CLICKS) { track(click(it)) }.filter { it.state == AudioTrack.STATE_INITIALIZED }
-    } catch (e: Exception) {
-        emptyList()
-    }
+    private var tracks: List<AudioTrack> = emptyList()
     private var next = 0
+
+    override fun load(click: FloatArray) {
+        tracks = try {
+            List(3) { track(click) }.filter { it.state == AudioTrack.STATE_INITIALIZED }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
 
     override fun click() {
         if (tracks.isEmpty()) return

@@ -3,6 +3,7 @@ package dev.oblac.sisyphus
 import android.media.AudioManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.addCallback
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.WindowCompat
@@ -22,6 +23,17 @@ class MainActivity : ComponentActivity() {
         volumeControlStream = AudioManager.STREAM_MUSIC
         sisyphus = SisyphusController(this, window.decorView)
         setContent { sisyphus.Content() }
+        onBackPressedDispatcher.addCallback(this) {
+            if (sisyphus.back()) return@addCallback
+            isEnabled = false
+            onBackPressedDispatcher.onBackPressed()
+            isEnabled = true
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        sisyphus.resume()
     }
 
     override fun onPause() {

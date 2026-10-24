@@ -15,6 +15,7 @@ kotlin {
         compileSdk = 37
         minSdk = 26
         compilerOptions { jvmTarget = JvmTarget.JVM_17 }
+        androidResources { enable = true }
         withHostTest { }
     }
     listOf(iosArm64(), iosSimulatorArm64()).forEach { target ->
@@ -28,6 +29,7 @@ kotlin {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.ui)
+            implementation(libs.compose.resources)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

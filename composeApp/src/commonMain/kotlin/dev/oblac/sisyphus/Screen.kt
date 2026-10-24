@@ -1,12 +1,14 @@
 package dev.oblac.sisyphus
 
 import dev.oblac.sisyphus.game.Game
+import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.scene.SceneGeometry
 import dev.oblac.sisyphus.scene.SceneRenderer
 import dev.oblac.sisyphus.scene.World
 import dev.oblac.sisyphus.scene.atmosphere
 import dev.oblac.sisyphus.ui.Layout
+import dev.oblac.sisyphus.ui.Rect
 import dev.oblac.sisyphus.ui.UiRenderer
 import kotlin.math.atan2
 import kotlin.math.floor
@@ -15,7 +17,7 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlin.random.Random
 
-enum class Touch { NONE, KNOB, SOUND }
+enum class Touch { NONE, KNOB, SOUND, SHOP, BUY }
 
 /** The whole screen is one small framebuffer, scaled up by a whole number so every pixel stays sharp. */
 private const val TARGET_WIDTH = 144f
@@ -37,6 +39,9 @@ class Screen(val game: Game, seed: Int = Random.nextInt()) {
     var pixels = Pixels(1, 1)
         private set
     var layout: Layout? = null
+        private set
+    /** The Agora, the shop, covers the whole screen while it is open. */
+    var agoraOpen = false
         private set
 
     val world = World(seed)
@@ -70,7 +75,7 @@ class Screen(val game: Game, seed: Int = Random.nextInt()) {
         game.update(dt)
         if (layout != null) {
             val stars = atmosphere(game.timeOfDay, world.overcast).stars
-            world.update(dt, game.moved, game.speed, floor(game.position).toInt(), game.weather, game.timeOfDay, stars)
+            world.update(dt, game.moved, game.speed, floor(game.position).toInt(), game.weather, game.timeOfDay, stars, game.shop.tier(Line.BEAUTY))
         }
         if (game.day > lastDay) banner = 3.0
         lastDay = game.day
@@ -81,13 +86,17 @@ class Screen(val game: Game, seed: Int = Random.nextInt()) {
         val l = layout ?: return pixels
         val renderer = sceneRenderer ?: return pixels
         ui.background(pixels)
-        renderer.render(scene, game, world, banner)
-        pixels.draw(scene, l.scene.x, l.scene.y)
-        ui.bezel(pixels, l.display)
-        ui.band(pixels, l.band)
-        ui.quote(pixels, l.quote, game.quotes, game.clock)
-        ui.knob(pixels, l, game)
-        ui.speaker(pixels, l.soundIcon, game.soundOn)
+        if (agoraOpen) {
+            ui.agora(pixels, l, game.shop, game.soundOn)
+        } else {
+            renderer.render(scene, game, world, banner)
+            pixels.draw(scene, l.scene.x, l.scene.y)
+            ui.bezel(pixels, l.display)
+            ui.band(pixels, l.band)
+            ui.quote(pixels, l.quote, game.quotes, game.clock)
+            ui.knob(pixels, l, game)
+        }
+        ui.coins(pixels, l.coinIcon, game.shop.obols.toInt())
         return pixels
     }
 
@@ -96,10 +105,17 @@ class Screen(val game: Game, seed: Int = Random.nextInt()) {
         val l = layout ?: return Touch.NONE
         val x = (xPx - offsetX) / scale
         val y = (yPx - offsetY) / scale
-        val icon = l.soundIcon
-        if (x >= icon.x - TOUCH_SLOP && x < icon.right + TOUCH_SLOP && y >= icon.y - TOUCH_SLOP && y < icon.bottom + TOUCH_SLOP) {
-            game.toggleSound()
-            return Touch.SOUND
+        if (l.coinIcon.near(x, y, TOUCH_SLOP)) {
+            agoraOpen = !agoraOpen
+            return Touch.SHOP
+        }
+        if (agoraOpen) {
+            if (l.agoraSound.near(x, y, TOUCH_SLOP)) {
+                game.toggleSound()
+                return Touch.SOUND
+            }
+            val row = Line.entries.indices.firstOrNull { l.agoraRow(it).near(x, y, 0) } ?: return Touch.NONE
+            return if (game.buy(Line.entries[row])) Touch.BUY else Touch.NONE
         }
         val dx = x - (l.knobX + 0.5)
         val dy = y - (l.knobY + 0.5)
@@ -117,9 +133,19 @@ class Screen(val game: Game, seed: Int = Random.nextInt()) {
 
     fun release() = game.knob.release()
 
+    /** Back closes the Agora. Tells whether there was something to close. */
+    fun back(): Boolean {
+        if (!agoraOpen) return false
+        agoraOpen = false
+        return true
+    }
+
     /** Near the center the direction of the finger is noise, so it does not count. */
     private fun touchAngle(dx: Double, dy: Double, l: Layout): Double? =
         if (sqrt(dx * dx + dy * dy) < l.knobR * 0.2) null else atan2(dy, dx)
 
     private fun Int.ceilDiv(d: Int) = (this + d - 1) / d
+
+    private fun Rect.near(x: Float, y: Float, slop: Int) =
+        x >= this.x - slop && x < right + slop && y >= this.y - slop && y < bottom + slop
 }

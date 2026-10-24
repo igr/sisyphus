@@ -229,3 +229,69 @@ private val BIRD_COLOR = mapOf('#' to rgb(0x2E3442))
 
 val BIRD_UP = sprite(BIRD_COLOR, "#...#\n.#.#.\n..#..")
 val BIRD_FLAT = sprite(BIRD_COLOR, ".....\n##.##\n..#..")
+
+private val DOLPHIN_COLORS = mapOf('s' to rgb(0x3E4C5E), 'b' to rgb(0x8C9AAE))
+
+/** A dolphin's leap in three frames, facing right: rising, at the top, diving back in. */
+val DOLPHIN_RISE = sprite(
+    DOLPHIN_COLORS,
+    """
+    ....ss
+    ...sss
+    ..ssb.
+    .ssb..
+    ss....
+    """,
+)
+
+val DOLPHIN_TOP = sprite(
+    DOLPHIN_COLORS,
+    """
+    ...s...
+    .ssssss
+    s.bbbb.
+    """,
+)
+
+val DOLPHIN_DIVE = sprite(
+    DOLPHIN_COLORS,
+    """
+    ss....
+    .ssb..
+    ..ssb.
+    ...sss
+    ....ss
+    """,
+)
+
+private val PEGASUS_COLORS = mapOf('w' to rgb(0xF4F2EE), 'g' to rgb(0xC9C6C0))
+private val PEGASUS_OUTLINE = rgb(0x2E3442)
+
+/** Pegasus, wings up and wings down. Both face right. */
+val PEGASUS_UP = sprite(
+    PEGASUS_COLORS,
+    """
+    ....gg.......
+    ...ggg....w..
+    ..ggg....wwww
+    .ggg.....ww..
+    ..wwwwwwwww..
+    .wwwwwwwwww..
+    w.w.w...w.w..
+    ..w.w...w.w..
+    """,
+).outlined(PEGASUS_OUTLINE)
+
+val PEGASUS_DOWN = sprite(
+    PEGASUS_COLORS,
+    """
+    .............
+    ..........w..
+    .........wwww
+    .........ww..
+    ..wwwwwwwww..
+    .wwgggggwww..
+    w.wgggg.w.w..
+    ..w.gg..w.w..
+    """,
+).outlined(PEGASUS_OUTLINE)

@@ -4,6 +4,7 @@ A small pixel-art game for iOS and Android, made with Kotlin Multiplatform and C
 Turn the knob, and Sisyphus pushes the rock up the hill. The knob clicks at each step.
 The sun moves only while he works.
 Each day has its own weather. Wise words appear under the display as you push.
+Earn obols as you push, and spend them in the Agora Market: better rocks, helpers, blessings and beauty.
 
 Website, support and privacy policy: https://igr.github.io/sisyphus/ (from the `gh-pages` branch).
 
@@ -21,10 +22,10 @@ Website, support and privacy policy: https://igr.github.io/sisyphus/ (from the `
 ## Code
 
 All game code is in `composeApp/src/commonMain`. The screen is one small framebuffer (about 150 pixels wide),
-scaled up by a whole number, so every pixel stays sharp. There are no image or sound files:
-all art and the click sound are made in code.
+scaled up by a whole number, so every pixel stays sharp. There are no image files: all art is made in code.
+The knob click is a sound file: `composeApp/src/commonMain/composeResources/files/click.wav`.
 
-- `audio` — the knob click
+- `audio` — reads the knob click from its WAV file
 - `gfx` — framebuffer, dithering, pixel font
 - `game` — knob physics, days and weather, quotes
 - `scene` — the display: sky, sea, slope, rock, Sisyphus, clouds, birds, rain

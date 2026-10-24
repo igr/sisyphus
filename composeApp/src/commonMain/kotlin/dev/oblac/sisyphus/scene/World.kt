@@ -29,12 +29,23 @@ class Particle(
 
 class Drop(var x: Double, var y: Double, val speed: Double)
 
+/** A dolphin's leap out of the sea, starting at [x], going [dir]. */
+class Leap(val x: Double, val dir: Double) {
+    var t = 0.0
+}
+
+/** Pegasus crossing the sky. */
+class Flyer(var x: Double, val y: Double, val vx: Double, val flap: Double)
+
 class ShootingStar(var x: Double, var y: Double, val vx: Double, val vy: Double, var life: Double)
 
 private val DUST = rgb(0xC8A878)
 private val SWEAT = rgb(0xBFE4FF)
 private val SPLASH = rgb(0xB8C8E0)
 private const val DROPS = 90
+
+/** Seconds a dolphin is out of the water. */
+const val LEAP_TIME = 1.2
 
 /** Everything in the display that moves by itself: clouds, birds, rain, dust. */
 class World(seed: Int) {
@@ -46,6 +57,9 @@ class World(seed: Int) {
     val birds = ArrayList<Bird>()
     val particles = ArrayList<Particle>()
     val drops = ArrayList<Drop>()
+    val dolphins = ArrayList<Leap>()
+    var pegasus: Flyer? = null
+        private set
     var shootingStar: ShootingStar? = null
         private set
     /** 0 is dry, 1 is pouring. Follows the weather slowly. */
@@ -55,6 +69,8 @@ class World(seed: Int) {
         private set
 
     private var dust = 0.0
+    private var nextLeap = 0.0
+    private var nextFlight = 0.0
 
     fun reset(geo: SceneGeometry, weather: Weather) {
         this.geo = geo
@@ -70,11 +86,15 @@ class World(seed: Int) {
         }
         birds.clear()
         particles.clear()
+        dolphins.clear()
+        pegasus = null
+        nextLeap = random.nextDouble(5.0, 20.0)
+        nextFlight = random.nextDouble(10.0, 45.0)
         rain = if (weather.rain) 1.0 else 0.0
         overcast = weather.overcast
     }
 
-    fun update(dt: Double, moved: Double, speed: Double, p: Int, weather: Weather, timeOfDay: Double, stars: Float) {
+    fun update(dt: Double, moved: Double, speed: Double, p: Int, weather: Weather, timeOfDay: Double, stars: Float, beauty: Int) {
         val ease = 1 - exp(-dt * 0.5)
         rain += ((if (weather.rain) 1.0 else 0.0) - rain) * ease
         overcast += ((weather.overcast - overcast) * ease).toFloat()
@@ -83,6 +103,8 @@ class World(seed: Int) {
         updateRain(dt, moved, p)
         updateParticles(dt, moved, speed)
         updateShootingStar(dt, stars)
+        updateDolphins(dt, beauty)
+        updatePegasus(dt, moved, beauty)
     }
 
     private fun updateClouds(dt: Double, moved: Double, weather: Weather) {
@@ -222,6 +244,47 @@ class World(seed: Int) {
             q.x += q.vx * dt - moved * q.stick
             q.y += q.vy * dt + moved * q.stick * 0.5
         }
+    }
+
+    /** Bought with the first beauty item: now and then a dolphin leaps in the visible part of the sea. */
+    private fun updateDolphins(dt: Double, beauty: Int) {
+        val it = dolphins.iterator()
+        while (it.hasNext()) {
+            val d = it.next()
+            d.t += dt
+            if (d.t >= LEAP_TIME) {
+                splash((d.x + d.dir * 8).toInt(), geo.horizon + 1)
+                it.remove()
+            }
+        }
+        if (beauty < 1) return
+        nextLeap -= dt
+        if (nextLeap > 0) return
+        nextLeap = random.nextDouble(15.0, 40.0)
+        val far = geo.heroX - 20.0
+        if (far - 3 < 6) return
+        val d = Leap(random.nextDouble(3.0, far), if (random.nextBoolean()) 1.0 else -1.0)
+        dolphins += d
+        splash(d.x.toInt(), geo.horizon + 1)
+    }
+
+    /** Bought with the second beauty item: Pegasus crosses the sky every minute or two, day and night. */
+    private fun updatePegasus(dt: Double, moved: Double, beauty: Int) {
+        pegasus?.let { p ->
+            p.x += p.vx * dt - moved * 0.2
+            if (p.x < -20 || p.x > geo.width + 20) pegasus = null
+        }
+        if (beauty < 2 || pegasus != null) return
+        nextFlight -= dt
+        if (nextFlight > 0) return
+        nextFlight = random.nextDouble(45.0, 120.0)
+        val dir = if (random.nextBoolean()) 1.0 else -1.0
+        pegasus = Flyer(
+            if (dir > 0) -14.0 else geo.width + 14.0,
+            random.nextDouble(10.0, max(12.0, geo.horizon * 0.4)),
+            dir * random.nextDouble(14.0, 20.0),
+            random.nextDouble(),
+        )
     }
 
     private fun updateShootingStar(dt: Double, stars: Float) {

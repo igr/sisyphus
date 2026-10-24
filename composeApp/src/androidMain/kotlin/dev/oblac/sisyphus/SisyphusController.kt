@@ -18,16 +18,22 @@ private class ViewHaptics(private val view: View) : Haptics {
     }
 }
 
-/** The activity holds one of these; it saves the game when the app leaves the foreground. */
+/** The activity holds one of these; it pauses the game when the app leaves the foreground, and resumes it on return. */
 class SisyphusController(context: Context, view: View) {
     private val game = Game(PrefsStore(context))
     private val haptics = ViewHaptics(view)
     private val sound = TrackSound()
+    private val screen = Screen(game)
 
     @Composable
-    fun Content() = SisyphusApp(game, haptics, sound)
+    fun Content() = SisyphusApp(game, haptics, sound, screen)
 
-    fun pause() = game.save()
+    /** Back closes the Agora; tells whether it did. */
+    fun back() = screen.back()
+
+    fun pause() = game.pause()
+
+    fun resume() = game.resume()
 
     fun release() = sound.release()
 }

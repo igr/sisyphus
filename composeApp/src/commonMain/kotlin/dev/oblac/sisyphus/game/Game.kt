@@ -3,10 +3,12 @@ package dev.oblac.sisyphus.game
 import dev.oblac.sisyphus.MemoryStore
 import dev.oblac.sisyphus.Store
 import dev.oblac.sisyphus.gfx.hash01
+import dev.oblac.sisyphus.wallSeconds
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.floor
+import kotlin.math.min
 import kotlin.random.Random
 
 /** How far Sisyphus walks, in pixels, for one full turn of the knob. */
@@ -25,7 +27,11 @@ private const val KEY_SOUND = "sound"
 private const val KEY_KNOB = "knob"
 private const val KEY_QUOTE_SEED = "quoteSeed"
 private const val KEY_QUOTES_DRAWN = "quotesDrawn"
+private const val KEY_OBOLS = "obols"
+private const val KEY_SAVED_AT = "savedAt"
 private const val SAVE_EVERY = 1.0
+
+private fun shopKey(line: Line) = "shop." + line.name.lowercase()
 
 fun wrapAngle(a: Double): Double {
     var x = a
@@ -112,10 +118,12 @@ enum class Weather(val clouds: Int, val wind: Double, val overcast: Float, val r
 
 /**
  * The state of the push. The knob moves Sisyphus up the hill, whichever way it turns.
- * Effort is what moves the sun: days pass only when he works.
+ * Effort is what moves the sun: days pass only when he works. A strong rock and strong helpers
+ * earn obols faster, but move the sun at most [SUN_CAP] times faster. Helpers on their own push
+ * all the time: while the game runs, and for the time it was away, measured by the [wall] clock.
  * Everything the player can see comes back from [store] when the game starts again.
  */
-class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt()) {
+class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(), private val wall: () -> Double = ::wallSeconds) {
     val knob = Knob(store.load(KEY_KNOB) ?: 0.0)
 
     var position = store.load(KEY_POSITION) ?: 0.0
@@ -137,6 +145,8 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     var soundOn = store.load(KEY_SOUND) != 0.0
         private set
 
+    val shop = Shop(Line.entries.associateWith { store.load(shopKey(it))?.toInt() ?: 0 }, store.load(KEY_OBOLS) ?: 0.0)
+
     private val quoteSeed = store.load(KEY_QUOTE_SEED)?.toInt() ?: seed
     val quotes = QuoteBox(quoteSeed, drawn = store.load(KEY_QUOTES_DRAWN)?.toInt() ?: 0, firstTime = effort == 0.0)
     var onTick: () -> Unit = {}
@@ -145,6 +155,11 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     private var tickCooldown = 0.0
     private var sinceSave = 0.0
     private var dirty = false
+    private var pausedAt: Double? = null
+
+    init {
+        store.load(KEY_SAVED_AT)?.let { away(wall() - it) }
+    }
 
     val dayValue get() = START_TIME + effort / DAY_LENGTH
     val day get() = floor(dayValue).toInt() + 1
@@ -154,9 +169,14 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     fun update(dt: Double) {
         clock += dt
         val turn = knob.update(dt)
-        moved = abs(turn) / (2 * PI) * PX_PER_TURN
+        val turns = abs(turn) / (2 * PI)
+        moved = turns * min(shop.bonus, SUN_CAP) * PX_PER_TURN
         position += moved
         effort += moved
+        shop.addWork(turns * shop.bonus)
+        val helped = if (pausedAt == null) shop.helpersPerHour * dt / 3600 else 0.0
+        effort += helped * PX_PER_TURN
+        shop.addWork(helped)
         if (moved != 0.0) dirty = true
         if (dt > 0) speed += (moved / dt - speed) * (1 - exp(-dt * 8))
         stillFor = if (moved > 1e-4) 0.0 else stillFor + dt
@@ -179,6 +199,44 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         }
     }
 
+    /** Pausing again keeps the first time: iOS also pauses on its way back to the foreground. */
+    fun pause() {
+        if (pausedAt == null) pausedAt = wall()
+        save()
+    }
+
+    fun resume() {
+        val at = pausedAt ?: return
+        pausedAt = null
+        away(wall() - at)
+    }
+
+    /** The helpers on their own kept pushing while nobody watched. Hermes brings the news. */
+    private fun away(seconds: Double) {
+        val helper = shop.helper ?: return
+        if (seconds <= 0) return
+        val turns = shop.helpersPerHour * seconds / 3600
+        val before = floor(shop.obols)
+        effort += turns * PX_PER_TURN
+        shop.addWork(turns)
+        dirty = true
+        if (turns < 1) return
+        val gained = (floor(shop.obols) - before).toInt()
+        val author = when (gained) {
+            0 -> "Hermes"
+            1 -> "Hermes · 1 obol"
+            else -> "Hermes · $gained obols"
+        }
+        val times = turns.toInt().let { if (it == 1) "once" else "$it times" }
+        quotes.announce(Quote("${helper.name} pushed $times while you were away.", author))
+    }
+
+    fun buy(line: Line): Boolean {
+        if (!shop.buy(line)) return false
+        save()
+        return true
+    }
+
     fun toggleSound() {
         soundOn = !soundOn
         store.save(KEY_SOUND, if (soundOn) 1.0 else 0.0)
@@ -190,6 +248,9 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         store.save(KEY_KNOB, knob.angle)
         store.save(KEY_QUOTE_SEED, quoteSeed.toDouble())
         store.save(KEY_QUOTES_DRAWN, quotes.drawn.toDouble())
+        store.save(KEY_OBOLS, shop.obols)
+        store.save(KEY_SAVED_AT, pausedAt ?: wall())
+        for (line in Line.entries) store.save(shopKey(line), shop.tier(line).toDouble())
         dirty = false
         sinceSave = 0.0
     }

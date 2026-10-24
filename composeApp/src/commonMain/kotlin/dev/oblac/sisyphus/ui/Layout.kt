@@ -13,6 +13,7 @@ class Rect(val x: Int, val y: Int, val w: Int, val h: Int) {
 /**
  * Splits the screen, in virtual pixels: the display takes the top half,
  * the wise words come below it, and the knob takes the rest.
+ * The Agora, the shop, covers all of it when open.
  */
 class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, safeLeft: Int, safeRight: Int) {
     private val left = safeLeft + 4
@@ -25,8 +26,23 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     val band = Rect(left, display.bottom + 4, right - left, BAND_HEIGHT)
     val quote = Rect(left + 2, band.bottom + 4, right - left - 4, PixelFont.LINE_HEIGHT * 4)
 
-    /** The speaker in the bottom-left corner that turns the sound on and off. */
-    val soundIcon = Rect(left + 2, bottom - SPEAKER_HEIGHT - 1, SPEAKER_WIDTH, SPEAKER_HEIGHT)
+    /**
+     * The obols, in the top-right corner of the display across from the day. They open and close the Agora,
+     * and stay in the same place there.
+     */
+    val coinIcon = (COIN_SIZE + 2 + PixelFont.width("9999")).let { w -> Rect(scene.right - 4 - w, scene.y + 4, w, COIN_SIZE) }
+
+    val agoraTitle = Rect(left + 2, coinIcon.y, coinIcon.right - left - 2, PixelFont.LINE_HEIGHT)
+
+    /** In the Agora, the speaker in the bottom-right corner turns the sound on and off. */
+    val agoraSound = Rect(coinIcon.right - SPEAKER_WIDTH, bottom - SPEAKER_HEIGHT - 1, SPEAKER_WIDTH, SPEAKER_HEIGHT)
+
+    /** One of the five lines of the Agora, from the top. */
+    fun agoraRow(index: Int): Rect {
+        val y0 = agoraTitle.bottom + 6
+        val h = (agoraSound.y - 6 - y0) / 5
+        return Rect(agoraTitle.x, y0 + index * h, agoraTitle.w, h)
+    }
 
     val knobX: Int
     val knobY: Int
@@ -45,5 +61,6 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
         const val BAND_HEIGHT = 9
         const val SPEAKER_WIDTH = 11
         const val SPEAKER_HEIGHT = 7
+        const val COIN_SIZE = 7
     }
 }

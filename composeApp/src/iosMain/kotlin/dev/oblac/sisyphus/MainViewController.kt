@@ -20,7 +20,7 @@ private class IosHaptics : Haptics {
     override fun tick() = generator.selectionChanged()
 }
 
-/** The Swift app holds one of these; it pauses the game when the app leaves the foreground. */
+/** The Swift app holds one of these; it pauses the game when the app leaves the foreground, and resumes it on return. */
 class SisyphusController {
     private val game = Game(DefaultsStore())
     private val haptics = IosHaptics()
@@ -29,7 +29,9 @@ class SisyphusController {
     fun viewController(): UIViewController = ComposeUIViewController { SisyphusApp(game, haptics, sound) }
 
     fun pause() {
-        game.save()
+        game.pause()
         sound.pause()
     }
+
+    fun resume() = game.resume()
 }

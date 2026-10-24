@@ -1,6 +1,9 @@
 package dev.oblac.sisyphus.ui
 
 import dev.oblac.sisyphus.game.Game
+import dev.oblac.sisyphus.game.ITEMS
+import dev.oblac.sisyphus.game.Line
+import dev.oblac.sisyphus.game.Shop
 import dev.oblac.sisyphus.game.QuoteBox
 import dev.oblac.sisyphus.gfx.PixelFont
 import dev.oblac.sisyphus.gfx.Pixels
@@ -12,10 +15,14 @@ import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.floor
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sin
 import kotlin.math.sqrt
 
 val BACKGROUND = rgb(0x17110D)
+
+/** Text and coins in the Agora that the obols cannot buy yet. */
+val DISABLED = rgb(0x5A5048)
 private val BACKGROUND_GRAIN = rgb(0x1D1611)
 private val OUTLINE = rgb(0x0A0705)
 private val TERRA = rgb(0xC8643C)
@@ -58,7 +65,22 @@ private val SPEAKER_OFF = listOf(
     "...#.......",
 )
 
-/** Draws everything around the display: the frame, the ornament, the wise words and the knob. */
+private val COIN = listOf(
+    "..###..",
+    ".#hhh#.",
+    "#hhfff#",
+    "#hffff#",
+    "#hfffs#",
+    ".#fss#.",
+    "..###..",
+)
+
+private val COIN_COLORS = mapOf('#' to BRONZE[1], 'h' to BRONZE[5], 'f' to BRONZE[4], 's' to BRONZE[3])
+private val COIN_GRAY = mapOf('#' to rgb(0x2E2924), 'h' to rgb(0x7A7068), 'f' to DISABLED, 's' to rgb(0x4A423A))
+
+private val LINE_TITLES = listOf("Rock", "Beside him", "On their own", "Blessings", "Beauty")
+
+/** Draws everything around the display: the frame, the ornament, the wise words, the knob and the Agora. */
 class UiRenderer {
     private var grain: Pixels? = null
 
@@ -127,6 +149,53 @@ class UiRenderer {
         val color = if (on) TERRA else TERRA_DARK
         for ((y, row) in (if (on) SPEAKER_ON else SPEAKER_OFF).withIndex()) {
             for ((x, ch) in row.withIndex()) if (ch == '#') px[r.x + x, r.y + y] = color
+        }
+    }
+
+    /** The obols: a coin and how many there are, outlined like the day across from them. */
+    fun coins(px: Pixels, r: Rect, obols: Int) {
+        val count = min(obols, 9999).toString()
+        val x = r.right - PixelFont.width(count)
+        PixelFont.drawOutlined(px, count, x, r.y, CREAM, SHADOW)
+        coin(px, x - 2 - Layout.COIN_SIZE, r.y, COIN_COLORS, outline = true)
+    }
+
+    /** The Agora: what the obols can buy next, line by line, and the sound setting. */
+    fun agora(px: Pixels, layout: Layout, shop: Shop, soundOn: Boolean) {
+        val t = layout.agoraTitle
+        PixelFont.draw(px, "Agora Market", t.x, t.y, CREAM)
+        px.hline(t.x, t.right - 1, t.bottom + 2, TERRA_DARK)
+        for (line in Line.entries) row(px, layout.agoraRow(line.ordinal), line, shop)
+        speaker(px, layout.agoraSound, soundOn)
+    }
+
+    private fun row(px: Pixels, r: Rect, line: Line, shop: Shop) {
+        val next = shop.next(line)
+        val item = next ?: ITEMS.last { it.line == line }
+        val bright = next == null || shop.obols >= next.price
+        PixelFont.draw(px, LINE_TITLES[line.ordinal], r.x, r.y, TERRA)
+        val y = r.y + PixelFont.LINE_HEIGHT
+        PixelFont.draw(px, item.name, r.x, y, if (bright) CREAM else DISABLED)
+        if (next != null) {
+            val price = next.price.toString()
+            coin(px, r.right - Layout.COIN_SIZE, y, if (bright) COIN_COLORS else COIN_GRAY)
+            PixelFont.draw(px, price, r.right - Layout.COIN_SIZE - 2 - PixelFont.width(price), y, if (bright) TERRA_LIGHT else DISABLED)
+        }
+        val noteY = y + PixelFont.LINE_HEIGHT
+        PixelFont.draw(px, item.note, r.x, noteY, if (bright) TERRA_LIGHT else DISABLED)
+        for (k in 0 until 3) {
+            val pip = Rect(r.right - 11 + k * 4, noteY + 2, 3, 3)
+            if (k < shop.tier(line)) px.fillRect(pip.x, pip.y, pip.w, pip.h, TERRA_LIGHT) else frame(px, pip, TERRA_DARK)
+        }
+    }
+
+    private fun coin(px: Pixels, x: Int, y: Int, colors: Map<Char, Int>, outline: Boolean = false) {
+        if (outline) for ((dy, row) in COIN.withIndex()) for ((dx, ch) in row.withIndex()) {
+            if (ch == '.') continue
+            for ((ox, oy) in listOf(-1 to 0, 1 to 0, 0 to -1, 0 to 1)) px[x + dx + ox, y + dy + oy] = SHADOW
+        }
+        for ((dy, row) in COIN.withIndex()) for ((dx, ch) in row.withIndex()) {
+            px[x + dx, y + dy] = colors[ch] ?: continue
         }
     }
 

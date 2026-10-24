@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import dev.oblac.sisyphus.audio.loadClick
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.ui.BACKGROUND
 
@@ -28,8 +29,7 @@ private const val BUSY_FRAME = 14_000_000L
 private const val IDLE_FRAME = 31_000_000L
 
 @Composable
-fun SisyphusApp(game: Game, haptics: Haptics = NoHaptics, sound: Sound = Silence) {
-    val screen = remember(game) { Screen(game) }
+fun SisyphusApp(game: Game, haptics: Haptics = NoHaptics, sound: Sound = Silence, screen: Screen = remember(game) { Screen(game) }) {
     val uploader = remember { frameUploader() }
     var frame by remember { mutableLongStateOf(0L) }
 
@@ -40,6 +40,8 @@ fun SisyphusApp(game: Game, haptics: Haptics = NoHaptics, sound: Sound = Silence
         }
         onDispose { game.onTick = {} }
     }
+
+    LaunchedEffect(sound) { sound.load(loadClick()) }
 
     LaunchedEffect(screen) {
         var last = 0L
@@ -72,6 +74,12 @@ fun SisyphusApp(game: Game, haptics: Haptics = NoHaptics, sound: Sound = Silence
                             down.consume()
                             haptics.tick()
                             if (game.soundOn) sound.click() else sound.pause()
+                            return@awaitEachGesture
+                        }
+                        Touch.SHOP, Touch.BUY -> {
+                            down.consume()
+                            haptics.tick()
+                            if (game.soundOn) sound.click()
                             return@awaitEachGesture
                         }
                         Touch.KNOB -> {

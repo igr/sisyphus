@@ -234,6 +234,15 @@ class QuoteBox(private val seed: Int, drawn: Int, firstTime: Boolean) {
         }
     }
 
+    /** Shows [quote] at once, typed from the start. It does not count as drawn, so the round goes on after it. */
+    fun announce(quote: Quote) {
+        this.quote = quote
+        phase = Phase.TYPING
+        typed = 0.0
+        fade = 0f
+        delay = 0.4
+    }
+
     private fun next(): Quote = quoteAt(drawn++)
 
     /** Every round shows each quote once, in a new order. */

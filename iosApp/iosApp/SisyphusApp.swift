@@ -14,7 +14,7 @@ struct SisyphusApp: App {
                 .persistentSystemOverlays(.hidden)
                 .preferredColorScheme(.dark)
                 .onChange(of: scenePhase) { phase in
-                    if phase != .active { controller.pause() }
+                    if phase == .active { controller.resume() } else { controller.pause() }
                 }
         }
     }

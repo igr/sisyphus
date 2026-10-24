@@ -3,9 +3,11 @@ package dev.oblac.sisyphus
 import dev.oblac.sisyphus.game.DAY_LENGTH
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.Knob
+import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.game.START_TIME
 import dev.oblac.sisyphus.game.Weather
+import dev.oblac.sisyphus.gfx.PixelFont
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.test.Test
@@ -138,5 +140,130 @@ class GameTest {
         game.save()
         assertEquals(game.effort, store.load("effort"))
         assertEquals(game.effort, Game(store, seed = 1).effort)
+    }
+
+    @Test
+    fun oneTurnEarnsItsShareOfAnObol() {
+        val game = Game(seed = 1)
+        game.turn(2 * PI)
+        assertEquals(1.0 / 720, game.shop.obols, 1e-4)
+    }
+
+    @Test
+    fun aStrongRockEarnsMoreButTheSunKeepsItsPace() {
+        val game = Game(MemoryStore(mapOf("shop.rock" to 3.0, "shop.beside" to 3.0)), seed = 1)
+        game.turn(2 * PI)
+        assertEquals(PX_PER_TURN * 1.5, game.effort, 0.5)
+        assertEquals(PX_PER_TURN * 1.5, game.position, 0.5)
+        assertEquals(6.0 / 720, game.shop.obols, 1e-3)
+    }
+
+    @Test
+    fun theShopIsSavedAndComesBack() {
+        val store = MemoryStore(mapOf("obols" to 5.0))
+        val game = Game(store, seed = 1, wall = { 0.0 })
+        assertTrue(game.buy(Line.ALONE))
+        val again = Game(store, seed = 1, wall = { 0.0 })
+        assertEquals(1, again.shop.tier(Line.ALONE))
+        assertEquals(4.0, again.shop.obols, 1e-9)
+    }
+
+    @Test
+    fun thanatosPushesTwentyFourTimesAnHour() {
+        val game = Game(MemoryStore(mapOf("shop.alone" to 3.0)), seed = 1, wall = { 0.0 })
+        repeat(3600) { game.update(1.0) }
+        assertEquals(24 * PX_PER_TURN, game.effort, 1e-6)
+        assertEquals(0.0, game.position)
+        assertEquals(24.0 / 720, game.shop.obols, 1e-9)
+    }
+
+    @Test
+    fun helpersWorkWhileTheAppIsClosed() {
+        var now = 1000.0
+        val store = MemoryStore(mapOf("shop.alone" to 3.0))
+        Game(store, seed = 1, wall = { now }).save()
+        now += 3 * 3600
+        val again = Game(store, seed = 1, wall = { now })
+        assertEquals(72 * PX_PER_TURN, again.effort, 1e-6)
+        assertEquals(72.0 / 720, again.shop.obols, 1e-9)
+        assertEquals("Thanatos pushed 72 times while you were away.", again.quotes.quote.text)
+        assertEquals("Hermes", again.quotes.quote.author)
+    }
+
+    @Test
+    fun oneTurnAwayIsTold() {
+        var now = 0.0
+        val store = MemoryStore(mapOf("shop.alone" to 3.0))
+        Game(store, seed = 1, wall = { now }).save()
+        now += 150.0
+        assertEquals("Thanatos pushed once while you were away.", Game(store, seed = 1, wall = { now }).quotes.quote.text)
+    }
+
+    @Test
+    fun helpersWorkWhileTheAppIsInTheBackground() {
+        var now = 0.0
+        val game = Game(MemoryStore(mapOf("shop.alone" to 1.0)), seed = 1, wall = { now })
+        game.pause()
+        now += 3600.0
+        game.resume()
+        game.resume()
+        assertEquals(6 * PX_PER_TURN, game.effort, 1e-6)
+    }
+
+    @Test
+    fun aSecondPauseKeepsTheFirstTime() {
+        var now = 0.0
+        val store = MemoryStore(mapOf("shop.alone" to 1.0))
+        val game = Game(store, seed = 1, wall = { now })
+        game.pause()
+        game.pause()
+        now += 3600.0
+        game.pause()
+        assertEquals(0.0, store.load("savedAt"))
+        game.resume()
+        assertEquals(6 * PX_PER_TURN, game.effort, 1e-6)
+    }
+
+    @Test
+    fun framesWhilePausedDoNotCountTwice() {
+        var now = 0.0
+        val game = Game(MemoryStore(mapOf("shop.alone" to 3.0)), seed = 1, wall = { now })
+        game.pause()
+        repeat(600) {
+            now += 1.0
+            game.update(1.0)
+        }
+        game.resume()
+        assertEquals(4 * PX_PER_TURN, game.effort, 1e-6)
+    }
+
+    @Test
+    fun anOldSaveWithoutATimeGetsNoAwayTime() {
+        val game = Game(MemoryStore(mapOf("effort" to 500.0, "shop.alone" to 3.0)), seed = 1, wall = { 1.0e9 })
+        assertEquals(500.0, game.effort)
+        assertEquals(0.0, game.shop.obols)
+    }
+
+    @Test
+    fun aClockMovedBackGivesNothing() {
+        var now = 5000.0
+        val store = MemoryStore(mapOf("shop.alone" to 3.0))
+        Game(store, seed = 1, wall = { now }).save()
+        now = 1000.0
+        assertEquals(0.0, Game(store, seed = 1, wall = { now }).effort)
+    }
+
+    @Test
+    fun aYearAwayStaysSane() {
+        var now = 0.0
+        val store = MemoryStore(mapOf("shop.alone" to 3.0, "shop.blessing" to 3.0))
+        Game(store, seed = 1, wall = { now }).save()
+        now += 365 * 24 * 3600.0
+        val game = Game(store, seed = 1, wall = { now })
+        assertEquals(24 * 24 * 365.0 / 216, game.shop.obols, 1e-6)
+        val q = game.quotes.quote
+        assertEquals("Hermes · 973 obols", q.author)
+        assertTrue(PixelFont.wrap(q.text, 119).size <= 3)
+        assertTrue(PixelFont.width("— ${q.author}") <= 119)
     }
 }

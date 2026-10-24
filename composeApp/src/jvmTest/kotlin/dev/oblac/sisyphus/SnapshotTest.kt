@@ -5,7 +5,7 @@ import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.START_TIME
 import dev.oblac.sisyphus.game.Weather
 import dev.oblac.sisyphus.audio.SAMPLE_RATE
-import dev.oblac.sisyphus.audio.click
+import dev.oblac.sisyphus.audio.loadClick
 import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.gfx.rgb
 import dev.oblac.sisyphus.scene.PROPS
@@ -20,6 +20,7 @@ import javax.sound.sampled.AudioFileFormat
 import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioInputStream
 import javax.sound.sampled.AudioSystem
+import kotlinx.coroutines.runBlocking
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
@@ -93,23 +94,30 @@ class SnapshotTest {
         val s = Screen(Game(MemoryStore(), seed = 3), seed = 5).apply { resize(1179, 2556, 177, 102) }
         s.idle(3.25)
         write(s.render(), "0-first-launch", 3)
+    }
+
+    @Test
+    fun agora() {
+        val store = MemoryStore(mapOf("effort" to effortAt(3, 0.4), "obols" to 3.0, "shop.rock" to 1.0, "shop.alone" to 1.0))
+        val s = Screen(Game(store, seed = 3), seed = 5).apply { resize(1179, 2556, 177, 102) }
+        s.idle(1.0)
         val l = s.layout!!
-        s.press((l.soundIcon.x + 2f) * s.scale + s.offsetX, (l.soundIcon.y + 2f) * s.scale + s.offsetY)
-        write(s.render(), "0-sound-off", 3)
+        s.press((l.coinIcon.x + 2f) * s.scale + s.offsetX, (l.coinIcon.y + 2f) * s.scale + s.offsetY)
+        write(s.render(), "8-agora", 3)
     }
 
     /** A slow turn of the knob, to listen to: afplay composeApp/build/snapshots/clicks.wav */
     @Test
     fun clicks() {
+        val wave = runBlocking { loadClick() }
         val gap = SAMPLE_RATE / 14
-        val sound = FloatArray(gap * 12)
-        for (k in 0 until 12) click(k).copyInto(sound, k * gap)
+        val sound = FloatArray(gap * 11 + wave.size)
+        for (k in 0 until 12) wave.forEachIndexed { i, s -> sound[k * gap + i] += s }
         val pcm = pcm16(sound)
         val format = AudioFormat(SAMPLE_RATE.toFloat(), 16, 1, true, false)
         AudioInputStream(ByteArrayInputStream(pcm), format, sound.size.toLong()).use {
             AudioSystem.write(it, AudioFileFormat.Type.WAVE, File(out, "clicks.wav"))
         }
-        val wave = click(0)
         val plot = Pixels(wave.size / 2, 101)
         plot.clear(rgb(0x101010))
         plot.hline(0, plot.width - 1, 50, rgb(0x404040))
@@ -155,6 +163,35 @@ class SnapshotTest {
         val px = Pixels(205, 100)
         SceneRenderer(geo).render(px, game, world, banner = 0.0, hud = false)
         write(px, "feature-graphic", 5, width = 1024)
+    }
+
+    /** The beauty items of the shop: a dolphin mid-leap, Pegasus flying by, the Pleiades at night. */
+    @Test
+    fun beauty() {
+        fun shot(time: Double, name: String, ready: (Screen) -> Boolean) {
+            val store = MemoryStore(mapOf("effort" to effortAt(1, time), "shop.beauty" to 3.0))
+            val s = Screen(Game(store, seed = 3), seed = 5).apply { resize(1179, 2556, 177, 102) }
+            var frames = 0
+            while (!ready(s) && frames++ < 3000) s.update(1 / 20.0)
+            write(s.render(), name, 3)
+        }
+        shot(0.32, "9-dolphins") { s -> s.world.dolphins.any { it.t in 0.5..0.7 } }
+        shot(0.5, "9-pegasus") { s -> s.world.pegasus?.let { it.x in 40.0..90.0 } == true }
+        shot(0.95, "9-pleiades") { s -> s.game.clock > 2.0 }
+    }
+
+    /** The four rocks of the shop, side by side: today's rock, the river stone, the pumice, the sphere of Daedalus. */
+    @Test
+    fun rockSheet() {
+        val geo = SceneGeometry(64, 64)
+        val sheet = Pixels(64 * 4, 64)
+        for (tier in 0..3) {
+            val game = Game(MemoryStore(mapOf("effort" to effortAt(1, 0.45), "position" to 962.0, "shop.rock" to tier.toDouble())), seed = 3)
+            val px = Pixels(64, 64)
+            SceneRenderer(geo).render(px, game, World(9).apply { reset(geo, Weather.CLEAR) }, banner = 0.0, hud = false)
+            sheet.draw(px, tier * 64, 0)
+        }
+        write(sheet, "rocks", 6)
     }
 
     @Test

@@ -1,6 +1,7 @@
 package dev.oblac.sisyphus.scene
 
 import dev.oblac.sisyphus.game.Game
+import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.gfx.PixelFont
 import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.gfx.bayer
@@ -42,6 +43,14 @@ private val ROCK = intArrayOf(
     rgb(0x3E3834), rgb(0x5A524A), rgb(0x7A7066), rgb(0x9A9084), rgb(0xBAB0A2), rgb(0xD6CEC0),
 )
 private val ROCK_OUTLINE = rgb(0x221C18)
+
+/** The rock for each tier of the shop: today's rock, the river stone, the pumice, the sphere of Daedalus. */
+private val ROCKS = listOf(
+    ROCK,
+    intArrayOf(rgb(0x353A3E), rgb(0x4E555A), rgb(0x6B7378), rgb(0x8C9498), rgb(0xAEB4B6), rgb(0xD2D6D6)),
+    intArrayOf(rgb(0x6E665C), rgb(0x8C8376), rgb(0xA89E8F), rgb(0xC2B8A8), rgb(0xD8CFC0), rgb(0xEDE6DA)),
+    intArrayOf(rgb(0x5C5248), rgb(0x80766A), rgb(0xA69C8E), rgb(0xC9C0B2), rgb(0xE6DED2), rgb(0xFFFFFF)),
+)
 private val MOSS = rgb(0x7E8A58)
 
 private val STAR = rgb(0xFFFFFF)
@@ -50,6 +59,9 @@ private val MOON = rgb(0xF2F0DE)
 private val MOON_SHADE = rgb(0xC8C6B2)
 private val TEXT = rgb(0xF1E4C8)
 private val TEXT_SHADOW = rgb(0x1A120C)
+
+/** The Pleiades, the seven sisters. The last one is Merope, the faintest: she married a mortal. */
+private val PLEIADES = listOf(0 to 0, 3 to -1, 5 to 1, 2 to 3, 6 to 4, 8 to 2, 4 to 6)
 
 private class Star(val x: Int, val y: Int, val threshold: Float, val bright: Boolean, val speed: Double, val phase: Double)
 
@@ -86,15 +98,18 @@ class SceneRenderer(private val geo: SceneGeometry) {
 
         drawSky(px, atm, sun, world.overcast)
         drawStars(px, atm, game.clock, world)
+        if (game.shop.tier(Line.BEAUTY) >= 3) drawPleiades(px, atm, game.clock)
         moon?.let { drawMoon(px, it, game.day, atm, world.overcast) }
         sun?.let { drawSun(px, it, game.clock, atm, world.overcast) }
         drawClouds(px, atm, world)
+        drawPegasus(px, world, game.clock, atm)
         drawIslands(px, atm, p)
         drawSea(px, atm, p, sun, moon, game.clock)
+        drawDolphins(px, world, atm)
         drawGround(px, atm, p)
         drawProps(px, atm, p)
         drawBirds(px, world, game.clock)
-        drawRock(px, atm, game.position)
+        drawRock(px, atm, game.position, game.shop.tier(Line.ROCK))
         drawHero(px, atm, game, p)
         drawParticles(px, world, atm)
         drawRain(px, world, atm)
@@ -152,6 +167,36 @@ class SceneRenderer(private val geo: SceneGeometry) {
             val x = floor(s.x - s.vx * f * 0.08).toInt()
             val y = floor(s.y - s.vy * f * 0.08).toInt()
             if (y < geo.horizon) px[x, y] = if (k < 2) STAR else STAR_DIM
+        }
+    }
+
+    private fun drawPleiades(px: Pixels, atm: Atmosphere, clock: Double) {
+        if (atm.stars <= 0.15f) return
+        val x0 = (geo.width * 0.7).toInt()
+        val y0 = (geo.horizon * 0.2).toInt()
+        PLEIADES.forEachIndexed { k, (dx, dy) ->
+            val merope = k == PLEIADES.size - 1
+            px[x0 + dx, y0 + dy] = if (merope || sin(clock * (2.0 + k) + k) > 0.65) STAR_DIM else STAR
+        }
+    }
+
+    private fun drawPegasus(px: Pixels, world: World, clock: Double, atm: Atmosphere) {
+        val p = world.pegasus ?: return
+        val up = sin((clock + p.flap) * 2 * PI * 3) > 0
+        px.draw(if (up) PEGASUS_UP else PEGASUS_DOWN, floor(p.x).toInt() - 7, floor(p.y).toInt() - 5, flipX = p.vx < 0, light = atm.light)
+    }
+
+    private fun drawDolphins(px: Pixels, world: World, atm: Atmosphere) {
+        for (d in world.dolphins) {
+            val f = d.t / LEAP_TIME
+            val x = d.x + d.dir * 8 * f
+            val y = geo.horizon + 2 - sin(PI * f) * 7
+            val frame = when {
+                f < 0.35 -> DOLPHIN_RISE
+                f < 0.65 -> DOLPHIN_TOP
+                else -> DOLPHIN_DIVE
+            }
+            px.draw(frame, floor(x).toInt() - 3, floor(y).toInt() - 2, flipX = d.dir < 0, light = atm.light)
         }
     }
 
@@ -309,8 +354,9 @@ class SceneRenderer(private val geo: SceneGeometry) {
         }
     }
 
-    private fun drawRock(px: Pixels, atm: Atmosphere, position: Double) {
-        for (i in ROCK.indices) rock[i] = shade(ROCK[i], atm.light)
+    private fun drawRock(px: Pixels, atm: Atmosphere, position: Double, tier: Int) {
+        val palette = ROCKS[tier.coerceIn(0, ROCKS.size - 1)]
+        for (i in palette.indices) rock[i] = shade(palette[i], atm.light)
         val outline = shade(ROCK_OUTLINE, atm.light)
         val moss = shade(MOSS, atm.light)
         val cx = geo.heroX + geo.rockDx
@@ -333,13 +379,22 @@ class SceneRenderer(private val geo: SceneGeometry) {
                 val l = (-0.5 * dx - 0.62 * dy) / r + 0.6 * nz
                 val u = dx * ca + dy * sa
                 val v = -dx * sa + dy * ca
-                val mark = rockMark(u, v)
+                if (tier == 3 && abs(dx + 0.38 * r) < 1 && abs(dy + 0.42 * r) < 1) {
+                    px[i, j] = rock[ROCK.size - 1]
+                    continue
+                }
+                val mark = when (tier) {
+                    0 -> rockMark(u, v)
+                    1 -> riverMark(u, v)
+                    2 -> pumiceMark(u, v)
+                    else -> 0
+                }
                 if (mark == MOSS_MARK) {
                     px[i, j] = moss
                     continue
                 }
                 val tone = ((l + 1) * 2.6 + bayer(i, j) - 0.5).toInt() + mark
-                px[i, j] = rock[tone.coerceIn(0, ROCK.size - 1)]
+                px[i, j] = rock[tone.coerceIn(0, if (tier == 3) ROCK.size - 2 else ROCK.size - 1)]
             }
         }
     }
@@ -354,6 +409,16 @@ class SceneRenderer(private val geo: SceneGeometry) {
         if (near(-0.5, -1.5, 1.6)) return 1
         return 0
     }
+
+    /** The river wore the rock smooth: two soft spots are all that is left. */
+    private fun riverMark(u: Double, v: Double): Int {
+        fun near(x: Double, y: Double, r: Double) = (u - x) * (u - x) + (v - y) * (v - y) < r * r
+        return if (near(-3.5, 2.5, 2.4) || near(3.0, -3.0, 2.0)) -1 else 0
+    }
+
+    /** Pumice is full of small holes, about one pixel in nine. */
+    private fun pumiceMark(u: Double, v: Double): Int =
+        if ((hash(floor(u).toInt(), floor(v).toInt(), 71) and 0xFF) < 28) -3 else 0
 
     private fun crack(u: Double, v: Double): Boolean {
         for (k in 0 until CRACK.size - 2 step 2) {

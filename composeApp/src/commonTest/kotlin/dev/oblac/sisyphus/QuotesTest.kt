@@ -2,6 +2,7 @@ package dev.oblac.sisyphus
 
 import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.game.QUOTES
+import dev.oblac.sisyphus.game.Quote
 import dev.oblac.sisyphus.game.QuoteBox
 import dev.oblac.sisyphus.game.TUTORIAL
 import dev.oblac.sisyphus.gfx.PixelFont
@@ -57,6 +58,16 @@ class QuotesTest {
     fun aRoundShowsEveryQuoteOnce() {
         val round = (1..QUOTES.size).map { QuoteBox(seed = 7, drawn = it, firstTime = false).quote }
         assertEquals(QUOTES.toSet(), round.toSet())
+    }
+
+    @Test
+    fun anAnnouncementComesFirstAndTheRoundGoesOn() {
+        val box = QuoteBox(seed = 3, drawn = 5, firstTime = false)
+        box.announce(Quote("A goat pushed 6 times while you were away.", "Hermes"))
+        assertEquals("A goat pushed 6 times while you were away.", box.quote.text)
+        assertEquals(QuoteBox.Phase.TYPING, box.phase)
+        assertEquals(0.0, box.typed)
+        assertEquals(5, box.drawn)
     }
 
     @Test

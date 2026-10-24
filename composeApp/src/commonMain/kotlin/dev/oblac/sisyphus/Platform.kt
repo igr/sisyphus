@@ -2,6 +2,7 @@ package dev.oblac.sisyphus
 
 import androidx.compose.ui.graphics.ImageBitmap
 import dev.oblac.sisyphus.gfx.Pixels
+import kotlin.time.Clock
 
 interface Store {
     fun load(key: String): Double?
@@ -26,6 +27,8 @@ object NoHaptics : Haptics {
 }
 
 interface Sound {
+    /** Takes the knob click, as mono samples at 44.1 kHz. Until then the knob is silent. */
+    fun load(click: FloatArray) {}
     /** Called when a finger touches the knob, before the first click. */
     fun prepare() {}
     fun click()
@@ -43,3 +46,6 @@ fun interface FrameUploader {
 }
 
 expect fun frameUploader(): FrameUploader
+
+/** Seconds since 1970, from the device clock. */
+fun wallSeconds(): Double = Clock.System.now().toEpochMilliseconds() / 1000.0
