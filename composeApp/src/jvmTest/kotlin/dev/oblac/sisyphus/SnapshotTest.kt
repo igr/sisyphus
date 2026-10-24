@@ -98,7 +98,7 @@ class SnapshotTest {
 
     @Test
     fun agora() {
-        val store = MemoryStore(mapOf("effort" to effortAt(3, 0.4), "obols" to 3.0, "shop.rock" to 1.0, "shop.alone" to 1.0))
+        val store = MemoryStore(mapOf("effort" to effortAt(3, 0.4), "obols" to 3.0, "shop.rock" to 1.0, "shop.alone" to 3.0))
         val s = Screen(Game(store, seed = 3), seed = 5).apply { resize(1179, 2556, 177, 102) }
         s.idle(1.0)
         val l = s.layout!!

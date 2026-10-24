@@ -75,6 +75,16 @@ private val COIN = listOf(
     "..###..",
 )
 
+/** Takes the place of the coin when a line is all bought. */
+private val CHECK = listOf(
+    "......#",
+    ".....##",
+    "#...##.",
+    "##.##..",
+    ".###...",
+    "..#....",
+)
+
 private val COIN_COLORS = mapOf('#' to BRONZE[1], 'h' to BRONZE[5], 'f' to BRONZE[4], 's' to BRONZE[3])
 private val COIN_GRAY = mapOf('#' to rgb(0x2E2924), 'h' to rgb(0x7A7068), 'f' to DISABLED, 's' to rgb(0x4A423A))
 
@@ -180,6 +190,10 @@ class UiRenderer {
             val price = next.price.toString()
             coin(px, r.right - Layout.COIN_SIZE, y, if (bright) COIN_COLORS else COIN_GRAY)
             PixelFont.draw(px, price, r.right - Layout.COIN_SIZE - 2 - PixelFont.width(price), y, if (bright) TERRA_LIGHT else DISABLED)
+        } else {
+            for ((dy, row) in CHECK.withIndex()) for ((dx, ch) in row.withIndex()) {
+                if (ch == '#') px[r.right - Layout.COIN_SIZE + dx, y + 1 + dy] = TERRA_LIGHT
+            }
         }
         val noteY = y + PixelFont.LINE_HEIGHT
         PixelFont.draw(px, item.note, r.x, noteY, TERRA_LIGHT)

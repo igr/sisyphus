@@ -5,6 +5,7 @@ import dev.oblac.sisyphus.game.ITEMS
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.gfx.PixelFont
+import dev.oblac.sisyphus.ui.Layout
 import dev.oblac.sisyphus.ui.Rect
 import kotlin.math.cos
 import kotlin.math.sin
@@ -113,6 +114,22 @@ class ScreenTest {
         assertEquals(rich["rest"], poor["rest"])
         assertNotEquals(rich["price"], poor["price"])
         assertNotEquals(rich["squares"], poor["squares"])
+    }
+
+    @Test
+    fun aFinishedLineShowsACheckWhereTheCoinWas() {
+        val s = screen(MemoryStore(mapOf("shop.rock" to 3.0)))
+        val l = s.layout!!
+        s.tap(l.coinIcon)
+        val px = s.render()
+        val r = l.agoraRow(Line.ROCK.ordinal)
+        val nameY = r.y + PixelFont.LINE_HEIGHT
+        /** Bright pixels on the name line, from [from] to [to] pixels left of the row's right edge. */
+        fun drawn(from: Int, to: Int) = (nameY until nameY + Layout.COIN_SIZE).sumOf { y ->
+            (r.right - from until r.right - to).count { x -> (px[x, y] shr 8 and 0xFF) > 0x60 }
+        }
+        assertTrue(drawn(Layout.COIN_SIZE, 0) > 5)
+        assertEquals(0, drawn(20, Layout.COIN_SIZE))
     }
 
     @Test
