@@ -22,6 +22,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import dev.oblac.sisyphus.audio.loadClick
+import dev.oblac.sisyphus.audio.loadUi
 import dev.oblac.sisyphus.audio.loadWin
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.ui.BACKGROUND
@@ -37,12 +38,12 @@ fun SisyphusApp(game: Game, haptics: Haptics = NoHaptics, sound: Sound = Silence
     DisposableEffect(game, haptics, sound) {
         game.onTick = {
             haptics.tick()
-            if (game.soundOn) sound.click()
+            sound.tick(game.soundOn)
         }
         onDispose { game.onTick = {} }
     }
 
-    LaunchedEffect(sound) { sound.load(loadClick(), loadWin()) }
+    LaunchedEffect(sound) { sound.load(loadClick(), loadUi(), loadWin()) }
 
     LaunchedEffect(screen) {
         var last = 0L
@@ -69,29 +70,15 @@ fun SisyphusApp(game: Game, haptics: Haptics = NoHaptics, sound: Sound = Silence
             .pointerInput(screen) {
                 awaitEachGesture {
                     val down = awaitFirstDown()
-                    when (screen.press(down.position.x, down.position.y)) {
+                    val touch = screen.press(down.position.x, down.position.y)
+                    sound.play(touch, game.soundOn)
+                    when (touch) {
                         Touch.NONE -> return@awaitEachGesture
-                        Touch.SOUND -> {
+                        Touch.KNOB -> haptics.prepare()
+                        else -> {
                             down.consume()
                             haptics.tick()
-                            if (game.soundOn) sound.click() else sound.pause()
                             return@awaitEachGesture
-                        }
-                        Touch.BUY -> {
-                            down.consume()
-                            haptics.tick()
-                            if (game.soundOn) sound.win()
-                            return@awaitEachGesture
-                        }
-                        Touch.SHOP, Touch.DEV, Touch.HELP -> {
-                            down.consume()
-                            haptics.tick()
-                            if (game.soundOn) sound.click()
-                            return@awaitEachGesture
-                        }
-                        Touch.KNOB -> {
-                            haptics.prepare()
-                            if (game.soundOn) sound.prepare()
                         }
                     }
                     down.consume()

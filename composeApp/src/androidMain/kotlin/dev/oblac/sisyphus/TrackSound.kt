@@ -7,19 +7,22 @@ import dev.oblac.sisyphus.audio.SAMPLE_RATE
 
 /**
  * Plays the knob click: three short tracks take turns, each restarted at a detent.
- * The sound of buying has a track of its own. Without audio it stays silent.
+ * The click of every other tap and the sound of buying have a track each. Without audio it stays silent.
  */
 internal class TrackSound : Sound {
     private var tracks: List<AudioTrack> = emptyList()
+    private var uiTrack: AudioTrack? = null
     private var winTrack: AudioTrack? = null
     private var next = 0
 
-    override fun load(click: FloatArray, win: FloatArray) {
+    override fun load(click: FloatArray, ui: FloatArray, win: FloatArray) {
         try {
             tracks = List(3) { track(click) }.filter { it.state == AudioTrack.STATE_INITIALIZED }
+            uiTrack = track(ui).takeIf { it.state == AudioTrack.STATE_INITIALIZED }
             winTrack = track(win).takeIf { it.state == AudioTrack.STATE_INITIALIZED }
         } catch (e: Exception) {
             tracks = emptyList()
+            uiTrack = null
             winTrack = null
         }
     }
@@ -29,12 +32,17 @@ internal class TrackSound : Sound {
         tracks[next++ % tracks.size].restart()
     }
 
+    override fun ui() {
+        uiTrack?.restart()
+    }
+
     override fun win() {
         winTrack?.restart()
     }
 
     fun release() {
         tracks.forEach { it.release() }
+        uiTrack?.release()
         winTrack?.release()
     }
 

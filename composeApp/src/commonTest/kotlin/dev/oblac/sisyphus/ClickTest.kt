@@ -1,9 +1,12 @@
 package dev.oblac.sisyphus
 
 import dev.oblac.sisyphus.audio.readWav
+import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 /** A WAV file with one PCM data chunk: [values] of all [channels], one frame after the other. */
 private fun wav(bits: Int, channels: Int, vararg values: Int, rate: Int = 44100): ByteArray {
@@ -44,8 +47,14 @@ class ClickTest {
     }
 
     @Test
+    fun readsOtherRatesAtTheGamesRate() {
+        val samples = readWav(wav(16, 1, *IntArray(480) { 16384 }, rate = 48000))
+        assertEquals(441, samples.size)
+        assertTrue(samples.all { abs(it - 0.5f) < 1e-6f })
+    }
+
+    @Test
     fun refusesWhatItCannotPlay() {
         assertFailsWith<IllegalArgumentException> { readWav(wav(8, 1, 100)) }
-        assertFailsWith<IllegalArgumentException> { readWav(wav(16, 1, 100, rate = 48000)) }
     }
 }

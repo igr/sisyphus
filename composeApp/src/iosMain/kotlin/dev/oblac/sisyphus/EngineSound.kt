@@ -14,7 +14,7 @@ import platform.AVFAudio.AVAudioSessionCategoryAmbient
 import platform.AVFAudio.setPreferredIOBufferDuration
 
 /**
- * Plays the knob click. The ambient session mixes with other apps' music
+ * Plays the knob click, the click of every other tap and the sound of buying. The ambient session mixes with other apps' music
  * and stays quiet when the phone is on silent.
  */
 @OptIn(ExperimentalForeignApi::class)
@@ -22,8 +22,11 @@ internal class EngineSound : Sound {
     private val engine = AVAudioEngine()
     private val format = AVAudioFormat(standardFormatWithSampleRate = SAMPLE_RATE.toDouble(), channels = 1u)
     private val players = List(3) { AVAudioPlayerNode() }
+    private val uiPlayer = AVAudioPlayerNode()
     private val winPlayer = AVAudioPlayerNode()
+    private val nodes = players + uiPlayer + winPlayer
     private var clickBuffer: AVAudioPCMBuffer? = null
+    private var uiBuffer: AVAudioPCMBuffer? = null
     private var winBuffer: AVAudioPCMBuffer? = null
     private var next = 0
 
@@ -31,14 +34,15 @@ internal class EngineSound : Sound {
         val session = AVAudioSession.sharedInstance()
         session.setCategory(AVAudioSessionCategoryAmbient, error = null)
         session.setPreferredIOBufferDuration(0.008, error = null)
-        for (player in players + winPlayer) {
+        for (player in nodes) {
             engine.attachNode(player)
             engine.connect(player, to = engine.mainMixerNode, format = format)
         }
     }
 
-    override fun load(click: FloatArray, win: FloatArray) {
+    override fun load(click: FloatArray, ui: FloatArray, win: FloatArray) {
         clickBuffer = buffer(click)
+        uiBuffer = buffer(ui)
         winBuffer = buffer(win)
     }
 
@@ -53,6 +57,12 @@ internal class EngineSound : Sound {
         player.scheduleBuffer(buffer, atTime = null, options = AVAudioPlayerNodeBufferInterrupts, completionHandler = null)
     }
 
+    override fun ui() {
+        val buffer = uiBuffer ?: return
+        if (!start()) return
+        uiPlayer.scheduleBuffer(buffer, atTime = null, options = AVAudioPlayerNodeBufferInterrupts, completionHandler = null)
+    }
+
     override fun win() {
         val buffer = winBuffer ?: return
         if (!start()) return
@@ -65,7 +75,7 @@ internal class EngineSound : Sound {
 
     private fun start(): Boolean {
         if (!engine.running && !engine.startAndReturnError(null)) return false
-        for (player in players + winPlayer) if (!player.playing) player.play()
+        for (player in nodes) if (!player.playing) player.play()
         return true
     }
 

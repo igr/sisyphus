@@ -5,18 +5,21 @@ import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.Clip
 
-/** Plays the knob click and the sound of buying on desktop. Without an audio device it stays silent. */
+/** Plays the knob click, the click of every other tap and the sound of buying on desktop. Without an audio device it stays silent. */
 internal class ClipSound : Sound {
     private var clips: List<Clip> = emptyList()
+    private var uiClip: Clip? = null
     private var winClip: Clip? = null
     private var next = 0
 
-    override fun load(click: FloatArray, win: FloatArray) {
+    override fun load(click: FloatArray, ui: FloatArray, win: FloatArray) {
         try {
             clips = List(6) { clip(click) }
+            uiClip = clip(ui)
             winClip = clip(win)
         } catch (e: Exception) {
             clips = emptyList()
+            uiClip = null
             winClip = null
         }
     }
@@ -24,6 +27,10 @@ internal class ClipSound : Sound {
     override fun click() {
         if (clips.isEmpty()) return
         clips[next++ % clips.size].restart()
+    }
+
+    override fun ui() {
+        uiClip?.restart()
     }
 
     override fun win() {

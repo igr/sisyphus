@@ -8,11 +8,14 @@ const val SAMPLE_RATE = 44100
 /** The knob click, from composeResources/files/click.wav. */
 suspend fun loadClick(): FloatArray = readWav(Res.readBytes("files/click.wav"))
 
+/** The click of every other tap: menus, buttons, the help. From composeResources/files/ui-click.wav. */
+suspend fun loadUi(): FloatArray = readWav(Res.readBytes("files/ui-click.wav"))
+
 /** The sound of buying in the Agora, from composeResources/files/instant-win.wav. */
 suspend fun loadWin(): FloatArray = readWav(Res.readBytes("files/instant-win.wav"))
 
 /**
- * Reads a WAV file of 44.1 kHz PCM, 16 or 24 bits, as mono samples in [-1, 1].
+ * Reads a WAV file of PCM, 16 or 24 bits, as mono samples in [-1, 1] at [SAMPLE_RATE].
  * The quiet before and after the sound is cut off, so the sound plays at once.
  */
 fun readWav(bytes: ByteArray): FloatArray {
@@ -21,15 +24,16 @@ fun readWav(bytes: ByteArray): FloatArray {
 
     require(id(0) == "RIFF" && id(8) == "WAVE") { "Not a WAV file" }
     var channels = 1
+    var rate = SAMPLE_RATE
     var bits = 16
     var at = 12
     while (id(at) != "data") {
         if (id(at) == "fmt ") {
             val tag = int(at + 8, 2)
             channels = int(at + 10, 2)
+            rate = int(at + 12, 4)
             bits = int(at + 22, 2)
             require((tag == 1 || tag == 0xFFFE) && (bits == 16 || bits == 24)) { "The WAV file must be 16 or 24 bit PCM" }
-            require(int(at + 12, 4) == SAMPLE_RATE) { "The WAV file must be 44.1 kHz" }
         }
         val size = int(at + 4, 4)
         at += 8 + size + size % 2
@@ -43,5 +47,14 @@ fun readWav(bytes: ByteArray): FloatArray {
         sum / channels
     }
     val quiet = mono.maxOf { abs(it) } / 100
-    return mono.copyOfRange(mono.indexOfFirst { abs(it) >= quiet }, mono.indexOfLast { abs(it) >= quiet } + 1)
+    val sound = mono.copyOfRange(mono.indexOfFirst { abs(it) >= quiet }, mono.indexOfLast { abs(it) >= quiet } + 1)
+    return if (rate == SAMPLE_RATE) sound else resample(sound, rate)
+}
+
+/** From [rate] to [SAMPLE_RATE], each new sample on the line between its two old neighbours. */
+private fun resample(samples: FloatArray, rate: Int) = FloatArray((samples.size.toLong() * SAMPLE_RATE / rate).toInt()) {
+    val t = it.toDouble() * rate / SAMPLE_RATE
+    val k = t.toInt()
+    val f = (t - k).toFloat()
+    samples[k] * (1 - f) + samples[minOf(k + 1, samples.size - 1)] * f
 }

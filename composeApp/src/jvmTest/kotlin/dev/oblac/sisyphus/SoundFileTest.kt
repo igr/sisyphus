@@ -2,6 +2,7 @@ package dev.oblac.sisyphus
 
 import dev.oblac.sisyphus.audio.SAMPLE_RATE
 import dev.oblac.sisyphus.audio.loadClick
+import dev.oblac.sisyphus.audio.loadUi
 import dev.oblac.sisyphus.audio.loadWin
 import kotlinx.coroutines.runBlocking
 import kotlin.math.abs
@@ -13,6 +14,12 @@ class SoundFileTest {
     fun theClickFilePlaysAtOnce() {
         val click = runBlocking { loadClick() }
         assertTrue(click.take(SAMPLE_RATE / 1000).any { abs(it) > 0.01f })
+    }
+
+    @Test
+    fun theUiClickPlaysAtOnce() {
+        val ui = runBlocking { loadUi() }
+        assertTrue(ui.take(SAMPLE_RATE / 1000).any { abs(it) > 0.01f })
     }
 
     @Test
