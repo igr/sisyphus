@@ -22,6 +22,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import dev.oblac.sisyphus.audio.loadClick
+import dev.oblac.sisyphus.audio.loadWin
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.ui.BACKGROUND
 
@@ -41,7 +42,7 @@ fun SisyphusApp(game: Game, haptics: Haptics = NoHaptics, sound: Sound = Silence
         onDispose { game.onTick = {} }
     }
 
-    LaunchedEffect(sound) { sound.load(loadClick()) }
+    LaunchedEffect(sound) { sound.load(loadClick(), loadWin()) }
 
     LaunchedEffect(screen) {
         var last = 0L
@@ -76,7 +77,13 @@ fun SisyphusApp(game: Game, haptics: Haptics = NoHaptics, sound: Sound = Silence
                             if (game.soundOn) sound.click() else sound.pause()
                             return@awaitEachGesture
                         }
-                        Touch.SHOP, Touch.BUY, Touch.DEV, Touch.HELP -> {
+                        Touch.BUY -> {
+                            down.consume()
+                            haptics.tick()
+                            if (game.soundOn) sound.win()
+                            return@awaitEachGesture
+                        }
+                        Touch.SHOP, Touch.DEV, Touch.HELP -> {
                             down.consume()
                             haptics.tick()
                             if (game.soundOn) sound.click()

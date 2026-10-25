@@ -8,6 +8,9 @@ const val SAMPLE_RATE = 44100
 /** The knob click, from composeResources/files/click.wav. */
 suspend fun loadClick(): FloatArray = readWav(Res.readBytes("files/click.wav"))
 
+/** The sound of buying in the Agora, from composeResources/files/instant-win.wav. */
+suspend fun loadWin(): FloatArray = readWav(Res.readBytes("files/instant-win.wav"))
+
 /**
  * Reads a WAV file of 44.1 kHz PCM, 16 or 24 bits, as mono samples in [-1, 1].
  * The quiet before and after the sound is cut off, so the sound plays at once.

@@ -60,6 +60,21 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     /** In the dev screen, the button that empties the shop, below the "Shop" title. */
     val devReset = agoraRow(1).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("Reset") + 8, BUTTON_HEIGHT) }
 
+    private val offerHeight = 5 + OFFER_ICON + 5 + PixelFont.LINE_HEIGHT + 3 + OFFER_LINES * PixelFont.LINE_HEIGHT +
+        4 + PixelFont.LINE_HEIGHT + 4 + BUTTON_HEIGHT + 5
+
+    /** The offer: a window over the Agora that shows an item and asks whether to buy it. */
+    val offer = Rect(agoraTitle.x, agoraTitle.bottom + (agoraSound.y - agoraTitle.bottom - offerHeight) / 2, agoraTitle.w, offerHeight)
+
+    /** In the offer, the item's picture at twice its size. */
+    val offerIcon = Rect(offer.x + (offer.w - OFFER_ICON) / 2, offer.y + 5, OFFER_ICON, OFFER_ICON)
+
+    /** In the offer, the room for the item's details, below its name. */
+    val offerText = Rect(offer.x + 5, offerIcon.bottom + 5 + PixelFont.LINE_HEIGHT + 3, offer.w - 10, OFFER_LINES * PixelFont.LINE_HEIGHT)
+
+    val offerYes = Rect(offer.x + offer.w / 2 - 4 - OFFER_BUTTON, offer.bottom - 5 - BUTTON_HEIGHT, OFFER_BUTTON, BUTTON_HEIGHT)
+    val offerNo = Rect(offer.x + offer.w / 2 + 4, offerYes.y, OFFER_BUTTON, BUTTON_HEIGHT)
+
     val knobX: Int
     val knobY: Int
     val knobR: Int
@@ -79,6 +94,9 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
         const val SPEAKER_HEIGHT = 7
         const val COIN_SIZE = 7
         const val BUTTON_HEIGHT = 13
+        const val OFFER_ICON = 32
+        const val OFFER_LINES = 6
+        const val OFFER_BUTTON = 30
     }
 }
 

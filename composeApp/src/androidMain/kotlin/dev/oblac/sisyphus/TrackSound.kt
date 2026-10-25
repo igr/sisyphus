@@ -5,28 +5,44 @@ import android.media.AudioFormat
 import android.media.AudioTrack
 import dev.oblac.sisyphus.audio.SAMPLE_RATE
 
-/** Plays the knob click: three short tracks take turns, each restarted at a detent. Without audio it stays silent. */
+/**
+ * Plays the knob click: three short tracks take turns, each restarted at a detent.
+ * The sound of buying has a track of its own. Without audio it stays silent.
+ */
 internal class TrackSound : Sound {
     private var tracks: List<AudioTrack> = emptyList()
+    private var winTrack: AudioTrack? = null
     private var next = 0
 
-    override fun load(click: FloatArray) {
-        tracks = try {
-            List(3) { track(click) }.filter { it.state == AudioTrack.STATE_INITIALIZED }
+    override fun load(click: FloatArray, win: FloatArray) {
+        try {
+            tracks = List(3) { track(click) }.filter { it.state == AudioTrack.STATE_INITIALIZED }
+            winTrack = track(win).takeIf { it.state == AudioTrack.STATE_INITIALIZED }
         } catch (e: Exception) {
-            emptyList()
+            tracks = emptyList()
+            winTrack = null
         }
     }
 
     override fun click() {
         if (tracks.isEmpty()) return
-        val track = tracks[next++ % tracks.size]
-        track.stop()
-        track.reloadStaticData()
-        track.play()
+        tracks[next++ % tracks.size].restart()
     }
 
-    fun release() = tracks.forEach { it.release() }
+    override fun win() {
+        winTrack?.restart()
+    }
+
+    fun release() {
+        tracks.forEach { it.release() }
+        winTrack?.release()
+    }
+
+    private fun AudioTrack.restart() {
+        stop()
+        reloadStaticData()
+        play()
+    }
 
     private fun track(samples: FloatArray): AudioTrack {
         val attributes = AudioAttributes.Builder()

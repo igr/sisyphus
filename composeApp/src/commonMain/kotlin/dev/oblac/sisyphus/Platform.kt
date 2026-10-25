@@ -27,11 +27,13 @@ object NoHaptics : Haptics {
 }
 
 interface Sound {
-    /** Takes the knob click, as mono samples at 44.1 kHz. Until then the knob is silent. */
-    fun load(click: FloatArray) {}
+    /** Takes the knob click and the sound of buying, as mono samples at 44.1 kHz. Until then all is silent. */
+    fun load(click: FloatArray, win: FloatArray) {}
     /** Called when a finger touches the knob, before the first click. */
     fun prepare() {}
     fun click()
+    /** Plays when something is bought in the Agora. */
+    fun win() {}
     /** Releases the audio hardware until the next click. */
     fun pause() {}
 }

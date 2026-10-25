@@ -2,6 +2,7 @@ package dev.oblac.sisyphus.ui
 
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.ITEMS
+import dev.oblac.sisyphus.game.Item
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.Shop
 import dev.oblac.sisyphus.game.QuoteBox
@@ -65,7 +66,7 @@ private val SPEAKER_OFF = listOf(
     "...#.......",
 )
 
-private val COIN = listOf(
+internal val COIN = listOf(
     "..###..",
     ".#hhh#.",
     "#hhfff#",
@@ -85,7 +86,7 @@ private val CHECK = listOf(
     "..#....",
 )
 
-private val COIN_COLORS = mapOf('#' to BRONZE[1], 'h' to BRONZE[5], 'f' to BRONZE[4], 's' to BRONZE[3])
+internal val COIN_COLORS = mapOf('#' to BRONZE[1], 'h' to BRONZE[5], 'f' to BRONZE[4], 's' to BRONZE[3])
 private val COIN_GRAY = mapOf('#' to rgb(0x2E2924), 'h' to rgb(0x7A7068), 'f' to DISABLED, 's' to rgb(0x4A423A))
 
 /** A color at a third of its light, for what the help does not point at. */
@@ -233,6 +234,29 @@ class UiRenderer {
         px.hline(t.x, t.right - 1, t.bottom + 2, TERRA_DARK)
         if (dev) devScreen(px, layout) else for (line in Line.entries) row(px, layout.agoraRow(line.ordinal), line, shop)
         speaker(px, layout.agoraSound, soundOn)
+    }
+
+    /** The offer over the Agora: the item's picture, name and details, its price, and Yes and No. */
+    fun offer(px: Pixels, layout: Layout, item: Item) {
+        for (y in 0 until px.height) for (x in 0 until px.width) px[x, y] = dim(px[x, y])
+        val r = layout.offer
+        px.fillRect(r.x, r.y, r.w, r.h, BACKGROUND)
+        frame(px, r, TERRA)
+        val icon = layout.offerIcon
+        px.drawScaled(itemIcon(item), icon.x, icon.y, 2)
+        PixelFont.draw(px, item.name, r.x + (r.w - PixelFont.width(item.name)) / 2, icon.bottom + 5, CREAM)
+        val text = layout.offerText
+        for ((i, line) in PixelFont.wrap(item.details, text.w).withIndex()) {
+            PixelFont.draw(px, line, text.x, text.y + i * PixelFont.LINE_HEIGHT, TERRA_LIGHT)
+        }
+        val ask = "Buy for ${item.price}"
+        val x = r.x + (r.w - PixelFont.width(ask) - 3 - Layout.COIN_SIZE - PixelFont.width("?")) / 2
+        val y = text.bottom + 4
+        PixelFont.draw(px, ask, x, y, CREAM)
+        coin(px, x + PixelFont.width(ask) + 2, y, COIN_COLORS)
+        PixelFont.draw(px, "?", x + PixelFont.width(ask) + 3 + Layout.COIN_SIZE, y, CREAM)
+        button(px, layout.offerYes, "Yes")
+        button(px, layout.offerNo, "No")
     }
 
     /** In dev builds only: buttons that add or take away obols, and one that resets the shop. */

@@ -5,14 +5,17 @@ import dev.oblac.sisyphus.game.ITEMS
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.gfx.PixelFont
+import dev.oblac.sisyphus.gfx.TRANSPARENT
 import dev.oblac.sisyphus.ui.Layout
 import dev.oblac.sisyphus.ui.Rect
+import dev.oblac.sisyphus.ui.itemIcon
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ScreenTest {
@@ -269,22 +272,84 @@ class ScreenTest {
     }
 
     @Test
-    fun tappingARowBuysTheNextItem() {
-        val s = screen(MemoryStore(mapOf("obols" to 2.0)))
+    fun tappingAnItemAsksFirst() {
+        val s = screen(MemoryStore(mapOf("obols" to 10.0)))
         val l = s.layout!!
         s.tap(l.coinIcon)
-        assertEquals(Touch.BUY, s.tap(l.agoraRow(Line.ALONE.ordinal)))
-        assertEquals(1, s.game.shop.tier(Line.ALONE))
-        assertEquals(1.0, s.game.shop.obols, 1e-9)
+        assertEquals(Touch.SHOP, s.tap(l.agoraRow(Line.ROCK.ordinal)))
+        assertEquals(Line.ROCK, s.offer)
+        assertEquals(0, s.game.shop.tier(Line.ROCK))
+        assertEquals(10.0, s.game.shop.obols)
     }
 
     @Test
-    fun oneTapBuysOneItem() {
+    fun yesBuysTheNextItem() {
+        val s = screen(MemoryStore(mapOf("obols" to 2.0)))
+        val l = s.layout!!
+        s.tap(l.coinIcon)
+        s.tap(l.agoraRow(Line.ALONE.ordinal))
+        assertEquals(Touch.BUY, s.tap(l.offerYes))
+        assertEquals(1, s.game.shop.tier(Line.ALONE))
+        assertEquals(1.0, s.game.shop.obols, 1e-9)
+        assertNull(s.offer)
+    }
+
+    @Test
+    fun oneYesBuysOneItem() {
         val s = screen(MemoryStore(mapOf("obols" to 100.0)))
         val l = s.layout!!
         s.tap(l.coinIcon)
         s.tap(l.agoraRow(Line.ROCK.ordinal))
+        s.tap(l.offerYes)
         assertEquals(1, s.game.shop.tier(Line.ROCK))
+    }
+
+    @Test
+    fun noOrATapOutsideKeepsTheObols() {
+        val s = screen(MemoryStore(mapOf("obols" to 10.0)))
+        val l = s.layout!!
+        s.tap(l.coinIcon)
+        s.tap(l.agoraRow(Line.ROCK.ordinal))
+        assertEquals(Touch.SHOP, s.tap(l.offerNo))
+        assertNull(s.offer)
+        s.tap(l.agoraRow(Line.ROCK.ordinal))
+        assertEquals(Touch.SHOP, s.tap(l.agoraTitle))
+        assertNull(s.offer)
+        assertEquals(0, s.game.shop.tier(Line.ROCK))
+        assertEquals(10.0, s.game.shop.obols)
+        assertTrue(s.agoraOpen)
+    }
+
+    @Test
+    fun backClosesTheOfferFirst() {
+        val s = screen(MemoryStore(mapOf("obols" to 10.0)))
+        val l = s.layout!!
+        s.tap(l.coinIcon)
+        s.tap(l.agoraRow(Line.ROCK.ordinal))
+        assertTrue(s.back())
+        assertNull(s.offer)
+        assertTrue(s.agoraOpen)
+    }
+
+    @Test
+    fun everyOfferFitsTheSmallestPhone() {
+        val l = smallest().layout!!
+        for (item in ITEMS) {
+            assertTrue(PixelFont.width(item.name) <= l.offerText.w, item.name)
+            assertTrue(PixelFont.wrap(item.details, l.offerText.w).size * PixelFont.LINE_HEIGHT <= l.offerText.h, item.name)
+        }
+        assertTrue(l.offer.y >= l.agoraTitle.bottom && l.offer.bottom <= l.agoraSound.y)
+        assertTrue(l.offerYes.bottom <= l.offer.bottom && l.offerNo.right <= l.offer.right)
+    }
+
+    @Test
+    fun everyItemHasAnIcon() {
+        for (item in ITEMS) {
+            val icon = itemIcon(item)
+            assertEquals(16, icon.width, item.name)
+            assertEquals(16, icon.height, item.name)
+            assertTrue((0 until 16).sumOf { y -> (0 until 16).count { x -> icon[x, y] != TRANSPARENT } } > 20, item.name)
+        }
     }
 
     @Test

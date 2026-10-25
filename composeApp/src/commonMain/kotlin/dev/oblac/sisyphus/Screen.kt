@@ -47,6 +47,9 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
     /** In dev builds, tapping the Agora's title shows the dev screen in its place: it sets the obols and resets the shop. */
     var devOpen = false
         private set
+    /** The line whose next item the Agora offers in a window, asking Yes or No before it is bought. */
+    var offer: Line? = null
+        private set
     /** The help lies over the main screen and points at the day, the obols and the knob. Any touch closes it. */
     var helpOpen = false
         private set
@@ -95,6 +98,7 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
         ui.background(pixels)
         if (agoraOpen) {
             ui.agora(pixels, l, game.shop, game.soundOn, devOpen)
+            offer?.let { game.shop.next(it) }?.let { ui.offer(pixels, l, it) }
         } else {
             renderer.render(scene, game, world, banner)
             pixels.draw(scene, l.scene.x, l.scene.y)
@@ -121,9 +125,20 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
         if (l.coinIcon.near(x, y, TOUCH_SLOP)) {
             agoraOpen = !agoraOpen
             devOpen = false
+            offer = null
             return Touch.SHOP
         }
         if (agoraOpen) {
+            val offered = offer
+            if (offered != null) {
+                if (l.offerYes.near(x, y, 0)) {
+                    offer = null
+                    return if (game.buy(offered)) Touch.BUY else Touch.NONE
+                }
+                if (l.offer.near(x, y, 0) && !l.offerNo.near(x, y, 0)) return Touch.NONE
+                offer = null
+                return Touch.SHOP
+            }
             if (l.agoraSound.near(x, y, TOUCH_SLOP)) {
                 game.toggleSound()
                 return Touch.SOUND
@@ -142,7 +157,11 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
                 return Touch.DEV
             }
             val row = Line.entries.indices.firstOrNull { l.agoraRow(it).near(x, y, 0) } ?: return Touch.NONE
-            return if (game.buy(Line.entries[row])) Touch.BUY else Touch.NONE
+            val line = Line.entries[row]
+            val item = game.shop.next(line) ?: return Touch.NONE
+            if (game.shop.obols < item.price) return Touch.NONE
+            offer = line
+            return Touch.SHOP
         }
         if (l.helpIcon.near(x, y, TOUCH_SLOP)) {
             helpOpen = true
@@ -164,10 +183,14 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
 
     fun release() = game.knob.release()
 
-    /** Back closes the help or the Agora. Tells whether there was something to close. */
+    /** Back closes the help, the offer or the Agora. Tells whether there was something to close. */
     fun back(): Boolean {
         if (helpOpen) {
             helpOpen = false
+            return true
+        }
+        if (offer != null) {
+            offer = null
             return true
         }
         if (!agoraOpen) return false

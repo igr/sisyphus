@@ -9,6 +9,7 @@ import dev.oblac.sisyphus.gfx.hash
 import dev.oblac.sisyphus.gfx.hash01
 import dev.oblac.sisyphus.gfx.lerpColor
 import dev.oblac.sisyphus.gfx.rgb
+import dev.oblac.sisyphus.gfx.WHITE
 import dev.oblac.sisyphus.gfx.shade
 import kotlin.math.PI
 import kotlin.math.abs
@@ -61,7 +62,7 @@ private val TEXT = rgb(0xF1E4C8)
 private val TEXT_SHADOW = rgb(0x1A120C)
 
 /** The Pleiades, the seven sisters. The last one is Merope, the faintest: she married a mortal. */
-private val PLEIADES = listOf(0 to 0, 3 to -1, 5 to 1, 2 to 3, 6 to 4, 8 to 2, 4 to 6)
+internal val PLEIADES = listOf(0 to 0, 3 to -1, 5 to 1, 2 to 3, 6 to 4, 8 to 2, 4 to 6)
 
 private class Star(val x: Int, val y: Int, val threshold: Float, val bright: Boolean, val speed: Double, val phase: Double)
 
@@ -77,7 +78,6 @@ class SceneRenderer(private val geo: SceneGeometry) {
     private val hero = HeroSprites(geo.rockDx, geo.rockDy, geo.rockR)
     private val skyLevels = IntArray(SKY_LEVELS + 1)
     private val ground = IntArray(GROUND.size)
-    private val rock = IntArray(ROCK.size)
     private val stars = List(geo.width * geo.horizon / 150) { i ->
         Star(
             x = (hash01(i, 1, 11) * geo.width).toInt(),
@@ -354,87 +354,8 @@ class SceneRenderer(private val geo: SceneGeometry) {
         }
     }
 
-    private fun drawRock(px: Pixels, atm: Atmosphere, position: Double, tier: Int) {
-        val palette = ROCKS[tier.coerceIn(0, ROCKS.size - 1)]
-        for (i in palette.indices) rock[i] = shade(palette[i], atm.light)
-        val outline = shade(ROCK_OUTLINE, atm.light)
-        val moss = shade(MOSS, atm.light)
-        val cx = geo.heroX + geo.rockDx
-        val cy = geo.baseY + geo.rockDy
-        val r = geo.rockR
-        val angle = position / r
-        val ca = cos(angle)
-        val sa = sin(angle)
-        for (j in floor(cy - r).toInt()..ceil(cy + r).toInt()) {
-            for (i in floor(cx - r).toInt()..ceil(cx + r).toInt()) {
-                val dx = i + 0.5 - cx
-                val dy = j + 0.5 - cy
-                val d2 = dx * dx + dy * dy
-                if (d2 > r * r) continue
-                if (sqrt(d2) > r - 1.0) {
-                    px[i, j] = outline
-                    continue
-                }
-                val nz = sqrt(max(0.0, 1 - d2 / (r * r)))
-                val l = (-0.5 * dx - 0.62 * dy) / r + 0.6 * nz
-                val u = dx * ca + dy * sa
-                val v = -dx * sa + dy * ca
-                if (tier == 3 && abs(dx + 0.38 * r) < 1 && abs(dy + 0.42 * r) < 1) {
-                    px[i, j] = rock[ROCK.size - 1]
-                    continue
-                }
-                val mark = when (tier) {
-                    0 -> rockMark(u, v)
-                    1 -> riverMark(u, v)
-                    2 -> pumiceMark(u, v)
-                    else -> 0
-                }
-                if (mark == MOSS_MARK) {
-                    px[i, j] = moss
-                    continue
-                }
-                val tone = ((l + 1) * 2.6 + bayer(i, j) - 0.5).toInt() + mark
-                px[i, j] = rock[tone.coerceIn(0, if (tier == 3) ROCK.size - 2 else ROCK.size - 1)]
-            }
-        }
-    }
-
-    /** Spots and a crack painted on the rock, in rock coordinates, so they roll with it. */
-    private fun rockMark(u: Double, v: Double): Int {
-        fun near(x: Double, y: Double, r: Double) = (u - x) * (u - x) + (v - y) * (v - y) < r * r
-        if (crack(u, v)) return -3
-        if (near(-4.0, 2.5, 1.2)) return -2
-        if (near(-4.0, 2.5, 2.6) || near(3.5, -3.0, 2.2) || near(1.0, 5.5, 1.6) || near(-2.5, -6.0, 1.3)) return -1
-        if (near(5.2, 3.6, 1.5)) return MOSS_MARK
-        if (near(-0.5, -1.5, 1.6)) return 1
-        return 0
-    }
-
-    /** The river wore the rock smooth: two soft spots are all that is left. */
-    private fun riverMark(u: Double, v: Double): Int {
-        fun near(x: Double, y: Double, r: Double) = (u - x) * (u - x) + (v - y) * (v - y) < r * r
-        return if (near(-3.5, 2.5, 2.4) || near(3.0, -3.0, 2.0)) -1 else 0
-    }
-
-    /** Pumice is full of small holes, about one pixel in nine. */
-    private fun pumiceMark(u: Double, v: Double): Int =
-        if ((hash(floor(u).toInt(), floor(v).toInt(), 71) and 0xFF) < 28) -3 else 0
-
-    private fun crack(u: Double, v: Double): Boolean {
-        for (k in 0 until CRACK.size - 2 step 2) {
-            val x0 = CRACK[k]
-            val y0 = CRACK[k + 1]
-            val x1 = CRACK[k + 2]
-            val y1 = CRACK[k + 3]
-            val vx = x1 - x0
-            val vy = y1 - y0
-            val t = (((u - x0) * vx + (v - y0) * vy) / (vx * vx + vy * vy)).coerceIn(0.0, 1.0)
-            val ex = u - x0 - vx * t
-            val ey = v - y0 - vy * t
-            if (ex * ex + ey * ey < 0.36) return true
-        }
-        return false
-    }
+    private fun drawRock(px: Pixels, atm: Atmosphere, position: Double, tier: Int) =
+        paintRock(px, geo.heroX + geo.rockDx, geo.baseY + geo.rockDy, geo.rockR, position / geo.rockR, tier, atm.light)
 
     private fun drawHero(px: Pixels, atm: Atmosphere, game: Game, p: Int) {
         val frame = if (game.stillFor > 0.5) hero.idle[if (sin(game.clock * 2.2) > 0.2) 1 else 0]
@@ -484,8 +405,89 @@ class SceneRenderer(private val geo: SceneGeometry) {
         px[floor(x).toInt(), floor(y).toInt()] = c
     }
 
-    private companion object {
-        const val MOSS_MARK = 99
-        val CRACK = doubleArrayOf(-6.5, -2.0, -2.0, -0.5, 0.5, 2.0, 4.0, 2.8)
+}
+
+private const val MOSS_MARK = 99
+private val CRACK = doubleArrayOf(-6.5, -2.0, -2.0, -0.5, 0.5, 2.0, 4.0, 2.8)
+
+/** The rock of the shop's [tier], alone in daylight: its picture in the Agora. */
+fun rockIcon(tier: Int): Pixels = Pixels(16, 16).also { paintRock(it, 8.0, 8.0, 7.5, 0.0, tier, WHITE) }
+
+/** Paints the rock of the shop's [tier] around ([cx], [cy]), turned by [angle] and lit by [light]. */
+private fun paintRock(px: Pixels, cx: Double, cy: Double, r: Double, angle: Double, tier: Int, light: Int) {
+    val palette = ROCKS[tier.coerceIn(0, ROCKS.size - 1)]
+    val rock = IntArray(palette.size) { shade(palette[it], light) }
+    val outline = shade(ROCK_OUTLINE, light)
+    val moss = shade(MOSS, light)
+    val ca = cos(angle)
+    val sa = sin(angle)
+    for (j in floor(cy - r).toInt()..ceil(cy + r).toInt()) {
+        for (i in floor(cx - r).toInt()..ceil(cx + r).toInt()) {
+            val dx = i + 0.5 - cx
+            val dy = j + 0.5 - cy
+            val d2 = dx * dx + dy * dy
+            if (d2 > r * r) continue
+            if (sqrt(d2) > r - 1.0) {
+                px[i, j] = outline
+                continue
+            }
+            val nz = sqrt(max(0.0, 1 - d2 / (r * r)))
+            val l = (-0.5 * dx - 0.62 * dy) / r + 0.6 * nz
+            val u = dx * ca + dy * sa
+            val v = -dx * sa + dy * ca
+            if (tier == 3 && abs(dx + 0.38 * r) < 1 && abs(dy + 0.42 * r) < 1) {
+                px[i, j] = rock[ROCK.size - 1]
+                continue
+            }
+            val mark = when (tier) {
+                0 -> rockMark(u, v)
+                1 -> riverMark(u, v)
+                2 -> pumiceMark(u, v)
+                else -> 0
+            }
+            if (mark == MOSS_MARK) {
+                px[i, j] = moss
+                continue
+            }
+            val tone = ((l + 1) * 2.6 + bayer(i, j) - 0.5).toInt() + mark
+            px[i, j] = rock[tone.coerceIn(0, if (tier == 3) ROCK.size - 2 else ROCK.size - 1)]
+        }
     }
+}
+
+/** Spots and a crack painted on the rock, in rock coordinates, so they roll with it. */
+private fun rockMark(u: Double, v: Double): Int {
+    fun near(x: Double, y: Double, r: Double) = (u - x) * (u - x) + (v - y) * (v - y) < r * r
+    if (crack(u, v)) return -3
+    if (near(-4.0, 2.5, 1.2)) return -2
+    if (near(-4.0, 2.5, 2.6) || near(3.5, -3.0, 2.2) || near(1.0, 5.5, 1.6) || near(-2.5, -6.0, 1.3)) return -1
+    if (near(5.2, 3.6, 1.5)) return MOSS_MARK
+    if (near(-0.5, -1.5, 1.6)) return 1
+    return 0
+}
+
+/** The river wore the rock smooth: two soft spots are all that is left. */
+private fun riverMark(u: Double, v: Double): Int {
+    fun near(x: Double, y: Double, r: Double) = (u - x) * (u - x) + (v - y) * (v - y) < r * r
+    return if (near(-3.5, 2.5, 2.4) || near(3.0, -3.0, 2.0)) -1 else 0
+}
+
+/** Pumice is full of small holes, about one pixel in nine. */
+private fun pumiceMark(u: Double, v: Double): Int =
+    if ((hash(floor(u).toInt(), floor(v).toInt(), 71) and 0xFF) < 28) -3 else 0
+
+private fun crack(u: Double, v: Double): Boolean {
+    for (k in 0 until CRACK.size - 2 step 2) {
+        val x0 = CRACK[k]
+        val y0 = CRACK[k + 1]
+        val x1 = CRACK[k + 2]
+        val y1 = CRACK[k + 3]
+        val vx = x1 - x0
+        val vy = y1 - y0
+        val t = (((u - x0) * vx + (v - y0) * vy) / (vx * vx + vy * vy)).coerceIn(0.0, 1.0)
+        val ex = u - x0 - vx * t
+        val ey = v - y0 - vy * t
+        if (ex * ex + ey * ey < 0.36) return true
+    }
+    return false
 }

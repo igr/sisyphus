@@ -142,6 +142,14 @@ class Pixels(val width: Int, val height: Int) {
         }
     }
 
+    /** Copies [src] at ([x], [y]), each of its opaque pixels as a [scale] x [scale] square. */
+    fun drawScaled(src: Pixels, x: Int, y: Int, scale: Int) {
+        for (sy in 0 until src.height) for (sx in 0 until src.width) {
+            val c = src[sx, sy]
+            if (c != TRANSPARENT) fillRect(x + sx * scale, y + sy * scale, scale, scale, c)
+        }
+    }
+
     /** A copy grown by one pixel on each side, with a [color] outline around the opaque pixels. */
     fun outlined(color: Int): Pixels {
         val out = Pixels(width + 2, height + 2)

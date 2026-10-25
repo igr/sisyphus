@@ -1,6 +1,7 @@
 package dev.oblac.sisyphus
 
 import dev.oblac.sisyphus.game.DAY_LENGTH
+import dev.oblac.sisyphus.game.ITEMS
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.START_TIME
 import dev.oblac.sisyphus.game.Weather
@@ -12,6 +13,8 @@ import dev.oblac.sisyphus.scene.PROPS
 import dev.oblac.sisyphus.scene.SceneGeometry
 import dev.oblac.sisyphus.scene.SceneRenderer
 import dev.oblac.sisyphus.scene.World
+import dev.oblac.sisyphus.ui.Rect
+import dev.oblac.sisyphus.ui.itemIcon
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.File
@@ -106,6 +109,29 @@ class SnapshotTest {
         write(s.render(), "8-agora", 3)
         s.press((l.agoraTitle.x + 2f) * s.scale + s.offsetX, (l.agoraTitle.y + 2f) * s.scale + s.offsetY)
         write(s.render(), "8-dev", 3)
+    }
+
+    /** The offer for the river stone, on a big phone and on the narrowest one. */
+    @Test
+    fun offer() {
+        for ((name, size) in listOf("8-offer" to listOf(1179, 2556, 177, 102), "8-offer-small" to listOf(1080, 2340, 144, 102))) {
+            val s = Screen(Game(MemoryStore(mapOf("effort" to effortAt(3, 0.4), "obols" to 12.0)), seed = 3), seed = 5)
+            s.resize(size[0], size[1], size[2], size[3])
+            val l = s.layout!!
+            fun tap(r: Rect) = s.press((r.x + r.w / 2f) * s.scale + s.offsetX, (r.y + r.h / 2f) * s.scale + s.offsetY)
+            tap(l.coinIcon)
+            tap(l.agoraRow(0))
+            write(s.render(), name, 3)
+        }
+    }
+
+    /** The pictures of all 15 items, a line per row, at the size the offer shows them. */
+    @Test
+    fun iconSheet() {
+        val sheet = Pixels(3 * 36 + 2, 5 * 36 + 2)
+        sheet.clear(rgb(0x17110D))
+        for (item in ITEMS) sheet.drawScaled(itemIcon(item), 2 + (item.tier - 1) * 36, 2 + item.line.ordinal * 36, 2)
+        write(sheet, "icons", 4)
     }
 
     /** The help over the main screen, on a big phone and on the narrowest one. */
