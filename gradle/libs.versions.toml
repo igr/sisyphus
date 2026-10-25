@@ -19,3 +19,4 @@ androidMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library",
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+playPublisher = { id = "com.github.triplet.play", version = "4.1.1" }
