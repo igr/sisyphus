@@ -343,6 +343,27 @@ class ScreenTest {
     }
 
     @Test
+    fun theHelpersStandSideBySideInTheDisplaysBottomRightCorner() {
+        val helpers = ITEMS.filter { it.line == Line.BESIDE || it.line == Line.ALONE }
+        /** The names of the helpers shown in the corner, and in the place next to it. */
+        fun shown(sidekick: Int, god: Int): List<List<String>> {
+            val s = screen(MemoryStore(mapOf("shop.beside" to sidekick.toDouble(), "shop.alone" to god.toDouble())))
+            val px = s.render()
+            return (0..1).map { slot ->
+                val r = s.layout!!.helper(slot)
+                helpers.filter { item ->
+                    val icon = itemIcon(item)
+                    (0 until 16).all { y -> (0 until 16).all { x -> icon[x, y] == TRANSPARENT || px[r.x + 1 + x, r.y + 1 + y] == icon[x, y] } }
+                }.map { it.name }
+            }
+        }
+        assertEquals(listOf(listOf(), listOf()), shown(0, 0))
+        assertEquals(listOf(listOf("Bellerophon"), listOf()), shown(2, 0))
+        assertEquals(listOf(listOf("Amalthea"), listOf()), shown(0, 1))
+        assertEquals(listOf(listOf("Thanatos"), listOf("Heracles")), shown(3, 3))
+    }
+
+    @Test
     fun everyItemHasAnIcon() {
         for (item in ITEMS) {
             val icon = itemIcon(item)

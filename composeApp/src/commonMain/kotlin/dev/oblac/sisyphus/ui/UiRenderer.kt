@@ -97,6 +97,7 @@ private val LINE_TITLES = listOf("Rock", "Sidekicks", "Gods", "Blessings", "Beau
 /** Draws everything around the display: the frame, the ornament, the wise words, the knob and the Agora. */
 class UiRenderer {
     private var grain: Pixels? = null
+    private val outlined = mutableMapOf<Item, Pixels>()
 
     fun background(px: Pixels) {
         val g = grain?.takeIf { it.width == px.width && it.height == px.height } ?: Pixels(px.width, px.height).also {
@@ -173,6 +174,9 @@ class UiRenderer {
         PixelFont.drawOutlined(px, count, x, r.y, CREAM, SHADOW)
         coin(px, x - 2 - Layout.COIN_SIZE, r.y, COIN_COLORS, outline = true)
     }
+
+    /** A helper bought in the Agora, with a dark outline, so it shows on any ground. */
+    fun helper(px: Pixels, r: Rect, item: Item) = px.draw(outlined.getOrPut(item) { itemIcon(item).outlined(SHADOW) }, r.x, r.y)
 
     fun helpButton(px: Pixels, r: Rect) = PixelFont.draw(px, "(?)", r.x, r.y, TERRA)
 

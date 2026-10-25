@@ -34,6 +34,9 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
 
     val agoraTitle = Rect(left + 2, coinIcon.y, coinIcon.right - left - 2, PixelFont.LINE_HEIGHT)
 
+    /** In the display's bottom-right corner, the helpers bought so far, outlined: [slot] 0 is the corner, 1 is next to it. */
+    fun helper(slot: Int) = Rect(scene.right - 3 - (slot + 1) * HELPER - slot * 2, scene.bottom - 3 - HELPER, HELPER, HELPER)
+
     /** In the bottom-left corner of the main screen, "(?)" opens the help. */
     val helpIcon = Rect(left + 2, bottom - SPEAKER_HEIGHT - 1, PixelFont.width("(?)"), PixelFont.CAP_HEIGHT)
 
@@ -97,6 +100,7 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
         const val OFFER_ICON = 32
         const val OFFER_LINES = 6
         const val OFFER_BUTTON = 30
+        const val HELPER = 18
     }
 }
 

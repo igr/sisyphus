@@ -86,5 +86,6 @@ class Shop(tiers: Map<Line, Int> = emptyMap(), obols: Double = 0.0) {
         for (line in Line.entries) tiers[line] = 0
     }
 
-    private fun owned(line: Line): Item? = ITEMS.firstOrNull { it.line == line && it.tier == tier(line) }
+    /** The newest item bought in [line], the one that sets its effect; null before the first. */
+    fun owned(line: Line): Item? = ITEMS.firstOrNull { it.line == line && it.tier == tier(line) }
 }

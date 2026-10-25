@@ -103,6 +103,8 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
             renderer.render(scene, game, world, banner)
             pixels.draw(scene, l.scene.x, l.scene.y)
             ui.bezel(pixels, l.display)
+            val helpers = listOfNotNull(game.shop.owned(Line.BESIDE), game.shop.owned(Line.ALONE))
+            helpers.forEachIndexed { i, item -> ui.helper(pixels, l.helper(helpers.size - 1 - i), item) }
             ui.band(pixels, l.band)
             ui.quote(pixels, l.quote, game.quotes, game.clock)
             ui.knob(pixels, l, game)

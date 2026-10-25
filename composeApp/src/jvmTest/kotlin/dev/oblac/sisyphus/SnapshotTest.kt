@@ -125,6 +125,15 @@ class SnapshotTest {
         }
     }
 
+    /** Merope and Amalthea, the first sidekick and the first god, in the display's bottom-right corner. */
+    @Test
+    fun helpers() {
+        val store = MemoryStore(mapOf("effort" to effortAt(2, 0.45), "shop.beside" to 1.0, "shop.alone" to 1.0))
+        val s = Screen(Game(store, seed = 3), seed = 5).apply { resize(1179, 2556, 177, 102) }
+        s.idle(1.0)
+        write(s.render(), "9-helpers", 3)
+    }
+
     /** The pictures of all 15 items, a line per row, at the size the offer shows them. */
     @Test
     fun iconSheet() {
