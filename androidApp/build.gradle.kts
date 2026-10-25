@@ -22,6 +22,8 @@ android {
         // `just beta` passes the commit count, so each upload is higher than the last.
         versionCode = providers.gradleProperty("versionCode").orNull?.toInt() ?: 1
         versionName = "1.2"
+        // `just beta` builds show the dev screen, like debug builds; store releases do not.
+        buildConfigField("boolean", "BETA", providers.gradleProperty("beta").isPresent.toString())
     }
     signingConfigs {
         if (keystore != null) create("upload") {
@@ -39,7 +41,10 @@ android {
             signingConfig = signingConfigs.findByName("upload")
         }
     }
-    buildFeatures { compose = true }
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

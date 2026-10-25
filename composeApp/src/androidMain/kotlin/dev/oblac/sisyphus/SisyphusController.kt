@@ -1,7 +1,6 @@
 package dev.oblac.sisyphus
 
 import android.content.Context
-import android.content.pm.ApplicationInfo
 import android.view.HapticFeedbackConstants
 import android.view.View
 import androidx.compose.runtime.Composable
@@ -19,12 +18,15 @@ private class ViewHaptics(private val view: View) : Haptics {
     }
 }
 
-/** The activity holds one of these; it pauses the game when the app leaves the foreground, and resumes it on return. */
-class SisyphusController(context: Context, view: View) {
+/**
+ * The activity holds one of these; it pauses the game when the app leaves the foreground, and resumes it on return.
+ * Debug and beta builds pass [dev], which adds the dev screen to the Agora.
+ */
+class SisyphusController(context: Context, view: View, dev: Boolean) {
     private val game = Game(PrefsStore(context))
     private val haptics = ViewHaptics(view)
     private val sound = TrackSound()
-    private val screen = Screen(game, dev = context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0)
+    private val screen = Screen(game, dev = dev)
 
     @Composable
     fun Content() = SisyphusApp(game, haptics, sound, screen)

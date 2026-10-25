@@ -1,17 +1,17 @@
 import SwiftUI
 import ComposeApp
 
-/// Debug builds (Run in Xcode) get the dev screen; Release builds (Archive) never do.
-#if DEBUG
-private let isDebug = true
+/// Debug builds (Run in Xcode) and `just beta` builds get the dev screen; `just release` builds never do.
+#if DEBUG || BETA
+private let showDev = true
 #else
-private let isDebug = false
+private let showDev = false
 #endif
 
 @main
 struct SisyphusApp: App {
     @Environment(\.scenePhase) private var scenePhase
-    private let controller = SisyphusController(dev: isDebug)
+    private let controller = SisyphusController(dev: showDev)
 
     var body: some Scene {
         WindowGroup {

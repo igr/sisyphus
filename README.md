@@ -17,8 +17,12 @@ Website, support and privacy policy: https://igr.github.io/sisyphus/ (from the `
   The Google Play bundle: `./gradlew :androidApp:bundleRelease` (see `playstore/listing.md`).
 - Desktop window on a Mac, for quick checks: `just run` (or `./gradlew :composeApp:run`)
 - Test builds: `just beta` uploads the current commit to Google Play internal testing and to TestFlight
-  (`just beta-android`, `just beta-ios` for one of them). Commit first: the build number is the commit count.
+  (`just beta-android`, `just beta-ios` for one of them). These builds have the dev screen.
+  Commit first: the build number is the commit count, so every upload needs its own commit.
   Android needs the Play service account key in `~/.android/sisyphus-play.json`; iOS uses the account signed in to Xcode.
+- Store releases: `just release` uploads the current commit without the dev screen: a production draft on Google Play
+  (roll it out in Play Console) and a build in App Store Connect (submit it for review there).
+  Never send a test build to the stores: do not promote internal builds to production, or submit TestFlight builds from `just beta`.
 - Dev screen: in debug builds (Run in Xcode, `installDebug`, `just run`), tap the "Agora Market" title
   to add or take away obols, or to reset the shop. Release builds do not have it.
 - Tests: `./gradlew :composeApp:jvmTest`. The tests also write PNG snapshots and `clicks.wav`
