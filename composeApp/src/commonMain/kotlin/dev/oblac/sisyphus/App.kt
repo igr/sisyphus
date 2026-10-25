@@ -76,7 +76,7 @@ fun SisyphusApp(game: Game, haptics: Haptics = NoHaptics, sound: Sound = Silence
                             if (game.soundOn) sound.click() else sound.pause()
                             return@awaitEachGesture
                         }
-                        Touch.SHOP, Touch.BUY, Touch.DEV -> {
+                        Touch.SHOP, Touch.BUY, Touch.DEV, Touch.HELP -> {
                             down.consume()
                             haptics.tick()
                             if (game.soundOn) sound.click()

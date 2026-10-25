@@ -34,6 +34,12 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
 
     val agoraTitle = Rect(left + 2, coinIcon.y, coinIcon.right - left - 2, PixelFont.LINE_HEIGHT)
 
+    /** In the bottom-left corner of the main screen, "(?)" opens the help. */
+    val helpIcon = Rect(left + 2, bottom - SPEAKER_HEIGHT - 1, PixelFont.width("(?)"), PixelFont.CAP_HEIGHT)
+
+    /** Where the scene draws "DAY n" in its top-left corner, outline included. */
+    fun dayLabel(day: Int) = Rect(scene.x + 3, scene.y + 3, PixelFont.width("DAY $day") + 2, PixelFont.CAP_HEIGHT + 2)
+
     /** In the Agora, the speaker in the bottom-right corner turns the sound on and off. */
     val agoraSound = Rect(coinIcon.right - SPEAKER_WIDTH, bottom - SPEAKER_HEIGHT - 1, SPEAKER_WIDTH, SPEAKER_HEIGHT)
 

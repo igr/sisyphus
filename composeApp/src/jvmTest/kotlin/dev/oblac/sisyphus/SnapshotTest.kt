@@ -108,6 +108,19 @@ class SnapshotTest {
         write(s.render(), "8-dev", 3)
     }
 
+    /** The help over the main screen, on a big phone and on the narrowest one. */
+    @Test
+    fun help() {
+        for ((name, size) in listOf("0-help" to listOf(1179, 2556, 177, 102), "0-help-small" to listOf(1080, 2340, 144, 102))) {
+            val s = Screen(Game(MemoryStore(mapOf("effort" to effortAt(2, 0.45), "obols" to 12.0)), seed = 3), seed = 5)
+            s.resize(size[0], size[1], size[2], size[3])
+            s.idle(1.0)
+            val l = s.layout!!
+            s.press((l.helpIcon.x + 2f) * s.scale + s.offsetX, (l.helpIcon.y + 2f) * s.scale + s.offsetY)
+            write(s.render(), name, 3)
+        }
+    }
+
     /** A slow turn of the knob, to listen to: afplay composeApp/build/snapshots/clicks.wav */
     @Test
     fun clicks() {

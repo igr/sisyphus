@@ -200,6 +200,53 @@ class ScreenTest {
     }
 
     @Test
+    fun theHelpOpensFromTheCornerAndAnyTapClosesIt() {
+        val s = screen()
+        val l = s.layout!!
+        assertEquals(Touch.HELP, s.tap(l.helpIcon))
+        assertTrue(s.helpOpen)
+        assertEquals(Touch.HELP, s.tap(l.knobX + l.knobR * 0.6f, l.knobY + 0.5f))
+        assertFalse(s.helpOpen)
+        assertFalse(s.game.knob.held)
+    }
+
+    @Test
+    fun theHelpIsNotInTheAgora() {
+        val s = screen()
+        val l = s.layout!!
+        s.tap(l.coinIcon)
+        assertEquals(Touch.NONE, s.tap(l.helpIcon))
+        assertFalse(s.helpOpen)
+    }
+
+    @Test
+    fun backClosesTheHelp() {
+        val s = screen()
+        s.tap(s.layout!!.helpIcon)
+        assertTrue(s.back())
+        assertFalse(s.helpOpen)
+        assertFalse(s.back())
+    }
+
+    @Test
+    fun theHelpDimsAllButTheDayTheObolsAndTheKnob() {
+        val s = screen(MemoryStore(mapOf("obols" to 12.0)))
+        val l = s.layout!!
+        fun shot() = s.render().let { px -> List(px.height) { y -> List(px.width) { x -> px[x, y] } } }
+        val plain = shot()
+        s.tap(l.helpIcon)
+        val help = shot()
+        fun pixels(shot: List<List<Int>>, r: Rect) = (r.y until r.bottom).flatMap { y -> (r.x until r.right).map { x -> shot[y][x] } }
+        fun light(c: Int) = (c shr 16 and 0xFF) + (c shr 8 and 0xFF) + (c and 0xFF)
+        for (text in listOf(l.dayLabel(s.game.day), l.coinIcon)) {
+            assertEquals(pixels(plain, text).maxOf(::light), pixels(help, text).maxOf(::light))
+        }
+        val knob = Rect(l.knobX - 8, l.knobY - 8, 16, 16)
+        assertEquals(pixels(plain, knob), pixels(help, knob))
+        assertTrue(pixels(help, l.band).sumOf(::light) < pixels(plain, l.band).sumOf(::light) / 2)
+    }
+
+    @Test
     fun backClosesTheAgora() {
         val s = screen()
         assertFalse(s.back())

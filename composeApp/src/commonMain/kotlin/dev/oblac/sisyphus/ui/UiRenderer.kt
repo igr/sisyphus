@@ -88,6 +88,9 @@ private val CHECK = listOf(
 private val COIN_COLORS = mapOf('#' to BRONZE[1], 'h' to BRONZE[5], 'f' to BRONZE[4], 's' to BRONZE[3])
 private val COIN_GRAY = mapOf('#' to rgb(0x2E2924), 'h' to rgb(0x7A7068), 'f' to DISABLED, 's' to rgb(0x4A423A))
 
+/** A color at a third of its light, for what the help does not point at. */
+private fun dim(c: Int) = rgb((c shr 16 and 0xFF) / 3, (c shr 8 and 0xFF) / 3, (c and 0xFF) / 3)
+
 private val LINE_TITLES = listOf("Rock", "Sidekicks", "Gods", "Blessings", "Beauty")
 
 /** Draws everything around the display: the frame, the ornament, the wise words, the knob and the Agora. */
@@ -168,6 +171,59 @@ class UiRenderer {
         val x = r.right - PixelFont.width(count)
         PixelFont.drawOutlined(px, count, x, r.y, CREAM, SHADOW)
         coin(px, x - 2 - Layout.COIN_SIZE, r.y, COIN_COLORS, outline = true)
+    }
+
+    fun helpButton(px: Pixels, r: Rect) = PixelFont.draw(px, "(?)", r.x, r.y, TERRA)
+
+    /** The help, over the main screen: all dims but the day, the obols and the knob, and a note points at each. */
+    fun help(px: Pixels, layout: Layout, day: Int, obols: Int) {
+        val kx = layout.knobX + 0.5
+        val ky = layout.knobY + 0.5
+        val kr = layout.knobR + 6.0
+        for (y in 0 until px.height) for (x in 0 until px.width) {
+            if ((x - kx) * (x - kx) + (y - ky) * (y - ky) > kr * kr) px[x, y] = dim(px[x, y])
+        }
+        val dayLabel = layout.dayLabel(day)
+        val coins = layout.coinIcon
+        PixelFont.drawOutlined(px, "DAY $day", dayLabel.x + 1, dayLabel.y + 1, CREAM, SHADOW)
+        coins(px, coins, obols)
+        helpButton(px, layout.helpIcon)
+
+        val dayNote = PixelFont.wrap("The sun moves only while you push.", layout.scene.w / 2)
+        val dayY = dayLabel.bottom + 12
+        note(px, dayNote, dayLabel.x + 1, dayY, right = false)
+        arrowUp(px, dayLabel.x + 6, dayLabel.bottom + 1, dayY - 3)
+
+        val obolsNote = PixelFont.wrap("Obols you earn by pushing. Tap them to open the market.", layout.scene.w * 2 / 3)
+        val obolsY = dayY + dayNote.size * PixelFont.LINE_HEIGHT + 8
+        note(px, obolsNote, coins.right, obolsY, right = true)
+        arrowUp(px, coins.right - PixelFont.width(min(obols, 9999).toString()) - 6, coins.bottom + 2, obolsY - 3)
+
+        val knobNote = PixelFont.wrap("Turn the knob, either way, to push the rock.", layout.quote.w)
+        val tip = layout.knobY - layout.knobR - 7
+        val knobY = tip - 7 - knobNote.size * PixelFont.LINE_HEIGHT
+        for ((i, line) in knobNote.withIndex()) {
+            PixelFont.drawOutlined(px, line, layout.knobX - PixelFont.width(line) / 2, knobY + i * PixelFont.LINE_HEIGHT, CREAM, OUTLINE)
+        }
+        arrowDown(px, layout.knobX, tip - 8, tip)
+    }
+
+    private fun note(px: Pixels, lines: List<String>, x: Int, y: Int, right: Boolean) {
+        for ((i, line) in lines.withIndex()) {
+            PixelFont.drawOutlined(px, line, if (right) x - PixelFont.width(line) else x, y + i * PixelFont.LINE_HEIGHT, CREAM, OUTLINE)
+        }
+    }
+
+    private fun arrowUp(px: Pixels, x: Int, tip: Int, tail: Int) {
+        px.vline(x, tip, tail, TERRA_LIGHT)
+        px.hline(x - 1, x + 1, tip + 1, TERRA_LIGHT)
+        px.hline(x - 2, x + 2, tip + 2, TERRA_LIGHT)
+    }
+
+    private fun arrowDown(px: Pixels, x: Int, tail: Int, tip: Int) {
+        px.vline(x, tail, tip, TERRA_LIGHT)
+        px.hline(x - 1, x + 1, tip - 1, TERRA_LIGHT)
+        px.hline(x - 2, x + 2, tip - 2, TERRA_LIGHT)
     }
 
     /** The Agora: what the obols can buy next, line by line, and the sound setting. */

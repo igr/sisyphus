@@ -18,7 +18,7 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlin.random.Random
 
-enum class Touch { NONE, KNOB, SOUND, SHOP, BUY, DEV }
+enum class Touch { NONE, KNOB, SOUND, SHOP, BUY, DEV, HELP }
 
 /** The whole screen is one small framebuffer, scaled up by a whole number so every pixel stays sharp. */
 private const val TARGET_WIDTH = 144f
@@ -46,6 +46,9 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
         private set
     /** In dev builds, tapping the Agora's title shows the dev screen in its place: it sets the obols and resets the shop. */
     var devOpen = false
+        private set
+    /** The help lies over the main screen and points at the day, the obols and the knob. Any touch closes it. */
+    var helpOpen = false
         private set
 
     val world = World(seed)
@@ -99,8 +102,10 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
             ui.band(pixels, l.band)
             ui.quote(pixels, l.quote, game.quotes, game.clock)
             ui.knob(pixels, l, game)
+            ui.helpButton(pixels, l.helpIcon)
         }
         ui.coins(pixels, l.coinIcon, game.shop.obols.toInt())
+        if (helpOpen) ui.help(pixels, l, game.day, game.shop.obols.toInt())
         return pixels
     }
 
@@ -109,6 +114,10 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
         val l = layout ?: return Touch.NONE
         val x = (xPx - offsetX) / scale
         val y = (yPx - offsetY) / scale
+        if (helpOpen) {
+            helpOpen = false
+            return Touch.HELP
+        }
         if (l.coinIcon.near(x, y, TOUCH_SLOP)) {
             agoraOpen = !agoraOpen
             devOpen = false
@@ -135,6 +144,10 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
             val row = Line.entries.indices.firstOrNull { l.agoraRow(it).near(x, y, 0) } ?: return Touch.NONE
             return if (game.buy(Line.entries[row])) Touch.BUY else Touch.NONE
         }
+        if (l.helpIcon.near(x, y, TOUCH_SLOP)) {
+            helpOpen = true
+            return Touch.HELP
+        }
         val dx = x - (l.knobX + 0.5)
         val dy = y - (l.knobY + 0.5)
         if (y < l.quote.bottom && sqrt(dx * dx + dy * dy) > l.knobR * 1.4) return Touch.NONE
@@ -151,8 +164,12 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
 
     fun release() = game.knob.release()
 
-    /** Back closes the Agora. Tells whether there was something to close. */
+    /** Back closes the help or the Agora. Tells whether there was something to close. */
     fun back(): Boolean {
+        if (helpOpen) {
+            helpOpen = false
+            return true
+        }
         if (!agoraOpen) return false
         agoraOpen = false
         devOpen = false
