@@ -75,6 +75,7 @@ fun SisyphusApp(game: Game, haptics: Haptics = NoHaptics, sound: Sound = Silence
                     when (touch) {
                         Touch.NONE -> return@awaitEachGesture
                         Touch.KNOB -> haptics.prepare()
+                        Touch.LIST -> {}
                         else -> {
                             down.consume()
                             haptics.tick()
@@ -90,7 +91,11 @@ fun SisyphusApp(game: Game, haptics: Haptics = NoHaptics, sound: Sound = Silence
                             change.consume()
                         }
                     } finally {
-                        screen.release()
+                        val lifted = screen.release()
+                        if (lifted != Touch.NONE) {
+                            haptics.tick()
+                            sound.play(lifted, game.soundOn)
+                        }
                     }
                 }
             },

@@ -167,8 +167,24 @@ class SnapshotTest {
             tap(l.dayLabel(s.game.day))
             write(s.render(), name, 3)
             tap(l.worldRow(1))
+            s.release()
             write(s.render(), name.replace("worlds", "move"), 3)
         }
+    }
+
+    /** On a short screen the worlds do not fit: the list scrolls halfway, cut clean at its edges, with a scrollbar. */
+    @Test
+    fun worldsScrolled() {
+        val s = Screen(Game(MemoryStore(mapOf("effort" to effortAt(3, 0.4))), seed = 3), seed = 5).apply { resize(1179, 1800) }
+        val l = s.layout!!
+        fun at(x: Float, y: Float) = x * s.scale + s.offsetX to y * s.scale + s.offsetY
+        val day = l.dayLabel(s.game.day)
+        at(day.x + 2f, day.y + 2f).let { (x, y) -> s.press(x, y) }
+        val row = l.worldRow(0)
+        at(row.x + 10f, row.y + 30f).let { (x, y) -> s.press(x, y) }
+        at(row.x + 10f, row.y + 30f - l.worldScroll(3) / 2f).let { (x, y) -> s.move(x, y) }
+        s.release()
+        write(s.render(), "11-worlds-scrolled", 3)
     }
 
     /** The pictures of all 15 items, a line per row, at the size the offer shows them. */

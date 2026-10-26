@@ -34,6 +34,14 @@ class ScreenTest {
 
     private fun Screen.tap(r: Rect) = tap(r.x + r.w / 2f, r.y + r.h / 2f)
 
+    private fun Screen.drag(x: Float, y: Float) = move(x * scale + offsetX, y * scale + offsetY)
+
+    /** A tap on the list of worlds: the finger lands and lifts at once. */
+    private fun Screen.choose(r: Rect): Touch {
+        assertEquals(Touch.LIST, tap(r))
+        return release()
+    }
+
     @Test
     fun theKnobIsGrabbedAroundItsCenter() {
         val s = screen()
@@ -312,13 +320,13 @@ class ScreenTest {
         val s = screen(MemoryStore(mapOf("effort" to 5000.0, "obols" to 7.0)))
         val l = s.layout!!
         s.tap(l.dayLabel(s.game.day))
-        assertEquals(Touch.WORLDS, s.tap(l.worldRow(Place.ETNA.ordinal)))
+        assertEquals(Touch.WORLDS, s.choose(l.worldRow(Place.ETNA.ordinal)))
         assertEquals(Place.ETNA, s.moving)
         assertEquals(Touch.WORLDS, s.tap(l.confirmNo))
         assertNull(s.moving)
         assertEquals(Place.CORINTH, s.game.place)
         assertEquals(7.0, s.game.shop.obols)
-        s.tap(l.worldRow(Place.ETNA.ordinal))
+        s.choose(l.worldRow(Place.ETNA.ordinal))
         assertEquals(Touch.WORLDS, s.tap(l.confirmYes))
         assertEquals(Place.ETNA, s.game.place)
         assertEquals(1, s.game.day)
@@ -331,8 +339,69 @@ class ScreenTest {
         val s = screen()
         val l = s.layout!!
         s.tap(l.dayLabel(s.game.day))
-        assertEquals(Touch.NONE, s.tap(l.worldRow(Place.CORINTH.ordinal)))
+        assertEquals(Touch.NONE, s.choose(l.worldRow(Place.CORINTH.ordinal)))
         assertNull(s.moving)
+    }
+
+    @Test
+    fun theWorldsScrollWhenTheyDoNotFit() {
+        val s = Screen(Game(MemoryStore(), seed = 1), seed = 2).apply { resize(1179, 1800) }
+        val l = s.layout!!
+        val most = l.worldScroll(Place.entries.size)
+        assertTrue(most > 0, "most: $most")
+        s.tap(l.dayLabel(s.game.day))
+        val first = l.worldRow(0)
+        assertEquals(Touch.LIST, s.tap(first))
+        s.drag(first.x + 10f, first.y + 10f - 1000f)
+        assertEquals(Touch.NONE, s.release())
+        assertEquals(most, s.worldsScroll)
+        assertNull(s.moving)
+        val last = l.worldRow(Place.entries.size - 1)
+        assertEquals(Touch.WORLDS, s.choose(Rect(last.x, last.y - most, last.w, last.h)))
+        assertEquals(Place.UNDERWORLD, s.moving)
+    }
+
+    /** On a short screen, opens the worlds and swipes the list up quickly; the finger lifts at the end. */
+    private fun flingWorlds(): Screen {
+        val s = Screen(Game(MemoryStore(), seed = 1), seed = 2).apply { resize(1179, 1800) }
+        val l = s.layout!!
+        s.tap(l.dayLabel(s.game.day))
+        val x = l.worldRow(0).x + 10f
+        var y = l.worldRow(0).y + 40f
+        s.tap(x, y)
+        repeat(4) {
+            y -= 3f
+            s.drag(x, y)
+            s.update(1 / 60.0)
+        }
+        assertEquals(Touch.NONE, s.release())
+        return s
+    }
+
+    @Test
+    fun aFlungListCoastsThenStops() {
+        val s = flingWorlds()
+        val lifted = s.worldsScroll
+        repeat(6) { s.update(1 / 60.0) }
+        assertTrue(s.worldsScroll > lifted, "coasts: ${s.worldsScroll} after $lifted")
+        repeat(300) { s.update(1 / 60.0) }
+        val rest = s.worldsScroll
+        assertTrue(rest <= s.layout!!.worldScroll(Place.entries.size))
+        s.update(1 / 60.0)
+        assertEquals(rest, s.worldsScroll)
+    }
+
+    @Test
+    fun aTapThatStopsAFlingChoosesNothing() {
+        val s = flingWorlds()
+        s.update(1 / 60.0)
+        val row = s.layout!!.worldRow(Place.ETNA.ordinal)
+        assertEquals(Touch.LIST, s.tap(row.x + 10f, row.y + 10f - s.worldsScroll))
+        assertEquals(Touch.NONE, s.release())
+        assertNull(s.moving)
+        val stopped = s.worldsScroll
+        repeat(30) { s.update(1 / 60.0) }
+        assertEquals(stopped, s.worldsScroll)
     }
 
     @Test
@@ -358,7 +427,7 @@ class ScreenTest {
         val s = screen()
         val l = s.layout!!
         s.tap(l.dayLabel(s.game.day))
-        s.tap(l.worldRow(Place.UNDERWORLD.ordinal))
+        s.choose(l.worldRow(Place.UNDERWORLD.ordinal))
         assertTrue(s.back())
         assertNull(s.moving)
         assertTrue(s.worldsOpen)

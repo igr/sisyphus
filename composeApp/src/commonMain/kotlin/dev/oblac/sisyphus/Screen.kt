@@ -13,20 +13,32 @@ import dev.oblac.sisyphus.ui.DEV_STEPS
 import dev.oblac.sisyphus.ui.Layout
 import dev.oblac.sisyphus.ui.Rect
 import dev.oblac.sisyphus.ui.UiRenderer
+import kotlin.math.abs
 import kotlin.math.atan2
+import kotlin.math.exp
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlin.random.Random
 
-enum class Touch { NONE, KNOB, SOUND, SHOP, BUY, DEV, HELP, AGAIN, WORLDS }
+/** What a finger touched. [LIST] is a finger on the list of worlds: a drag scrolls it, and a tap chooses a world when the finger lifts. */
+enum class Touch { NONE, KNOB, SOUND, SHOP, BUY, DEV, HELP, AGAIN, WORLDS, LIST }
 
 /** The whole screen is one small framebuffer, scaled up by a whole number so every pixel stays sharp. */
 private const val TARGET_WIDTH = 144f
 
 /** Extra virtual pixels around small icons, so they are easy to hit with a finger. */
 private const val TOUCH_SLOP = 6
+
+/** A finger on a list that moves less than this, in virtual pixels, taps; more scrolls. */
+private const val TAP_SLOP = 3f
+
+/** A coasting list slows down by this much a second, like the knob. */
+private const val LIST_FRICTION = 3.0
+
+/** Below this speed, in virtual pixels a second, a touch on the list does not count as stopping it. */
+private const val STOP_SPEED = 20.0
 
 /**
  * Owns the framebuffer and maps real screen pixels to virtual ones.
@@ -61,6 +73,13 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
     /** The world the player asked to go to, waiting for Yes or No: there the climb starts over. */
     var moving: Place? = null
         private set
+    /** How far the list of worlds is scrolled, in virtual pixels. */
+    val worldsScroll get() = listScroll.roundToInt()
+    private var listScroll = 0.0
+    /** The speed of the list, in virtual pixels a second: it follows the finger, and coasts after a swipe. */
+    private var listSpeed = 0.0
+    private var lastListScroll = 0.0
+    private var drag: ListDrag? = null
 
     /** The top: from the moment he reaches it until a tap brings the first morning back. */
     var ending: Ending? = null
@@ -112,6 +131,7 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
             val stars = atmosphere(game.timeOfDay, world.overcast).stars
             world.update(dt, game.moved, game.speed, floor(game.position).toInt(), game.weather, game.timeOfDay, stars, game.shop.tier(Line.BEAUTY))
         }
+        if (worldsOpen) moveList(dt)
         if (game.day > lastDay) banner = 3.0
         lastDay = game.day
         banner = max(0.0, banner - dt)
@@ -125,7 +145,7 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
             ui.agora(pixels, l, game.shop, game.soundOn, devOpen)
             offer?.let { game.shop.next(it) }?.let { ui.offer(pixels, l, it) }
         } else if (worldsOpen) {
-            ui.worlds(pixels, l, game.place)
+            ui.worlds(pixels, l, game.place, worldsScroll)
             moving?.let { ui.confirm(pixels, l, it) }
         } else {
             renderer.render(scene, game, world, banner, rolled = ending?.rolled)
@@ -205,6 +225,9 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
         }
         if (l.dayLabel(game.day).near(x, y, TOUCH_SLOP)) {
             worldsOpen = true
+            listScroll = 0.0
+            listSpeed = 0.0
+            lastListScroll = 0.0
             return Touch.WORLDS
         }
         if (l.helpIcon.near(x, y, TOUCH_SLOP)) {
@@ -218,7 +241,7 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
         return Touch.KNOB
     }
 
-    /** On the Worlds screen: the title closes it, another world asks first, and Yes goes there. */
+    /** On the Worlds screen: the title closes it, the list scrolls or chooses a world, and Yes goes there. */
     private fun pressWorlds(x: Float, y: Float, l: Layout): Touch {
         val to = moving
         if (to != null) {
@@ -237,21 +260,56 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
             worldsOpen = false
             return Touch.WORLDS
         }
-        val row = Place.entries.indices.firstOrNull { l.worldRow(it).near(x, y, 0) } ?: return Touch.NONE
-        val place = Place.entries[row]
-        if (place == game.place) return Touch.NONE
-        moving = place
-        return Touch.WORLDS
+        if (!l.worldList.near(x, y, 0)) return Touch.NONE
+        drag = ListDrag(x, y, listScroll, stopped = abs(listSpeed) > STOP_SPEED)
+        listSpeed = 0.0
+        return Touch.LIST
     }
 
     fun move(xPx: Float, yPx: Float) {
         val l = layout ?: return
         val x = (xPx - offsetX) / scale
         val y = (yPx - offsetY) / scale
+        drag?.let {
+            it.moved = max(it.moved, abs(y - it.y))
+            listScroll = (it.scroll - (y - it.y)).coerceIn(0.0, l.worldScroll(Place.entries.size).toDouble())
+            return
+        }
         game.knob.drag(touchAngle(x - (l.knobX + 0.5), y - (l.knobY + 0.5), l))
     }
 
-    fun release() = game.knob.release()
+    /** The finger lifts: the knob coasts on, or a tap on the list asks to go to that world. Tells what the lift did. */
+    fun release(): Touch {
+        val d = drag ?: return Touch.NONE.also { game.knob.release() }
+        drag = null
+        val l = layout ?: return Touch.NONE
+        if (d.moved > TAP_SLOP) return Touch.NONE
+        listSpeed = 0.0
+        if (d.stopped) return Touch.NONE
+        val row = Place.entries.indices.firstOrNull { l.worldRow(it).near(d.x, d.y + worldsScroll, 0) } ?: return Touch.NONE
+        val place = Place.entries[row]
+        if (place == game.place) return Touch.NONE
+        moving = place
+        return Touch.WORLDS
+    }
+
+    /** While a finger drags the list, its speed follows; after the finger lifts, the list coasts and slows down. */
+    private fun moveList(dt: Double) {
+        val most = (layout?.worldScroll(Place.entries.size) ?: 0).toDouble()
+        if (drag != null) {
+            if (dt > 0) listSpeed += ((listScroll - lastListScroll) / dt - listSpeed) * (1 - exp(-dt * 18))
+        } else if (listSpeed != 0.0) {
+            listScroll = (listScroll + listSpeed * dt).coerceIn(0.0, most)
+            listSpeed *= exp(-LIST_FRICTION * dt)
+            if (abs(listSpeed) < STOP_SPEED / 4 || listScroll == 0.0 || listScroll == most) listSpeed = 0.0
+        }
+        lastListScroll = listScroll
+    }
+
+    /** A finger on the list of worlds, from where it landed. A finger that [stopped] the list from coasting chooses nothing. */
+    private class ListDrag(val x: Float, val y: Float, val scroll: Double, val stopped: Boolean) {
+        var moved = 0f
+    }
 
     /** Back closes the help, the offer, the question, the Worlds screen or the Agora. Tells whether there was something to close. */
     fun back(): Boolean {

@@ -110,6 +110,7 @@ Order of purchases at 5 minutes a day, buying the cheapest affordable item: Goat
 ## Worlds
 
 - **The Worlds screen** opens when you tap the day. It shows a picture of each world: Corinth (the hill by the sea), Mount Etna and The Underworld. The current world has a bright frame and a check. The help points to it.
+- **The list scrolls** when the worlds do not fit, with a thin scrollbar on the right. A drag scrolls it, and after a quick swipe it coasts and slows down. A tap chooses a world when the finger lifts. A tap that stops the coasting list chooses nothing.
 - **The pictures:** Corinth is cut from the real scene. Mount Etna and The Underworld are sketches: a volcano at dusk, and the river Styx with Charon's boat.
 - **Moving** to another world is possible at any time, after a question, because the climb starts over there: day 1, no items, no obols. The climbs and the sound setting stay.
 - **Mount Etna and The Underworld are placeholders** for now: they show the same hill until they are drawn.

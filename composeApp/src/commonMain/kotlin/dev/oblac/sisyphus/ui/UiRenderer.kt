@@ -8,6 +8,7 @@ import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.Shop
 import dev.oblac.sisyphus.game.QuoteBox
 import dev.oblac.sisyphus.gfx.PixelFont
+import dev.oblac.sisyphus.gfx.TRANSPARENT
 import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.gfx.bayer
 import dev.oblac.sisyphus.gfx.hash01
@@ -109,6 +110,7 @@ class UiRenderer {
     private var grain: Pixels? = null
     private val outlined = mutableMapOf<Item, Pixels>()
     private val previews = mutableMapOf<Pair<Place, Int>, Pixels>()
+    private var worldSheet: Pixels? = null
 
     fun background(px: Pixels) {
         val g = grain?.takeIf { it.width == px.width && it.height == px.height } ?: Pixels(px.width, px.height).also {
@@ -292,19 +294,34 @@ class UiRenderer {
         }
     }
 
-    /** The Worlds screen: a picture of each world with its name, the world he is in framed bright and checked. */
-    fun worlds(px: Pixels, layout: Layout, here: Place) {
+    /**
+     * The Worlds screen: a picture of each world with its name, the world he is in framed bright and checked.
+     * The list is drawn on a sheet of its own, so that it scrolls by [scroll] and its edges cut clean.
+     */
+    fun worlds(px: Pixels, layout: Layout, here: Place, scroll: Int) {
         val t = layout.agoraTitle
         PixelFont.draw(px, "Worlds", t.x, t.y, CREAM)
         px.hline(t.x, t.right - 1, t.bottom + 2, TERRA_DARK)
+        val list = layout.worldList
+        val sheet = worldSheet?.takeIf { it.width == list.w && it.height == list.h } ?: Pixels(list.w, list.h).also { worldSheet = it }
+        sheet.clear(TRANSPARENT)
         for (place in Place.entries) {
-            val p = layout.worldPreview(place.ordinal)
-            px.draw(previews.getOrPut(place to p.w) { worldPreview(place, p.w - 2, p.h - 2) }, p.x + 1, p.y + 1)
-            frame(px, p, if (place == here) TERRA_LIGHT else TERRA_DARK)
-            val text = layout.worldText(place.ordinal)
-            PixelFont.draw(px, place.title, text.x, text.y, CREAM)
-            PixelFont.draw(px, place.note, text.x, text.y + PixelFont.LINE_HEIGHT, TERRA_LIGHT)
-            if (place == here) check(px, text.right - Layout.COIN_SIZE, text.y + 1)
+            val p = layout.worldPreview(place.ordinal).offset(-list.x, -list.y - scroll)
+            sheet.draw(previews.getOrPut(place to p.w) { worldPreview(place, p.w - 2, p.h - 2) }, p.x + 1, p.y + 1)
+            frame(sheet, p, if (place == here) TERRA_LIGHT else TERRA_DARK)
+            val text = layout.worldText(place.ordinal).offset(-list.x, -list.y - scroll)
+            PixelFont.draw(sheet, place.title, text.x, text.y, CREAM)
+            PixelFont.draw(sheet, place.note, text.x, text.y + PixelFont.LINE_HEIGHT, TERRA_LIGHT)
+            if (place == here) check(sheet, text.right - Layout.COIN_SIZE, text.y + 1)
+        }
+        px.draw(sheet, list.x, list.y)
+        val most = layout.worldScroll(Place.entries.size)
+        if (most > 0) {
+            val x = list.right + 3
+            val thumb = list.h * list.h / (list.h + most)
+            val top = list.y + (list.h - thumb) * scroll / most
+            px.vline(x, list.y, list.bottom - 1, TERRA_DARK)
+            px.vline(x, top, top + thumb - 1, TERRA_LIGHT)
         }
     }
 

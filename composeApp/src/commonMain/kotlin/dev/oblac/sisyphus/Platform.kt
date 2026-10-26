@@ -56,7 +56,7 @@ fun Sound.play(touch: Touch, on: Boolean) {
         return
     }
     when (touch) {
-        Touch.NONE -> {}
+        Touch.NONE, Touch.LIST -> {}
         Touch.KNOB -> prepare()
         Touch.BUY -> win()
         Touch.SOUND, Touch.SHOP, Touch.DEV, Touch.HELP, Touch.AGAIN, Touch.WORLDS -> ui()

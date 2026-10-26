@@ -1,6 +1,7 @@
 package dev.oblac.sisyphus.ui
 
 import dev.oblac.sisyphus.gfx.PixelFont
+import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -8,6 +9,7 @@ class Rect(val x: Int, val y: Int, val w: Int, val h: Int) {
     val right get() = x + w
     val bottom get() = y + h
     fun inset(d: Int) = Rect(x + d, y + d, w - 2 * d, h - 2 * d)
+    fun offset(dx: Int, dy: Int) = Rect(x + dx, y + dy, w, h)
 }
 
 /**
@@ -81,8 +83,14 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     val offerYes = Rect(offer.x + offer.w / 2 - 4 - OFFER_BUTTON, offer.bottom - 5 - BUTTON_HEIGHT, OFFER_BUTTON, BUTTON_HEIGHT)
     val offerNo = Rect(offer.x + offer.w / 2 + 4, offerYes.y, OFFER_BUTTON, BUTTON_HEIGHT)
 
-    /** On the Worlds screen, one world: its picture, and its name and note below. Tapping it asks to go there. */
-    fun worldRow(index: Int) = Rect(agoraTitle.x, agoraTitle.bottom + 6 + index * (WORLD_ROW + 6), agoraTitle.w, WORLD_ROW)
+    /** On the Worlds screen, the window that shows the list of worlds. The list scrolls when they do not fit. */
+    val worldList = Rect(agoraTitle.x, agoraTitle.bottom + 6, agoraTitle.w, agoraSound.y - agoraTitle.bottom - 6)
+
+    /** How far a list of [count] worlds can scroll. */
+    fun worldScroll(count: Int) = max(0, count * (WORLD_ROW + 6) - 6 - worldList.h)
+
+    /** One world in the list, before it scrolls: its picture, and its name and note below. Tapping it asks to go there. */
+    fun worldRow(index: Int) = Rect(worldList.x, worldList.y + index * (WORLD_ROW + 6), worldList.w, WORLD_ROW)
 
     /** The picture of a world, in a frame, at the top of its row. */
     fun worldPreview(index: Int) = worldRow(index).let { Rect(it.x, it.y, it.w, WORLD_PREVIEW + 2) }
