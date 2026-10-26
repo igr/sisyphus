@@ -37,6 +37,7 @@ private const val KEY_OBOLS = "obols"
 private const val KEY_SAVED_AT = "savedAt"
 private const val KEY_SUMMIT = "summit"
 private const val KEY_CLIMBS = "climbs"
+private const val KEY_PLACE = "place"
 private const val SAVE_EVERY = 1.0
 
 private fun shopKey(line: Line) = "shop." + line.name.lowercase()
@@ -124,6 +125,13 @@ enum class Weather(val clouds: Int, val wind: Double, val overcast: Float, val r
     }
 }
 
+/** The worlds Sisyphus can push his rock in. Only Corinth is drawn so far; the others hold their places. */
+enum class Place(val title: String, val note: String) {
+    CORINTH("Corinth", "the hill by the sea"),
+    ETNA("Mount Etna", "still to be drawn"),
+    UNDERWORLD("The Underworld", "still to be drawn"),
+}
+
 /**
  * The state of the push. The knob moves Sisyphus up the hill, whichever way it turns.
  * Effort is what moves the sun: days pass only when he works. A strong rock and strong helpers
@@ -158,6 +166,9 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
 
     /** Where the hill ends, in pixels walked; null until all 15 items are bought and the final climb begins. */
     var summit = store.load(KEY_SUMMIT)?.takeIf { it >= 0 }
+        private set
+    /** The world he pushes in. */
+    var place = Place.entries.getOrElse(store.load(KEY_PLACE)?.toInt() ?: 0) { Place.CORINTH }
         private set
     /** How many times Sisyphus reached the top. Starting over keeps it. */
     var climbs = store.load(KEY_CLIMBS)?.toInt() ?: 0
@@ -270,6 +281,16 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     /** At the top the rock rolls away, and everything starts from the beginning. Only the climbs are counted on. */
     fun startOver() {
         climbs++
+        begin()
+    }
+
+    /** Another world means another climb: everything starts from the beginning there. */
+    fun moveTo(place: Place) {
+        this.place = place
+        begin()
+    }
+
+    private fun begin() {
         position = 0.0
         effort = 0.0
         summit = null
@@ -314,6 +335,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         store.save(KEY_SAVED_AT, pausedAt ?: wall())
         store.save(KEY_SUMMIT, summit ?: -1.0)
         store.save(KEY_CLIMBS, climbs.toDouble())
+        store.save(KEY_PLACE, place.ordinal.toDouble())
         for (line in Line.entries) store.save(shopKey(line), shop.tier(line).toDouble())
         dirty = false
         sinceSave = 0.0

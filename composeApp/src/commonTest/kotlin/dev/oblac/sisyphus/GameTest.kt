@@ -6,6 +6,7 @@ import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.Knob
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.PX_PER_TURN
+import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.START_TIME
 import dev.oblac.sisyphus.game.Weather
 import dev.oblac.sisyphus.gfx.PixelFont
@@ -307,6 +308,23 @@ class GameTest {
             assertTrue(Line.entries.all { g.shop.tier(it) == 0 })
             assertNull(g.summit)
             assertFalse(g.soundOn)
+        }
+    }
+
+    @Test
+    fun movingToAnotherWorldStartsOver() {
+        val store = MemoryStore(allBought + mapOf("position" to 100.0, "effort" to 50_000.0, "obols" to 40.0, "climbs" to 2.0))
+        val game = Game(store, seed = 1, wall = { 0.0 })
+        assertEquals(Place.CORINTH, game.place)
+        game.moveTo(Place.ETNA)
+        for (g in listOf(game, Game(store, seed = 1, wall = { 0.0 }))) {
+            assertEquals(Place.ETNA, g.place)
+            assertEquals(1, g.day)
+            assertEquals(0.0, g.position)
+            assertEquals(0.0, g.shop.obols)
+            assertTrue(Line.entries.all { g.shop.tier(it) == 0 })
+            assertNull(g.summit)
+            assertEquals(2, g.climbs)
         }
     }
 

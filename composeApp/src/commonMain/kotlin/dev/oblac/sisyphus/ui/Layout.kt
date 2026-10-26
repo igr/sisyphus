@@ -81,6 +81,17 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     val offerYes = Rect(offer.x + offer.w / 2 - 4 - OFFER_BUTTON, offer.bottom - 5 - BUTTON_HEIGHT, OFFER_BUTTON, BUTTON_HEIGHT)
     val offerNo = Rect(offer.x + offer.w / 2 + 4, offerYes.y, OFFER_BUTTON, BUTTON_HEIGHT)
 
+    private val confirmHeight = 5 + PixelFont.LINE_HEIGHT + 4 + CONFIRM_LINES * PixelFont.LINE_HEIGHT + 4 + BUTTON_HEIGHT + 5
+
+    /** The question before going to another world, in the middle of the Worlds screen. */
+    val confirm = Rect(agoraTitle.x, agoraTitle.bottom + (agoraSound.y - agoraTitle.bottom - confirmHeight) / 2, agoraTitle.w, confirmHeight)
+
+    /** In the question, the room for what going there means, below its title. */
+    val confirmText = Rect(confirm.x + 5, confirm.y + 5 + PixelFont.LINE_HEIGHT + 4, confirm.w - 10, CONFIRM_LINES * PixelFont.LINE_HEIGHT)
+
+    val confirmYes = Rect(confirm.x + confirm.w / 2 - 4 - OFFER_BUTTON, confirm.bottom - 5 - BUTTON_HEIGHT, OFFER_BUTTON, BUTTON_HEIGHT)
+    val confirmNo = Rect(confirm.x + confirm.w / 2 + 4, confirmYes.y, OFFER_BUTTON, BUTTON_HEIGHT)
+
     val knobX: Int
     val knobY: Int
     val knobR: Int
@@ -102,6 +113,7 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
         const val BUTTON_HEIGHT = 13
         const val OFFER_ICON = 32
         const val OFFER_LINES = 6
+        const val CONFIRM_LINES = 4
         const val OFFER_BUTTON = 30
         const val HELPER = 18
     }

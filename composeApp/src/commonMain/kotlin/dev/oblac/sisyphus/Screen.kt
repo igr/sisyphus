@@ -2,6 +2,7 @@ package dev.oblac.sisyphus
 
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.Line
+import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.scene.Ending
 import dev.oblac.sisyphus.scene.SceneGeometry
@@ -19,7 +20,7 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlin.random.Random
 
-enum class Touch { NONE, KNOB, SOUND, SHOP, BUY, DEV, HELP, AGAIN }
+enum class Touch { NONE, KNOB, SOUND, SHOP, BUY, DEV, HELP, AGAIN, WORLDS }
 
 /** The whole screen is one small framebuffer, scaled up by a whole number so every pixel stays sharp. */
 private const val TARGET_WIDTH = 144f
@@ -53,6 +54,12 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
         private set
     /** The help lies over the main screen and points at the day, the obols and the knob. Any touch closes it. */
     var helpOpen = false
+        private set
+    /** The Worlds screen covers the whole screen while it is open; tapping the day opens it. */
+    var worldsOpen = false
+        private set
+    /** The world the player asked to go to, waiting for Yes or No: there the climb starts over. */
+    var moving: Place? = null
         private set
 
     /** The top: from the moment he reaches it until a tap brings the first morning back. */
@@ -117,6 +124,9 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
         if (agoraOpen) {
             ui.agora(pixels, l, game.shop, game.soundOn, devOpen)
             offer?.let { game.shop.next(it) }?.let { ui.offer(pixels, l, it) }
+        } else if (worldsOpen) {
+            ui.worlds(pixels, l, game.place)
+            moving?.let { ui.confirm(pixels, l, it) }
         } else {
             renderer.render(scene, game, world, banner, rolled = ending?.rolled)
             pixels.draw(scene, l.scene.x, l.scene.y)
@@ -152,8 +162,11 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
             agoraOpen = !agoraOpen
             devOpen = false
             offer = null
+            worldsOpen = false
+            moving = null
             return Touch.SHOP
         }
+        if (worldsOpen) return pressWorlds(x, y, l)
         if (agoraOpen) {
             val offered = offer
             if (offered != null) {
@@ -190,6 +203,10 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
             offer = line
             return Touch.SHOP
         }
+        if (l.dayLabel(game.day).near(x, y, TOUCH_SLOP)) {
+            worldsOpen = true
+            return Touch.WORLDS
+        }
         if (l.helpIcon.near(x, y, TOUCH_SLOP)) {
             helpOpen = true
             return Touch.HELP
@@ -201,6 +218,32 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
         return Touch.KNOB
     }
 
+    /** On the Worlds screen: the title closes it, another world asks first, and Yes goes there. */
+    private fun pressWorlds(x: Float, y: Float, l: Layout): Touch {
+        val to = moving
+        if (to != null) {
+            if (l.confirmYes.near(x, y, 0)) {
+                game.moveTo(to)
+                geo?.let { world.reset(it, game.weather) }
+                moving = null
+                worldsOpen = false
+                return Touch.WORLDS
+            }
+            if (l.confirm.near(x, y, 0) && !l.confirmNo.near(x, y, 0)) return Touch.NONE
+            moving = null
+            return Touch.WORLDS
+        }
+        if (l.agoraTitle.near(x, y, 0)) {
+            worldsOpen = false
+            return Touch.WORLDS
+        }
+        val row = Place.entries.indices.firstOrNull { l.agoraRow(it).near(x, y, 0) } ?: return Touch.NONE
+        val place = Place.entries[row]
+        if (place == game.place) return Touch.NONE
+        moving = place
+        return Touch.WORLDS
+    }
+
     fun move(xPx: Float, yPx: Float) {
         val l = layout ?: return
         val x = (xPx - offsetX) / scale
@@ -210,7 +253,7 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
 
     fun release() = game.knob.release()
 
-    /** Back closes the help, the offer or the Agora. Tells whether there was something to close. */
+    /** Back closes the help, the offer, the question, the Worlds screen or the Agora. Tells whether there was something to close. */
     fun back(): Boolean {
         if (helpOpen) {
             helpOpen = false
@@ -218,6 +261,14 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
         }
         if (offer != null) {
             offer = null
+            return true
+        }
+        if (moving != null) {
+            moving = null
+            return true
+        }
+        if (worldsOpen) {
+            worldsOpen = false
             return true
         }
         if (!agoraOpen) return false

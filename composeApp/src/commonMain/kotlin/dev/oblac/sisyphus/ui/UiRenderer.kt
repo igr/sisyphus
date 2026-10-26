@@ -4,6 +4,7 @@ import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.ITEMS
 import dev.oblac.sisyphus.game.Item
 import dev.oblac.sisyphus.game.Line
+import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.Shop
 import dev.oblac.sisyphus.game.QuoteBox
 import dev.oblac.sisyphus.gfx.PixelFont
@@ -94,6 +95,9 @@ private val COIN_GRAY = mapOf('#' to rgb(0x2E2924), 'h' to rgb(0x7A7068), 'f' to
 private fun dim(c: Int) = rgb((c shr 16 and 0xFF) / 3, (c shr 8 and 0xFF) / 3, (c and 0xFF) / 3)
 
 private val BLACK = rgb(0x000000)
+
+/** What going to another world costs, in its question. */
+internal const val MOVE_WARNING = "The climb starts over there: day 1, no items and no obols. Your climbs stay."
 
 /** The last words of The Myth of Sisyphus, on the black screen after the top. */
 private const val SUMMIT_WORDS = "The struggle itself toward the heights is enough to fill a man's heart. One must imagine Sisyphus happy."
@@ -200,7 +204,7 @@ class UiRenderer {
         coins(px, coins, obols)
         helpButton(px, layout.helpIcon)
 
-        val dayNote = PixelFont.wrap("The sun moves only while you push.", layout.scene.w / 2)
+        val dayNote = PixelFont.wrap("The sun moves only while you push. Tap the day for the worlds.", layout.scene.w * 2 / 3)
         val dayY = dayLabel.bottom + 12
         note(px, dayNote, dayLabel.x + 1, dayY, right = false)
         arrowUp(px, dayLabel.x + 6, dayLabel.bottom + 1, dayY - 3)
@@ -287,6 +291,39 @@ class UiRenderer {
         }
     }
 
+    /** The Worlds screen: where he can push, with the world he is in checked. */
+    fun worlds(px: Pixels, layout: Layout, here: Place) {
+        val t = layout.agoraTitle
+        PixelFont.draw(px, "Worlds", t.x, t.y, CREAM)
+        px.hline(t.x, t.right - 1, t.bottom + 2, TERRA_DARK)
+        for (place in Place.entries) {
+            val r = layout.agoraRow(place.ordinal)
+            PixelFont.draw(px, place.title, r.x, r.y, CREAM)
+            PixelFont.draw(px, place.note, r.x, r.y + PixelFont.LINE_HEIGHT, TERRA_LIGHT)
+            if (place == here) check(px, r.right - Layout.COIN_SIZE, r.y + 1)
+        }
+        val note = layout.agoraRow(Place.entries.size)
+        for ((i, line) in PixelFont.wrap("Going to another world starts the climb over there.", note.w).withIndex()) {
+            PixelFont.draw(px, line, note.x, note.y + i * PixelFont.LINE_HEIGHT, TERRA)
+        }
+    }
+
+    /** Asks before going to another world, since everything starts from the beginning there. */
+    fun confirm(px: Pixels, layout: Layout, place: Place) {
+        for (y in 0 until px.height) for (x in 0 until px.width) px[x, y] = dim(px[x, y])
+        val r = layout.confirm
+        px.fillRect(r.x, r.y, r.w, r.h, BACKGROUND)
+        frame(px, r, TERRA)
+        val title = "Go to ${place.title}?"
+        PixelFont.draw(px, title, r.x + (r.w - PixelFont.width(title)) / 2, r.y + 5, CREAM)
+        val text = layout.confirmText
+        for ((i, line) in PixelFont.wrap(MOVE_WARNING, text.w).withIndex()) {
+            PixelFont.draw(px, line, text.x, text.y + i * PixelFont.LINE_HEIGHT, TERRA_LIGHT)
+        }
+        button(px, layout.confirmYes, "Yes")
+        button(px, layout.confirmNo, "No")
+    }
+
     /** In dev builds only: buttons that add or take away obols, and one that resets the shop. */
     private fun devScreen(px: Pixels, layout: Layout) {
         val obols = layout.agoraRow(0)
@@ -317,9 +354,7 @@ class UiRenderer {
             coin(px, r.right - Layout.COIN_SIZE, y, if (bright) COIN_COLORS else COIN_GRAY)
             PixelFont.draw(px, price, r.right - Layout.COIN_SIZE - 2 - PixelFont.width(price), y, if (bright) TERRA_LIGHT else DISABLED)
         } else {
-            for ((dy, row) in CHECK.withIndex()) for ((dx, ch) in row.withIndex()) {
-                if (ch == '#') px[r.right - Layout.COIN_SIZE + dx, y + 1 + dy] = TERRA_LIGHT
-            }
+            check(px, r.right - Layout.COIN_SIZE, y + 1)
         }
         val noteY = y + PixelFont.LINE_HEIGHT
         PixelFont.draw(px, item.note, r.x, noteY, TERRA_LIGHT)
@@ -328,6 +363,10 @@ class UiRenderer {
             if (k < shop.tier(line)) px.fillRect(pip.x, pip.y, pip.w, pip.h, if (bright) TERRA_LIGHT else DISABLED)
             else frame(px, pip, if (bright) TERRA else DISABLED)
         }
+    }
+
+    private fun check(px: Pixels, x: Int, y: Int) {
+        for ((dy, row) in CHECK.withIndex()) for ((dx, ch) in row.withIndex()) if (ch == '#') px[x + dx, y + dy] = TERRA_LIGHT
     }
 
     private fun coin(px: Pixels, x: Int, y: Int, colors: Map<Char, Int>, outline: Boolean = false) {

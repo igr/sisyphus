@@ -18,7 +18,7 @@ Players need a reason to come back day after day. They push the rock, earn coins
 
 - In-app purchases, ads, accounts.
 - Drawing the helpers on the hill, and the Lyre of Orpheus with its music. See "Later".
-- New places to climb. See "Later".
+- The art of the new worlds. See "Later".
 
 ## Must not happen
 
@@ -107,6 +107,12 @@ Order of purchases at 5 minutes a day, buying the cheapest affordable item: Goat
 - **Everything starts from the beginning:** day 1, the shop, the obols. Only the number of climbs is kept, with the sound setting. After the first climb, a small peak and the count sit under the day.
 - **To test it,** the dev screen has a Top button: it buys everything and takes him to two turns below the top.
 
+## Worlds
+
+- **The Worlds screen** opens when you tap the day. It lists Corinth (the hill by the sea), Mount Etna and The Underworld, with the current world checked. The help points to it.
+- **Moving** to another world is possible at any time, after a question, because the climb starts over there: day 1, no items, no obols. The climbs and the sound setting stay.
+- **Mount Etna and The Underworld are placeholders** for now: they show the same hill until they are drawn.
+
 ## Later
 
-- New places to climb, for example the Underworld, Mount Etna or Olympus, with their own beauty items.
+- Draw Mount Etna and The Underworld: their own sky, ground, props and a landmark each, and maybe their own beauty items.

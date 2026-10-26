@@ -4,6 +4,7 @@ import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.ITEMS
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.PX_PER_TURN
+import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.SUN_CAP
 import dev.oblac.sisyphus.gfx.PixelFont
 import dev.oblac.sisyphus.gfx.TRANSPARENT
@@ -292,6 +293,58 @@ class ScreenTest {
         assertTrue(Line.entries.all { s.game.shop.tier(it) == 3 })
         val left = s.game.summit!! - s.game.position
         assertTrue(left > 0 && left <= 2 * SUN_CAP * PX_PER_TURN, "left: $left")
+    }
+
+    @Test
+    fun tappingTheDayOpensTheWorlds() {
+        val s = screen()
+        val l = s.layout!!
+        assertEquals(Touch.WORLDS, s.tap(l.dayLabel(s.game.day)))
+        assertTrue(s.worldsOpen)
+        assertFalse(s.agoraOpen)
+        assertEquals(Touch.WORLDS, s.tap(l.agoraTitle))
+        assertFalse(s.worldsOpen)
+    }
+
+    @Test
+    fun goingToAnotherWorldAsksFirstBecauseTheClimbStartsOver() {
+        val s = screen(MemoryStore(mapOf("effort" to 5000.0, "obols" to 7.0)))
+        val l = s.layout!!
+        s.tap(l.dayLabel(s.game.day))
+        assertEquals(Touch.WORLDS, s.tap(l.agoraRow(Place.ETNA.ordinal)))
+        assertEquals(Place.ETNA, s.moving)
+        assertEquals(Touch.WORLDS, s.tap(l.confirmNo))
+        assertNull(s.moving)
+        assertEquals(Place.CORINTH, s.game.place)
+        assertEquals(7.0, s.game.shop.obols)
+        s.tap(l.agoraRow(Place.ETNA.ordinal))
+        assertEquals(Touch.WORLDS, s.tap(l.confirmYes))
+        assertEquals(Place.ETNA, s.game.place)
+        assertEquals(1, s.game.day)
+        assertEquals(0.0, s.game.shop.obols)
+        assertFalse(s.worldsOpen)
+    }
+
+    @Test
+    fun theWorldYouAreInIsNotOfferedAgain() {
+        val s = screen()
+        val l = s.layout!!
+        s.tap(l.dayLabel(s.game.day))
+        assertEquals(Touch.NONE, s.tap(l.agoraRow(Place.CORINTH.ordinal)))
+        assertNull(s.moving)
+    }
+
+    @Test
+    fun backClosesTheQuestionThenTheWorlds() {
+        val s = screen()
+        val l = s.layout!!
+        s.tap(l.dayLabel(s.game.day))
+        s.tap(l.agoraRow(Place.UNDERWORLD.ordinal))
+        assertTrue(s.back())
+        assertNull(s.moving)
+        assertTrue(s.worldsOpen)
+        assertTrue(s.back())
+        assertFalse(s.worldsOpen)
     }
 
     @Test
