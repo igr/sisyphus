@@ -1,6 +1,6 @@
 # Obols and the shop
 
-Design for the first of two projects. The second project (the final climb, the top, and the rock rolling down) is outlined at the end and designed later.
+Design for the obols, the shop, and the final climb to the top.
 
 ## Why
 
@@ -18,7 +18,7 @@ Players need a reason to come back day after day. They push the rock, earn coins
 
 - In-app purchases, ads, accounts.
 - Drawing the helpers on the hill, and the Lyre of Orpheus with its music. See "Later".
-- The final climb, reaching the top, the rock rolling down, new places. See "The second project".
+- New places to climb. See "Later".
 
 ## Must not happen
 
@@ -70,13 +70,13 @@ All 15 items cost 87 obols together. In work per obol, the blessings are 504 (He
 
 ## How long it takes
 
-Simulation, assuming one knob turn per second while the player plays. The "Top" column is for the second project.
+Simulation, assuming one knob turn per second while the player plays. "Top reached" adds the final climb.
 
 | Daily play | First item | All 15 | Longest wait between items | Top reached |
 |---|---|---|---|---|
-| 2 minutes | Day 6 | Day 66 | 6 days | Day 82 |
-| 5 minutes | Day 3 | Day 37 | 3 days | Day 46 |
-| 10 minutes | Day 2 | Day 22 | 2 days | Day 27 |
+| 2 minutes | Day 6 | Day 66 | 6 days | Day 84 |
+| 5 minutes | Day 3 | Day 37 | 3 days | Day 44 |
+| 10 minutes | Day 2 | Day 22 | 2 days | Day 26 |
 | 30 minutes | Day 1 | Day 9 | 1 day | Day 11 |
 
 Non-stop play is allowed: at one turn a second, about 4 hours of turning buys everything.
@@ -98,12 +98,15 @@ Order of purchases at 5 minutes a day, buying the cheapest affordable item: Goat
 - Draw the helpers on the hill: Merope, Bellerophon and Heracles pushing beside Sisyphus; Amalthea, Pan and Thanatos somewhere on the hill.
 - The Lyre of Orpheus: music from a sound file, like the click. It can become a beauty item when it is built.
 
-## The second project (later)
+## The final climb
 
-- **Final climb.** After the 15th item, the summit comes into view. Reaching it takes 20,000 units of work, about 9 days at 5 minutes a day (16 days at 2 minutes, 2 days at 30 minutes).
-- **The top.** Sisyphus reaches the top for the first time. The rock rolls all the way down, into a new place. This is a one-time scene; the knob never turns him back.
-- **Kept:** beauty items and left-over obols. **Lost:** rocks, helpers and blessings.
-- **New places:** for example the Underworld, Mount Etna or Olympus. Each place keeps the full day and night, sells the same rocks, helpers and blessings again at the same prices, and has its own new beauty items. The day counter keeps counting.
-- Build one new place first.
+- **The climb.** After the 15th item, Hermes says the top is in sight. Reaching it takes as much pushing as 7 days at 5 minutes a day: 2,100 turns at the fastest walk. Only the player's own turns move him up; the gods do not climb for him, so he always reaches the top while someone plays.
+- **The top** is a flat hill. It comes into view just before he gets there, and the knob stops moving him on it.
+- **The rock rolls down.** He stands a moment, then the rock rolls back past him and down the hill, faster and faster, until it is out of sight.
+- **The black screen.** The screen goes black for Camus: "The struggle itself toward the heights is enough to fill a man's heart. One must imagine Sisyphus happy." It also says how many times he reached the top. After a few seconds, a tap begins again.
+- **Everything starts from the beginning:** day 1, the shop, the obols. Only the number of climbs is kept, with the sound setting. After the first climb, a small peak and the count sit under the day.
+- **To test it,** the dev screen has a Top button: it buys everything and takes him to two turns below the top.
 
-Until the second project ships, the shop ends at item 15 and obols keep adding up.
+## Later
+
+- New places to climb, for example the Underworld, Mount Etna or Olympus, with their own beauty items.

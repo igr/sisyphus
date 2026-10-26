@@ -11,6 +11,7 @@ import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.gfx.bayer
 import dev.oblac.sisyphus.gfx.hash01
 import dev.oblac.sisyphus.gfx.rgb
+import dev.oblac.sisyphus.scene.Ending
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -91,6 +92,11 @@ private val COIN_GRAY = mapOf('#' to rgb(0x2E2924), 'h' to rgb(0x7A7068), 'f' to
 
 /** A color at a third of its light, for what the help does not point at. */
 private fun dim(c: Int) = rgb((c shr 16 and 0xFF) / 3, (c shr 8 and 0xFF) / 3, (c and 0xFF) / 3)
+
+private val BLACK = rgb(0x000000)
+
+/** The last words of The Myth of Sisyphus, on the black screen after the top. */
+private const val SUMMIT_WORDS = "The struggle itself toward the heights is enough to fill a man's heart. One must imagine Sisyphus happy."
 
 private val LINE_TITLES = listOf("Rock", "Sidekicks", "Gods", "Blessings", "Beauty")
 
@@ -263,6 +269,24 @@ class UiRenderer {
         button(px, layout.offerNo, "No")
     }
 
+    /** The end of a climb: the screen goes black, Camus' words and the climbs come, then the call to begin again. */
+    fun ending(px: Pixels, layout: Layout, ending: Ending, climbs: Int) {
+        val dark = ending.darkness
+        if (dark > 0f) for (y in 0 until px.height) for (x in 0 until px.width) if (bayer(x, y) < dark) px[x, y] = BLACK
+        if (ending.words <= 0f) return
+        val width = layout.quote.w
+        val lines = PixelFont.wrap(SUMMIT_WORDS, width) + "— Albert Camus" + "" + PixelFont.wrap("Sisyphus reached the top " + if (climbs == 1) "once." else "$climbs times.", width)
+        val top = (px.height - lines.size * PixelFont.LINE_HEIGHT) / 2
+        for ((i, line) in lines.withIndex()) {
+            val color = if (line.startsWith("—")) TERRA else CREAM
+            PixelFont.draw(px, line, (px.width - PixelFont.width(line)) / 2, top + i * PixelFont.LINE_HEIGHT, color, 1f - ending.words)
+        }
+        if (ending.waiting) {
+            val again = "Tap to begin again"
+            PixelFont.draw(px, again, (px.width - PixelFont.width(again)) / 2, layout.knobY, TERRA)
+        }
+    }
+
     /** In dev builds only: buttons that add or take away obols, and one that resets the shop. */
     private fun devScreen(px: Pixels, layout: Layout) {
         val obols = layout.agoraRow(0)
@@ -271,6 +295,9 @@ class UiRenderer {
         val shop = layout.agoraRow(1)
         PixelFont.draw(px, "Shop", shop.x, shop.y, TERRA)
         button(px, layout.devReset, "Reset")
+        val climb = layout.agoraRow(2)
+        PixelFont.draw(px, "Climb", climb.x, climb.y, TERRA)
+        button(px, layout.devTop, "Top")
     }
 
     private fun button(px: Pixels, r: Rect, label: String) {

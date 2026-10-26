@@ -1,5 +1,6 @@
 package dev.oblac.sisyphus.scene
 
+import kotlin.math.min
 import kotlin.math.sqrt
 
 /**
@@ -19,8 +20,14 @@ class SceneGeometry(val width: Int, val height: Int) {
     val rockDx = 19.0
     val rockDy = -rockDx / 2 - rockR * sqrt(1.25)
 
+    /** Where the hill ends and the flat top begins, in pixels walked; null while the hill goes on. */
+    var top: Int? = null
+
     /** First ground row of column [x] when the hero has walked [p] pixels. */
-    fun surfaceY(x: Int, p: Int): Int = baseY - ((x - heroX + p).floorDiv(2) - p.floorDiv(2))
+    fun surfaceY(x: Int, p: Int): Int {
+        val wx = x - heroX + p
+        return baseY - ((top?.let { min(wx, it) } ?: wx).floorDiv(2) - p.floorDiv(2))
+    }
 
     /** Ground coordinate of column [x], fixed to the hill rather than the screen. */
     fun worldX(x: Int, p: Int): Int = x - heroX + p

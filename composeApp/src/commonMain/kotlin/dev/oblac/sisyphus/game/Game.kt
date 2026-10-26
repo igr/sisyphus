@@ -19,6 +19,12 @@ const val DAY_LENGTH = PX_PER_TURN * TURNS_PER_DAY
 /** The first day starts just after sunrise. */
 const val START_TIME = 0.27
 
+/**
+ * The final climb, in pixels walked: as much pushing as 7 days of 5 minutes, at one turn a second,
+ * with everything bought, so at the fastest walk.
+ */
+const val CLIMB = 7 * 5 * 60 * SUN_CAP * PX_PER_TURN
+
 private const val TICKS_PER_TURN = 24
 private const val TICK_ANGLE = 2 * PI / TICKS_PER_TURN
 private const val KEY_EFFORT = "effort"
@@ -29,6 +35,8 @@ private const val KEY_QUOTE_SEED = "quoteSeed"
 private const val KEY_QUOTES_DRAWN = "quotesDrawn"
 private const val KEY_OBOLS = "obols"
 private const val KEY_SAVED_AT = "savedAt"
+private const val KEY_SUMMIT = "summit"
+private const val KEY_CLIMBS = "climbs"
 private const val SAVE_EVERY = 1.0
 
 private fun shopKey(line: Line) = "shop." + line.name.lowercase()
@@ -145,10 +153,21 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     var soundOn = store.load(KEY_SOUND) != 0.0
         private set
 
-    val shop = Shop(Line.entries.associateWith { store.load(shopKey(it))?.toInt() ?: 0 }, store.load(KEY_OBOLS) ?: 0.0)
+    var shop = Shop(Line.entries.associateWith { store.load(shopKey(it))?.toInt() ?: 0 }, store.load(KEY_OBOLS) ?: 0.0)
+        private set
+
+    /** Where the hill ends, in pixels walked; null until all 15 items are bought and the final climb begins. */
+    var summit = store.load(KEY_SUMMIT)?.takeIf { it >= 0 }
+        private set
+    /** How many times Sisyphus reached the top. Starting over keeps it. */
+    var climbs = store.load(KEY_CLIMBS)?.toInt() ?: 0
+        private set
+    /** He stands on the top: the knob moves him no more. */
+    val atTop get() = summit?.let { position >= it } == true
 
     private val quoteSeed = store.load(KEY_QUOTE_SEED)?.toInt() ?: seed
-    val quotes = QuoteBox(quoteSeed, drawn = store.load(KEY_QUOTES_DRAWN)?.toInt() ?: 0, firstTime = effort == 0.0)
+    var quotes = QuoteBox(quoteSeed, drawn = store.load(KEY_QUOTES_DRAWN)?.toInt() ?: 0, firstTime = effort == 0.0)
+        private set
     var onTick: () -> Unit = {}
 
     private var lastTick = floor(knob.angle / TICK_ANGLE).toInt()
@@ -159,6 +178,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
 
     init {
         store.load(KEY_SAVED_AT)?.let { away(wall() - it) }
+        beginClimb()
     }
 
     val dayValue get() = START_TIME + effort / DAY_LENGTH
@@ -169,8 +189,9 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     fun update(dt: Double) {
         clock += dt
         val turn = knob.update(dt)
-        val turns = abs(turn) / (2 * PI)
+        val turns = if (atTop) 0.0 else abs(turn) / (2 * PI)
         moved = turns * min(shop.bonus, SUN_CAP) * PX_PER_TURN
+        summit?.let { if (position + moved >= it - 1e-6) moved = it - position }
         position += moved
         effort += moved
         shop.addWork(turns * shop.bonus)
@@ -233,8 +254,28 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
 
     fun buy(line: Line): Boolean {
         if (!shop.buy(line)) return false
+        beginClimb()
         save()
         return true
+    }
+
+    /** Once everything is bought, the top comes within reach: [CLIMB] more pixels of pushing. */
+    private fun beginClimb() {
+        if (summit != null || !shop.allBought) return
+        summit = position + CLIMB
+        quotes.announce(Quote("The top is in sight: seven more days of pushing.", "Hermes"))
+        dirty = true
+    }
+
+    /** At the top the rock rolls away, and everything starts from the beginning. Only the climbs are counted on. */
+    fun startOver() {
+        climbs++
+        position = 0.0
+        effort = 0.0
+        summit = null
+        shop = Shop()
+        quotes = QuoteBox(quoteSeed, drawn = 0, firstTime = true)
+        save()
     }
 
     /** For dev builds: adds [step] obols, or takes them away, but never below zero. */
@@ -243,9 +284,18 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         save()
     }
 
-    /** For dev builds: the shop starts over. */
+    /** For dev builds: the shop starts over, and with it the final climb. */
     fun resetShop() {
         shop.reset()
+        summit = null
+        save()
+    }
+
+    /** For dev builds: everything bought, and the top two turns away. */
+    fun nearTheTop() {
+        shop.complete()
+        beginClimb()
+        summit?.let { position = it - 2 * SUN_CAP * PX_PER_TURN }
         save()
     }
 
@@ -262,6 +312,8 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         store.save(KEY_QUOTES_DRAWN, quotes.drawn.toDouble())
         store.save(KEY_OBOLS, shop.obols)
         store.save(KEY_SAVED_AT, pausedAt ?: wall())
+        store.save(KEY_SUMMIT, summit ?: -1.0)
+        store.save(KEY_CLIMBS, climbs.toDouble())
         for (line in Line.entries) store.save(shopKey(line), shop.tier(line).toDouble())
         dirty = false
         sinceSave = 0.0

@@ -4,8 +4,10 @@ import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.ITEMS
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.PX_PER_TURN
+import dev.oblac.sisyphus.game.SUN_CAP
 import dev.oblac.sisyphus.gfx.PixelFont
 import dev.oblac.sisyphus.gfx.TRANSPARENT
+import dev.oblac.sisyphus.scene.Ending
 import dev.oblac.sisyphus.ui.Layout
 import dev.oblac.sisyphus.ui.Rect
 import dev.oblac.sisyphus.ui.itemIcon
@@ -15,6 +17,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -247,6 +250,48 @@ class ScreenTest {
         val knob = Rect(l.knobX - 8, l.knobY - 8, 16, 16)
         assertEquals(pixels(plain, knob), pixels(help, knob))
         assertTrue(pixels(help, l.band).sumOf(::light) < pixels(plain, l.band).sumOf(::light) / 2)
+    }
+
+    private val allBought = Line.entries.associate { "shop." + it.name.lowercase() to 3.0 }
+
+    @Test
+    fun atTheTopTheRockRollsAwayTheScreenGoesBlackAndATapStartsOver() {
+        val s = screen(MemoryStore(allBought + mapOf("position" to 100.0, "summit" to 100.0, "effort" to 50_000.0)))
+        val l = s.layout!!
+        val dt = 1 / 60.0
+        s.update(dt)
+        assertNotNull(s.ending)
+        assertEquals(Touch.NONE, s.tap(l.knobX + l.knobR * 0.6f, l.knobY + 0.5f))
+        assertFalse(s.game.knob.held)
+        repeat((Ending.BLACK_AT / dt).toInt() + 2) { s.update(dt) }
+        assertEquals(1, s.game.climbs)
+        assertEquals(1, s.game.day)
+        repeat((3.0 / dt).toInt()) { s.update(dt) }
+        assertEquals(Touch.AGAIN, s.tap(l.knobX.toFloat(), l.knobY.toFloat()))
+        repeat((2.0 / dt).toInt()) { s.update(dt) }
+        assertNull(s.ending)
+        assertEquals(Touch.KNOB, s.tap(l.knobX + l.knobR * 0.6f, l.knobY + 0.5f))
+    }
+
+    @Test
+    fun theClimbsShowUnderTheDay() {
+        fun underDay(climbs: Int): List<Int> {
+            val s = screen(MemoryStore(mapOf("climbs" to climbs.toDouble())))
+            val px = s.render()
+            val d = s.layout!!.dayLabel(s.game.day)
+            return (d.bottom until d.bottom + 10).flatMap { y -> (d.x until d.right).map { x -> px[x, y] } }
+        }
+        assertNotEquals(underDay(0), underDay(2))
+    }
+
+    @Test
+    fun theDevScreenTakesHimNearTheTop() {
+        val s = devScreen()
+        s.openDev()
+        assertEquals(Touch.DEV, s.tap(s.layout!!.devTop))
+        assertTrue(Line.entries.all { s.game.shop.tier(it) == 3 })
+        val left = s.game.summit!! - s.game.position
+        assertTrue(left > 0 && left <= 2 * SUN_CAP * PX_PER_TURN, "left: $left")
     }
 
     @Test

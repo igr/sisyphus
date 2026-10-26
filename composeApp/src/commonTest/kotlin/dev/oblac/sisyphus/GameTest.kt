@@ -1,5 +1,6 @@
 package dev.oblac.sisyphus
 
+import dev.oblac.sisyphus.game.CLIMB
 import dev.oblac.sisyphus.game.DAY_LENGTH
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.Knob
@@ -12,6 +13,8 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
@@ -251,6 +254,60 @@ class GameTest {
         Game(store, seed = 1, wall = { now }).save()
         now = 1000.0
         assertEquals(0.0, Game(store, seed = 1, wall = { now }).effort)
+    }
+
+    private val allBought = Line.entries.associate { "shop." + it.name.lowercase() to 3.0 }
+
+    @Test
+    fun buyingTheLastItemBeginsTheFinalClimb() {
+        val store = MemoryStore(allBought + mapOf("shop.beauty" to 2.0, "obols" to 11.0, "position" to 500.0))
+        val game = Game(store, seed = 1, wall = { 0.0 })
+        assertNull(game.summit)
+        assertTrue(game.buy(Line.BEAUTY))
+        assertEquals(500.0 + CLIMB, game.summit!!, 1e-9)
+        assertEquals("Hermes", game.quotes.quote.author)
+        assertEquals(500.0 + CLIMB, Game(store, seed = 1, wall = { 0.0 }).summit!!, 1e-9)
+    }
+
+    @Test
+    fun anOldSaveWithEverythingBoughtBeginsTheClimb() {
+        val game = Game(MemoryStore(allBought + mapOf("position" to 500.0)), seed = 1, wall = { 0.0 })
+        assertEquals(500.0 + CLIMB, game.summit!!, 1e-9)
+    }
+
+    @Test
+    fun theTopIsSevenDaysOfFiveMinutesAway() {
+        val game = Game(MemoryStore(allBought), seed = 1, wall = { 0.0 })
+        game.turn((7 * 300 - 1) * 2 * PI)
+        assertFalse(game.atTop)
+        game.turn(2 * 2 * PI)
+        assertTrue(game.atTop)
+    }
+
+    @Test
+    fun theTopStopsHim() {
+        val game = Game(MemoryStore(allBought + mapOf("position" to 90.0, "summit" to 100.0)), seed = 1, wall = { 0.0 })
+        game.turn(2 * 2 * PI)
+        assertTrue(game.atTop)
+        assertEquals(100.0, game.position)
+        game.turn(2 * 2 * PI)
+        assertEquals(100.0, game.position)
+    }
+
+    @Test
+    fun startingOverKeepsOnlyTheClimbsAndTheSound() {
+        val store = MemoryStore(allBought + mapOf("position" to 100.0, "summit" to 100.0, "effort" to 50_000.0, "obols" to 40.0, "sound" to 0.0))
+        val game = Game(store, seed = 1, wall = { 0.0 })
+        game.startOver()
+        for (g in listOf(game, Game(store, seed = 1, wall = { 0.0 }))) {
+            assertEquals(1, g.climbs)
+            assertEquals(1, g.day)
+            assertEquals(0.0, g.position)
+            assertEquals(0.0, g.shop.obols)
+            assertTrue(Line.entries.all { g.shop.tier(it) == 0 })
+            assertNull(g.summit)
+            assertFalse(g.soundOn)
+        }
     }
 
     @Test

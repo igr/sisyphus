@@ -11,6 +11,7 @@ import dev.oblac.sisyphus.gfx.lerpColor
 import dev.oblac.sisyphus.gfx.rgb
 import dev.oblac.sisyphus.gfx.WHITE
 import dev.oblac.sisyphus.gfx.shade
+import dev.oblac.sisyphus.gfx.sprite
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.ceil
@@ -61,6 +62,9 @@ private val MOON_SHADE = rgb(0xC8C6B2)
 private val TEXT = rgb(0xF1E4C8)
 private val TEXT_SHADOW = rgb(0x1A120C)
 
+/** The top of the hill, with the number of climbs beside it under the day. */
+private val PEAK = sprite(mapOf('#' to TEXT), "...#...\n..###..\n.#####.\n#######").outlined(TEXT_SHADOW)
+
 /** The Pleiades, the seven sisters. The last one is Merope, the faintest: she married a mortal. */
 internal val PLEIADES = listOf(0 to 0, 3 to -1, 5 to 1, 2 to 3, 6 to 4, 8 to 2, 4 to 6)
 
@@ -89,7 +93,8 @@ class SceneRenderer(private val geo: SceneGeometry) {
         )
     }
 
-    fun render(px: Pixels, game: Game, world: World, banner: Double, hud: Boolean = true) {
+    /** At the top, [rolled] is how far the rock has rolled back down. */
+    fun render(px: Pixels, game: Game, world: World, banner: Double, hud: Boolean = true, rolled: Double? = null) {
         val t = game.timeOfDay
         val atm = atmosphere(t, world.overcast)
         val p = floor(game.position).toInt()
@@ -109,11 +114,11 @@ class SceneRenderer(private val geo: SceneGeometry) {
         drawGround(px, atm, p)
         drawProps(px, atm, p)
         drawBirds(px, world, game.clock)
-        drawRock(px, atm, game.position, game.shop.tier(Line.ROCK))
+        drawRock(px, atm, game.position, game.shop.tier(Line.ROCK), rolled)
         drawHero(px, atm, game, p)
         drawParticles(px, world, atm)
         drawRain(px, world, atm)
-        if (hud) drawDay(px, game.day, banner)
+        if (hud) drawDay(px, game.day, game.climbs, banner)
     }
 
     private fun orb(p: Double): Orb? {
@@ -354,8 +359,30 @@ class SceneRenderer(private val geo: SceneGeometry) {
         }
     }
 
-    private fun drawRock(px: Pixels, atm: Atmosphere, position: Double, tier: Int) =
-        paintRock(px, geo.heroX + geo.rockDx, geo.baseY + geo.rockDy, geo.rockR, position / geo.rockR, tier, atm.light)
+    /**
+     * The rock rests ahead of him on the slope, or on the flat top once it gets there.
+     * At the top it rolls back [rolled] pixels: along the top, past him, and down the slope.
+     */
+    private fun drawRock(px: Pixels, atm: Atmosphere, position: Double, tier: Int, rolled: Double?) {
+        val r = geo.rockR
+        val slope = sqrt(1.25)
+        var x = geo.heroX + geo.rockDx
+        var y = geo.baseY + geo.rockDy
+        val p = floor(position).toInt()
+        val top = geo.top
+        if (top != null && p + geo.rockDx >= top) y = geo.surfaceY(x.toInt(), p) - r
+        if (rolled != null) {
+            val flat = x - geo.heroX
+            if (rolled <= flat) {
+                x -= rolled
+            } else {
+                val dx = (rolled - flat) / slope
+                x = geo.heroX - dx
+                y = geo.baseY + dx / 2 - r * slope
+            }
+        }
+        paintRock(px, x, y, r, (position - (rolled ?: 0.0)) / r, tier, atm.light)
+    }
 
     private fun drawHero(px: Pixels, atm: Atmosphere, game: Game, p: Int) {
         val frame = if (game.stillFor > 0.5) hero.idle[if (sin(game.clock * 2.2) > 0.2) 1 else 0]
@@ -387,8 +414,12 @@ class SceneRenderer(private val geo: SceneGeometry) {
         }
     }
 
-    private fun drawDay(px: Pixels, day: Int, banner: Double) {
+    private fun drawDay(px: Pixels, day: Int, climbs: Int, banner: Double) {
         PixelFont.drawOutlined(px, "DAY $day", 4, 4, TEXT, TEXT_SHADOW)
+        if (climbs > 0) {
+            px.draw(PEAK, 3, 16)
+            PixelFont.drawOutlined(px, "$climbs", 4 + PEAK.width, 14, TEXT, TEXT_SHADOW)
+        }
         if (banner <= 0) return
         val text = "Day $day"
         val fade = when {

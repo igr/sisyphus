@@ -3,6 +3,7 @@ package dev.oblac.sisyphus
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.gfx.Pixels
+import dev.oblac.sisyphus.scene.Ending
 import dev.oblac.sisyphus.scene.SceneGeometry
 import dev.oblac.sisyphus.scene.SceneRenderer
 import dev.oblac.sisyphus.scene.World
@@ -18,7 +19,7 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlin.random.Random
 
-enum class Touch { NONE, KNOB, SOUND, SHOP, BUY, DEV, HELP }
+enum class Touch { NONE, KNOB, SOUND, SHOP, BUY, DEV, HELP, AGAIN }
 
 /** The whole screen is one small framebuffer, scaled up by a whole number so every pixel stays sharp. */
 private const val TARGET_WIDTH = 144f
@@ -54,7 +55,12 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
     var helpOpen = false
         private set
 
+    /** The top: from the moment he reaches it until a tap brings the first morning back. */
+    var ending: Ending? = null
+        private set
+
     val world = World(seed)
+    private var geo: SceneGeometry? = null
     private val ui = UiRenderer()
     private var scene = Pixels(1, 1)
     private var sceneRenderer: SceneRenderer? = null
@@ -76,13 +82,25 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
         val l = Layout(w, h, safeTop.ceilDiv(s), safeBottom.ceilDiv(s), safeLeft.ceilDiv(s), safeRight.ceilDiv(s))
         layout = l
         val geo = SceneGeometry(l.scene.w, l.scene.h)
+        this.geo = geo
         scene = Pixels(geo.width, geo.height)
         sceneRenderer = SceneRenderer(geo)
         world.reset(geo, game.weather)
     }
 
     fun update(dt: Double) {
+        geo?.top = game.summit?.let { floor(it).toInt() }
         game.update(dt)
+        val end = ending ?: if (game.atTop) Ending().also { ending = it } else null
+        if (end != null) {
+            val black = end.time >= Ending.BLACK_AT
+            end.update(dt)
+            if (!black && end.time >= Ending.BLACK_AT) {
+                game.startOver()
+                geo?.let { world.reset(it, game.weather) }
+            }
+            if (end.over) ending = null
+        }
         if (layout != null) {
             val stars = atmosphere(game.timeOfDay, world.overcast).stars
             world.update(dt, game.moved, game.speed, floor(game.position).toInt(), game.weather, game.timeOfDay, stars, game.shop.tier(Line.BEAUTY))
@@ -100,7 +118,7 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
             ui.agora(pixels, l, game.shop, game.soundOn, devOpen)
             offer?.let { game.shop.next(it) }?.let { ui.offer(pixels, l, it) }
         } else {
-            renderer.render(scene, game, world, banner)
+            renderer.render(scene, game, world, banner, rolled = ending?.rolled)
             pixels.draw(scene, l.scene.x, l.scene.y)
             ui.bezel(pixels, l.display)
             val helpers = listOfNotNull(game.shop.owned(Line.BESIDE), game.shop.owned(Line.ALONE))
@@ -112,6 +130,7 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
         }
         ui.coins(pixels, l.coinIcon, game.shop.obols.toInt())
         if (helpOpen) ui.help(pixels, l, game.day, game.shop.obols.toInt())
+        ending?.let { ui.ending(pixels, l, it, game.climbs) }
         return pixels
     }
 
@@ -120,6 +139,11 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
         val l = layout ?: return Touch.NONE
         val x = (xPx - offsetX) / scale
         val y = (yPx - offsetY) / scale
+        ending?.let {
+            if (!it.waiting) return Touch.NONE
+            it.wake()
+            return Touch.AGAIN
+        }
         if (helpOpen) {
             helpOpen = false
             return Touch.HELP
@@ -154,6 +178,7 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
                 when {
                     step != null -> game.addObols(DEV_STEPS[step])
                     l.devReset.near(x, y, 0) -> game.resetShop()
+                    l.devTop.near(x, y, 0) -> game.nearTheTop()
                     else -> return Touch.NONE
                 }
                 return Touch.DEV

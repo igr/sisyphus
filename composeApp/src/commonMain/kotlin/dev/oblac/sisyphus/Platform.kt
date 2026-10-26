@@ -59,7 +59,7 @@ fun Sound.play(touch: Touch, on: Boolean) {
         Touch.NONE -> {}
         Touch.KNOB -> prepare()
         Touch.BUY -> win()
-        Touch.SOUND, Touch.SHOP, Touch.DEV, Touch.HELP -> ui()
+        Touch.SOUND, Touch.SHOP, Touch.DEV, Touch.HELP, Touch.AGAIN -> ui()
     }
 }
 

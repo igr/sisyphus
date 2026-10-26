@@ -57,6 +57,9 @@ class Shop(tiers: Map<Line, Int> = emptyMap(), obols: Double = 0.0) {
 
     fun tier(line: Line): Int = tiers.getValue(line)
 
+    /** All 15 items are bought: the final climb can begin. */
+    val allBought get() = Line.entries.all { tier(it) == 3 }
+
     fun next(line: Line): Item? = ITEMS.firstOrNull { it.line == line && it.tier == tier(line) + 1 }
 
     fun buy(line: Line): Boolean {
@@ -84,6 +87,11 @@ class Shop(tiers: Map<Line, Int> = emptyMap(), obols: Double = 0.0) {
     /** For dev builds: everything bought goes back to the market. */
     fun reset() {
         for (line in Line.entries) tiers[line] = 0
+    }
+
+    /** For dev builds: everything is bought. */
+    fun complete() {
+        for (line in Line.entries) tiers[line] = 3
     }
 
     /** The newest item bought in [line], the one that sets its effect; null before the first. */

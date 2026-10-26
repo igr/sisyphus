@@ -63,6 +63,9 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     /** In the dev screen, the button that empties the shop, below the "Shop" title. */
     val devReset = agoraRow(1).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("Reset") + 8, BUTTON_HEIGHT) }
 
+    /** In the dev screen, the button that buys everything and takes him to two turns below the top. */
+    val devTop = agoraRow(2).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("Top") + 8, BUTTON_HEIGHT) }
+
     private val offerHeight = 5 + OFFER_ICON + 5 + PixelFont.LINE_HEIGHT + 3 + OFFER_LINES * PixelFont.LINE_HEIGHT +
         4 + PixelFont.LINE_HEIGHT + 4 + BUTTON_HEIGHT + 5
 

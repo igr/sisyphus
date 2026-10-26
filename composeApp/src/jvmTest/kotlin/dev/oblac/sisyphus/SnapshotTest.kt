@@ -2,6 +2,7 @@ package dev.oblac.sisyphus
 
 import dev.oblac.sisyphus.game.DAY_LENGTH
 import dev.oblac.sisyphus.game.ITEMS
+import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.START_TIME
 import dev.oblac.sisyphus.game.Weather
@@ -9,6 +10,7 @@ import dev.oblac.sisyphus.audio.SAMPLE_RATE
 import dev.oblac.sisyphus.audio.loadClick
 import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.gfx.rgb
+import dev.oblac.sisyphus.scene.Ending
 import dev.oblac.sisyphus.scene.PROPS
 import dev.oblac.sisyphus.scene.SceneGeometry
 import dev.oblac.sisyphus.scene.SceneRenderer
@@ -132,6 +134,26 @@ class SnapshotTest {
         val s = Screen(Game(store, seed = 3), seed = 5).apply { resize(1179, 2556, 177, 102) }
         s.idle(1.0)
         write(s.render(), "9-helpers", 3)
+    }
+
+    /** The top: the flat top ahead, standing on it, the rock rolling down, the black screen, and the first morning again. */
+    @Test
+    fun summit() {
+        val bought = Line.entries.associate { "shop." + it.name.lowercase() to 3.0 }
+        val store = MemoryStore(bought + mapOf("effort" to effortAt(40, 0.42), "position" to 37_740.0, "summit" to 37_800.0))
+        val s = Screen(Game(store, seed = 3), seed = 5).apply { resize(1179, 2556, 177, 102) }
+        s.idle(0.5)
+        write(s.render(), "10-near-top", 3)
+        while (s.ending == null) s.push(10)
+        s.idle(1.0)
+        write(s.render(), "10-top", 3)
+        s.idle(2.3)
+        write(s.render(), "10-rolling", 3)
+        s.idle(Ending.BLACK_AT + Ending.READ - 3.0)
+        write(s.render(), "10-black", 3)
+        s.press(s.offsetX + 10f, s.offsetY + 10f)
+        s.idle(2.0)
+        write(s.render(), "10-again", 3)
     }
 
     /** The pictures of all 15 items, a line per row, at the size the offer shows them. */
