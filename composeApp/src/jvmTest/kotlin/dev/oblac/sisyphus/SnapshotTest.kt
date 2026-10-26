@@ -134,7 +134,7 @@ class SnapshotTest {
     /** Merope and Amalthea, the first sidekick and the first god, in the display's bottom-right corner. */
     @Test
     fun helpers() {
-        val store = MemoryStore(mapOf("effort" to effortAt(2, 0.45), "shop.beside" to 1.0, "shop.alone" to 1.0))
+        val store = MemoryStore(mapOf("effort" to effortAt(2, 0.45), "shop.beside" to 1.0, "shop.alone" to 1.0, "shop.blessing" to 1.0, "obols" to 3.6))
         val s = Screen(Game(store, seed = 3), seed = 5).apply { resize(1179, 2556, 177, 102) }
         s.idle(1.0)
         write(s.render(), "9-helpers", 3)
@@ -206,7 +206,7 @@ class SnapshotTest {
     @Test
     fun help() {
         for ((name, size) in listOf("0-help" to listOf(1179, 2556, 177, 102), "0-help-small" to listOf(1080, 2340, 144, 102))) {
-            val s = Screen(Game(MemoryStore(mapOf("effort" to effortAt(2, 0.45), "obols" to 12.0)), seed = 3), seed = 5)
+            val s = Screen(Game(MemoryStore(mapOf("effort" to effortAt(2, 0.45), "obols" to 12.4)), seed = 3), seed = 5)
             s.resize(size[0], size[1], size[2], size[3])
             s.idle(1.0)
             val l = s.layout!!

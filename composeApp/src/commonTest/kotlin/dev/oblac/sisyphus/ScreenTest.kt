@@ -10,6 +10,7 @@ import dev.oblac.sisyphus.gfx.PixelFont
 import dev.oblac.sisyphus.gfx.TRANSPARENT
 import dev.oblac.sisyphus.scene.Ending
 import dev.oblac.sisyphus.ui.Layout
+import dev.oblac.sisyphus.ui.OBOL_FILL
 import dev.oblac.sisyphus.ui.Rect
 import dev.oblac.sisyphus.ui.itemIcon
 import dev.oblac.sisyphus.ui.worldPreview
@@ -245,8 +246,8 @@ class ScreenTest {
     }
 
     @Test
-    fun theHelpDimsAllButTheDayTheObolsAndTheKnob() {
-        val s = screen(MemoryStore(mapOf("obols" to 12.0)))
+    fun theHelpDimsAllButTheDayTheBarTheObolsAndTheKnob() {
+        val s = screen(MemoryStore(mapOf("obols" to 12.5)))
         val l = s.layout!!
         fun shot() = s.render().let { px -> List(px.height) { y -> List(px.width) { x -> px[x, y] } } }
         val plain = shot()
@@ -254,12 +255,45 @@ class ScreenTest {
         val help = shot()
         fun pixels(shot: List<List<Int>>, r: Rect) = (r.y until r.bottom).flatMap { y -> (r.x until r.right).map { x -> shot[y][x] } }
         fun light(c: Int) = (c shr 16 and 0xFF) + (c shr 8 and 0xFF) + (c and 0xFF)
-        for (text in listOf(l.dayLabel(s.game.day), l.coinIcon)) {
+        for (text in listOf(l.dayLabel(s.game.day), l.obolBar, l.coinIcon)) {
             assertEquals(pixels(plain, text).maxOf(::light), pixels(help, text).maxOf(::light))
         }
         val knob = Rect(l.knobX - 8, l.knobY - 8, 16, 16)
         assertEquals(pixels(plain, knob), pixels(help, knob))
         assertTrue(pixels(help, l.band).sumOf(::light) < pixels(plain, l.band).sumOf(::light) / 2)
+    }
+
+    @Test
+    fun theBarShowsHowFarTheNextObolHasCome() {
+        fun filled(obols: Double): Int {
+            val s = screen(MemoryStore(mapOf("obols" to obols)))
+            val px = s.render()
+            val bar = s.layout!!.obolBar
+            return (bar.x + 1 until bar.right - 1).count { px[it, bar.y + bar.h / 2] == OBOL_FILL }
+        }
+        val inner = screen().layout!!.obolBar.w - 2
+        assertEquals(0, filled(3.0))
+        assertEquals(inner / 4, filled(0.25))
+        assertEquals(inner / 2, filled(2.5))
+    }
+
+    @Test
+    fun theBarSitsBetweenTheDayAndTheObolsOnTheSmallestPhone() {
+        val l = smallest().layout!!
+        val bar = l.obolBar
+        assertTrue(l.dayLabel(9999).right + 2 <= bar.x, "the bar starts at ${bar.x}")
+        assertTrue(bar.right + 2 <= l.coinIcon.x, "the bar ends at ${bar.right}")
+        assertTrue(bar.y >= l.coinIcon.y && bar.bottom <= l.coinIcon.bottom)
+    }
+
+    @Test
+    fun theBarIsOnlyOnTheMainScreen() {
+        val s = screen(MemoryStore(mapOf("obols" to 2.5)))
+        val l = s.layout!!
+        fun start() = s.render()[l.obolBar.x + 1, l.obolBar.y + l.obolBar.h / 2]
+        assertEquals(OBOL_FILL, start())
+        s.tap(l.coinIcon)
+        assertNotEquals(OBOL_FILL, start())
     }
 
     private val allBought = Line.entries.associate { "shop." + it.id to 3.0 }
@@ -530,24 +564,28 @@ class ScreenTest {
     }
 
     @Test
-    fun theHelpersStandSideBySideInTheDisplaysBottomRightCorner() {
-        val helpers = items(Place.CORINTH).filter { it.line == Line.SIDEKICKS || it.line == Line.GODS }
-        /** The names of the helpers shown in the corner, and in the place next to it. */
-        fun shown(sidekick: Int, god: Int): List<List<String>> {
-            val s = screen(MemoryStore(mapOf("shop.beside" to sidekick.toDouble(), "shop.alone" to god.toDouble())))
+    fun theSidekickGodAndBlessingStandSideBySideInTheDisplaysBottomRightCorner() {
+        val corner = items(Place.CORINTH).filter { it.line == Line.SIDEKICKS || it.line == Line.GODS || it.line == Line.BLESSING }
+        /** The names of the items shown in the corner, in the place next to it, and in the place after that. */
+        fun shown(sidekick: Int, god: Int, blessing: Int = 0): List<List<String>> {
+            val store = MemoryStore(mapOf("shop.beside" to sidekick.toDouble(), "shop.alone" to god.toDouble(), "shop.blessing" to blessing.toDouble()))
+            val s = screen(store)
             val px = s.render()
-            return (0..1).map { slot ->
+            return (0..2).map { slot ->
                 val r = s.layout!!.helper(slot)
-                helpers.filter { item ->
+                corner.filter { item ->
                     val icon = itemIcon(item)
                     (0 until 16).all { y -> (0 until 16).all { x -> icon[x, y] == TRANSPARENT || px[r.x + 1 + x, r.y + 1 + y] == icon[x, y] } }
                 }.map { it.name }
             }
         }
-        assertEquals(listOf(listOf(), listOf()), shown(0, 0))
-        assertEquals(listOf(listOf("Bellerophon"), listOf()), shown(2, 0))
-        assertEquals(listOf(listOf("Amalthea"), listOf()), shown(0, 1))
-        assertEquals(listOf(listOf("Thanatos"), listOf("Heracles")), shown(3, 3))
+        assertEquals(listOf(listOf(), listOf(), listOf()), shown(0, 0))
+        assertEquals(listOf(listOf("Bellerophon"), listOf(), listOf()), shown(2, 0))
+        assertEquals(listOf(listOf("Amalthea"), listOf(), listOf()), shown(0, 1))
+        assertEquals(listOf(listOf("Thanatos"), listOf("Heracles"), listOf()), shown(3, 3))
+        assertEquals(listOf(listOf("Purse of Hermes"), listOf(), listOf()), shown(0, 0, 1))
+        assertEquals(listOf(listOf("Gift of Tyche"), listOf("Merope"), listOf()), shown(1, 0, 2))
+        assertEquals(listOf(listOf("Wealth of Plutus"), listOf("Thanatos"), listOf("Heracles")), shown(3, 3, 3))
     }
 
     @Test

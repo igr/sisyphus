@@ -151,15 +151,16 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
             renderer.render(scene, game, world, banner, rolled = ending?.rolled)
             pixels.draw(scene, l.scene.x, l.scene.y)
             ui.bezel(pixels, l.display)
-            val helpers = listOfNotNull(game.shop.owned(Line.SIDEKICKS), game.shop.owned(Line.GODS))
-            helpers.forEachIndexed { i, item -> ui.helper(pixels, l.helper(helpers.size - 1 - i), item) }
+            ui.obolBar(pixels, l.obolBar, game.shop.obols)
+            val corner = listOfNotNull(game.shop.owned(Line.SIDEKICKS), game.shop.owned(Line.GODS), game.shop.owned(Line.BLESSING))
+            corner.forEachIndexed { i, item -> ui.helper(pixels, l.helper(corner.size - 1 - i), item) }
             ui.band(pixels, l.band)
             ui.quote(pixels, l.quote, game.quotes, game.clock)
             ui.knob(pixels, l, game)
             ui.helpButton(pixels, l.helpIcon)
         }
         ui.coins(pixels, l.coinIcon, game.shop.obols.toInt())
-        if (helpOpen) ui.help(pixels, l, game.day, game.shop.obols.toInt())
+        if (helpOpen) ui.help(pixels, l, game.day, game.shop.obols)
         ending?.let { ui.ending(pixels, l, it, game.climbs) }
         return pixels
     }

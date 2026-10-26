@@ -34,9 +34,15 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
      */
     val coinIcon = (COIN_SIZE + 2 + PixelFont.width("9999")).let { w -> Rect(scene.right - 4 - w, scene.y + 4, w, COIN_SIZE) }
 
+    /** In the middle of the display's top row, between the day and the obols, the bar that fills up to the next obol. */
+    val obolBar = Rect(scene.x + (scene.w - OBOL_BAR) / 2, coinIcon.y + 1, OBOL_BAR, 5)
+
     val agoraTitle = Rect(left + 2, coinIcon.y, coinIcon.right - left - 2, PixelFont.LINE_HEIGHT)
 
-    /** In the display's bottom-right corner, the helpers bought so far, outlined: [slot] 0 is the corner, 1 is next to it. */
+    /**
+     * In the display's bottom-right corner, the sidekick, the god and the blessing bought so far, outlined, in that order:
+     * [slot] 0 is the corner, 1 is next to it, 2 is next to that.
+     */
     fun helper(slot: Int) = Rect(scene.right - 3 - (slot + 1) * HELPER - slot * 2, scene.bottom - 3 - HELPER, HELPER, HELPER)
 
     /** In the bottom-left corner of the main screen, "(?)" opens the help. */
@@ -127,6 +133,7 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
         const val SPEAKER_WIDTH = 11
         const val SPEAKER_HEIGHT = 7
         const val COIN_SIZE = 7
+        const val OBOL_BAR = 30
         const val BUTTON_HEIGHT = 13
         const val OFFER_ICON = 32
         const val OFFER_LINES = 6

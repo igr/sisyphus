@@ -53,8 +53,9 @@ All 15 items cost 87 obols together. In work per obol, the blessings are 504 (He
 ## What the player sees
 
 - **The Agora Market.** The shop is a full screen, named after the Greek marketplace. The obol count sits in the top-right corner of the display, across from the day. Tapping it opens the Agora Market: the five lines, and the sound setting at the bottom. The count stays in the same place there, and tapping it again closes the market. Items you cannot afford yet show a gray price and do nothing. Tapping an item you can afford opens an offer: its picture, what it does, and Yes or No. Yes buys it, with a short fanfare. The speaker leaves the main screen.
+- **The obol bar.** Between the day and the obols, a small bar fills up as the next obol comes, and empties when it is there. The help points at it.
 - **Rocks.** Each rock looks different: the river stone smooth and grey, the pumice light and full of small holes, the sphere of Daedalus perfectly round and polished.
-- **Helpers** are not drawn in this project. They work, but you see them only in the shop.
+- **Helpers and blessings** are not drawn on the hill. Their pictures stand side by side in the bottom-right corner of the display: the sidekick, the god, and the blessing in the corner itself.
 - **Dolphins** jump in the sea now and then.
 - **Pegasus** flies across the sky now and then.
 - **The Pleiades** shine in the night sky: seven stars, and Merope, his wife, is one of them. She is the faintest, because she married a mortal.

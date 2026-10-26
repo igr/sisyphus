@@ -91,6 +91,10 @@ private val CHECK = listOf(
 internal val COIN_COLORS = mapOf('#' to BRONZE[1], 'h' to BRONZE[5], 'f' to BRONZE[4], 's' to BRONZE[3])
 private val COIN_GRAY = mapOf('#' to rgb(0x2E2924), 'h' to rgb(0x7A7068), 'f' to DISABLED, 's' to rgb(0x4A423A))
 
+/** The bronze of the obol bar, as far as the next obol has come. */
+internal val OBOL_FILL = BRONZE[4]
+private val OBOL_EMPTY = rgb(0x3A2E24)
+
 /** A color at a third of its light, for what the help does not point at. */
 private fun dim(c: Int) = rgb((c shr 16 and 0xFF) / 3, (c shr 8 and 0xFF) / 3, (c and 0xFF) / 3)
 
@@ -187,13 +191,24 @@ class UiRenderer {
         coin(px, x - 2 - Layout.COIN_SIZE, r.y, COIN_COLORS, outline = true)
     }
 
+    /** The bar between the day and the obols: it fills up as the next obol comes, and empties when it is there. */
+    fun obolBar(px: Pixels, r: Rect, obols: Double) {
+        val inner = r.w - 2
+        val filled = (obols % 1.0 * inner).toInt()
+        px.fillRect(r.x, r.y, r.w, r.h, SHADOW)
+        px.fillRect(r.x + 1, r.y + 1, inner, r.h - 2, OBOL_EMPTY)
+        if (filled == 0) return
+        px.fillRect(r.x + 1, r.y + 1, filled, r.h - 2, OBOL_FILL)
+        px.hline(r.x + 1, r.x + filled, r.y + 1, BRONZE[5])
+    }
+
     /** A helper bought in the Agora, with a dark outline, so it shows on any ground. */
     fun helper(px: Pixels, r: Rect, item: Item) = px.draw(outlined.getOrPut(item) { itemIcon(item).outlined(SHADOW) }, r.x, r.y)
 
     fun helpButton(px: Pixels, r: Rect) = PixelFont.draw(px, "(?)", r.x, r.y, TERRA)
 
-    /** The help, over the main screen: all dims but the day, the obols and the knob, and a note points at each. */
-    fun help(px: Pixels, layout: Layout, day: Int, obols: Int) {
+    /** The help, over the main screen: all dims but the day, the obol bar, the obols and the knob, and a note points at each. */
+    fun help(px: Pixels, layout: Layout, day: Int, obols: Double) {
         val kx = layout.knobX + 0.5
         val ky = layout.knobY + 0.5
         val kr = layout.knobR + 6.0
@@ -202,19 +217,30 @@ class UiRenderer {
         }
         val dayLabel = layout.dayLabel(day)
         val coins = layout.coinIcon
+        val bar = layout.obolBar
         PixelFont.drawOutlined(px, "DAY $day", dayLabel.x + 1, dayLabel.y + 1, CREAM, SHADOW)
-        coins(px, coins, obols)
+        obolBar(px, bar, obols)
+        coins(px, coins, obols.toInt())
         helpButton(px, layout.helpIcon)
 
-        val dayNote = PixelFont.wrap("The sun moves only while you push. Tap the day for the worlds.", layout.scene.w * 2 / 3)
-        val dayY = dayLabel.bottom + 12
+        // Each arrow runs down to its note, past the notes above it: the bar's note goes first, then the day's, then the obols'.
+        val obolsArrow = coins.right - PixelFont.width(min(obols.toInt(), 9999).toString()) - 6
+        val barNote = PixelFont.wrap("The bar fills up to the next obol.", layout.scene.w * 3 / 5)
+        val barY = bar.bottom + 9
+        for ((i, line) in barNote.withIndex()) {
+            PixelFont.drawOutlined(px, line, bar.x + bar.w / 2 - PixelFont.width(line) / 2, barY + i * PixelFont.LINE_HEIGHT, CREAM, OUTLINE)
+        }
+        arrowUp(px, bar.x + bar.w / 2, bar.bottom + 1, barY - 3)
+
+        val dayNote = PixelFont.wrap("The sun moves only while you push. Tap the day for the worlds.", obolsArrow - 4 - (dayLabel.x + 1))
+        val dayY = barY + barNote.size * PixelFont.LINE_HEIGHT + 8
         note(px, dayNote, dayLabel.x + 1, dayY, right = false)
         arrowUp(px, dayLabel.x + 6, dayLabel.bottom + 1, dayY - 3)
 
-        val obolsNote = PixelFont.wrap("Obols you earn by pushing. Tap them to open the market.", layout.scene.w * 2 / 3)
+        val obolsNote = PixelFont.wrap("Obols you earn by pushing. Tap them for the market.", layout.scene.w - 8)
         val obolsY = dayY + dayNote.size * PixelFont.LINE_HEIGHT + 8
         note(px, obolsNote, coins.right, obolsY, right = true)
-        arrowUp(px, coins.right - PixelFont.width(min(obols, 9999).toString()) - 6, coins.bottom + 2, obolsY - 3)
+        arrowUp(px, obolsArrow, coins.bottom + 2, obolsY - 3)
 
         val knobNote = PixelFont.wrap("Turn the knob, either way, to push the rock.", layout.quote.w)
         val tip = layout.knobY - layout.knobR - 7
