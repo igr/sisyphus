@@ -253,7 +253,7 @@ class ScreenTest {
         assertTrue(pixels(help, l.band).sumOf(::light) < pixels(plain, l.band).sumOf(::light) / 2)
     }
 
-    private val allBought = Line.entries.associate { "shop." + it.name.lowercase() to 3.0 }
+    private val allBought = Line.entries.associate { "shop." + it.id to 3.0 }
 
     @Test
     fun atTheTopTheRockRollsAwayTheScreenGoesBlackAndATapStartsOver() {
@@ -385,9 +385,9 @@ class ScreenTest {
         val s = screen(MemoryStore(mapOf("obols" to 2.0)))
         val l = s.layout!!
         s.tap(l.coinIcon)
-        s.tap(l.agoraRow(Line.ALONE.ordinal))
+        s.tap(l.agoraRow(Line.GODS.ordinal))
         assertEquals(Touch.BUY, s.tap(l.offerYes))
-        assertEquals(1, s.game.shop.tier(Line.ALONE))
+        assertEquals(1, s.game.shop.tier(Line.GODS))
         assertEquals(1.0, s.game.shop.obols, 1e-9)
         assertNull(s.offer)
     }
@@ -442,7 +442,7 @@ class ScreenTest {
 
     @Test
     fun theHelpersStandSideBySideInTheDisplaysBottomRightCorner() {
-        val helpers = ITEMS.filter { it.line == Line.BESIDE || it.line == Line.ALONE }
+        val helpers = ITEMS.filter { it.line == Line.SIDEKICKS || it.line == Line.GODS }
         /** The names of the helpers shown in the corner, and in the place next to it. */
         fun shown(sidekick: Int, god: Int): List<List<String>> {
             val s = screen(MemoryStore(mapOf("shop.beside" to sidekick.toDouble(), "shop.alone" to god.toDouble())))

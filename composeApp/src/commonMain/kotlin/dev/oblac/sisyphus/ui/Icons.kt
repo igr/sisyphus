@@ -269,8 +269,8 @@ private val PLEIADES_ICON = Pixels(16, 16).apply {
 }
 
 private val ICONS = mapOf(
-    Line.BESIDE to listOf(MEROPE, BELLEROPHON, HERACLES),
-    Line.ALONE to listOf(AMALTHEA, PAN, THANATOS),
+    Line.SIDEKICKS to listOf(MEROPE, BELLEROPHON, HERACLES),
+    Line.GODS to listOf(AMALTHEA, PAN, THANATOS),
     Line.BLESSING to listOf(PURSE, CORNUCOPIA, COINS),
     Line.BEAUTY to listOf(DOLPHIN, PEGASUS, PLEIADES_ICON),
 )

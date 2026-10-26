@@ -44,3 +44,5 @@ The knob click, the click of every other tap and the sound of buying are sound f
 - `ui` — layout, frame, Greek key band, quote panel, knob
 - `Screen.kt` maps touches to virtual pixels; `App.kt` shows the framebuffer in Compose
 - `iosMain`, `androidMain`, `jvmMain` — saving, sound and haptics for each platform; `androidApp` is the Android app
+
+The data that the game saves on the device is listed in [docs/saved-data.md](docs/saved-data.md).

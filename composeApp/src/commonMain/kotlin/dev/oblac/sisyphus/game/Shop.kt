@@ -1,7 +1,16 @@
 package dev.oblac.sisyphus.game
 
-/** The five lines of the shop, in the order the Agora shows them. */
-enum class Line { ROCK, BESIDE, ALONE, BLESSING, BEAUTY }
+/**
+ * The five lines of the shop, in the order the Agora shows them. Saved games know a line by its [id], which never changes:
+ * the Sidekicks and the Gods keep the ids they had before they got these names.
+ */
+enum class Line(val id: String) {
+    ROCK("rock"),
+    SIDEKICKS("beside"),
+    GODS("alone"),
+    BLESSING("blessing"),
+    BEAUTY("beauty"),
+}
 
 /**
  * One thing to buy. Once owned, [effect] is its line's value: a bonus, turns an hour, or work per obol.
@@ -22,17 +31,17 @@ val ITEMS = listOf(
         "Light, and full of holes. Every turn counts 2 times. It takes the place of the river stone."),
     Item(Line.ROCK, 3, "Sphere of Daedalus", "turns count 3x", 9, 3.0,
         "Made perfectly round by the great inventor. Every turn counts 3 times. It takes the place of the pumice."),
-    Item(Line.BESIDE, 1, "Merope", "helps push 1.25x", 3, 1.25,
+    Item(Line.SIDEKICKS, 1, "Merope", "helps push 1.25x", 3, 1.25,
         "His wife pushes beside him while you turn the knob. Each turn counts 1.25 times more, on top of the rock."),
-    Item(Line.BESIDE, 2, "Bellerophon", "helps push 1.5x", 6, 1.5,
+    Item(Line.SIDEKICKS, 2, "Bellerophon", "helps push 1.5x", 6, 1.5,
         "His grandson, the rider of Pegasus, pushes beside him. Each turn counts 1.5 times more. He takes Merope's place."),
-    Item(Line.BESIDE, 3, "Heracles", "helps push 2x", 10, 2.0,
+    Item(Line.SIDEKICKS, 3, "Heracles", "helps push 2x", 10, 2.0,
         "The strongest of the heroes pushes beside him. Each turn counts 2 times more. He takes Bellerophon's place."),
-    Item(Line.ALONE, 1, "Amalthea", "6 pushes an hour", 1, 6.0,
+    Item(Line.GODS, 1, "Amalthea", "6 pushes an hour", 1, 6.0,
         "The goat who nursed Zeus pushes the rock 6 times an hour, even when the app is closed."),
-    Item(Line.ALONE, 2, "Pan", "12 pushes an hour", 4, 12.0,
+    Item(Line.GODS, 2, "Pan", "12 pushes an hour", 4, 12.0,
         "The god of the wild pushes 12 times an hour, even when the app is closed. He takes Amalthea's place."),
-    Item(Line.ALONE, 3, "Thanatos", "24 pushes an hour", 8, 24.0,
+    Item(Line.GODS, 3, "Thanatos", "24 pushes an hour", 8, 24.0,
         "Death, whom Sisyphus once chained, pushes 24 times an hour, day and night. He takes Pan's place."),
     Item(Line.BLESSING, 1, "Purse of Hermes", "obol per 7 days", 2, 504.0,
         "Hermes fills your purse faster: one obol for every 7 days of pushing, not 10."),
@@ -70,10 +79,10 @@ class Shop(tiers: Map<Line, Int> = emptyMap(), obols: Double = 0.0) {
         return true
     }
 
-    val bonus: Double get() = (owned(Line.ROCK)?.effect ?: 1.0) * (owned(Line.BESIDE)?.effect ?: 1.0)
-    val helpersPerHour: Double get() = owned(Line.ALONE)?.effect ?: 0.0
+    val bonus: Double get() = (owned(Line.ROCK)?.effect ?: 1.0) * (owned(Line.SIDEKICKS)?.effect ?: 1.0)
+    val helpersPerHour: Double get() = owned(Line.GODS)?.effect ?: 0.0
     val workPerObol: Double get() = owned(Line.BLESSING)?.effect ?: WORK_PER_OBOL
-    val helper: Item? get() = owned(Line.ALONE)
+    val helper: Item? get() = owned(Line.GODS)
 
     fun addWork(turns: Double) {
         obols += turns / workPerObol

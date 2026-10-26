@@ -139,7 +139,7 @@ class SnapshotTest {
     /** The top: the flat top ahead, standing on it, the rock rolling down, the black screen, and the first morning again. */
     @Test
     fun summit() {
-        val bought = Line.entries.associate { "shop." + it.name.lowercase() to 3.0 }
+        val bought = Line.entries.associate { "shop." + it.id to 3.0 }
         val store = MemoryStore(bought + mapOf("effort" to effortAt(40, 0.42), "position" to 37_740.0, "summit" to 37_800.0))
         val s = Screen(Game(store, seed = 3), seed = 5).apply { resize(1179, 2556, 177, 102) }
         s.idle(0.5)

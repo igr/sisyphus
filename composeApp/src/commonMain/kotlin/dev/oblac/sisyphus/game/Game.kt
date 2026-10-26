@@ -40,7 +40,7 @@ private const val KEY_CLIMBS = "climbs"
 private const val KEY_PLACE = "place"
 private const val SAVE_EVERY = 1.0
 
-private fun shopKey(line: Line) = "shop." + line.name.lowercase()
+private fun shopKey(line: Line) = "shop." + line.id
 
 fun wrapAngle(a: Double): Double {
     var x = a
@@ -125,11 +125,14 @@ enum class Weather(val clouds: Int, val wind: Double, val overcast: Float, val r
     }
 }
 
-/** The worlds Sisyphus can push his rock in. Only Corinth is drawn so far; the others hold their places. */
-enum class Place(val title: String, val note: String) {
-    CORINTH("Corinth", "the hill by the sea"),
-    ETNA("Mount Etna", "still to be drawn"),
-    UNDERWORLD("The Underworld", "still to be drawn"),
+/**
+ * The worlds Sisyphus can push his rock in. Only Corinth is drawn so far; the others hold their places.
+ * Saved games know a world by its [id], which never changes.
+ */
+enum class Place(val id: Int, val title: String, val note: String) {
+    CORINTH(0, "Corinth", "the hill by the sea"),
+    ETNA(1, "Mount Etna", "still to be drawn"),
+    UNDERWORLD(2, "The Underworld", "still to be drawn"),
 }
 
 /**
@@ -168,7 +171,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     var summit = store.load(KEY_SUMMIT)?.takeIf { it >= 0 }
         private set
     /** The world he pushes in. */
-    var place = Place.entries.getOrElse(store.load(KEY_PLACE)?.toInt() ?: 0) { Place.CORINTH }
+    var place = store.load(KEY_PLACE)?.toInt().let { id -> Place.entries.firstOrNull { it.id == id } } ?: Place.CORINTH
         private set
     /** How many times Sisyphus reached the top. Starting over keeps it. */
     var climbs = store.load(KEY_CLIMBS)?.toInt() ?: 0
@@ -335,7 +338,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         store.save(KEY_SAVED_AT, pausedAt ?: wall())
         store.save(KEY_SUMMIT, summit ?: -1.0)
         store.save(KEY_CLIMBS, climbs.toDouble())
-        store.save(KEY_PLACE, place.ordinal.toDouble())
+        store.save(KEY_PLACE, place.id.toDouble())
         for (line in Line.entries) store.save(shopKey(line), shop.tier(line).toDouble())
         dirty = false
         sinceSave = 0.0

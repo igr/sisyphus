@@ -21,8 +21,8 @@ class ShopTest {
     fun pricesAndEffectsFollowTheDesign() {
         fun of(line: Line) = ITEMS.filter { it.line == line }.map { it.price to it.effect }
         assertEquals(listOf(2 to 1.5, 5 to 2.0, 9 to 3.0), of(Line.ROCK))
-        assertEquals(listOf(3 to 1.25, 6 to 1.5, 10 to 2.0), of(Line.BESIDE))
-        assertEquals(listOf(1 to 6.0, 4 to 12.0, 8 to 24.0), of(Line.ALONE))
+        assertEquals(listOf(3 to 1.25, 6 to 1.5, 10 to 2.0), of(Line.SIDEKICKS))
+        assertEquals(listOf(1 to 6.0, 4 to 12.0, 8 to 24.0), of(Line.GODS))
         assertEquals(listOf(2 to 504.0, 6 to 360.0, 10 to 216.0), of(Line.BLESSING))
         assertEquals(listOf(3, 7, 11), ITEMS.filter { it.line == Line.BEAUTY }.map { it.price })
     }
@@ -55,8 +55,8 @@ class ShopTest {
     @Test
     fun theRockAndTheHelperBesideHimMultiply() {
         assertEquals(1.0, Shop().bonus, 1e-9)
-        assertEquals(1.5 * 1.25, Shop(tiers = mapOf(Line.ROCK to 1, Line.BESIDE to 1)).bonus, 1e-9)
-        assertEquals(6.0, Shop(tiers = mapOf(Line.ROCK to 3, Line.BESIDE to 3)).bonus, 1e-9)
+        assertEquals(1.5 * 1.25, Shop(tiers = mapOf(Line.ROCK to 1, Line.SIDEKICKS to 1)).bonus, 1e-9)
+        assertEquals(6.0, Shop(tiers = mapOf(Line.ROCK to 3, Line.SIDEKICKS to 3)).bonus, 1e-9)
     }
 
     @Test
@@ -73,7 +73,7 @@ class ShopTest {
     fun helpersOnTheirOwnPushByTheHour() {
         assertEquals(0.0, Shop().helpersPerHour)
         assertNull(Shop().helper)
-        val shop = Shop(tiers = mapOf(Line.ALONE to 3))
+        val shop = Shop(tiers = mapOf(Line.GODS to 3))
         assertEquals(24.0, shop.helpersPerHour)
         assertEquals("Thanatos", shop.helper?.name)
     }

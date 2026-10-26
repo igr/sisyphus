@@ -166,9 +166,9 @@ class GameTest {
     fun theShopIsSavedAndComesBack() {
         val store = MemoryStore(mapOf("obols" to 5.0))
         val game = Game(store, seed = 1, wall = { 0.0 })
-        assertTrue(game.buy(Line.ALONE))
+        assertTrue(game.buy(Line.GODS))
         val again = Game(store, seed = 1, wall = { 0.0 })
-        assertEquals(1, again.shop.tier(Line.ALONE))
+        assertEquals(1, again.shop.tier(Line.GODS))
         assertEquals(4.0, again.shop.obols, 1e-9)
     }
 
@@ -257,7 +257,7 @@ class GameTest {
         assertEquals(0.0, Game(store, seed = 1, wall = { now }).effort)
     }
 
-    private val allBought = Line.entries.associate { "shop." + it.name.lowercase() to 3.0 }
+    private val allBought = Line.entries.associate { "shop." + it.id to 3.0 }
 
     @Test
     fun buyingTheLastItemBeginsTheFinalClimb() {
@@ -326,6 +326,21 @@ class GameTest {
             assertNull(g.summit)
             assertEquals(2, g.climbs)
         }
+    }
+
+    /** Every saved game holds these ids. Changing one loses the players' purchases or their world. */
+    @Test
+    fun theSaveIdsNeverChange() {
+        assertEquals(listOf("rock", "beside", "alone", "blessing", "beauty"), Line.entries.map { it.id })
+        assertEquals(listOf(0, 1, 2), Place.entries.map { it.id })
+    }
+
+    @Test
+    fun anOldSaveLoadsItsSidekickGodAndWorld() {
+        val game = Game(MemoryStore(mapOf("shop.beside" to 2.0, "shop.alone" to 3.0, "place" to 2.0)), seed = 1, wall = { 0.0 })
+        assertEquals(2, game.shop.tier(Line.SIDEKICKS))
+        assertEquals(3, game.shop.tier(Line.GODS))
+        assertEquals(Place.UNDERWORLD, game.place)
     }
 
     @Test
