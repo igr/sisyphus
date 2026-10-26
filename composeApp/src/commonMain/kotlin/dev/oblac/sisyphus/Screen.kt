@@ -47,7 +47,7 @@ private const val STOP_SPEED = 20.0
  * Owns the framebuffer and maps real screen pixels to virtual ones.
  * Platform code only forwards touches and shows [pixels].
  */
-class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Boolean = false) {
+class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Boolean = false, private val billing: Billing = NoBilling) {
     var scale = 1
         private set
     var offsetX = 0
@@ -75,6 +75,15 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
         private set
     /** The world the player asked to go to, waiting for Yes or No: there the climb starts over. */
     var moving: Place? = null
+        private set
+    /** A world not bought yet that the player asked to go to, waiting for Yes or No: Yes opens the store's payment sheet. */
+    var buying: Place? = null
+        private set
+    /** The store's payment sheet is open: the screen waits for its answer and takes no touches. */
+    var paying = false
+        private set
+    /** The store looks for the worlds bought before. */
+    var restoring = false
         private set
     /** How far the list of worlds is scrolled, in virtual pixels. */
     val worldsScroll get() = listScroll.roundToInt()
@@ -148,8 +157,10 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
             ui.agora(pixels, l, game.shop, game.soundOn, devOpen)
             offer?.let { game.shop.next(it) }?.let { ui.offer(pixels, l, it) }
         } else if (worldsOpen) {
-            ui.worlds(pixels, l, game.place, worldsScroll)
+            ui.worlds(pixels, l, game.place, worldsScroll, billing)
+            if (canRestore) ui.restore(pixels, l.restore, restoring)
             moving?.let { ui.confirm(pixels, l, it) }
+            buying?.let { ui.buy(pixels, l, it, billing.price(it), paying) }
         } else {
             renderer.render(scene, game, world, banner, rolled = ending?.rolled)
             pixels.draw(scene, l.scene.x, l.scene.y)
@@ -171,6 +182,7 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
     /** Handles a finger touching the screen and tells what it touched. */
     fun press(xPx: Float, yPx: Float): Touch {
         val l = layout ?: return Touch.NONE
+        if (paying) return Touch.NONE
         val x = (xPx - offsetX) / scale
         val y = (yPx - offsetY) / scale
         ending?.let {
@@ -188,6 +200,7 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
             offer = null
             worldsOpen = false
             moving = null
+            buying = null
             return Touch.SHOP
         }
         if (worldsOpen) return pressWorlds(x, y, l)
@@ -245,7 +258,10 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
         return Touch.KNOB
     }
 
-    /** On the Worlds screen: the title closes it, the list scrolls or chooses a world, and Yes goes there. */
+    /**
+     * On the Worlds screen: the title closes it, the list scrolls or chooses a world, and Yes goes there, or first buys it.
+     * Restore asks the store for the worlds bought before.
+     */
     private fun pressWorlds(x: Float, y: Float, l: Layout): Touch {
         val to = moving
         if (to != null) {
@@ -260,8 +276,28 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
             moving = null
             return Touch.WORLDS
         }
+        val wanted = buying
+        if (wanted != null) {
+            if (l.confirmYes.near(x, y, 0)) {
+                paying = true
+                billing.buy(wanted) { bought ->
+                    paying = false
+                    buying = null
+                    if (bought) moving = wanted
+                }
+                return Touch.WORLDS
+            }
+            if (l.confirm.near(x, y, 0) && !l.confirmNo.near(x, y, 0)) return Touch.NONE
+            buying = null
+            return Touch.WORLDS
+        }
         if (l.agoraTitle.near(x, y, 0)) {
             worldsOpen = false
+            return Touch.WORLDS
+        }
+        if (canRestore && !restoring && l.restore.near(x, y, TOUCH_SLOP)) {
+            restoring = true
+            billing.restore { restoring = false }
             return Touch.WORLDS
         }
         if (!l.worldList.near(x, y, 0)) return Touch.NONE
@@ -282,7 +318,10 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
         game.knob.drag(touchAngle(x - (l.knobX + 0.5), y - (l.knobY + 0.5), l))
     }
 
-    /** The finger lifts: the knob coasts on, or a tap on the list asks to go to that world. Tells what the lift did. */
+    /** While a world is not bought, the Worlds screen can ask the store for the worlds bought before. */
+    private val canRestore get() = Place.entries.any { !billing.owns(it) }
+
+    /** The finger lifts: the knob coasts on, or a tap on the list asks to go to that world, or to buy it. Tells what the lift did. */
     fun release(): Touch {
         val d = drag ?: return Touch.NONE.also { game.knob.release() }
         drag = null
@@ -293,7 +332,7 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
         val row = Place.entries.indices.firstOrNull { l.worldRow(it).near(d.x, d.y + worldsScroll, 0) } ?: return Touch.NONE
         val place = Place.entries[row]
         if (place == game.place) return Touch.NONE
-        moving = place
+        if (billing.owns(place)) moving = place else buying = place
         return Touch.WORLDS
     }
 
@@ -315,8 +354,12 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
         var moved = 0f
     }
 
-    /** Back closes the help, the offer, the question, the Worlds screen or the Agora. Tells whether there was something to close. */
+    /**
+     * Back closes the help, the offer, a question, the Worlds screen or the Agora. Tells whether there was something to close.
+     * While the store's payment sheet is open, back waits for it.
+     */
     fun back(): Boolean {
+        if (paying) return true
         if (helpOpen) {
             helpOpen = false
             return true
@@ -327,6 +370,10 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
         }
         if (moving != null) {
             moving = null
+            return true
+        }
+        if (buying != null) {
+            buying = null
             return true
         }
         if (worldsOpen) {

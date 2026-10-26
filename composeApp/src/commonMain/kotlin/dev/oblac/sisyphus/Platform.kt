@@ -1,6 +1,8 @@
 package dev.oblac.sisyphus
 
 import androidx.compose.ui.graphics.ImageBitmap
+import dev.oblac.sisyphus.game.Place
+import dev.oblac.sisyphus.gfx.PixelFont
 import dev.oblac.sisyphus.gfx.Pixels
 import kotlin.time.Clock
 
@@ -15,6 +17,37 @@ class MemoryStore(values: Map<String, Double> = emptyMap()) : Store {
     override fun save(key: String, value: Double) {
         values[key] = value
     }
+}
+
+/** The worlds bought with money. Each is bought once and owned forever; the store answers later, through `done`. */
+interface Billing {
+    fun owns(place: Place): Boolean
+    /** What [place] costs, written by [shownPrice]; null until the store answers. */
+    fun price(place: Place): String?
+    /** Opens the store's payment sheet. [done] tells whether the player owns [place] now. */
+    fun buy(place: Place, done: (Boolean) -> Unit)
+    /** Asks the store for the worlds bought before: on another phone, or before the game was installed again. */
+    fun restore(done: () -> Unit)
+}
+
+/** On the desktop there is no store: every world is open. */
+object NoBilling : Billing {
+    override fun owns(place: Place) = true
+    override fun price(place: Place): String? = null
+    override fun buy(place: Place, done: (Boolean) -> Unit) = done(true)
+    override fun restore(done: () -> Unit) = done()
+}
+
+/**
+ * A price as the store writes it, such as "$0.99", when the pixel font has all of its letters.
+ * Otherwise it is the amount and the currency, such as "89 INR".
+ */
+fun shownPrice(formatted: String, amountMicros: Long, currency: String): String {
+    val text = formatted.replace('\u00A0', ' ').replace('\u202F', ' ')
+    if (text.all(PixelFont::hasGlyph)) return text
+    val cents = (amountMicros + 5_000) / 10_000
+    val amount = if (cents % 100 == 0L) "${cents / 100}" else "${cents / 100}.${(cents % 100).toString().padStart(2, '0')}"
+    return "$amount $currency"
 }
 
 interface Haptics {

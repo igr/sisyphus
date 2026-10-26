@@ -1,5 +1,6 @@
 package dev.oblac.sisyphus.ui
 
+import dev.oblac.sisyphus.Billing
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.Item
 import dev.oblac.sisyphus.game.Line
@@ -88,6 +89,17 @@ private val CHECK = listOf(
     "..#....",
 )
 
+/** On the Worlds screen, next to its price, a world that is not bought yet. */
+private val LOCK = listOf(
+    "..###..",
+    ".#...#.",
+    ".#...#.",
+    "#######",
+    "###.###",
+    "###.###",
+    "#######",
+)
+
 internal val COIN_COLORS = mapOf('#' to BRONZE[1], 'h' to BRONZE[5], 'f' to BRONZE[4], 's' to BRONZE[3])
 private val COIN_GRAY = mapOf('#' to rgb(0x2E2924), 'h' to rgb(0x7A7068), 'f' to DISABLED, 's' to rgb(0x4A423A))
 
@@ -98,6 +110,14 @@ internal val OBOL_FILL = BRONZE[4]
 private fun dim(c: Int) = rgb((c shr 16 and 0xFF) / 3, (c shr 8 and 0xFF) / 3, (c and 0xFF) / 3)
 
 private val BLACK = rgb(0x000000)
+
+/** The question before buying a world, and what the world costs: once, and the store's price when it has answered. */
+internal fun buyTitle(place: Place) = "Buy ${place.title}?"
+
+internal fun buyText(price: String?) = "You pay ${if (price == null) "" else "$price "}once, and the world is yours forever."
+
+/** The button on the Worlds screen that asks the store for the worlds bought before. */
+internal const val RESTORE = "Restore purchases"
 
 /** What going to another world costs, in its question. */
 internal const val MOVE_WARNING = "The climb starts over there: day 1, no items and no obols. Your climbs stay."
@@ -320,10 +340,11 @@ class UiRenderer {
     }
 
     /**
-     * The Worlds screen: a picture of each world with its name, the world he is in framed bright and checked.
+     * The Worlds screen: a picture of each world with its name, the world he is in framed bright and checked,
+     * and the worlds not bought yet locked, with their price.
      * The list is drawn on a sheet of its own, so that it scrolls by [scroll] and its edges cut clean.
      */
-    fun worlds(px: Pixels, layout: Layout, here: Place, scroll: Int) {
+    fun worlds(px: Pixels, layout: Layout, here: Place, scroll: Int, billing: Billing) {
         val t = layout.agoraTitle
         PixelFont.draw(px, "Worlds", t.x, t.y, CREAM)
         px.hline(t.x, t.right - 1, t.bottom + 2, TERRA_DARK)
@@ -337,7 +358,13 @@ class UiRenderer {
             val text = layout.worldText(place.ordinal).offset(-list.x, -list.y - scroll)
             PixelFont.draw(sheet, place.title, text.x, text.y, CREAM)
             PixelFont.draw(sheet, place.note, text.x, text.y + PixelFont.LINE_HEIGHT, TERRA_LIGHT)
-            if (place == here) check(sheet, text.right - Layout.COIN_SIZE, text.y + 1)
+            if (place == here) {
+                check(sheet, text.right - Layout.COIN_SIZE, text.y + 1)
+            } else if (!billing.owns(place)) {
+                val lock = text.right - Layout.COIN_SIZE
+                for ((dy, row) in LOCK.withIndex()) for ((dx, ch) in row.withIndex()) if (ch == '#') sheet[lock + dx, text.y + dy] = TERRA_LIGHT
+                billing.price(place)?.let { PixelFont.draw(sheet, it, lock - 2 - PixelFont.width(it), text.y, TERRA_LIGHT) }
+            }
         }
         px.draw(sheet, list.x, list.y)
         val most = layout.worldScroll(Place.entries.size)
@@ -351,18 +378,27 @@ class UiRenderer {
     }
 
     /** Asks before going to another world, since everything starts from the beginning there. */
-    fun confirm(px: Pixels, layout: Layout, place: Place) {
+    fun confirm(px: Pixels, layout: Layout, place: Place) = question(px, layout, "Go to ${place.title}?", MOVE_WARNING, "Yes")
+
+    /** Asks before buying a world. While the store's payment sheet is open, Yes waits. */
+    fun buy(px: Pixels, layout: Layout, place: Place, price: String?, paying: Boolean) =
+        question(px, layout, buyTitle(place), buyText(price), if (paying) "..." else "Yes")
+
+    /** Below the worlds, the button that asks the store for the worlds bought before, and the wait for its answer. */
+    fun restore(px: Pixels, r: Rect, restoring: Boolean) = PixelFont.draw(px, if (restoring) "Restoring..." else RESTORE, r.x, r.y, TERRA)
+
+    /** A question in a window over the Worlds screen: its [title], what it means, and [yes] and No. */
+    private fun question(px: Pixels, layout: Layout, title: String, text: String, yes: String) {
         for (y in 0 until px.height) for (x in 0 until px.width) px[x, y] = dim(px[x, y])
         val r = layout.confirm
         px.fillRect(r.x, r.y, r.w, r.h, BACKGROUND)
         frame(px, r, TERRA)
-        val title = "Go to ${place.title}?"
         PixelFont.draw(px, title, r.x + (r.w - PixelFont.width(title)) / 2, r.y + 5, CREAM)
-        val text = layout.confirmText
-        for ((i, line) in PixelFont.wrap(MOVE_WARNING, text.w).withIndex()) {
-            PixelFont.draw(px, line, text.x, text.y + i * PixelFont.LINE_HEIGHT, TERRA_LIGHT)
+        val room = layout.confirmText
+        for ((i, line) in PixelFont.wrap(text, room.w).withIndex()) {
+            PixelFont.draw(px, line, room.x, room.y + i * PixelFont.LINE_HEIGHT, TERRA_LIGHT)
         }
-        button(px, layout.confirmYes, "Yes")
+        button(px, layout.confirmYes, yes)
         button(px, layout.confirmNo, "No")
     }
 

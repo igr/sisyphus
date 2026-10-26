@@ -8,10 +8,17 @@ private let showDev = true
 private let showDev = false
 #endif
 
+/// Debug builds buy worlds in RevenueCat's Test Store, for free. The SDK does not stop a release build that uses it, so this check must.
+#if DEBUG
+private let testStore = true
+#else
+private let testStore = false
+#endif
+
 @main
 struct SisyphusApp: App {
     @Environment(\.scenePhase) private var scenePhase
-    private let controller = SisyphusController(dev: showDev)
+    private let controller = SisyphusController(dev: showDev, testStore: testStore)
 
     var body: some Scene {
         WindowGroup {

@@ -1,4 +1,6 @@
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -9,6 +11,16 @@ plugins {
 
 kotlin {
     jvmToolchain(17)
+    // The phones share mobileMain: RevenueCat sells the worlds there, and it has no SDK for the desktop.
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    applyDefaultHierarchyTemplate {
+        common {
+            group("mobile") {
+                withCompilations { it.platformType == KotlinPlatformType.androidJvm }
+                group("ios") { withIos() }
+            }
+        }
+    }
     jvm()
     android {
         namespace = "dev.oblac.sisyphus.shared"
@@ -30,6 +42,9 @@ kotlin {
             implementation(libs.compose.foundation)
             implementation(libs.compose.ui)
             implementation(libs.compose.resources)
+        }
+        named("mobileMain").dependencies {
+            implementation(libs.purchases.core)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

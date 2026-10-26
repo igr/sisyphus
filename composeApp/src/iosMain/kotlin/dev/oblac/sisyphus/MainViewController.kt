@@ -22,13 +22,13 @@ private class IosHaptics : Haptics {
 
 /**
  * The Swift app holds one of these; it pauses the game when the app leaves the foreground, and resumes it on return.
- * Debug builds pass [dev], which adds the dev screen to the Agora.
+ * Debug builds pass [dev], which adds the dev screen to the Agora. Debug builds pass [testStore]: they buy worlds for free.
  */
-class SisyphusController(dev: Boolean) {
+class SisyphusController(dev: Boolean, testStore: Boolean) {
     private val game = Game(DefaultsStore())
     private val haptics = IosHaptics()
     private val sound = EngineSound()
-    private val screen = Screen(game, dev = dev)
+    private val screen = Screen(game, dev = dev, billing = RevenueCatBilling(testStore))
 
     fun viewController(): UIViewController = ComposeUIViewController { SisyphusApp(game, haptics, sound, screen) }
 

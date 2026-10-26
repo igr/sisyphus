@@ -21,6 +21,8 @@ import dev.oblac.sisyphus.scene.lookOf
 import dev.oblac.sisyphus.ui.Layout
 import dev.oblac.sisyphus.ui.OBOL_FILL
 import dev.oblac.sisyphus.ui.Rect
+import dev.oblac.sisyphus.ui.buyText
+import dev.oblac.sisyphus.ui.buyTitle
 import dev.oblac.sisyphus.ui.itemIcon
 import dev.oblac.sisyphus.ui.worldPreview
 import kotlin.math.cos
@@ -507,6 +509,148 @@ class ScreenTest {
         assertTrue(s.worldsOpen)
         assertTrue(s.back())
         assertFalse(s.worldsOpen)
+    }
+
+    /** A store that sells every world but [owned] for $0.99. A purchase waits in [pending] until the test answers for the player. */
+    private class FakeBilling(vararg owned: Place) : Billing {
+        private val owned = owned.toMutableSet()
+        var pending: ((Boolean) -> Unit)? = null
+        var restores = 0
+        override fun owns(place: Place) = place.product == null || place in owned
+        override fun price(place: Place) = "$0.99"
+        override fun buy(place: Place, done: (Boolean) -> Unit) {
+            pending = { bought ->
+                pending = null
+                if (bought) owned += place
+                done(bought)
+            }
+        }
+        override fun restore(done: () -> Unit) {
+            restores++
+            done()
+        }
+    }
+
+    /** The Worlds screen, open in [place], with [billing] as the store. */
+    private fun worlds(billing: Billing, place: Place = Place.CORINTH) =
+        Screen(Game(MemoryStore(mapOf("place" to place.id.toDouble())), seed = 1), seed = 2, billing = billing).apply {
+            resize(1179, 2556, 177, 102)
+            tap(layout!!.dayLabel(game.day))
+        }
+
+    @Test
+    fun aWorldNotBoughtAsksToBuyItFirst() {
+        val billing = FakeBilling()
+        val s = worlds(billing)
+        val l = s.layout!!
+        assertEquals(Touch.WORLDS, s.choose(l.worldRow(Place.ETNA.ordinal)))
+        assertEquals(Place.ETNA, s.buying)
+        assertNull(s.moving)
+        assertEquals(Touch.WORLDS, s.tap(l.confirmNo))
+        assertNull(s.buying)
+        assertNull(billing.pending)
+    }
+
+    @Test
+    fun onceBoughtTheWorldAsksToGoThere() {
+        val billing = FakeBilling()
+        val s = worlds(billing)
+        val l = s.layout!!
+        s.choose(l.worldRow(Place.ETNA.ordinal))
+        assertEquals(Touch.WORLDS, s.tap(l.confirmYes))
+        assertTrue(s.paying)
+        assertEquals(Touch.NONE, s.tap(l.confirmNo), "the store asks now")
+        assertEquals(Touch.NONE, s.tap(l.coinIcon), "the store asks now")
+        assertTrue(s.back(), "the store asks now")
+        billing.pending!!(true)
+        assertFalse(s.paying)
+        assertNull(s.buying)
+        assertEquals(Place.ETNA, s.moving)
+        assertEquals(Touch.MOVE, s.tap(l.confirmYes))
+        assertEquals(Place.ETNA, s.game.place)
+    }
+
+    @Test
+    fun whenThePlayerDoesNotPayNothingChanges() {
+        val billing = FakeBilling()
+        val s = worlds(billing)
+        val l = s.layout!!
+        s.choose(l.worldRow(Place.UNDERWORLD.ordinal))
+        s.tap(l.confirmYes)
+        billing.pending!!(false)
+        assertFalse(s.paying)
+        assertNull(s.buying)
+        assertNull(s.moving)
+        assertTrue(s.worldsOpen)
+        assertEquals(Place.CORINTH, s.game.place)
+    }
+
+    @Test
+    fun aWorldBoughtBeforeIsNotSoldAgain() {
+        val s = worlds(FakeBilling(Place.ETNA))
+        s.choose(s.layout!!.worldRow(Place.ETNA.ordinal))
+        assertNull(s.buying)
+        assertEquals(Place.ETNA, s.moving)
+    }
+
+    /** Beta testers went to other worlds before worlds cost money: they stay, and pay only to come back after they leave. */
+    @Test
+    fun aPlayerStaysInAWorldNotBought() {
+        val s = worlds(FakeBilling(), Place.ETNA)
+        assertEquals(Place.ETNA, s.game.place)
+        assertEquals(Touch.NONE, s.choose(s.layout!!.worldRow(Place.ETNA.ordinal)))
+        assertNull(s.buying)
+    }
+
+    @Test
+    fun backClosesTheQuestionToBuy() {
+        val s = worlds(FakeBilling())
+        s.choose(s.layout!!.worldRow(Place.ETNA.ordinal))
+        assertEquals(Place.ETNA, s.buying)
+        assertTrue(s.back())
+        assertNull(s.buying)
+        assertTrue(s.worldsOpen)
+    }
+
+    @Test
+    fun restoreAsksTheStoreForTheWorldsBoughtBefore() {
+        val billing = FakeBilling()
+        val s = worlds(billing)
+        assertEquals(Touch.WORLDS, s.tap(s.layout!!.restore))
+        assertEquals(1, billing.restores)
+        assertFalse(s.restoring)
+    }
+
+    @Test
+    fun withEveryWorldBoughtThereIsNothingToRestore() {
+        val billing = FakeBilling(Place.ETNA, Place.UNDERWORLD)
+        val s = worlds(billing)
+        assertEquals(Touch.NONE, s.tap(s.layout!!.restore))
+        assertEquals(0, billing.restores)
+    }
+
+    @Test
+    fun pricesTheFontCannotWriteShowAmountAndCurrency() {
+        assertEquals("$0.99", shownPrice("$0.99", 990_000, "USD"))
+        assertEquals("0,99 €", shownPrice("0,99\u00A0€", 990_000, "EUR"))
+        assertEquals("£0.99", shownPrice("£0.99", 990_000, "GBP"))
+        assertEquals("CHF 1.00", shownPrice("CHF 1.00", 1_000_000, "CHF"))
+        assertEquals("89 INR", shownPrice("₹89.00", 89_000_000, "INR"))
+        assertEquals("89.50 INR", shownPrice("₹89.50", 89_500_000, "INR"))
+        assertEquals("160 JPY", shownPrice("¥160", 160_000_000, "JPY"))
+    }
+
+    @Test
+    fun theOfferOfAWorldFitsTheSmallestPhone() {
+        val l = smallest().layout!!
+        val price = "10.99 CHF"
+        for (place in Place.entries.filter { it.product != null }) {
+            assertTrue(PixelFont.width(buyTitle(place)) <= l.confirmText.w, place.title)
+            assertTrue(PixelFont.width(place.title) + 4 + PixelFont.width(price) + 2 + Layout.COIN_SIZE <= l.worldText(0).w, place.title)
+        }
+        assertTrue(PixelFont.wrap(buyText(price), l.confirmText.w).size <= Layout.CONFIRM_LINES)
+        assertTrue(l.restore.right <= l.worldList.right)
+        assertTrue(l.restore.y >= l.worldList.bottom)
     }
 
     @Test

@@ -176,6 +176,28 @@ class SnapshotTest {
         }
     }
 
+    /** Before a world is bought: the locks, the prices and Restore, then the question before buying Mount Etna, on both phones. */
+    @Test
+    fun buyWorlds() {
+        val notBought = object : Billing {
+            override fun owns(place: Place) = place.product == null
+            override fun price(place: Place) = "$0.99"
+            override fun buy(place: Place, done: (Boolean) -> Unit) {}
+            override fun restore(done: () -> Unit) {}
+        }
+        for ((name, size) in listOf("11-locked" to listOf(1179, 2556, 177, 102), "11-locked-small" to listOf(1080, 2340, 144, 102))) {
+            val s = Screen(Game(MemoryStore(mapOf("effort" to effortAt(3, 0.4))), seed = 3), seed = 5, billing = notBought)
+            s.resize(size[0], size[1], size[2], size[3])
+            val l = s.layout!!
+            fun tap(r: Rect) = s.press((r.x + r.w / 2f) * s.scale + s.offsetX, (r.y + r.h / 2f) * s.scale + s.offsetY)
+            tap(l.dayLabel(s.game.day))
+            write(s.render(), name, 3)
+            tap(l.worldRow(1))
+            s.release()
+            write(s.render(), name.replace("locked", "buy"), 3)
+        }
+    }
+
     /** On a short screen the worlds do not fit: the list scrolls halfway, cut clean at its edges, with a scrollbar. */
     @Test
     fun worldsScrolled() {

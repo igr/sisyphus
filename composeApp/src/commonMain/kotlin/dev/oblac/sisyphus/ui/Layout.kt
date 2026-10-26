@@ -115,6 +115,9 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     val confirmYes = Rect(confirm.x + confirm.w / 2 - 4 - OFFER_BUTTON, confirm.bottom - 5 - BUTTON_HEIGHT, OFFER_BUTTON, BUTTON_HEIGHT)
     val confirmNo = Rect(confirm.x + confirm.w / 2 + 4, confirmYes.y, OFFER_BUTTON, BUTTON_HEIGHT)
 
+    /** In the bottom-left corner of the Worlds screen, the button that asks the store for the worlds bought before. */
+    val restore = Rect(left + 2, agoraSound.y, PixelFont.width(RESTORE), PixelFont.CAP_HEIGHT)
+
     val knobX: Int
     val knobY: Int
     val knobR: Int

@@ -360,6 +360,12 @@ class GameTest {
         assertEquals(listOf(0, 1, 2), Place.entries.map { it.id })
     }
 
+    /** RevenueCat and the stores know a world by its product. Changing one locks the worlds the players bought. Corinth is free. */
+    @Test
+    fun theProductIdsNeverChange() {
+        assertEquals(listOf(null, "world_etna", "world_underworld"), Place.entries.map { it.product })
+    }
+
     @Test
     fun anOldSaveLoadsItsSidekickGodAndWorld() {
         val game = Game(MemoryStore(mapOf("shop.beside" to 2.0, "shop.alone" to 3.0, "place" to 2.0)), seed = 1, wall = { 0.0 })

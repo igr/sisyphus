@@ -7,6 +7,7 @@ Each day has its own weather. Wise words appear under the display as you push.
 Earn obols as you push, and spend them in the Agora Market: better rocks, helpers, blessings and beauty.
 When everything is bought, a final climb leads to the top. There the rock rolls down, and everything begins again.
 Tap the day to choose another world: Corinth, Mount Etna or The Underworld. There the climb starts over.
+Corinth is free. The other worlds are bought once, for $0.99.
 
 Website, support and privacy policy: https://igr.github.io/sisyphus/ (from the `gh-pages` branch).
 
@@ -30,6 +31,20 @@ Website, support and privacy policy: https://igr.github.io/sisyphus/ (from the `
 - Tests: `./gradlew :composeApp:jvmTest`. The tests also write PNG snapshots and `clicks.wav`
   to `composeApp/build/snapshots`.
 
+## Purchases
+
+RevenueCat sells the worlds, in the project "Sisyphus: Push the Rock". Each world after Corinth has one id,
+`Place.product`, for its product in each store, for its entitlement and for its package in the `worlds` offering.
+
+- Debug builds buy in RevenueCat's Test Store: a test sheet, and no money. All other builds buy in the App Store
+  and Google Play. TestFlight and the Play license testers buy in the sandbox.
+- The iOS SDK does not stop a release build that has the Test Store key, so the apps choose the key:
+  `SisyphusApp.swift` and `MainActivity.kt` set `testStore` only in debug builds.
+- The keys are public. The Test Store key is in `RevenueCatBilling.kt`, the store keys in `RevenueCatBilling.android.kt`
+  and `RevenueCatBilling.ios.kt`.
+- The RevenueCat CLI `rc` shows and changes the products: `rc products list`, `rc offerings verify`.
+  `rc setup apple app7651e8d161` and `rc setup google app62a1b9ad7a` connect the stores, with two-factor sign-in.
+
 ## Code
 
 All game code is in `composeApp/src/commonMain`. The screen is one small framebuffer (about 150 pixels wide),
@@ -44,6 +59,7 @@ The knob click, the click of every other tap, the sound of buying and the fanfar
   from world to world. `Etna.kt` and `Underworld.kt` draw those worlds. To add a world, follow `.claude/skills/new-world/SKILL.md`.
 - `ui` — layout, frame, Greek key band, quote panel, knob
 - `Screen.kt` maps touches to virtual pixels; `App.kt` shows the framebuffer in Compose
+- `mobileMain` — the purchases of worlds, through RevenueCat, for both phones. The desktop has every world.
 - `iosMain`, `androidMain`, `jvmMain` — saving, sound and haptics for each platform; `androidApp` is the Android app
 
 The data that the game saves on the device is listed in [docs/saved-data.md](docs/saved-data.md).
