@@ -16,6 +16,7 @@ import dev.oblac.sisyphus.scene.Ending
 import dev.oblac.sisyphus.scene.PROPS
 import dev.oblac.sisyphus.scene.SceneGeometry
 import dev.oblac.sisyphus.scene.SceneRenderer
+import dev.oblac.sisyphus.scene.UNDERWORLD_PROPS
 import dev.oblac.sisyphus.scene.World
 import dev.oblac.sisyphus.ui.Rect
 import dev.oblac.sisyphus.ui.itemIcon
@@ -69,10 +70,10 @@ class SnapshotTest {
         ImageIO.write(img, "png", File(out, "$name.png"))
     }
 
-    /** Six moments of the day and the weather, in Corinth and on Etna, where the images start with "etna-". */
+    /** Six moments of the day and the weather in each world. The images of Etna and The Underworld start with their names. */
     @Test
     fun moments() {
-        for ((place, prefix) in listOf(Place.CORINTH to "", Place.ETNA to "etna-")) listOf(
+        for ((place, prefix) in listOf(Place.CORINTH to "", Place.ETNA to "etna-", Place.UNDERWORLD to "underworld-")) listOf(
             Triple("1-morning", 1, 0.30),
             Triple("2-noon-clear", dayWith(Weather.CLEAR), 0.5),
             Triple("3-sunset-windy", dayWith(Weather.WINDY), 0.745),
@@ -190,10 +191,10 @@ class SnapshotTest {
         write(s.render(), "11-worlds-scrolled", 3)
     }
 
-    /** The pictures of the 15 items of Corinth and of Mount Etna, a line per row, at the size the offer shows them. */
+    /** The pictures of the 15 items of each world, a line per row, at the size the offer shows them. */
     @Test
     fun iconSheet() {
-        for ((place, name) in listOf(Place.CORINTH to "icons", Place.ETNA to "icons-etna")) {
+        for ((place, name) in listOf(Place.CORINTH to "icons", Place.ETNA to "icons-etna", Place.UNDERWORLD to "icons-underworld")) {
             val sheet = Pixels(3 * 36 + 2, 5 * 36 + 2)
             sheet.clear(rgb(0x17110D))
             for (item in items(place)) sheet.drawScaled(itemIcon(item), 2 + (item.tier - 1) * 36, 2 + item.line.ordinal * 36, 2)
@@ -236,12 +237,13 @@ class SnapshotTest {
         write(plot, "click-wave", 2)
     }
 
-    /** The props of Corinth and of Etna, each on its own sky and ground. */
+    /** The props of each world, on its own sky and ground. */
     @Test
     fun propSheet() {
         for ((props, name, colors) in listOf(
             Triple(PROPS, "props", rgb(0x9CC8EE) to rgb(0x82A048)),
             Triple(ETNA_PROPS, "props-etna", rgb(0xC4D0DC) to rgb(0x4A4440)),
+            Triple(UNDERWORLD_PROPS, "props-underworld", rgb(0x46606A) to rgb(0x524E5A)),
         )) {
             val gap = 4
             val width = props.sumOf { it.sprite.width + gap } + gap
@@ -295,13 +297,16 @@ class SnapshotTest {
         shot(0.8, "etna-9-fountain", Place.ETNA) { s -> s.world.sparks.size > 60 }
         shot(0.5, "etna-9-eagle", Place.ETNA) { s -> s.world.flyer?.let { it.x in 40.0..90.0 } == true }
         shot(0.95, "etna-9-torches", Place.ETNA) { s -> s.game.clock > 2.0 }
+        shot(0.5, "underworld-9-boat", Place.UNDERWORLD) { s -> s.world.ferry?.let { it.x in 15.0..30.0 } == true }
+        shot(0.5, "underworld-9-psyche", Place.UNDERWORLD) { s -> s.world.flyer?.let { it.x in 40.0..90.0 } == true }
+        shot(0.95, "underworld-9-lights", Place.UNDERWORLD) { s -> s.game.clock > 2.0 }
     }
 
-    /** The four rocks of the shop, side by side, in Corinth and on Etna. */
+    /** The four rocks of the shop, side by side, in each world. */
     @Test
     fun rockSheet() {
         val geo = SceneGeometry(64, 64)
-        for ((place, name) in listOf(Place.CORINTH to "rocks", Place.ETNA to "rocks-etna")) {
+        for ((place, name) in listOf(Place.CORINTH to "rocks", Place.ETNA to "rocks-etna", Place.UNDERWORLD to "rocks-underworld")) {
             val sheet = Pixels(64 * 4, 64)
             for (tier in 0..3) {
                 val store = MemoryStore(mapOf("effort" to effortAt(1, 0.45), "position" to 962.0, "shop.rock" to tier.toDouble(), "place" to place.id.toDouble()))

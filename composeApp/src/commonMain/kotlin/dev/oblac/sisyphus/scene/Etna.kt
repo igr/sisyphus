@@ -5,7 +5,6 @@ import dev.oblac.sisyphus.gfx.bayer
 import dev.oblac.sisyphus.gfx.hash
 import dev.oblac.sisyphus.gfx.hash01
 import dev.oblac.sisyphus.gfx.lerpColor
-import dev.oblac.sisyphus.gfx.luminance
 import dev.oblac.sisyphus.gfx.rgb
 import dev.oblac.sisyphus.gfx.sprite
 import kotlin.math.abs
@@ -279,7 +278,7 @@ private fun bombMark(u: Double, v: Double): Int = if (BOMB_CRACKS.any { crack(u,
 
 internal val ETNA_LOOK = Look(
     sky = ETNA_KEYS,
-    sun = intArrayOf(rgb(0xFF7A48), rgb(0xFFE8B8), rgb(0xD8402A), rgb(0xF4A84A)),
+    sun = intArrayOf(rgb(0xFF7A48), rgb(0xFFE8B8), rgb(0xD8402A), rgb(0xF4A84A), rgb(0xFFD08A), rgb(0xFFF6DA)),
     ground = intArrayOf(
         rgb(0x6A625A), rgb(0x4A4440), rgb(0x383230),
         rgb(0x2A2422), rgb(0x221C1C), rgb(0x1A1616),
@@ -301,9 +300,6 @@ internal fun craterX(geo: SceneGeometry): Double = geo.width * 0.24
 
 internal fun craterY(geo: SceneGeometry): Double = (geo.horizon - SUMMIT_HEIGHT).toDouble()
 
-/** How dark it is: about 0 at noon and 0.7 at midnight. The lava glows brighter in the dark. */
-private fun glow(atm: Atmosphere): Float = 1f - luminance(atm.light) / 255f
-
 /** How high the summit stands over column [x], in pixels above the horizon. */
 private fun summitHeight(geo: SceneGeometry, x: Int): Int {
     val d = abs(x + 0.5 - craterX(geo))
@@ -315,7 +311,7 @@ private fun summitHeight(geo: SceneGeometry, x: Int): Int {
 /** The summit of Etna on the horizon: a hazy cone, lava in its crater and down its side, and smoke drifting away. */
 internal fun drawSummit(px: Pixels, geo: SceneGeometry, atm: Atmosphere, clock: Double) {
     val cx = craterX(geo)
-    val glow = glow(atm)
+    val glow = atm.darkness
     val lit = lerpColor(atm.skyHorizon, atm.sea, 0.6f)
     val shadow = lerpColor(atm.skyHorizon, atm.sea, 0.75f)
     val lava = lerpColor(rgb(0x6A2A1E), rgb(0xF07030), glow)
@@ -350,7 +346,7 @@ internal fun drawSummit(px: Pixels, geo: SceneGeometry, atm: Atmosphere, clock: 
  * which glow at night. They slide by slowly as he walks.
  */
 internal fun drawFields(px: Pixels, geo: SceneGeometry, atm: Atmosphere, p: Int) {
-    val lava = lerpColor(rgb(0x4A1A14), rgb(0xF06A2A), glow(atm))
+    val lava = lerpColor(rgb(0x4A1A14), rgb(0xF06A2A), atm.darkness)
     val shift = floor(p * 0.04).toInt()
     for (x in 0 until px.width) {
         val u = x + shift
@@ -368,7 +364,7 @@ internal fun drawFields(px: Pixels, geo: SceneGeometry, atm: Atmosphere, p: Int)
 
 /** Demeter's two torches, lit in the crater, cross the far fields at night while she looks for her daughter. */
 internal fun drawTorches(px: Pixels, geo: SceneGeometry, atm: Atmosphere, clock: Double) {
-    if (glow(atm) < 0.45f) return
+    if (atm.darkness < 0.45f) return
     val span = geo.heroX - 10.0
     val x0 = (clock * 1.5 + span * 0.3) % span - 4
     val y = geo.horizon + 3

@@ -3,6 +3,7 @@ package dev.oblac.sisyphus
 import dev.oblac.sisyphus.gfx.hash
 import dev.oblac.sisyphus.scene.ETNA_PROPS
 import dev.oblac.sisyphus.scene.PROPS
+import dev.oblac.sisyphus.scene.UNDERWORLD_PROPS
 import dev.oblac.sisyphus.scene.propFor
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -20,5 +21,12 @@ class PropsTest {
         val seen = (0 until 2000).map { propFor(hash(it, 0, 61) ushr 8, ETNA_PROPS) }.toSet()
         assertEquals(ETNA_PROPS.toSet(), seen)
         assertTrue(ETNA_PROPS.none { it in PROPS })
+    }
+
+    @Test
+    fun everyKindOfPlantAndStoneShowsUpInTheUnderworld() {
+        val seen = (0 until 2000).map { propFor(hash(it, 0, 61) ushr 8, UNDERWORLD_PROPS) }.toSet()
+        assertEquals(UNDERWORLD_PROPS.toSet(), seen)
+        assertTrue(UNDERWORLD_PROPS.none { it in PROPS || it in ETNA_PROPS })
     }
 }

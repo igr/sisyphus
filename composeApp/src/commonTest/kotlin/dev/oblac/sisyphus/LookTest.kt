@@ -30,8 +30,9 @@ class LookTest {
     }
 
     @Test
-    fun theUnderworldLooksLikeCorinthUntilItIsDrawn() {
-        assertTrue(noon(Place.UNDERWORLD).contentEquals(noon(Place.CORINTH)))
+    fun theUnderworldLooksLikeItself() {
+        assertFalse(noon(Place.UNDERWORLD).contentEquals(noon(Place.CORINTH)))
+        assertFalse(noon(Place.UNDERWORLD).contentEquals(noon(Place.ETNA)))
     }
 
     /** Over a second of rain, how far the drops fall, and how many splashes they make. */

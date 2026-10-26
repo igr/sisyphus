@@ -79,6 +79,33 @@ class BeautyTest {
     }
 
     @Test
+    fun theBoatOfCharonCrossesOnlyOnceBought() {
+        var seen = false
+        live(0, 120, Place.UNDERWORLD) { if (it.ferry != null) seen = true }
+        assertFalse(seen)
+        live(1, 120, Place.UNDERWORLD) {
+            if (it.ferry != null) seen = true
+            assertTrue(it.dolphins.isEmpty() && it.sparks.isEmpty())
+        }
+        assertTrue(seen)
+    }
+
+    @Test
+    fun psycheFliesByOnceBought() {
+        var seen = false
+        live(1, 240, Place.UNDERWORLD) { if (it.flyer != null) seen = true }
+        assertFalse(seen)
+        live(2, 240, Place.UNDERWORLD) { if (it.flyer != null) seen = true }
+        assertTrue(seen)
+    }
+
+    @Test
+    fun theLightsOfElysiumGlowOnlyAtNight() {
+        assertFalse(frame(3, 0.95, Place.UNDERWORLD).contentEquals(frame(2, 0.95, Place.UNDERWORLD)))
+        assertTrue(frame(3, 0.5, Place.UNDERWORLD).contentEquals(frame(2, 0.5, Place.UNDERWORLD)))
+    }
+
+    @Test
     fun theTorchesOfDemeterBurnOnlyAtNight() {
         assertFalse(frame(3, 0.95, Place.ETNA).contentEquals(frame(2, 0.95, Place.ETNA)))
         assertTrue(frame(3, 0.5, Place.ETNA).contentEquals(frame(2, 0.5, Place.ETNA)))

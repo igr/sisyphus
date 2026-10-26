@@ -10,10 +10,14 @@ import dev.oblac.sisyphus.scene.PLEIADES
 import dev.oblac.sisyphus.scene.rockIcon
 
 /** The picture of an item, 16 x 16; the offer shows it at twice the size. */
-fun itemIcon(item: Item): Pixels = when {
-    item.line == Line.ROCK -> rockIcon(item.place, item.tier)
-    item.place == Place.ETNA -> ETNA_ICONS.getValue(item.line)[item.tier - 1]
-    else -> ICONS.getValue(item.line)[item.tier - 1]
+fun itemIcon(item: Item): Pixels {
+    if (item.line == Line.ROCK) return rockIcon(item.place, item.tier)
+    val icons = when (item.place) {
+        Place.CORINTH -> ICONS
+        Place.ETNA -> ETNA_ICONS
+        Place.UNDERWORLD -> UNDERWORLD_ICONS
+    }
+    return icons.getValue(item.line)[item.tier - 1]
 }
 
 internal val SKIN = mapOf('k' to rgb(0xE2B088), 'K' to rgb(0xBC8460), 'e' to rgb(0x2A1A10), 'm' to rgb(0xB0504A))

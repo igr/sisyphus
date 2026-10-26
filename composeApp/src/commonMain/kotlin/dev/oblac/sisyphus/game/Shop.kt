@@ -96,14 +96,53 @@ private val ETNA_ITEMS = with(Place.ETNA) {
     )
 }
 
+private val UNDERWORLD_ITEMS = with(Place.UNDERWORLD) {
+    listOf(
+        item(Line.ROCK, 1, "Stone of Lethe",
+            "From the river of forgetting: it has forgotten how heavy it is. Every turn of the knob counts 1.5 times, so obols come faster."),
+        item(Line.ROCK, 2, "Rock of Tantalus",
+            "The rock that hangs over Tantalus, always about to fall. Every turn counts 2 times. It takes the place of the stone of Lethe."),
+        item(Line.ROCK, 3, "Adamant sphere",
+            "Adamant, the stone of the gates of Tartarus, made perfectly round. Every turn counts 3 times. It takes the place of the rock of Tantalus."),
+        item(Line.SIDEKICKS, 1, "Orpheus",
+            "When he sang here, Sisyphus sat on his rock to listen. Now he pushes beside him. Each turn counts 1.25 times more, on top of the rock."),
+        item(Line.SIDEKICKS, 2, "Theseus",
+            "The hero who sat stuck on the chair of forgetting pushes beside him. Each turn counts 1.5 times more. He takes Orpheus' place."),
+        item(Line.SIDEKICKS, 3, "Achilles",
+            "The greatest of the heroes, a shade now, pushes beside him. Each turn counts 2 times more. He takes Theseus' place."),
+        item(Line.GODS, 1, "Cerberus",
+            "The three-headed dog of the gate pushes the rock 6 times an hour, even when the app is closed."),
+        item(Line.GODS, 2, "Persephone",
+            "The queen of the dead, whom Sisyphus once tricked, pushes 12 times an hour, even when the app is closed. She takes Cerberus' place."),
+        item(Line.GODS, 3, "Hades",
+            "The king of the dead pushes 24 times an hour, day and night. He takes Persephone's place."),
+        item(Line.BLESSING, 1, "Obol for the ferry",
+            "The dead pay the ferryman an obol, and now obols come your way: one obol for every 7 days of pushing, not 10."),
+        item(Line.BLESSING, 2, "Golden bough",
+            "The gift that opened the way for Aeneas: one obol for every 5 days of pushing. It takes the place of the obol."),
+        item(Line.BLESSING, 3, "Riches of Plouton",
+            "Hades is also Plouton, the rich one, and the gold under the earth is his: one obol for every 3 days of pushing. It takes the place of the bough."),
+        item(Line.BEAUTY, 1, "Boat of Charon",
+            "Now and then Charon rows the dead across the Styx. Beauty stays, whatever else you buy.", "crosses the Styx"),
+        item(Line.BEAUTY, 2, "Psyche",
+            "Psyche, the soul, flies by now and then on butterfly wings. She came down here once for Aphrodite.", "on butterfly wings"),
+        item(Line.BEAUTY, 3, "Lights of Elysium",
+            "At night the blessed souls of Elysium drift over the meadow as small lights.", "glow at night"),
+    )
+}
+
 /** An item of this world: a name and details of its own, with the price, the effect and the note of the item of Corinth in its place. */
 private fun Place.item(line: Line, tier: Int, name: String, details: String, note: String? = null): Item {
     val corinth = CORINTH_ITEMS.first { it.line == line && it.tier == tier }
     return Item(line, tier, name, note ?: corinth.note, corinth.price, corinth.effect, details, this)
 }
 
-/** The 15 items of [place], in the order the Agora shows them. A world that is not drawn yet sells the items of Corinth. */
-fun items(place: Place): List<Item> = if (place == Place.ETNA) ETNA_ITEMS else CORINTH_ITEMS
+/** The 15 items of [place], in the order the Agora shows them. */
+fun items(place: Place): List<Item> = when (place) {
+    Place.CORINTH -> CORINTH_ITEMS
+    Place.ETNA -> ETNA_ITEMS
+    Place.UNDERWORLD -> UNDERWORLD_ITEMS
+}
 
 /** What the player owns in [place], and their obols. Each line is bought in order; the newest item of a line sets its effect. */
 class Shop(tiers: Map<Line, Int> = emptyMap(), obols: Double = 0.0, val place: Place = Place.CORINTH) {

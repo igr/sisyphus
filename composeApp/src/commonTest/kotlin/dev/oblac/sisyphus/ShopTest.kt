@@ -106,6 +106,17 @@ class ShopTest {
         assertEquals("Merope", Shop().next(Line.SIDEKICKS)?.name)
         assertEquals("Empedocles", Shop(place = Place.ETNA).next(Line.SIDEKICKS)?.name)
         assertEquals("Odysseus", Shop(mapOf(Line.SIDEKICKS to 2), place = Place.ETNA).owned(Line.SIDEKICKS)?.name)
-        assertEquals("Merope", Shop(place = Place.UNDERWORLD).next(Line.SIDEKICKS)?.name)
+        assertEquals("Orpheus", Shop(place = Place.UNDERWORLD).next(Line.SIDEKICKS)?.name)
+    }
+
+    @Test
+    fun theUnderworldHasNamesOfItsOwn() {
+        assertEquals(
+            listOf(
+                "Stone of Lethe", "Rock of Tantalus", "Adamant sphere", "Orpheus", "Theseus", "Achilles", "Cerberus", "Persephone", "Hades",
+                "Obol for the ferry", "Golden bough", "Riches of Plouton", "Boat of Charon", "Psyche", "Lights of Elysium",
+            ),
+            items(Place.UNDERWORLD).map { it.name },
+        )
     }
 }

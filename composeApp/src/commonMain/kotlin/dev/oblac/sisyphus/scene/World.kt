@@ -35,7 +35,7 @@ class Leap(val x: Double, val dir: Double) {
     var t = 0.0
 }
 
-/** Pegasus, or the eagle of Zeus, crossing the sky. */
+/** Something crossing the display: Pegasus, the eagle of Zeus or Psyche in the sky, or Charon's boat on the Styx. */
 class Flyer(var x: Double, val y: Double, val vx: Double, val flap: Double)
 
 class ShootingStar(var x: Double, var y: Double, val vx: Double, val vy: Double, var life: Double)
@@ -69,6 +69,9 @@ class World(seed: Int) {
     val dolphins = ArrayList<Leap>()
     /** On Etna, the fire that the crater throws up. */
     val sparks = ArrayList<Particle>()
+    /** In The Underworld, Charon's boat crossing the Styx. */
+    var ferry: Flyer? = null
+        private set
     var flyer: Flyer? = null
         private set
     var shootingStar: ShootingStar? = null
@@ -80,7 +83,7 @@ class World(seed: Int) {
         private set
 
     private var dust = 0.0
-    /** Seconds to the next sight of the first beauty item: a dolphin's leap, or fire from the crater. */
+    /** Seconds to the next sight of the first beauty item: a dolphin's leap, fire from the crater, or Charon's boat. */
     private var nextLeap = 0.0
     private var nextFlight = 0.0
     private var burst = 0.0
@@ -102,6 +105,7 @@ class World(seed: Int) {
         dolphins.clear()
         sparks.clear()
         burst = 0.0
+        ferry = null
         flyer = null
         nextLeap = random.nextDouble(5.0, 20.0)
         nextFlight = random.nextDouble(10.0, 45.0)
@@ -120,7 +124,11 @@ class World(seed: Int) {
         updateRain(dt, moved, p, look.ash)
         updateParticles(dt, moved, speed, look.dust)
         updateShootingStar(dt, stars)
-        if (place == Place.ETNA) updateFountain(dt, beauty) else updateDolphins(dt, beauty)
+        when (place) {
+            Place.CORINTH -> updateDolphins(dt, beauty)
+            Place.ETNA -> updateFountain(dt, beauty)
+            Place.UNDERWORLD -> updateFerry(dt, moved, beauty)
+        }
         updateFlyer(dt, moved, beauty)
     }
 
@@ -313,7 +321,20 @@ class World(seed: Int) {
         burst = BURST_TIME
     }
 
-    /** Bought with the second beauty item: Pegasus, or the eagle of Zeus, crosses the sky every minute or two, day and night. */
+    /** Bought with the first beauty item in The Underworld: now and then Charon rows across the Styx, slowly. */
+    private fun updateFerry(dt: Double, moved: Double, beauty: Int) {
+        ferry?.let { f ->
+            f.x += f.vx * dt - moved * 0.04
+            if (f.x > geo.heroX) ferry = null
+        }
+        if (beauty < 1 || ferry != null) return
+        nextLeap -= dt
+        if (nextLeap > 0) return
+        nextLeap = random.nextDouble(15.0, 40.0)
+        ferry = Flyer(-8.0, geo.horizon + 3.0, random.nextDouble(4.0, 6.0), 0.0)
+    }
+
+    /** Bought with the second beauty item: Pegasus, the eagle of Zeus or Psyche crosses the sky every minute or two, day and night. */
     private fun updateFlyer(dt: Double, moved: Double, beauty: Int) {
         flyer?.let { f ->
             f.x += f.vx * dt - moved * 0.2

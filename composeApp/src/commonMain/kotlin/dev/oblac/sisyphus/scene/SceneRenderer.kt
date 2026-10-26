@@ -114,27 +114,39 @@ class SceneRenderer(private val geo: SceneGeometry) {
         val sun = orb((t - 0.25) / 0.5)
         val moon = orb((t - 0.75 + 1.0) % 1.0 / 0.5)
 
-        drawSky(px, atm, sun, world.overcast)
+        val beauty = game.shop.tier(Line.BEAUTY)
+        drawSky(px, atm, sun, world.overcast, look.sun)
         drawStars(px, atm, game.clock, world)
-        if (game.place != Place.ETNA && game.shop.tier(Line.BEAUTY) >= 3) drawPleiades(px, atm, game.clock)
+        if (game.place == Place.CORINTH && beauty >= 3) drawPleiades(px, atm, game.clock)
         moon?.let { drawMoon(px, it, game.day, atm, world.overcast) }
         sun?.let { drawSun(px, it, game.clock, atm, world.overcast, look.sun) }
         drawClouds(px, atm, world)
-        if (game.place == Place.ETNA) {
-            drawSummit(px, geo, atm, game.clock)
-            drawSparks(px, world)
-            drawFlyer(px, world, game.clock, atm, EAGLE_UP, EAGLE_DOWN)
-            drawFields(px, geo, atm, p)
-            if (game.shop.tier(Line.BEAUTY) >= 3) drawTorches(px, geo, atm, game.clock)
-        } else {
-            drawFlyer(px, world, game.clock, atm, PEGASUS_UP, PEGASUS_DOWN)
-            drawIslands(px, atm, p)
-            drawSea(px, atm, p, sun, moon, game.clock)
-            drawDolphins(px, world, atm)
+        when (game.place) {
+            Place.CORINTH -> {
+                drawFlyer(px, world, game.clock, atm, PEGASUS_UP, PEGASUS_DOWN)
+                drawIslands(px, atm, p)
+                drawSea(px, atm, p, sun, moon, game.clock)
+                drawDolphins(px, world, atm)
+            }
+            Place.ETNA -> {
+                drawSummit(px, geo, atm, game.clock)
+                drawSparks(px, world)
+                drawFlyer(px, world, game.clock, atm, EAGLE_UP, EAGLE_DOWN)
+                drawFields(px, geo, atm, p)
+                if (beauty >= 3) drawTorches(px, geo, atm, game.clock)
+            }
+            Place.UNDERWORLD -> {
+                drawRoof(px, atm)
+                drawFlyer(px, world, game.clock, atm, PSYCHE_UP, PSYCHE_DOWN)
+                drawFarShore(px, geo, atm, game.clock)
+                drawStyx(px, geo, atm, p, game.clock)
+                drawFerry(px, world, atm)
+            }
         }
         drawGround(px, atm, p, look)
         drawProps(px, atm, p, look.props)
         drawBirds(px, world, game.clock, look)
+        if (game.place == Place.UNDERWORLD && beauty >= 3) drawLights(px, geo, atm, p, game.clock)
         drawRock(px, atm, game.position, look.rocks[game.shop.tier(Line.ROCK)], rolled)
         drawHero(px, atm, game, p)
         drawParticles(px, world, atm)
@@ -148,12 +160,13 @@ class SceneRenderer(private val geo: SceneGeometry) {
         return Orb(4.0 + (geo.width + 10.0) * p, geo.horizon - altitude * (geo.horizon - 14), altitude)
     }
 
-    private fun drawSky(px: Pixels, atm: Atmosphere, sun: Orb?, overcast: Float) {
+    /** The sky, with a glow around the sun in the last two of the sun's [colors]. */
+    private fun drawSky(px: Pixels, atm: Atmosphere, sun: Orb?, overcast: Float, colors: IntArray) {
         for (k in 0..SKY_LEVELS) skyLevels[k] = atm.sky(k / SKY_LEVELS.toFloat())
         val alt = sun?.altitude?.coerceIn(0.0, 1.0) ?: 0.0
         val glow = if (sun != null && sun.altitude > -0.15) 1f - overcast else 0f
         val glowR = 14 + (1 - alt) * 18
-        val glowColor = lerpColor(rgb(0xFFD08A), rgb(0xFFF6DA), alt.toFloat())
+        val glowColor = lerpColor(colors[4], colors[5], alt.toFloat())
         val bottom = min(geo.horizon, px.height)
         for (y in 0 until bottom) {
             val g = y.toFloat() / geo.horizon * SKY_LEVELS

@@ -609,8 +609,19 @@ class ScreenTest {
     }
 
     @Test
-    fun etnaIsDrawnNow() {
+    fun theUnderworldHasIconsOfItsOwn() {
+        for (item in items(Place.UNDERWORLD)) {
+            for (other in listOf(Place.CORINTH, Place.ETNA)) {
+                val twin = items(other).first { it.line == item.line && it.tier == item.tier }
+                assertFalse(itemIcon(item).data.contentEquals(itemIcon(twin).data), item.name)
+            }
+        }
+    }
+
+    @Test
+    fun everyWorldIsDrawnNow() {
         assertEquals("the hill on the volcano", Place.ETNA.note)
+        assertEquals("the hill in Tartarus", Place.UNDERWORLD.note)
     }
 
     private val allItems = Place.entries.flatMap { items(it) }

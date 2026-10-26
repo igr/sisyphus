@@ -6,7 +6,7 @@ The sun moves only while he works.
 Each day has its own weather. Wise words appear under the display as you push.
 Earn obols as you push, and spend them in the Agora Market: better rocks, helpers, blessings and beauty.
 When everything is bought, a final climb leads to the top. There the rock rolls down, and everything begins again.
-Tap the day to choose another world, such as Mount Etna; there the climb starts over.
+Tap the day to choose another world: Corinth, Mount Etna or The Underworld. There the climb starts over.
 
 Website, support and privacy policy: https://igr.github.io/sisyphus/ (from the `gh-pages` branch).
 
@@ -41,7 +41,7 @@ The knob click, the click of every other tap and the sound of buying are sound f
 - `gfx` — framebuffer, dithering, pixel font
 - `game` — knob physics, days and weather, quotes
 - `scene` — the display: sky, far view, slope, rock, Sisyphus, clouds, birds, rain. `Look.kt` holds what differs
-  from world to world, and `Etna.kt` draws Mount Etna. To add a world, follow `.claude/skills/new-world/SKILL.md`.
+  from world to world. `Etna.kt` and `Underworld.kt` draw those worlds. To add a world, follow `.claude/skills/new-world/SKILL.md`.
 - `ui` — layout, frame, Greek key band, quote panel, knob
 - `Screen.kt` maps touches to virtual pixels; `App.kt` shows the framebuffer in Compose
 - `iosMain`, `androidMain`, `jvmMain` — saving, sound and haptics for each platform; `androidApp` is the Android app

@@ -109,13 +109,13 @@ Order of purchases at 5 minutes a day, buying the cheapest affordable item: Goat
 
 ## Worlds
 
-- **The Worlds screen** opens when you tap the day. It shows a picture of each world: Corinth (the hill by the sea), Mount Etna (the hill on the volcano) and The Underworld. The current world has a bright frame and a check. The help points to it.
+- **The Worlds screen** opens when you tap the day. It shows a picture of each world: Corinth (the hill by the sea), Mount Etna (the hill on the volcano) and The Underworld (the hill in Tartarus). The current world has a bright frame and a check. The help points to it.
 - **The list scrolls** when the worlds do not fit, with a thin scrollbar on the right. A drag scrolls it, and after a quick swipe it coasts and slows down. A tap chooses a world when the finger lifts. A tap that stops the coasting list chooses nothing.
-- **The pictures:** Corinth and Mount Etna are cut from their real scenes at noon. The Underworld is a sketch: the river Styx with Charon's boat.
+- **The pictures** are cut from the real scene of each world at noon.
 - **Moving** to another world is possible at any time, after a question, because the climb starts over there: day 1, no items, no obols. The climbs and the sound setting stay.
 - **Each world has its own look and its own items.** The items have the prices and the effects of Corinth, so the economy is the same everywhere. Only the names, the details, the pictures and the beauty change.
 - **Mount Etna** is a side cone of the volcano. The summit smokes on the horizon, with lava in its crater and down its side. Black lava fields lie below, with a flow of lava that glows at night. The ground is black ash with red stones and thin grass. Birch, broom, chestnut and black pine grow there, among lava boulders, steaming vents and burnt trees. Ravens fly by day. On the days it rains in Corinth, ash falls on Etna.
-- **The Underworld is a placeholder** for now: it shows the hill of Corinth and sells its items until it is drawn.
+- **The Underworld** is Tartarus, where Homer saw Sisyphus push his rock. A rock roof with stalactites hangs over a misty cave, and the pale sun of Elysium crosses it, as Virgil tells. The dark Styx runs below, and on its far shore stand the gates of Hades, with a fire on each side. The ground is gray dust with pale stones and asphodels. Black poplars, willows, white cypresses and pomegranates grow there, among grave stones, amphorae and boulders. Bats fly by day, and the rain drips from the roof.
 
 The items of Mount Etna:
 
@@ -129,6 +129,18 @@ The items of Mount Etna:
 
 The beauty of Etna: now and then the crater throws fire into the sky; the eagle of Zeus flies by with a thunderbolt; at night, Demeter's two torches cross the lava fields.
 
+The items of The Underworld:
+
+| Line | I | II | III |
+|---|---|---|---|
+| Rock | Stone of Lethe | Rock of Tantalus | Adamant sphere |
+| Sidekicks | Orpheus | Theseus | Achilles |
+| Gods | Cerberus | Persephone | Hades |
+| Blessings | Obol for the ferry | Golden bough | Riches of Plouton |
+| Beauty | Boat of Charon | Psyche | Lights of Elysium |
+
+The beauty of The Underworld: now and then Charon rows his boat across the Styx; Psyche flies by on butterfly wings; at night, the souls of Elysium drift over the meadow as small lights.
+
 ## Later
 
-- Draw The Underworld. The checklist for a new world is in `.claude/skills/new-world/SKILL.md`.
+- More worlds. The checklist for a new world is in `.claude/skills/new-world/SKILL.md`.

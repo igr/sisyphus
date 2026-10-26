@@ -126,13 +126,13 @@ enum class Weather(val clouds: Int, val wind: Double, val overcast: Float, val r
 }
 
 /**
- * The worlds Sisyphus can push his rock in. Corinth and Mount Etna are drawn; The Underworld holds its place.
+ * The worlds Sisyphus can push his rock in, each with its own look and items.
  * Saved games know a world by its [id], which never changes.
  */
 enum class Place(val id: Int, val title: String, val note: String) {
     CORINTH(0, "Corinth", "the hill by the sea"),
     ETNA(1, "Mount Etna", "the hill on the volcano"),
-    UNDERWORLD(2, "The Underworld", "still to be drawn"),
+    UNDERWORLD(2, "The Underworld", "the hill in Tartarus"),
 }
 
 /**

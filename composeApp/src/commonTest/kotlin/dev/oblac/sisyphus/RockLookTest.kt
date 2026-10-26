@@ -35,6 +35,21 @@ class RockLookTest {
     }
 
     @Test
+    fun eachRockTierLooksDifferentInTheUnderworld() {
+        assertEquals(4, (0..3).map { rockPixels(it, Place.UNDERWORLD) }.toSet().size)
+    }
+
+    @Test
+    fun theUnderworldHasRocksOfItsOwnAfterTheFirst() {
+        fun icon(place: Place, tier: Int) = rockIcon(place, tier).data.toList()
+        assertEquals(icon(Place.CORINTH, 0), icon(Place.UNDERWORLD, 0))
+        for (tier in 1..3) {
+            assertNotEquals(icon(Place.CORINTH, tier), icon(Place.UNDERWORLD, tier))
+            assertNotEquals(icon(Place.ETNA, tier), icon(Place.UNDERWORLD, tier))
+        }
+    }
+
+    @Test
     fun etnaHasRocksOfItsOwnAfterTheFirst() {
         fun icon(place: Place, tier: Int) = rockIcon(place, tier).data.toList()
         assertEquals(icon(Place.CORINTH, 0), icon(Place.ETNA, 0))

@@ -337,6 +337,14 @@ class GameTest {
     }
 
     @Test
+    fun inTheUnderworldTheShopSellsTheItemsOfTheUnderworld() {
+        assertEquals("Orpheus", Game(MemoryStore(mapOf("place" to 2.0)), seed = 1, wall = { 0.0 }).shop.next(Line.SIDEKICKS)?.name)
+        val game = Game(MemoryStore(), seed = 1, wall = { 0.0 })
+        game.moveTo(Place.UNDERWORLD)
+        assertEquals("Cerberus", game.shop.next(Line.GODS)?.name)
+    }
+
+    @Test
     fun hermesNamesTheGodOfTheWorld() {
         var now = 1000.0
         val store = MemoryStore(mapOf("shop.alone" to 3.0, "place" to 1.0))
