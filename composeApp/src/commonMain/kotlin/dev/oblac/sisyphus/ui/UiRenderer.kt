@@ -1,7 +1,6 @@
 package dev.oblac.sisyphus.ui
 
 import dev.oblac.sisyphus.game.Game
-import dev.oblac.sisyphus.game.ITEMS
 import dev.oblac.sisyphus.game.Item
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.Place
@@ -361,7 +360,7 @@ class UiRenderer {
 
     private fun row(px: Pixels, r: Rect, line: Line, shop: Shop) {
         val next = shop.next(line)
-        val item = next ?: ITEMS.last { it.line == line }
+        val item = next ?: shop.owned(line) ?: return
         val bright = next == null || shop.obols >= next.price
         PixelFont.draw(px, LINE_TITLES[line.ordinal], r.x, r.y, TERRA)
         val y = r.y + PixelFont.LINE_HEIGHT

@@ -14,40 +14,20 @@ import dev.oblac.sisyphus.scene.SceneGeometry
 import dev.oblac.sisyphus.scene.SceneRenderer
 import dev.oblac.sisyphus.scene.World
 
-/** The picture of a world on the Worlds screen, [w] x [h]. Corinth is the real scene; the others are sketches until they are drawn. */
+/** The picture of a world on the Worlds screen, [w] x [h]. A drawn world is cut from its scene; The Underworld is a sketch until it is drawn. */
 fun worldPreview(place: Place, w: Int, h: Int): Pixels = when (place) {
-    Place.CORINTH -> corinth(w, h)
-    Place.ETNA -> etna(w, h)
+    Place.CORINTH, Place.ETNA -> scene(place, w, h)
     Place.UNDERWORLD -> underworld(w, h)
 }
 
-/** The scene at noon, cut to the band from the top of the rock down to the sea. */
-private fun corinth(w: Int, h: Int): Pixels {
+/** The scene of [place] at noon, cut to the band from the top of the rock down to the far view. */
+private fun scene(place: Place, w: Int, h: Int): Pixels {
     val geo = SceneGeometry(w, w)
-    val game = Game(MemoryStore(mapOf("effort" to (0.5 - START_TIME) * DAY_LENGTH)), seed = 3)
+    val game = Game(MemoryStore(mapOf("effort" to (0.5 - START_TIME) * DAY_LENGTH, "place" to place.id.toDouble())), seed = 3)
     val scene = Pixels(w, w)
     SceneRenderer(geo).render(scene, game, World(9).apply { reset(geo, Weather.CLEAR) }, banner = 0.0, hud = false)
     val top = geo.baseY - 31
     return Pixels(w, h).apply { for (y in 0 until h) for (x in 0 until w) this[x, y] = scene[x, top + y] }
-}
-
-/** Dusk over a dark volcano: a glowing crater, a stream of lava, smoke, and a slope of ash in front. */
-private fun etna(w: Int, h: Int) = Pixels(w, h).apply {
-    gradient(listOf(rgb(0x2A1830), rgb(0x6A2A3A), rgb(0xC8502E), rgb(0xF0A050)), h)
-    val cx = w * 0.62
-    val top = h / 5
-    for (y in top until h) {
-        val half = 5 + (y - top) * 1.4
-        for (x in (cx - half).toInt()..(cx + half).toInt()) this[x, y] = if (bayer(x, y) < 0.15f) rgb(0x3A2A2E) else rgb(0x241A1E)
-    }
-    for (x in (cx - 4).toInt()..(cx + 4).toInt()) this[x, top] = rgb(0xF07A30)
-    var lava = cx + 1
-    for (y in top + 1 until h) {
-        this[lava.toInt(), y] = rgb(0xE0602A)
-        lava += if (hash01(y, 1, 5) < 0.5f) 0.7 else 0.2
-    }
-    for (k in 0..2) disc(cx - 5 - k * 8, top - 3.0 - k * 2, 3.0 + k, if (k == 0) rgb(0x8A7A86) else rgb(0x6A5C6A))
-    slope(rgb(0x2E2224), rgb(0x4A3A3A))
 }
 
 /** Under a cave roof: the river Styx, Charon's boat with its lantern, and pale asphodels on the near bank. */

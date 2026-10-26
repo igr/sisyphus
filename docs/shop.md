@@ -109,12 +109,26 @@ Order of purchases at 5 minutes a day, buying the cheapest affordable item: Goat
 
 ## Worlds
 
-- **The Worlds screen** opens when you tap the day. It shows a picture of each world: Corinth (the hill by the sea), Mount Etna and The Underworld. The current world has a bright frame and a check. The help points to it.
+- **The Worlds screen** opens when you tap the day. It shows a picture of each world: Corinth (the hill by the sea), Mount Etna (the hill on the volcano) and The Underworld. The current world has a bright frame and a check. The help points to it.
 - **The list scrolls** when the worlds do not fit, with a thin scrollbar on the right. A drag scrolls it, and after a quick swipe it coasts and slows down. A tap chooses a world when the finger lifts. A tap that stops the coasting list chooses nothing.
-- **The pictures:** Corinth is cut from the real scene. Mount Etna and The Underworld are sketches: a volcano at dusk, and the river Styx with Charon's boat.
+- **The pictures:** Corinth and Mount Etna are cut from their real scenes at noon. The Underworld is a sketch: the river Styx with Charon's boat.
 - **Moving** to another world is possible at any time, after a question, because the climb starts over there: day 1, no items, no obols. The climbs and the sound setting stay.
-- **Mount Etna and The Underworld are placeholders** for now: they show the same hill until they are drawn.
+- **Each world has its own look and its own items.** The items have the prices and the effects of Corinth, so the economy is the same everywhere. Only the names, the details, the pictures and the beauty change.
+- **Mount Etna** is a side cone of the volcano. The summit smokes on the horizon, with lava in its crater and down its side. Black lava fields lie below, with a flow of lava that glows at night. The ground is black ash with red stones and thin grass. Birch, broom, chestnut and black pine grow there, among lava boulders, steaming vents and burnt trees. Ravens fly by day. On the days it rains in Corinth, ash falls on Etna.
+- **The Underworld is a placeholder** for now: it shows the hill of Corinth and sells its items until it is drawn.
+
+The items of Mount Etna:
+
+| Line | I | II | III |
+|---|---|---|---|
+| Rock | Lava stone | Volcanic bomb | Obsidian sphere |
+| Sidekicks | Empedocles | Odysseus | Polyphemus |
+| Gods | Aetna | Hephaestus | Typhon |
+| Blessings | Sheaf of Demeter | Wine of Dionysus | Silver of Arethusa |
+| Beauty | Lava fountain | Eagle of Zeus | Torches of Demeter |
+
+The beauty of Etna: now and then the crater throws fire into the sky; the eagle of Zeus flies by with a thunderbolt; at night, Demeter's two torches cross the lava fields.
 
 ## Later
 
-- Draw Mount Etna and The Underworld: their own sky, ground, props and a landmark each, and maybe their own beauty items.
+- Draw The Underworld. The checklist for a new world is in `.claude/skills/new-world/SKILL.md`.

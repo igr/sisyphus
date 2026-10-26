@@ -2,6 +2,7 @@ package dev.oblac.sisyphus.ui
 
 import dev.oblac.sisyphus.game.Item
 import dev.oblac.sisyphus.game.Line
+import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.gfx.rgb
 import dev.oblac.sisyphus.gfx.sprite
@@ -9,9 +10,13 @@ import dev.oblac.sisyphus.scene.PLEIADES
 import dev.oblac.sisyphus.scene.rockIcon
 
 /** The picture of an item, 16 x 16; the offer shows it at twice the size. */
-fun itemIcon(item: Item): Pixels = if (item.line == Line.ROCK) rockIcon(item.tier) else ICONS.getValue(item.line)[item.tier - 1]
+fun itemIcon(item: Item): Pixels = when {
+    item.line == Line.ROCK -> rockIcon(item.place, item.tier)
+    item.place == Place.ETNA -> ETNA_ICONS.getValue(item.line)[item.tier - 1]
+    else -> ICONS.getValue(item.line)[item.tier - 1]
+}
 
-private val SKIN = mapOf('k' to rgb(0xE2B088), 'K' to rgb(0xBC8460), 'e' to rgb(0x2A1A10), 'm' to rgb(0xB0504A))
+internal val SKIN = mapOf('k' to rgb(0xE2B088), 'K' to rgb(0xBC8460), 'e' to rgb(0x2A1A10), 'm' to rgb(0xB0504A))
 
 private val MEROPE = sprite(
     SKIN + mapOf('h' to rgb(0x3A2418), 'y' to rgb(0xE0B040), 'c' to rgb(0x5A7AAE), 'C' to rgb(0x3E5A86), 'w' to rgb(0xF1E4C8)),

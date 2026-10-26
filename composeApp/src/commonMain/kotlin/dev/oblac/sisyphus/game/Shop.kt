@@ -13,10 +13,13 @@ enum class Line(val id: String) {
 }
 
 /**
- * One thing to buy. Once owned, [effect] is its line's value: a bonus, turns an hour, or work per obol.
+ * One thing to buy in a [place]. Once owned, [effect] is its line's value: a bonus, turns an hour, or work per obol.
  * The Agora shows [note] in its row, and [details] when it asks to buy.
  */
-class Item(val line: Line, val tier: Int, val name: String, val note: String, val price: Int, val effect: Double, val details: String)
+class Item(
+    val line: Line, val tier: Int, val name: String, val note: String, val price: Int, val effect: Double, val details: String,
+    val place: Place = Place.CORINTH,
+)
 
 /** However strong the rock and the helpers, the sun and the walk move at most this much faster. */
 const val SUN_CAP = 1.5
@@ -24,7 +27,8 @@ const val SUN_CAP = 1.5
 /** Turns of work for one obol, before any blessing: 10 days of pushing. */
 const val WORK_PER_OBOL = 720.0
 
-val ITEMS = listOf(
+/** The items of Corinth. Their prices and effects hold in every world. */
+private val CORINTH_ITEMS = listOf(
     Item(Line.ROCK, 1, "River stone", "turns count 1.5x", 2, 1.5,
         "Worn smooth by the river. Every turn of the knob counts 1.5 times, so obols come faster."),
     Item(Line.ROCK, 2, "Pumice", "turns count 2x", 5, 2.0,
@@ -57,9 +61,54 @@ val ITEMS = listOf(
         "The seven sisters shine at night. The faintest one is Merope."),
 )
 
-/** What the player owns, and their obols. Each line is bought in order; the newest item of a line sets its effect. */
-class Shop(tiers: Map<Line, Int> = emptyMap(), obols: Double = 0.0) {
+private val ETNA_ITEMS = with(Place.ETNA) {
+    listOf(
+        item(Line.ROCK, 1, "Lava stone",
+            "Black and rough, from an old flow of lava. Every turn of the knob counts 1.5 times, so obols come faster."),
+        item(Line.ROCK, 2, "Volcanic bomb",
+            "Lava that the mountain threw into the air. It cooled round as it flew. Every turn counts 2 times. It takes the place of the lava stone."),
+        item(Line.ROCK, 3, "Obsidian sphere",
+            "Black glass of the volcano, polished perfectly round. Every turn counts 3 times. It takes the place of the volcanic bomb."),
+        item(Line.SIDEKICKS, 1, "Empedocles",
+            "The wise man who leapt into the crater, and left only a sandal, pushes beside him. Each turn counts 1.25 times more, on top of the rock."),
+        item(Line.SIDEKICKS, 2, "Odysseus",
+            "His son, some say, who tricked the Cyclops, pushes beside him. Each turn counts 1.5 times more. He takes Empedocles' place."),
+        item(Line.SIDEKICKS, 3, "Polyphemus",
+            "The Cyclops who threw rocks at the ship of Odysseus pushes beside him. Each turn counts 2 times more. He takes Odysseus' place."),
+        item(Line.GODS, 1, "Aetna",
+            "The nymph who gave the mountain her name pushes the rock 6 times an hour, even when the app is closed."),
+        item(Line.GODS, 2, "Hephaestus",
+            "The smith of the gods, whose forge is under the mountain, pushes 12 times an hour, even when the app is closed. He takes Aetna's place."),
+        item(Line.GODS, 3, "Typhon",
+            "The giant whom Zeus buried under the mountain pushes 24 times an hour, day and night. He takes Hephaestus' place."),
+        item(Line.BLESSING, 1, "Sheaf of Demeter",
+            "Sicily is the island of Demeter. Her grain fills your purse faster: one obol for every 7 days of pushing, not 10."),
+        item(Line.BLESSING, 2, "Wine of Dionysus",
+            "Vines love the black soil of the mountain: one obol for every 5 days of pushing. It takes the place of the sheaf."),
+        item(Line.BLESSING, 3, "Silver of Arethusa",
+            "The silver of Syracuse, with the face of the nymph Arethusa: one obol for every 3 days of pushing. It takes the place of the wine."),
+        item(Line.BEAUTY, 1, "Lava fountain",
+            "Now and then the crater throws fire into the sky. Beauty stays, whatever else you buy.", "fire from the crater"),
+        item(Line.BEAUTY, 2, "Eagle of Zeus",
+            "The eagle of Zeus flies by now and then, with a thunderbolt from the forge under the mountain.", "carries a thunderbolt"),
+        item(Line.BEAUTY, 3, "Torches of Demeter",
+            "At night Demeter walks the black fields with two torches, lit in the crater, and looks for her daughter.", "torches in the night"),
+    )
+}
+
+/** An item of this world: a name and details of its own, with the price, the effect and the note of the item of Corinth in its place. */
+private fun Place.item(line: Line, tier: Int, name: String, details: String, note: String? = null): Item {
+    val corinth = CORINTH_ITEMS.first { it.line == line && it.tier == tier }
+    return Item(line, tier, name, note ?: corinth.note, corinth.price, corinth.effect, details, this)
+}
+
+/** The 15 items of [place], in the order the Agora shows them. A world that is not drawn yet sells the items of Corinth. */
+fun items(place: Place): List<Item> = if (place == Place.ETNA) ETNA_ITEMS else CORINTH_ITEMS
+
+/** What the player owns in [place], and their obols. Each line is bought in order; the newest item of a line sets its effect. */
+class Shop(tiers: Map<Line, Int> = emptyMap(), obols: Double = 0.0, val place: Place = Place.CORINTH) {
     private val tiers = Line.entries.associateWith { (tiers[it] ?: 0).coerceIn(0, 3) }.toMutableMap()
+    private val stock = items(place)
 
     var obols = obols
         private set
@@ -69,7 +118,7 @@ class Shop(tiers: Map<Line, Int> = emptyMap(), obols: Double = 0.0) {
     /** All 15 items are bought: the final climb can begin. */
     val allBought get() = Line.entries.all { tier(it) == 3 }
 
-    fun next(line: Line): Item? = ITEMS.firstOrNull { it.line == line && it.tier == tier(line) + 1 }
+    fun next(line: Line): Item? = stock.firstOrNull { it.line == line && it.tier == tier(line) + 1 }
 
     fun buy(line: Line): Boolean {
         val item = next(line) ?: return false
@@ -104,5 +153,5 @@ class Shop(tiers: Map<Line, Int> = emptyMap(), obols: Double = 0.0) {
     }
 
     /** The newest item bought in [line], the one that sets its effect; null before the first. */
-    fun owned(line: Line): Item? = ITEMS.firstOrNull { it.line == line && it.tier == tier(line) }
+    fun owned(line: Line): Item? = stock.firstOrNull { it.line == line && it.tier == tier(line) }
 }

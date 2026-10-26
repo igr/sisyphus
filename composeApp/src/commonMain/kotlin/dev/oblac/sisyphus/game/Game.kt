@@ -126,12 +126,12 @@ enum class Weather(val clouds: Int, val wind: Double, val overcast: Float, val r
 }
 
 /**
- * The worlds Sisyphus can push his rock in. Only Corinth is drawn so far; the others hold their places.
+ * The worlds Sisyphus can push his rock in. Corinth and Mount Etna are drawn; The Underworld holds its place.
  * Saved games know a world by its [id], which never changes.
  */
 enum class Place(val id: Int, val title: String, val note: String) {
     CORINTH(0, "Corinth", "the hill by the sea"),
-    ETNA(1, "Mount Etna", "still to be drawn"),
+    ETNA(1, "Mount Etna", "the hill on the volcano"),
     UNDERWORLD(2, "The Underworld", "still to be drawn"),
 }
 
@@ -164,14 +164,14 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     var soundOn = store.load(KEY_SOUND) != 0.0
         private set
 
-    var shop = Shop(Line.entries.associateWith { store.load(shopKey(it))?.toInt() ?: 0 }, store.load(KEY_OBOLS) ?: 0.0)
+    /** The world he pushes in. */
+    var place = store.load(KEY_PLACE)?.toInt().let { id -> Place.entries.firstOrNull { it.id == id } } ?: Place.CORINTH
+        private set
+    var shop = Shop(Line.entries.associateWith { store.load(shopKey(it))?.toInt() ?: 0 }, store.load(KEY_OBOLS) ?: 0.0, place)
         private set
 
     /** Where the hill ends, in pixels walked; null until all 15 items are bought and the final climb begins. */
     var summit = store.load(KEY_SUMMIT)?.takeIf { it >= 0 }
-        private set
-    /** The world he pushes in. */
-    var place = store.load(KEY_PLACE)?.toInt().let { id -> Place.entries.firstOrNull { it.id == id } } ?: Place.CORINTH
         private set
     /** How many times Sisyphus reached the top. Starting over keeps it. */
     var climbs = store.load(KEY_CLIMBS)?.toInt() ?: 0
@@ -297,7 +297,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         position = 0.0
         effort = 0.0
         summit = null
-        shop = Shop()
+        shop = Shop(place = place)
         quotes = QuoteBox(quoteSeed, drawn = 0, firstTime = true)
         save()
     }

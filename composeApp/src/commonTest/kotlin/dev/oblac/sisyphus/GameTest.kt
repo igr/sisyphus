@@ -328,6 +328,23 @@ class GameTest {
         }
     }
 
+    @Test
+    fun onEtnaTheShopSellsTheItemsOfEtna() {
+        assertEquals("Empedocles", Game(MemoryStore(mapOf("place" to 1.0)), seed = 1, wall = { 0.0 }).shop.next(Line.SIDEKICKS)?.name)
+        val game = Game(MemoryStore(), seed = 1, wall = { 0.0 })
+        game.moveTo(Place.ETNA)
+        assertEquals("Aetna", game.shop.next(Line.GODS)?.name)
+    }
+
+    @Test
+    fun hermesNamesTheGodOfTheWorld() {
+        var now = 1000.0
+        val store = MemoryStore(mapOf("shop.alone" to 3.0, "place" to 1.0))
+        Game(store, seed = 1, wall = { now }).save()
+        now += 3600
+        assertEquals("Typhon pushed 24 times while you were away.", Game(store, seed = 1, wall = { now }).quotes.quote.text)
+    }
+
     /** Every saved game holds these ids. Changing one loses the players' purchases or their world. */
     @Test
     fun theSaveIdsNeverChange() {

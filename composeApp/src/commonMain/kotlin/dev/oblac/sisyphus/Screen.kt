@@ -128,8 +128,8 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
             if (end.over) ending = null
         }
         if (layout != null) {
-            val stars = atmosphere(game.timeOfDay, world.overcast).stars
-            world.update(dt, game.moved, game.speed, floor(game.position).toInt(), game.weather, game.timeOfDay, stars, game.shop.tier(Line.BEAUTY))
+            val stars = atmosphere(game.timeOfDay, world.overcast, game.place).stars
+            world.update(dt, game.moved, game.speed, floor(game.position).toInt(), game.weather, game.timeOfDay, stars, game.shop.tier(Line.BEAUTY), game.place)
         }
         if (worldsOpen) moveList(dt)
         if (game.day > lastDay) banner = 3.0

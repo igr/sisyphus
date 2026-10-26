@@ -2,6 +2,7 @@ package dev.oblac.sisyphus.scene
 
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.Line
+import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.gfx.PixelFont
 import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.gfx.bayer
@@ -27,7 +28,7 @@ private const val SKY_LEVELS = 12
 private const val PROP_SLOT = 40
 private const val ISLAND_PERIOD = 220
 
-private val GROUND = intArrayOf(
+internal val GROUND = intArrayOf(
     rgb(0xB4C46A), rgb(0x82A048), rgb(0x5A7E38),
     rgb(0xB08A56), rgb(0x94704A), rgb(0x765840),
     rgb(0xD2C4A6), rgb(0x7C6A54),
@@ -39,21 +40,31 @@ private const val SOIL = 3
 private const val STONE_LIGHT = 6
 private const val STONE_DARK = 7
 
-private val FLOWERS = intArrayOf(rgb(0xE04A32), rgb(0xF2C640), rgb(0xF4F0E8), rgb(0xB86ACC))
+internal val FLOWERS = intArrayOf(rgb(0xE04A32), rgb(0xF2C640), rgb(0xF4F0E8), rgb(0xB86ACC))
 
 private val ROCK = intArrayOf(
     rgb(0x3E3834), rgb(0x5A524A), rgb(0x7A7066), rgb(0x9A9084), rgb(0xBAB0A2), rgb(0xD6CEC0),
 )
 private val ROCK_OUTLINE = rgb(0x221C18)
 
-/** The rock for each tier of the shop: today's rock, the river stone, the pumice, the sphere of Daedalus. */
-private val ROCKS = listOf(
-    ROCK,
-    intArrayOf(rgb(0x353A3E), rgb(0x4E555A), rgb(0x6B7378), rgb(0x8C9498), rgb(0xAEB4B6), rgb(0xD2D6D6)),
-    intArrayOf(rgb(0x6E665C), rgb(0x8C8376), rgb(0xA89E8F), rgb(0xC2B8A8), rgb(0xD8CFC0), rgb(0xEDE6DA)),
-    intArrayOf(rgb(0x5C5248), rgb(0x80766A), rgb(0xA69C8E), rgb(0xC9C0B2), rgb(0xE6DED2), rgb(0xFFFFFF)),
-)
 private val MOSS = rgb(0x7E8A58)
+
+/**
+ * One look of the rock: its [colors] from dark to light, and the [mark] painted on it, which can ask for the [accent] color.
+ * A [polished] rock has a shine and no marks.
+ */
+internal class Rock(val colors: IntArray, val mark: (Double, Double) -> Int = { _, _ -> 0 }, val polished: Boolean = false, val accent: Int = MOSS)
+
+/** The rock that every climb starts with. */
+internal val FIRST_ROCK = Rock(ROCK, ::rockMark)
+
+/** The rock for each tier of the shop in Corinth: today's rock, the river stone, the pumice, the sphere of Daedalus. */
+internal val ROCKS = listOf(
+    FIRST_ROCK,
+    Rock(intArrayOf(rgb(0x353A3E), rgb(0x4E555A), rgb(0x6B7378), rgb(0x8C9498), rgb(0xAEB4B6), rgb(0xD2D6D6)), ::riverMark),
+    Rock(intArrayOf(rgb(0x6E665C), rgb(0x8C8376), rgb(0xA89E8F), rgb(0xC2B8A8), rgb(0xD8CFC0), rgb(0xEDE6DA)), ::pumiceMark),
+    Rock(intArrayOf(rgb(0x5C5248), rgb(0x80766A), rgb(0xA69C8E), rgb(0xC9C0B2), rgb(0xE6DED2), rgb(0xFFFFFF)), polished = true),
+)
 
 private val STAR = rgb(0xFFFFFF)
 private val STAR_DIM = rgb(0x9098C0)
@@ -82,6 +93,7 @@ class SceneRenderer(private val geo: SceneGeometry) {
     private val hero = HeroSprites(geo.rockDx, geo.rockDy, geo.rockR)
     private val skyLevels = IntArray(SKY_LEVELS + 1)
     private val ground = IntArray(GROUND.size)
+    private val blades = IntArray(2)
     private val stars = List(geo.width * geo.horizon / 150) { i ->
         Star(
             x = (hash01(i, 1, 11) * geo.width).toInt(),
@@ -95,29 +107,38 @@ class SceneRenderer(private val geo: SceneGeometry) {
 
     /** At the top, [rolled] is how far the rock has rolled back down. */
     fun render(px: Pixels, game: Game, world: World, banner: Double, hud: Boolean = true, rolled: Double? = null) {
+        val look = lookOf(game.place)
         val t = game.timeOfDay
-        val atm = atmosphere(t, world.overcast)
+        val atm = atmosphere(t, world.overcast, game.place)
         val p = floor(game.position).toInt()
         val sun = orb((t - 0.25) / 0.5)
         val moon = orb((t - 0.75 + 1.0) % 1.0 / 0.5)
 
         drawSky(px, atm, sun, world.overcast)
         drawStars(px, atm, game.clock, world)
-        if (game.shop.tier(Line.BEAUTY) >= 3) drawPleiades(px, atm, game.clock)
+        if (game.place != Place.ETNA && game.shop.tier(Line.BEAUTY) >= 3) drawPleiades(px, atm, game.clock)
         moon?.let { drawMoon(px, it, game.day, atm, world.overcast) }
-        sun?.let { drawSun(px, it, game.clock, atm, world.overcast) }
+        sun?.let { drawSun(px, it, game.clock, atm, world.overcast, look.sun) }
         drawClouds(px, atm, world)
-        drawPegasus(px, world, game.clock, atm)
-        drawIslands(px, atm, p)
-        drawSea(px, atm, p, sun, moon, game.clock)
-        drawDolphins(px, world, atm)
-        drawGround(px, atm, p)
-        drawProps(px, atm, p)
-        drawBirds(px, world, game.clock)
-        drawRock(px, atm, game.position, game.shop.tier(Line.ROCK), rolled)
+        if (game.place == Place.ETNA) {
+            drawSummit(px, geo, atm, game.clock)
+            drawSparks(px, world)
+            drawFlyer(px, world, game.clock, atm, EAGLE_UP, EAGLE_DOWN)
+            drawFields(px, geo, atm, p)
+            if (game.shop.tier(Line.BEAUTY) >= 3) drawTorches(px, geo, atm, game.clock)
+        } else {
+            drawFlyer(px, world, game.clock, atm, PEGASUS_UP, PEGASUS_DOWN)
+            drawIslands(px, atm, p)
+            drawSea(px, atm, p, sun, moon, game.clock)
+            drawDolphins(px, world, atm)
+        }
+        drawGround(px, atm, p, look)
+        drawProps(px, atm, p, look.props)
+        drawBirds(px, world, game.clock, look)
+        drawRock(px, atm, game.position, look.rocks[game.shop.tier(Line.ROCK)], rolled)
         drawHero(px, atm, game, p)
         drawParticles(px, world, atm)
-        drawRain(px, world, atm)
+        drawRain(px, world, atm, look.ash)
         if (hud) drawDay(px, game.day, game.climbs, banner)
     }
 
@@ -185,10 +206,11 @@ class SceneRenderer(private val geo: SceneGeometry) {
         }
     }
 
-    private fun drawPegasus(px: Pixels, world: World, clock: Double, atm: Atmosphere) {
-        val p = world.pegasus ?: return
-        val up = sin((clock + p.flap) * 2 * PI * 3) > 0
-        px.draw(if (up) PEGASUS_UP else PEGASUS_DOWN, floor(p.x).toInt() - 7, floor(p.y).toInt() - 5, flipX = p.vx < 0, light = atm.light)
+    /** The flyer of the second beauty item, wings [up] and [down]. */
+    private fun drawFlyer(px: Pixels, world: World, clock: Double, atm: Atmosphere, up: Pixels, down: Pixels) {
+        val f = world.flyer ?: return
+        val sprite = if (sin((clock + f.flap) * 2 * PI * 3) > 0) up else down
+        px.draw(sprite, floor(f.x).toInt() - sprite.width / 2, floor(f.y).toInt() - sprite.height / 2, flipX = f.vx < 0, light = atm.light)
     }
 
     private fun drawDolphins(px: Pixels, world: World, atm: Atmosphere) {
@@ -205,13 +227,14 @@ class SceneRenderer(private val geo: SceneGeometry) {
         }
     }
 
-    private fun drawSun(px: Pixels, sun: Orb, clock: Double, atm: Atmosphere, overcast: Float) {
+    /** The [colors] of the sun: its core low and high in the sky, then its edge low and high. */
+    private fun drawSun(px: Pixels, sun: Orb, clock: Double, atm: Atmosphere, overcast: Float, colors: IntArray) {
         val alt = sun.altitude.coerceIn(0.0, 1.0)
         val r = 5.0 + (1 - alt) * 1.5
         val warm = sqrt(alt).toFloat()
         val behind = atm.sky((sun.y / geo.horizon).toFloat().coerceIn(0f, 1f))
-        val core = lerpColor(lerpColor(rgb(0xFF9A58), rgb(0xFFF6C8), warm), behind, overcast * 0.95f)
-        val edge = lerpColor(lerpColor(rgb(0xE85A30), rgb(0xFFCF52), warm), behind, overcast * 0.95f)
+        val core = lerpColor(lerpColor(colors[0], colors[1], warm), behind, overcast * 0.95f)
+        val edge = lerpColor(lerpColor(colors[2], colors[3], warm), behind, overcast * 0.95f)
         px.disc(sun.x, sun.y, r, edge)
         px.disc(sun.x, sun.y, r - 1.3, core)
         if (alt < 0.25 || overcast > 0.4f) return
@@ -296,24 +319,25 @@ class SceneRenderer(private val geo: SceneGeometry) {
         }
     }
 
-    private fun drawGround(px: Pixels, atm: Atmosphere, p: Int) {
-        for (i in GROUND.indices) ground[i] = shade(GROUND[i], atm.light)
+    private fun drawGround(px: Pixels, atm: Atmosphere, p: Int, look: Look) {
+        for (i in ground.indices) ground[i] = shade(look.ground[i], atm.light)
+        for (i in blades.indices) blades[i] = shade(look.blades[i], atm.light)
         for (x in 0 until px.width) {
             val s = geo.surfaceY(x, p)
             val wx = geo.worldX(x, p)
             for (y in max(0, s) until px.height) px.data[y * px.width + x] = ground[groundIndex(wx, y - s)]
             val hb = hash01(wx, 5, 31)
             val blade = when {
-                hb < 0.04f -> 3
-                hb < 0.12f -> 2
-                hb < 0.3f -> 1
+                hb < 0.04f * look.grass -> 3
+                hb < 0.12f * look.grass -> 2
+                hb < 0.3f * look.grass -> 1
                 else -> 0
             }
-            for (k in 1..blade) px[x, s - k] = ground[if (k == blade) GRASS_LIGHT else GRASS]
+            for (k in 1..blade) px[x, s - k] = blades[if (k == blade) 0 else 1]
             val hf = hash(wx, 9, 31)
             if ((hf and 0xFF) < 7) {
-                px[x, s - 1] = ground[GRASS]
-                px[x, s - 2] = shade(FLOWERS[(hf shr 8) and 3], atm.light)
+                px[x, s - 1] = blades[1]
+                px[x, s - 2] = shade(look.flowers[(hf shr 8) and 3], atm.light)
             }
         }
     }
@@ -338,13 +362,13 @@ class SceneRenderer(private val geo: SceneGeometry) {
         return SOIL + band.coerceAtMost(2)
     }
 
-    private fun drawProps(px: Pixels, atm: Atmosphere, p: Int) {
+    private fun drawProps(px: Pixels, atm: Atmosphere, p: Int, props: List<Prop>) {
         val from = (geo.worldX(0, p) - 20).floorDiv(PROP_SLOT)
         val to = (geo.worldX(px.width, p) + 20).floorDiv(PROP_SLOT)
         for (slot in from..to) {
             val h = hash(slot, 0, 61)
             if ((h and 0xFF) > 110) continue
-            val prop = propFor(h ushr 8)
+            val prop = propFor(h ushr 8, props)
             val sprite = prop.sprite
             val x = slot * PROP_SLOT + (hash(slot, 1, 61) and 0x1F) - p + geo.heroX
             val top = geo.surfaceY(x, p) - (sprite.height - 1)
@@ -352,10 +376,11 @@ class SceneRenderer(private val geo: SceneGeometry) {
         }
     }
 
-    private fun drawBirds(px: Pixels, world: World, clock: Double) {
+    private fun drawBirds(px: Pixels, world: World, clock: Double, look: Look) {
         for (b in world.birds) {
             val up = sin((clock + b.flap) * 2 * PI * 2.8) > 0
-            px.draw(if (up) BIRD_UP else BIRD_FLAT, floor(b.x).toInt() - 2, floor(b.y).toInt() - 1, flipX = b.vx < 0)
+            val bird = if (up) look.birdUp else look.birdFlat
+            px.draw(bird, floor(b.x).toInt() - bird.width / 2, floor(b.y).toInt() - bird.height / 2, flipX = b.vx < 0)
         }
     }
 
@@ -363,7 +388,7 @@ class SceneRenderer(private val geo: SceneGeometry) {
      * The rock rests ahead of him on the slope, or on the flat top once it gets there.
      * At the top it rolls back [rolled] pixels: along the top, past him, and down the slope.
      */
-    private fun drawRock(px: Pixels, atm: Atmosphere, position: Double, tier: Int, rolled: Double?) {
+    private fun drawRock(px: Pixels, atm: Atmosphere, position: Double, rock: Rock, rolled: Double?) {
         val r = geo.rockR
         val slope = sqrt(1.25)
         var x = geo.heroX + geo.rockDx
@@ -381,7 +406,7 @@ class SceneRenderer(private val geo: SceneGeometry) {
                 y = geo.baseY + dx / 2 - r * slope
             }
         }
-        paintRock(px, x, y, r, (position - (rolled ?: 0.0)) / r, tier, atm.light)
+        paintRock(px, x, y, r, (position - (rolled ?: 0.0)) / r, rock, atm.light)
     }
 
     private fun drawHero(px: Pixels, atm: Atmosphere, game: Game, p: Int) {
@@ -399,9 +424,19 @@ class SceneRenderer(private val geo: SceneGeometry) {
         }
     }
 
-    private fun drawRain(px: Pixels, world: World, atm: Atmosphere) {
+    /** Rain, or flakes of ash where [ash] is true. */
+    private fun drawRain(px: Pixels, world: World, atm: Atmosphere, ash: Boolean) {
         val n = (world.drops.size * world.rain).toInt()
         if (n == 0) return
+        if (ash) {
+            val light = lerpColor(atm.skyHorizon, rgb(0xFFFFFF), 0.3f)
+            val dark = lerpColor(atm.skyHorizon, rgb(0x2A2624), 0.55f)
+            for (i in 0 until n) {
+                val d = world.drops[i]
+                px[floor(d.x).toInt(), floor(d.y).toInt()] = if (i % 3 == 0) light else dark
+            }
+            return
+        }
         val c = lerpColor(atm.skyHorizon, rgb(0xFFFFFF), 0.35f)
         val tail = lerpColor(atm.skyHorizon, rgb(0xFFFFFF), 0.12f)
         for (i in 0 until n) {
@@ -438,18 +473,19 @@ class SceneRenderer(private val geo: SceneGeometry) {
 
 }
 
-private const val MOSS_MARK = 99
+/** What a mark returns where the rock takes its accent color. */
+internal const val ACCENT = 99
 private val CRACK = doubleArrayOf(-6.5, -2.0, -2.0, -0.5, 0.5, 2.0, 4.0, 2.8)
 
-/** The rock of the shop's [tier], alone in daylight: its picture in the Agora. */
-fun rockIcon(tier: Int): Pixels = Pixels(16, 16).also { paintRock(it, 8.0, 8.0, 7.5, 0.0, tier, WHITE) }
+/** The rock of the shop's [tier] in [place], alone in daylight: its picture in the Agora. */
+fun rockIcon(place: Place, tier: Int): Pixels = Pixels(16, 16).also { paintRock(it, 8.0, 8.0, 7.5, 0.0, lookOf(place).rocks[tier], WHITE) }
 
-/** Paints the rock of the shop's [tier] around ([cx], [cy]), turned by [angle] and lit by [light]. */
-private fun paintRock(px: Pixels, cx: Double, cy: Double, r: Double, angle: Double, tier: Int, light: Int) {
-    val palette = ROCKS[tier.coerceIn(0, ROCKS.size - 1)]
-    val rock = IntArray(palette.size) { shade(palette[it], light) }
+/** Paints [rock] around ([cx], [cy]), turned by [angle] and lit by [light]. */
+private fun paintRock(px: Pixels, cx: Double, cy: Double, r: Double, angle: Double, rock: Rock, light: Int) {
+    val palette = rock.colors
+    val shades = IntArray(palette.size) { shade(palette[it], light) }
     val outline = shade(ROCK_OUTLINE, light)
-    val moss = shade(MOSS, light)
+    val accent = shade(rock.accent, light)
     val ca = cos(angle)
     val sa = sin(angle)
     for (j in floor(cy - r).toInt()..ceil(cy + r).toInt()) {
@@ -466,22 +502,17 @@ private fun paintRock(px: Pixels, cx: Double, cy: Double, r: Double, angle: Doub
             val l = (-0.5 * dx - 0.62 * dy) / r + 0.6 * nz
             val u = dx * ca + dy * sa
             val v = -dx * sa + dy * ca
-            if (tier == 3 && abs(dx + 0.38 * r) < 1 && abs(dy + 0.42 * r) < 1) {
-                px[i, j] = rock[ROCK.size - 1]
+            if (rock.polished && abs(dx + 0.38 * r) < 1 && abs(dy + 0.42 * r) < 1) {
+                px[i, j] = shades[palette.size - 1]
                 continue
             }
-            val mark = when (tier) {
-                0 -> rockMark(u, v)
-                1 -> riverMark(u, v)
-                2 -> pumiceMark(u, v)
-                else -> 0
-            }
-            if (mark == MOSS_MARK) {
-                px[i, j] = moss
+            val mark = rock.mark(u, v)
+            if (mark == ACCENT) {
+                px[i, j] = accent
                 continue
             }
             val tone = ((l + 1) * 2.6 + bayer(i, j) - 0.5).toInt() + mark
-            px[i, j] = rock[tone.coerceIn(0, if (tier == 3) ROCK.size - 2 else ROCK.size - 1)]
+            px[i, j] = shades[tone.coerceIn(0, if (rock.polished) palette.size - 2 else palette.size - 1)]
         }
     }
 }
@@ -492,7 +523,7 @@ private fun rockMark(u: Double, v: Double): Int {
     if (crack(u, v)) return -3
     if (near(-4.0, 2.5, 1.2)) return -2
     if (near(-4.0, 2.5, 2.6) || near(3.5, -3.0, 2.2) || near(1.0, 5.5, 1.6) || near(-2.5, -6.0, 1.3)) return -1
-    if (near(5.2, 3.6, 1.5)) return MOSS_MARK
+    if (near(5.2, 3.6, 1.5)) return ACCENT
     if (near(-0.5, -1.5, 1.6)) return 1
     return 0
 }
@@ -507,12 +538,13 @@ private fun riverMark(u: Double, v: Double): Int {
 private fun pumiceMark(u: Double, v: Double): Int =
     if ((hash(floor(u).toInt(), floor(v).toInt(), 71) and 0xFF) < 28) -3 else 0
 
-private fun crack(u: Double, v: Double): Boolean {
-    for (k in 0 until CRACK.size - 2 step 2) {
-        val x0 = CRACK[k]
-        val y0 = CRACK[k + 1]
-        val x1 = CRACK[k + 2]
-        val y1 = CRACK[k + 3]
+/** Whether (u, v) lies on the crack through [points], given as x, y pairs. */
+internal fun crack(u: Double, v: Double, points: DoubleArray = CRACK): Boolean {
+    for (k in 0 until points.size - 2 step 2) {
+        val x0 = points[k]
+        val y0 = points[k + 1]
+        val x1 = points[k + 2]
+        val y1 = points[k + 3]
         val vx = x1 - x0
         val vy = y1 - y0
         val t = (((u - x0) * vx + (v - y0) * vy) / (vx * vx + vy * vy)).coerceIn(0.0, 1.0)

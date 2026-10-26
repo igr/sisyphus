@@ -30,8 +30,8 @@ private val PROP_COLORS = mapOf(
 )
 
 /** Something by the path. Its last row touches the ground. [weight] sets how often it shows up. */
-class Prop(art: String, val weight: Int) {
-    val sprite = sprite(PROP_COLORS, art)
+class Prop(art: String, val weight: Int, colors: Map<Char, Int> = PROP_COLORS) {
+    val sprite = sprite(colors, art)
 }
 
 val OLIVE = Prop(
@@ -212,17 +212,17 @@ val BUSH = Prop(
     weight = 10,
 )
 
+/** The props of Corinth. */
 val PROPS = listOf(OLIVE, YOUNG_OLIVE, CYPRESS, STONE_PINE, POPLAR, ALMOND, LEMON, DEAD_TREE, COLUMN, BUSH)
-private val TOTAL_WEIGHT = PROPS.sumOf { it.weight }
 
-/** Picks a prop for a random [roll]: the heavier the weight, the more often it comes up. */
-fun propFor(roll: Int): Prop {
-    var r = roll.mod(TOTAL_WEIGHT)
-    for (prop in PROPS) {
+/** Picks one of [props] for a random [roll]: the heavier the weight, the more often it comes up. */
+fun propFor(roll: Int, props: List<Prop> = PROPS): Prop {
+    var r = roll.mod(props.sumOf { it.weight })
+    for (prop in props) {
         if (r < prop.weight) return prop
         r -= prop.weight
     }
-    return PROPS.last()
+    return props.last()
 }
 
 private val BIRD_COLOR = mapOf('#' to rgb(0x2E3442))

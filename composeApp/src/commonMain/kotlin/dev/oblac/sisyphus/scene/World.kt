@@ -1,5 +1,6 @@
 package dev.oblac.sisyphus.scene
 
+import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.Weather
 import dev.oblac.sisyphus.gfx.rgb
 import kotlin.math.abs
@@ -34,18 +35,26 @@ class Leap(val x: Double, val dir: Double) {
     var t = 0.0
 }
 
-/** Pegasus crossing the sky. */
+/** Pegasus, or the eagle of Zeus, crossing the sky. */
 class Flyer(var x: Double, val y: Double, val vx: Double, val flap: Double)
 
 class ShootingStar(var x: Double, var y: Double, val vx: Double, val vy: Double, var life: Double)
 
-private val DUST = rgb(0xC8A878)
+internal val DUST = rgb(0xC8A878)
 private val SWEAT = rgb(0xBFE4FF)
 private val SPLASH = rgb(0xB8C8E0)
 private const val DROPS = 90
 
 /** Seconds a dolphin is out of the water. */
 const val LEAP_TIME = 1.2
+
+/** Ash falls this much slower than rain. */
+private const val ASH_FALL = 0.16
+
+/** Seconds the crater throws fire. */
+private const val BURST_TIME = 1.6
+
+private val FIRE = intArrayOf(rgb(0xFFE070), rgb(0xFFA040), rgb(0xF0602A), rgb(0xC83A20))
 
 /** Everything in the display that moves by itself: clouds, birds, rain, dust. */
 class World(seed: Int) {
@@ -58,7 +67,9 @@ class World(seed: Int) {
     val particles = ArrayList<Particle>()
     val drops = ArrayList<Drop>()
     val dolphins = ArrayList<Leap>()
-    var pegasus: Flyer? = null
+    /** On Etna, the fire that the crater throws up. */
+    val sparks = ArrayList<Particle>()
+    var flyer: Flyer? = null
         private set
     var shootingStar: ShootingStar? = null
         private set
@@ -69,8 +80,10 @@ class World(seed: Int) {
         private set
 
     private var dust = 0.0
+    /** Seconds to the next sight of the first beauty item: a dolphin's leap, or fire from the crater. */
     private var nextLeap = 0.0
     private var nextFlight = 0.0
+    private var burst = 0.0
 
     fun reset(geo: SceneGeometry, weather: Weather) {
         this.geo = geo
@@ -87,24 +100,28 @@ class World(seed: Int) {
         birds.clear()
         particles.clear()
         dolphins.clear()
-        pegasus = null
+        sparks.clear()
+        burst = 0.0
+        flyer = null
         nextLeap = random.nextDouble(5.0, 20.0)
         nextFlight = random.nextDouble(10.0, 45.0)
         rain = if (weather.rain) 1.0 else 0.0
         overcast = weather.overcast
     }
 
-    fun update(dt: Double, moved: Double, speed: Double, p: Int, weather: Weather, timeOfDay: Double, stars: Float, beauty: Int) {
+    /** Moves everything on for [dt] seconds, in [place]. */
+    fun update(dt: Double, moved: Double, speed: Double, p: Int, weather: Weather, timeOfDay: Double, stars: Float, beauty: Int, place: Place = Place.CORINTH) {
+        val look = lookOf(place)
         val ease = 1 - exp(-dt * 0.5)
         rain += ((if (weather.rain) 1.0 else 0.0) - rain) * ease
         overcast += ((weather.overcast - overcast) * ease).toFloat()
         updateClouds(dt, moved, weather)
         updateBirds(dt, moved, weather, timeOfDay)
-        updateRain(dt, moved, p)
-        updateParticles(dt, moved, speed)
+        updateRain(dt, moved, p, look.ash)
+        updateParticles(dt, moved, speed, look.dust)
         updateShootingStar(dt, stars)
-        updateDolphins(dt, beauty)
-        updatePegasus(dt, moved, beauty)
+        if (place == Place.ETNA) updateFountain(dt, beauty) else updateDolphins(dt, beauty)
+        updateFlyer(dt, moved, beauty)
     }
 
     private fun updateClouds(dt: Double, moved: Double, weather: Weather) {
@@ -184,19 +201,21 @@ class World(seed: Int) {
         }
     }
 
-    private fun updateRain(dt: Double, moved: Double, p: Int) {
+    /** Rain, or slow ash where [ash] is true: ash makes no splashes. */
+    private fun updateRain(dt: Double, moved: Double, p: Int, ash: Boolean) {
         val active = (drops.size * rain).toInt()
         val span = geo.width + 8.0
+        val fall = if (ash) ASH_FALL else 1.0
         for (i in drops.indices) {
             val d = drops[i]
-            d.y += d.speed * dt
-            d.x -= d.speed * 0.3 * dt + moved * 0.5
+            d.y += d.speed * fall * dt
+            d.x -= d.speed * fall * 0.3 * dt + moved * 0.5
             if (d.x < -4) d.x += span
             if (d.x > geo.width + 4) d.x -= span
             val xi = floor(d.x).toInt()
             val ground = if (xi in 0 until geo.width) min(geo.surfaceY(xi, p), geo.height) else geo.height
             if (d.y >= ground) {
-                if (i < active && ground < geo.height && random.nextDouble() < 0.6) splash(xi, ground - 1)
+                if (!ash && i < active && ground < geo.height && random.nextDouble() < 0.6) splash(xi, ground - 1)
                 d.y -= geo.height + random.nextDouble(0.0, 30.0)
             }
         }
@@ -212,7 +231,7 @@ class World(seed: Int) {
         }
     }
 
-    private fun updateParticles(dt: Double, moved: Double, speed: Double) {
+    private fun updateParticles(dt: Double, moved: Double, speed: Double, dustColor: Int) {
         if (moved > 0) {
             dust += moved
             while (dust > 2.5) {
@@ -221,7 +240,7 @@ class World(seed: Int) {
                 particles += Particle(
                     geo.heroX - 3.5 + random.nextDouble(-1.0, 1.5), geo.baseY + 1.0,
                     random.nextDouble(-9.0, -3.0), random.nextDouble(-7.0, -2.0),
-                    life, life, 14.0, 1.0, DUST,
+                    life, life, 14.0, 1.0, dustColor,
                 )
             }
         }
@@ -268,18 +287,44 @@ class World(seed: Int) {
         splash(d.x.toInt(), geo.horizon + 1)
     }
 
-    /** Bought with the second beauty item: Pegasus crosses the sky every minute or two, day and night. */
-    private fun updatePegasus(dt: Double, moved: Double, beauty: Int) {
-        pegasus?.let { p ->
-            p.x += p.vx * dt - moved * 0.2
-            if (p.x < -20 || p.x > geo.width + 20) pegasus = null
+    /** Bought with the first beauty item on Etna: now and then the crater throws fire into the sky for a moment. */
+    private fun updateFountain(dt: Double, beauty: Int) {
+        for (q in sparks) {
+            q.life -= dt
+            q.vy += q.gravity * dt
+            q.x += q.vx * dt
+            q.y += q.vy * dt
         }
-        if (beauty < 2 || pegasus != null) return
+        sparks.removeAll { it.life <= 0 || it.y >= geo.horizon }
+        if (burst > 0) {
+            burst -= dt
+            repeat((dt * 70 + random.nextDouble()).toInt()) {
+                val life = random.nextDouble(0.8, 1.5)
+                sparks += Particle(
+                    craterX(geo), craterY(geo) + 0.5, random.nextDouble(-12.0, 12.0), random.nextDouble(-40.0, -22.0),
+                    life, life, 30.0, 0.0, FIRE[random.nextInt(FIRE.size)],
+                )
+            }
+        }
+        if (beauty < 1) return
+        nextLeap -= dt
+        if (nextLeap > 0) return
+        nextLeap = random.nextDouble(15.0, 40.0)
+        burst = BURST_TIME
+    }
+
+    /** Bought with the second beauty item: Pegasus, or the eagle of Zeus, crosses the sky every minute or two, day and night. */
+    private fun updateFlyer(dt: Double, moved: Double, beauty: Int) {
+        flyer?.let { f ->
+            f.x += f.vx * dt - moved * 0.2
+            if (f.x < -20 || f.x > geo.width + 20) flyer = null
+        }
+        if (beauty < 2 || flyer != null) return
         nextFlight -= dt
         if (nextFlight > 0) return
         nextFlight = random.nextDouble(45.0, 120.0)
         val dir = if (random.nextBoolean()) 1.0 else -1.0
-        pegasus = Flyer(
+        flyer = Flyer(
             if (dir > 0) -14.0 else geo.width + 14.0,
             random.nextDouble(10.0, max(12.0, geo.horizon * 0.4)),
             dir * random.nextDouble(14.0, 20.0),

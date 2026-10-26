@@ -49,7 +49,7 @@ Saved games know each line and each world by an id, not by a name in the game or
 
 - The lines have the ids `rock`, `beside`, `alone`, `blessing` and `beauty`. The Sidekicks and the Gods keep `beside` and `alone`, which they had before they got their names.
 - The worlds have the ids 0 (Corinth), 1 (Mount Etna) and 2 (The Underworld).
-- The game never saves the name of an item. The tier of a line tells which item it is.
+- The game never saves the name of an item. The world and the tier of a line tell which item it is.
 
 A test fails when an id changes. New lines and new worlds get new ids.
 

@@ -1,11 +1,11 @@
 package dev.oblac.sisyphus
 
 import dev.oblac.sisyphus.game.Game
-import dev.oblac.sisyphus.game.ITEMS
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.SUN_CAP
+import dev.oblac.sisyphus.game.items
 import dev.oblac.sisyphus.gfx.PixelFont
 import dev.oblac.sisyphus.gfx.TRANSPARENT
 import dev.oblac.sisyphus.scene.Ending
@@ -520,7 +520,8 @@ class ScreenTest {
     @Test
     fun everyOfferFitsTheSmallestPhone() {
         val l = smallest().layout!!
-        for (item in ITEMS) {
+        for (item in allItems) {
+            for (ch in item.details) assertTrue(PixelFont.hasGlyph(ch), "missing '$ch' in the details of ${item.name}")
             assertTrue(PixelFont.width(item.name) <= l.offerText.w, item.name)
             assertTrue(PixelFont.wrap(item.details, l.offerText.w).size * PixelFont.LINE_HEIGHT <= l.offerText.h, item.name)
         }
@@ -530,7 +531,7 @@ class ScreenTest {
 
     @Test
     fun theHelpersStandSideBySideInTheDisplaysBottomRightCorner() {
-        val helpers = ITEMS.filter { it.line == Line.SIDEKICKS || it.line == Line.GODS }
+        val helpers = items(Place.CORINTH).filter { it.line == Line.SIDEKICKS || it.line == Line.GODS }
         /** The names of the helpers shown in the corner, and in the place next to it. */
         fun shown(sidekick: Int, god: Int): List<List<String>> {
             val s = screen(MemoryStore(mapOf("shop.beside" to sidekick.toDouble(), "shop.alone" to god.toDouble())))
@@ -551,7 +552,7 @@ class ScreenTest {
 
     @Test
     fun everyItemHasAnIcon() {
-        for (item in ITEMS) {
+        for (item in allItems) {
             val icon = itemIcon(item)
             assertEquals(16, icon.width, item.name)
             assertEquals(16, icon.height, item.name)
@@ -579,7 +580,7 @@ class ScreenTest {
     fun everyItemFitsItsRowOnTheSmallestPhone() {
         val l = smallest().layout!!
         val row = l.agoraRow(0)
-        for (item in ITEMS) {
+        for (item in allItems) {
             for (ch in item.name + item.note) assertTrue(PixelFont.hasGlyph(ch), "missing '$ch' in ${item.name}")
             assertTrue(PixelFont.width(item.name) + 24 <= row.w, item.name)
             assertTrue(PixelFont.width(item.note) + 16 <= row.w, item.note)
@@ -587,4 +588,30 @@ class ScreenTest {
         assertTrue(row.h >= 3 * PixelFont.LINE_HEIGHT)
         assertTrue(l.agoraRow(4).bottom <= l.agoraSound.y)
     }
+
+    @Test
+    fun everyWorldNameFitsItsRowOnTheSmallestPhone() {
+        val l = smallest().layout!!
+        val text = l.worldText(0)
+        for (place in Place.entries) {
+            for (ch in place.title + place.note) assertTrue(PixelFont.hasGlyph(ch), "missing '$ch' in ${place.title}")
+            assertTrue(PixelFont.width(place.title) + Layout.COIN_SIZE + 2 <= text.w, place.title)
+            assertTrue(PixelFont.width(place.note) <= text.w, place.note)
+        }
+    }
+
+    @Test
+    fun etnaHasIconsOfItsOwn() {
+        for (item in items(Place.ETNA)) {
+            val corinth = items(Place.CORINTH).first { it.line == item.line && it.tier == item.tier }
+            assertFalse(itemIcon(item).data.contentEquals(itemIcon(corinth).data), item.name)
+        }
+    }
+
+    @Test
+    fun etnaIsDrawnNow() {
+        assertEquals("the hill on the volcano", Place.ETNA.note)
+    }
+
+    private val allItems = Place.entries.flatMap { items(it) }
 }

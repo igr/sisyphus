@@ -1,8 +1,9 @@
 package dev.oblac.sisyphus
 
-import dev.oblac.sisyphus.game.ITEMS
 import dev.oblac.sisyphus.game.Line
+import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.Shop
+import dev.oblac.sisyphus.game.items
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -10,21 +11,23 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ShopTest {
+    private val corinth = items(Place.CORINTH)
+
     @Test
     fun theShopHasFiveLinesOfThree() {
-        assertEquals(15, ITEMS.size)
-        for (line in Line.entries) assertEquals(listOf(1, 2, 3), ITEMS.filter { it.line == line }.map { it.tier })
-        assertEquals(87, ITEMS.sumOf { it.price })
+        assertEquals(15, corinth.size)
+        for (line in Line.entries) assertEquals(listOf(1, 2, 3), corinth.filter { it.line == line }.map { it.tier })
+        assertEquals(87, corinth.sumOf { it.price })
     }
 
     @Test
     fun pricesAndEffectsFollowTheDesign() {
-        fun of(line: Line) = ITEMS.filter { it.line == line }.map { it.price to it.effect }
+        fun of(line: Line) = corinth.filter { it.line == line }.map { it.price to it.effect }
         assertEquals(listOf(2 to 1.5, 5 to 2.0, 9 to 3.0), of(Line.ROCK))
         assertEquals(listOf(3 to 1.25, 6 to 1.5, 10 to 2.0), of(Line.SIDEKICKS))
         assertEquals(listOf(1 to 6.0, 4 to 12.0, 8 to 24.0), of(Line.GODS))
         assertEquals(listOf(2 to 504.0, 6 to 360.0, 10 to 216.0), of(Line.BLESSING))
-        assertEquals(listOf(3, 7, 11), ITEMS.filter { it.line == Line.BEAUTY }.map { it.price })
+        assertEquals(listOf(3, 7, 11), corinth.filter { it.line == Line.BEAUTY }.map { it.price })
     }
 
     @Test
@@ -76,5 +79,33 @@ class ShopTest {
         val shop = Shop(tiers = mapOf(Line.GODS to 3))
         assertEquals(24.0, shop.helpersPerHour)
         assertEquals("Thanatos", shop.helper?.name)
+    }
+
+    @Test
+    fun everyWorldHasThePricesAndEffectsOfCorinth() {
+        for (place in Place.entries) {
+            val world = items(place)
+            assertEquals(corinth.map { listOf(it.line, it.tier, it.price, it.effect) }, world.map { listOf(it.line, it.tier, it.price, it.effect) }, place.title)
+            assertEquals(corinth.filter { it.line != Line.BEAUTY }.map { it.note }, world.filter { it.line != Line.BEAUTY }.map { it.note }, place.title)
+        }
+    }
+
+    @Test
+    fun etnaHasNamesOfItsOwn() {
+        assertEquals(
+            listOf(
+                "Lava stone", "Volcanic bomb", "Obsidian sphere", "Empedocles", "Odysseus", "Polyphemus", "Aetna", "Hephaestus", "Typhon",
+                "Sheaf of Demeter", "Wine of Dionysus", "Silver of Arethusa", "Lava fountain", "Eagle of Zeus", "Torches of Demeter",
+            ),
+            items(Place.ETNA).map { it.name },
+        )
+    }
+
+    @Test
+    fun aShopSellsTheItemsOfItsWorld() {
+        assertEquals("Merope", Shop().next(Line.SIDEKICKS)?.name)
+        assertEquals("Empedocles", Shop(place = Place.ETNA).next(Line.SIDEKICKS)?.name)
+        assertEquals("Odysseus", Shop(mapOf(Line.SIDEKICKS to 2), place = Place.ETNA).owned(Line.SIDEKICKS)?.name)
+        assertEquals("Merope", Shop(place = Place.UNDERWORLD).next(Line.SIDEKICKS)?.name)
     }
 }

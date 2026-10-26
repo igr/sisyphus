@@ -1,5 +1,6 @@
 package dev.oblac.sisyphus.scene
 
+import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.gfx.lerpColor
 import dev.oblac.sisyphus.gfx.luminance
 import dev.oblac.sisyphus.gfx.rgb
@@ -22,7 +23,8 @@ class Atmosphere(
         if (g < 0.55f) lerpColor(skyTop, skyMid, g / 0.55f) else lerpColor(skyMid, skyHorizon, (g - 0.55f) / 0.45f)
 }
 
-private class Key(
+/** The colors of one moment of the day, at time [t]. */
+internal class Key(
     val t: Double,
     val top: Int, val mid: Int, val horizon: Int, val sea: Int, val light: Int,
     val cloudLight: Int, val cloudBody: Int, val cloudShadow: Int,
@@ -32,7 +34,8 @@ private class Key(
 private fun key(t: Double, top: Int, mid: Int, horizon: Int, sea: Int, light: Int, cl: Int, cb: Int, cs: Int, stars: Float) =
     Key(t, rgb(top), rgb(mid), rgb(horizon), rgb(sea), rgb(light), rgb(cl), rgb(cb), rgb(cs), stars)
 
-private val KEYS = listOf(
+/** The day of Corinth. */
+internal val KEYS = listOf(
     key(0.00, 0x070B22, 0x0E1638, 0x1A2550, 0x0B1530, 0x4A5590, 0x3A4468, 0x2A3352, 0x1C2340, 1.0f),
     key(0.21, 0x0E1236, 0x262A5C, 0x4A3A6A, 0x161E40, 0x5A5C90, 0x5A5280, 0x43406A, 0x2E2C50, 0.7f),
     key(0.255, 0x28337A, 0x7A5C96, 0xF49A6A, 0x4A4C7C, 0xC89890, 0xFFD2B8, 0xE4A0A0, 0x9A6A8A, 0.15f),
@@ -46,6 +49,21 @@ private val KEYS = listOf(
     key(1.00, 0x070B22, 0x0E1638, 0x1A2550, 0x0B1530, 0x4A5590, 0x3A4468, 0x2A3352, 0x1C2340, 1.0f),
 )
 
+/** The day of Etna: hazy, with smoke in the air, a red dusk, and the lava glowing under a dark night with few stars. */
+internal val ETNA_KEYS = listOf(
+    key(0.00, 0x0A0614, 0x170C20, 0x3A1626, 0x140A10, 0x584668, 0x3C2E3E, 0x2C202E, 0x1C121E, 0.6f),
+    key(0.21, 0x120A22, 0x2C1838, 0x5A2A3A, 0x1C1018, 0x685272, 0x5C4254, 0x433042, 0x2C1E2C, 0.45f),
+    key(0.255, 0x3A2A5A, 0x8A5070, 0xF0906A, 0x3E2A2C, 0xC8968A, 0xF6C2AA, 0xD69292, 0x8C5C6A, 0.1f),
+    key(0.30, 0x6A84B4, 0xAAB4C8, 0xF0D0A8, 0x4E403A, 0xF0DCC8, 0xF6EEE2, 0xE2D6CA, 0xAA9E98, 0f),
+    key(0.38, 0x6A90C8, 0xA6C0DA, 0xE4DCCA, 0x4C4440, 0xFAF4EA, 0xF6F4F0, 0xE0DCD6, 0xACA8A4, 0f),
+    key(0.62, 0x6890C4, 0xA2BCD6, 0xE2D8C6, 0x4C4440, 0xFAF4EA, 0xF6F4F0, 0xE0DCD6, 0xACA8A4, 0f),
+    key(0.70, 0x7086B4, 0xB4B2C0, 0xF0C890, 0x4E3E38, 0xF6E0C0, 0xFAEAD2, 0xEAD2BA, 0xAA9690, 0f),
+    key(0.75, 0x4A2E5A, 0xA84A52, 0xF06A3A, 0x3E2626, 0xE8987C, 0xFFB08A, 0xE87A5C, 0x7A3A46, 0.05f),
+    key(0.80, 0x1E1230, 0x4A2238, 0x8A3A3A, 0x221416, 0x7E5C72, 0x5C3C4C, 0x42283A, 0x2C1A2A, 0.35f),
+    key(0.86, 0x0C0818, 0x1A0E22, 0x42182A, 0x160A10, 0x584668, 0x402E3C, 0x2E1E2C, 0x1E1220, 0.55f),
+    key(1.00, 0x0A0614, 0x170C20, 0x3A1626, 0x140A10, 0x584668, 0x3C2E3E, 0x2C202E, 0x1C121E, 0.6f),
+)
+
 private fun gray(c: Int, amount: Float, darken: Float): Int {
     val l = luminance(c)
     val g = lerpColor(c, rgb(l, l, l + 8), amount)
@@ -53,11 +71,12 @@ private fun gray(c: Int, amount: Float, darken: Float): Int {
     return shade(g, rgb(k, k, k))
 }
 
-/** The atmosphere at [t] (0 is midnight, 0.5 is noon), dimmed by [overcast] clouds. */
-fun atmosphere(t: Double, overcast: Float): Atmosphere {
-    val i = KEYS.indexOfLast { it.t <= t }.coerceIn(0, KEYS.size - 2)
-    val a = KEYS[i]
-    val b = KEYS[i + 1]
+/** The atmosphere of [place] at [t] (0 is midnight, 0.5 is noon), dimmed by [overcast] clouds. */
+fun atmosphere(t: Double, overcast: Float, place: Place = Place.CORINTH): Atmosphere {
+    val keys = lookOf(place).sky
+    val i = keys.indexOfLast { it.t <= t }.coerceIn(0, keys.size - 2)
+    val a = keys[i]
+    val b = keys[i + 1]
     val k = ((t - a.t) / (b.t - a.t)).toFloat()
     val o = overcast
     fun sky(x: Int, y: Int) = gray(lerpColor(x, y, k), o * 0.85f, o * 0.25f)
