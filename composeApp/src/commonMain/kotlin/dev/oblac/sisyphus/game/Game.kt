@@ -128,7 +128,8 @@ enum class Weather(val clouds: Int, val wind: Double, val overcast: Float, val r
 /**
  * The worlds Sisyphus can push his rock in, each with its own look and items.
  * Saved games know a world by its [id], which never changes. Corinth is free; every other world is bought once as its [product],
- * the name of its product, its entitlement and its package in RevenueCat. The product never changes either.
+ * the name of its entitlement and its package in RevenueCat, which never changes either. The stores' products carry the same name,
+ * except on Google Play, where The Underworld is world_underworld2.
  */
 enum class Place(val id: Int, val title: String, val note: String, val product: String? = null) {
     CORINTH(0, "Corinth", "the hill by the sea"),

@@ -12,7 +12,7 @@ A world is a new look and new names on the same game. The rules, the economy and
 | Part | Corinth | Code |
 |---|---|---|
 | Id and position | 0, first in the list | `Place` in `game/Game.kt` |
-| Product | None: Corinth is free | `Place.product`, such as `world_etna`: the product in the three stores of RevenueCat, its entitlement, and its package in the `worlds` offering |
+| Product | None: Corinth is free | `Place.product`, such as `world_etna`: its entitlement and its package in the `worlds` offering of RevenueCat, and usually its product in each store |
 | Title | Corinth | `Place.title` |
 | Note | the hill by the sea | `Place.note` |
 | Myth | Sisyphus was the king of Corinth. The gods punish him on a hill by the sea. | Only for the names and the look |
@@ -43,7 +43,7 @@ These are the same in every world: the price of $0.99, Sisyphus, the first rock,
    - `game/Shop.kt`: its 15 items, made with `item(...)` in `with(Place.<WORLD>)`, so that they get the prices and the effects of Corinth.
    - `ui/<World>Icons.kt`: its 12 icons.
    - Add the world to the `when (place)` branches: `lookOf`, `items`, `itemIcon`, `SceneRenderer.render` (far view and sights) and `World.update` (sights).
-   - Sell the world in RevenueCat with the CLI `rc`. This changes the user's accounts, so ask first. Create the product in the Test Store app (`--type non_consumable`, then `rc products prices set <id> --price USD=0.99`), in the App Store app and in the Play Store app. Create the entitlement of the same name and attach the three products. Create the package of the same name in the `worlds` offering and attach them. Then `rc products push` the two store products. The user finishes their review details in App Store Connect and Play Console.
+   - Sell the world in RevenueCat with the CLI `rc`. This changes the user's accounts, so ask first. Create the product in the Test Store app (`--type non_consumable`, then `rc products prices set <id> --price USD=0.99`), in the App Store app and in the Play Store app. Create the entitlement of the same name and attach the three products. Create the package of the same name in the `worlds` offering and attach them. Then create the store products: the App Store ones with `rc products store plan` and `apply`, for all 175 App Store countries; the Google Play ones by the user in Play Console, which converts the price for every country. The user finishes their review details there. A store never gives back a product id, even after a delete: if one is lost, give the store product a new id, such as `world_underworld2`, and attach it to the same entitlement and package. `Place.product` stays.
 5. Draw the scene: all of the parts from "Sky over the day" to "Small things". The help says that the sun moves only while you push, so each world has a sun that crosses its sky. The landmark shows at the start of a climb and in the picture.
 6. Write the 15 items, and draw 12 icons (16 x 16) and 3 rocks. The details first tell what the item is, then what it does, with the effect words of Corinth. Each details text ends as the Corinth item of the same line and tier ends, for example "He takes Merope's place."
 7. Make the three beauty sights, one for each tier of the Beauty line. A sight uses the timer of the Corinth sight of the same tier (`nextLeap`, `nextFlight`). Code that all worlds run must not take more random numbers, because then the other worlds change.

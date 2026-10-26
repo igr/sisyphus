@@ -34,7 +34,9 @@ Website, support and privacy policy: https://igr.github.io/sisyphus/ (from the `
 ## Purchases
 
 RevenueCat sells the worlds, in the project "Sisyphus: Push the Rock". Each world after Corinth has one id,
-`Place.product`, for its product in each store, for its entitlement and for its package in the `worlds` offering.
+`Place.product`, for its entitlement and for its package in the `worlds` offering. The app knows only these two.
+The stores sell each world as a product of the same name, except Google Play, which sells The Underworld as
+`world_underworld2`: a store never gives back a product id, even after a delete.
 
 - Debug builds buy in RevenueCat's Test Store: a test sheet, and no money. All other builds buy in the App Store
   and Google Play. TestFlight and the Play license testers buy in the sandbox.

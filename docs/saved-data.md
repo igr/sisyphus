@@ -50,7 +50,7 @@ Saved games know each line and each world by an id, not by a name in the game or
 - The lines have the ids `rock`, `beside`, `alone`, `blessing` and `beauty`. The Sidekicks and the Gods keep `beside` and `alone`, which they had before they got their names.
 - The worlds have the ids 0 (Corinth), 1 (Mount Etna) and 2 (The Underworld).
 - The game never saves the name of an item. The world and the tier of a line tell which item it is.
-- The worlds that cost money are the products `world_etna` and `world_underworld`, in the stores and in RevenueCat. A changed product locks the worlds that players bought.
+- The worlds that cost money are the entitlements `world_etna` and `world_underworld` in RevenueCat. A changed entitlement locks the worlds that players bought. The store products have the same names, except on Google Play, where The Underworld is `world_underworld2`.
 
 A test fails when an id or a product changes. New lines and new worlds get new ids, and new worlds get new products.
 
