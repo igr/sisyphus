@@ -93,7 +93,6 @@ private val COIN_GRAY = mapOf('#' to rgb(0x2E2924), 'h' to rgb(0x7A7068), 'f' to
 
 /** The bronze of the obol bar, as far as the next obol has come. */
 internal val OBOL_FILL = BRONZE[4]
-private val OBOL_EMPTY = rgb(0x3A2E24)
 
 /** A color at a third of its light, for what the help does not point at. */
 private fun dim(c: Int) = rgb((c shr 16 and 0xFF) / 3, (c shr 8 and 0xFF) / 3, (c and 0xFF) / 3)
@@ -191,12 +190,13 @@ class UiRenderer {
         coin(px, x - 2 - Layout.COIN_SIZE, r.y, COIN_COLORS, outline = true)
     }
 
-    /** The bar between the day and the obols: it fills up as the next obol comes, and empties when it is there. */
+    /**
+     * The bar between the day and the obols: a dark border that fills up with bronze as the next obol comes,
+     * and empties when it is there. The display shows through the empty part.
+     */
     fun obolBar(px: Pixels, r: Rect, obols: Double) {
-        val inner = r.w - 2
-        val filled = (obols % 1.0 * inner).toInt()
-        px.fillRect(r.x, r.y, r.w, r.h, SHADOW)
-        px.fillRect(r.x + 1, r.y + 1, inner, r.h - 2, OBOL_EMPTY)
+        val filled = (obols % 1.0 * (r.w - 2)).toInt()
+        frame(px, r, SHADOW)
         if (filled == 0) return
         px.fillRect(r.x + 1, r.y + 1, filled, r.h - 2, OBOL_FILL)
         px.hline(r.x + 1, r.x + filled, r.y + 1, BRONZE[5])

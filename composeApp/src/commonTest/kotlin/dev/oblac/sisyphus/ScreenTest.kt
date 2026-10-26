@@ -1,14 +1,23 @@
 package dev.oblac.sisyphus
 
+import dev.oblac.sisyphus.game.DAY_LENGTH
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.game.Place
+import dev.oblac.sisyphus.game.START_TIME
 import dev.oblac.sisyphus.game.SUN_CAP
+import dev.oblac.sisyphus.game.Weather
 import dev.oblac.sisyphus.game.items
 import dev.oblac.sisyphus.gfx.PixelFont
+import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.gfx.TRANSPARENT
+import dev.oblac.sisyphus.gfx.rgb
 import dev.oblac.sisyphus.scene.Ending
+import dev.oblac.sisyphus.scene.SceneGeometry
+import dev.oblac.sisyphus.scene.SceneRenderer
+import dev.oblac.sisyphus.scene.World
+import dev.oblac.sisyphus.scene.lookOf
 import dev.oblac.sisyphus.ui.Layout
 import dev.oblac.sisyphus.ui.OBOL_FILL
 import dev.oblac.sisyphus.ui.Rect
@@ -275,6 +284,37 @@ class ScreenTest {
         assertEquals(0, filled(3.0))
         assertEquals(inner / 4, filled(0.25))
         assertEquals(inner / 2, filled(2.5))
+    }
+
+    @Test
+    fun theDisplayShowsThroughTheEmptyPartOfTheBar() {
+        val s = screen(MemoryStore(mapOf("obols" to 3.25)))
+        val l = s.layout!!
+        val px = s.render()
+        val scene = Pixels(l.scene.w, l.scene.h)
+        SceneRenderer(SceneGeometry(l.scene.w, l.scene.h)).render(scene, s.game, s.world, banner = 0.0)
+        val bar = l.obolBar
+        val y = bar.y + bar.h / 2
+        for (x in bar.x + 1 + (bar.w - 2) / 4 until bar.right - 1) assertEquals(scene[x - l.scene.x, y - l.scene.y], px[x, y], "x $x")
+    }
+
+    /** At their highest, at noon and at midnight, the sun and the moon of every world stay a little under the obol bar. */
+    @Test
+    fun theSunAndTheMoonPassUnderTheObolBar() {
+        val l = smallest().layout!!
+        val geo = SceneGeometry(l.scene.w, l.scene.h)
+        val under = l.obolBar.bottom - l.scene.y + 2
+        val moon = listOf(rgb(0xF2F0DE), rgb(0xC8C6B2))
+        for (place in Place.entries) {
+            val sun = lookOf(place).sun.let { listOf(it[1], it[3]) }
+            for ((time, colors) in listOf(0.5 to sun, 1.0 to moon)) {
+                val game = Game(MemoryStore(mapOf("effort" to (time - START_TIME) * DAY_LENGTH, "place" to place.id.toDouble())), seed = 1)
+                val px = Pixels(geo.width, geo.height)
+                SceneRenderer(geo).render(px, game, World(2).also { it.reset(geo, Weather.CLEAR) }, banner = 0.0, hud = false)
+                assertTrue((0 until geo.height).any { y -> (0 until geo.width).any { x -> px[x, y] in colors } }, "nothing shows in ${place.title} at $time")
+                for (y in 0 until under) for (x in 0 until geo.width) assertFalse(px[x, y] in colors, "in ${place.title} at $time, ($x, $y)")
+            }
+        }
     }
 
     @Test

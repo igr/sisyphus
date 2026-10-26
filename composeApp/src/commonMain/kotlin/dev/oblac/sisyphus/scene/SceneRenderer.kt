@@ -28,6 +28,9 @@ private const val SKY_LEVELS = 12
 private const val PROP_SLOT = 40
 private const val ISLAND_PERIOD = 220
 
+/** At their highest, the sun and the moon stand this far below the top of the display: a little under the obol bar. */
+private const val ZENITH = 24
+
 internal val GROUND = intArrayOf(
     rgb(0xB4C46A), rgb(0x82A048), rgb(0x5A7E38),
     rgb(0xB08A56), rgb(0x94704A), rgb(0x765840),
@@ -157,7 +160,7 @@ class SceneRenderer(private val geo: SceneGeometry) {
     private fun orb(p: Double): Orb? {
         if (p < -0.1 || p > 1.1) return null
         val altitude = sin(PI * p)
-        return Orb(4.0 + (geo.width + 10.0) * p, geo.horizon - altitude * (geo.horizon - 14), altitude)
+        return Orb(4.0 + (geo.width + 10.0) * p, geo.horizon - altitude * (geo.horizon - ZENITH), altitude)
     }
 
     /** The sky, with a glow around the sun in the last two of the sun's [colors]. */
