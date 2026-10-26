@@ -361,7 +361,7 @@ class ScreenTest {
         assertEquals(Place.CORINTH, s.game.place)
         assertEquals(7.0, s.game.shop.obols)
         s.choose(l.worldRow(Place.ETNA.ordinal))
-        assertEquals(Touch.WORLDS, s.tap(l.confirmYes))
+        assertEquals(Touch.MOVE, s.tap(l.confirmYes))
         assertEquals(Place.ETNA, s.game.place)
         assertEquals(1, s.game.day)
         assertEquals(0.0, s.game.shop.obols)

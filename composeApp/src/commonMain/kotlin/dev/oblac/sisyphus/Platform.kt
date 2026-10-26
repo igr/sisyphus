@@ -27,8 +27,8 @@ object NoHaptics : Haptics {
 }
 
 interface Sound {
-    /** Takes the knob click, the click of every other tap and the sound of buying, as mono samples at 44.1 kHz. */
-    fun load(click: FloatArray, ui: FloatArray, win: FloatArray) {}
+    /** Takes the knob click, the click of every other tap, the sound of buying and the fanfare, as mono samples at 44.1 kHz. */
+    fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray) {}
     /** Called when a finger touches the knob, before the first click. */
     fun prepare() {}
     /** One detent of the knob. */
@@ -37,6 +37,8 @@ interface Sound {
     fun ui() {}
     /** Plays when something is bought in the Agora. */
     fun win() {}
+    /** Plays when the player arrives in another world. */
+    fun fanfare() {}
     /** Releases the audio hardware until the next click. */
     fun pause() {}
 }
@@ -47,7 +49,7 @@ fun Sound.tick(on: Boolean) {
 }
 
 /**
- * The sound of a [touch]: the knob gets ready to click, buying wins, and every other tap clicks.
+ * The sound of a [touch]: the knob gets ready to click, buying wins, a new world has its fanfare, and every other tap clicks.
  * Nothing plays while the sound is off; turning it off releases the audio hardware.
  */
 fun Sound.play(touch: Touch, on: Boolean) {
@@ -59,6 +61,7 @@ fun Sound.play(touch: Touch, on: Boolean) {
         Touch.NONE, Touch.LIST -> {}
         Touch.KNOB -> prepare()
         Touch.BUY -> win()
+        Touch.MOVE -> fanfare()
         Touch.SOUND, Touch.SHOP, Touch.DEV, Touch.HELP, Touch.AGAIN, Touch.WORLDS -> ui()
     }
 }

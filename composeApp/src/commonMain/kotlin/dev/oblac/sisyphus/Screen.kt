@@ -22,8 +22,11 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlin.random.Random
 
-/** What a finger touched. [LIST] is a finger on the list of worlds: a drag scrolls it, and a tap chooses a world when the finger lifts. */
-enum class Touch { NONE, KNOB, SOUND, SHOP, BUY, DEV, HELP, AGAIN, WORLDS, LIST }
+/**
+ * What a finger touched. [LIST] is a finger on the list of worlds: a drag scrolls it, and a tap chooses a world when the finger lifts.
+ * [MOVE] is the Yes that goes to another world.
+ */
+enum class Touch { NONE, KNOB, SOUND, SHOP, BUY, DEV, HELP, AGAIN, WORLDS, LIST, MOVE }
 
 /** The whole screen is one small framebuffer, scaled up by a whole number so every pixel stays sharp. */
 private const val TARGET_WIDTH = 144f
@@ -251,7 +254,7 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
                 geo?.let { world.reset(it, game.weather) }
                 moving = null
                 worldsOpen = false
-                return Touch.WORLDS
+                return Touch.MOVE
             }
             if (l.confirm.near(x, y, 0) && !l.confirmNo.near(x, y, 0)) return Touch.NONE
             moving = null

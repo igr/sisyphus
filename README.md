@@ -34,7 +34,7 @@ Website, support and privacy policy: https://igr.github.io/sisyphus/ (from the `
 
 All game code is in `composeApp/src/commonMain`. The screen is one small framebuffer (about 150 pixels wide),
 scaled up by a whole number, so every pixel stays sharp. There are no image files: all art is made in code.
-The knob click, the click of every other tap and the sound of buying are sound files in
+The knob click, the click of every other tap, the sound of buying and the fanfare of a new world are sound files in
 `composeApp/src/commonMain/composeResources/files`. The speaker in the Agora Market turns all of them on and off.
 
 - `audio` — reads the game's sounds from their WAV files

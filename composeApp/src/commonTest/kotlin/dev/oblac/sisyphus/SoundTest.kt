@@ -10,16 +10,17 @@ private class Recorder : Sound {
     override fun click() { played += "click" }
     override fun ui() { played += "ui" }
     override fun win() { played += "win" }
+    override fun fanfare() { played += "fanfare" }
     override fun pause() { played += "pause" }
 }
 
 class SoundTest {
     @Test
-    fun theKnobClicksTheScreenClicksAndBuyingWins() {
+    fun theKnobClicksTheScreenClicksBuyingWinsAndANewWorldHasAFanfare() {
         val sound = Recorder()
         sound.tick(on = true)
         for (touch in Touch.entries) sound.play(touch, on = true)
-        assertEquals(listOf("click", "prepare", "ui", "ui", "win", "ui", "ui", "ui", "ui"), sound.played)
+        assertEquals(listOf("click", "prepare", "ui", "ui", "win", "ui", "ui", "ui", "ui", "fanfare"), sound.played)
     }
 
     @Test

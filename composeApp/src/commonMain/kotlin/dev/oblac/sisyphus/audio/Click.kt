@@ -14,6 +14,9 @@ suspend fun loadUi(): FloatArray = readWav(Res.readBytes("files/ui-click.wav"))
 /** The sound of buying in the Agora, from composeResources/files/instant-win.wav. */
 suspend fun loadWin(): FloatArray = readWav(Res.readBytes("files/instant-win.wav"))
 
+/** The fanfare on arriving in another world, from composeResources/files/success-fanfare-trumpets.wav. */
+suspend fun loadFanfare(): FloatArray = readWav(Res.readBytes("files/success-fanfare-trumpets.wav"))
+
 /**
  * Reads a WAV file of PCM, 16 or 24 bits, as mono samples in [-1, 1] at [SAMPLE_RATE].
  * The quiet before and after the sound is cut off, so the sound plays at once.
