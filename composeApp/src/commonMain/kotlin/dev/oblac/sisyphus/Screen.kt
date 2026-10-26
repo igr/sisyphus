@@ -237,7 +237,7 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
             worldsOpen = false
             return Touch.WORLDS
         }
-        val row = Place.entries.indices.firstOrNull { l.agoraRow(it).near(x, y, 0) } ?: return Touch.NONE
+        val row = Place.entries.indices.firstOrNull { l.worldRow(it).near(x, y, 0) } ?: return Touch.NONE
         val place = Place.entries[row]
         if (place == game.place) return Touch.NONE
         moving = place

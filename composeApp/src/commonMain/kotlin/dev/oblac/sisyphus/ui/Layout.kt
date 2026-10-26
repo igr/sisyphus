@@ -81,6 +81,15 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     val offerYes = Rect(offer.x + offer.w / 2 - 4 - OFFER_BUTTON, offer.bottom - 5 - BUTTON_HEIGHT, OFFER_BUTTON, BUTTON_HEIGHT)
     val offerNo = Rect(offer.x + offer.w / 2 + 4, offerYes.y, OFFER_BUTTON, BUTTON_HEIGHT)
 
+    /** On the Worlds screen, one world: its picture, and its name and note below. Tapping it asks to go there. */
+    fun worldRow(index: Int) = Rect(agoraTitle.x, agoraTitle.bottom + 6 + index * (WORLD_ROW + 6), agoraTitle.w, WORLD_ROW)
+
+    /** The picture of a world, in a frame, at the top of its row. */
+    fun worldPreview(index: Int) = worldRow(index).let { Rect(it.x, it.y, it.w, WORLD_PREVIEW + 2) }
+
+    /** The name and the note of a world, below its picture. */
+    fun worldText(index: Int) = worldPreview(index).let { Rect(it.x, it.bottom + 3, it.w, 2 * PixelFont.LINE_HEIGHT) }
+
     private val confirmHeight = 5 + PixelFont.LINE_HEIGHT + 4 + CONFIRM_LINES * PixelFont.LINE_HEIGHT + 4 + BUTTON_HEIGHT + 5
 
     /** The question before going to another world, in the middle of the Worlds screen. */
@@ -114,6 +123,8 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
         const val OFFER_ICON = 32
         const val OFFER_LINES = 6
         const val CONFIRM_LINES = 4
+        const val WORLD_PREVIEW = 42
+        const val WORLD_ROW = WORLD_PREVIEW + 2 + 3 + 2 * PixelFont.LINE_HEIGHT
         const val OFFER_BUTTON = 30
         const val HELPER = 18
     }

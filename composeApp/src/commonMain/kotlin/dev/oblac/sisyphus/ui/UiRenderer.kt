@@ -108,6 +108,7 @@ private val LINE_TITLES = listOf("Rock", "Sidekicks", "Gods", "Blessings", "Beau
 class UiRenderer {
     private var grain: Pixels? = null
     private val outlined = mutableMapOf<Item, Pixels>()
+    private val previews = mutableMapOf<Pair<Place, Int>, Pixels>()
 
     fun background(px: Pixels) {
         val g = grain?.takeIf { it.width == px.width && it.height == px.height } ?: Pixels(px.width, px.height).also {
@@ -291,20 +292,19 @@ class UiRenderer {
         }
     }
 
-    /** The Worlds screen: where he can push, with the world he is in checked. */
+    /** The Worlds screen: a picture of each world with its name, the world he is in framed bright and checked. */
     fun worlds(px: Pixels, layout: Layout, here: Place) {
         val t = layout.agoraTitle
         PixelFont.draw(px, "Worlds", t.x, t.y, CREAM)
         px.hline(t.x, t.right - 1, t.bottom + 2, TERRA_DARK)
         for (place in Place.entries) {
-            val r = layout.agoraRow(place.ordinal)
-            PixelFont.draw(px, place.title, r.x, r.y, CREAM)
-            PixelFont.draw(px, place.note, r.x, r.y + PixelFont.LINE_HEIGHT, TERRA_LIGHT)
-            if (place == here) check(px, r.right - Layout.COIN_SIZE, r.y + 1)
-        }
-        val note = layout.agoraRow(Place.entries.size)
-        for ((i, line) in PixelFont.wrap("Going to another world starts the climb over there.", note.w).withIndex()) {
-            PixelFont.draw(px, line, note.x, note.y + i * PixelFont.LINE_HEIGHT, TERRA)
+            val p = layout.worldPreview(place.ordinal)
+            px.draw(previews.getOrPut(place to p.w) { worldPreview(place, p.w - 2, p.h - 2) }, p.x + 1, p.y + 1)
+            frame(px, p, if (place == here) TERRA_LIGHT else TERRA_DARK)
+            val text = layout.worldText(place.ordinal)
+            PixelFont.draw(px, place.title, text.x, text.y, CREAM)
+            PixelFont.draw(px, place.note, text.x, text.y + PixelFont.LINE_HEIGHT, TERRA_LIGHT)
+            if (place == here) check(px, text.right - Layout.COIN_SIZE, text.y + 1)
         }
     }
 

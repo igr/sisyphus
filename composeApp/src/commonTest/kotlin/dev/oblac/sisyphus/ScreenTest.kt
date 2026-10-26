@@ -12,6 +12,7 @@ import dev.oblac.sisyphus.scene.Ending
 import dev.oblac.sisyphus.ui.Layout
 import dev.oblac.sisyphus.ui.Rect
 import dev.oblac.sisyphus.ui.itemIcon
+import dev.oblac.sisyphus.ui.worldPreview
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.test.Test
@@ -311,13 +312,13 @@ class ScreenTest {
         val s = screen(MemoryStore(mapOf("effort" to 5000.0, "obols" to 7.0)))
         val l = s.layout!!
         s.tap(l.dayLabel(s.game.day))
-        assertEquals(Touch.WORLDS, s.tap(l.agoraRow(Place.ETNA.ordinal)))
+        assertEquals(Touch.WORLDS, s.tap(l.worldRow(Place.ETNA.ordinal)))
         assertEquals(Place.ETNA, s.moving)
         assertEquals(Touch.WORLDS, s.tap(l.confirmNo))
         assertNull(s.moving)
         assertEquals(Place.CORINTH, s.game.place)
         assertEquals(7.0, s.game.shop.obols)
-        s.tap(l.agoraRow(Place.ETNA.ordinal))
+        s.tap(l.worldRow(Place.ETNA.ordinal))
         assertEquals(Touch.WORLDS, s.tap(l.confirmYes))
         assertEquals(Place.ETNA, s.game.place)
         assertEquals(1, s.game.day)
@@ -330,8 +331,26 @@ class ScreenTest {
         val s = screen()
         val l = s.layout!!
         s.tap(l.dayLabel(s.game.day))
-        assertEquals(Touch.NONE, s.tap(l.agoraRow(Place.CORINTH.ordinal)))
+        assertEquals(Touch.NONE, s.tap(l.worldRow(Place.CORINTH.ordinal)))
         assertNull(s.moving)
+    }
+
+    @Test
+    fun theWorldsFitTheSmallestPhone() {
+        val l = smallest().layout!!
+        assertTrue(l.worldRow(0).y > l.agoraTitle.bottom)
+        assertTrue(l.worldRow(Place.entries.size - 1).bottom <= l.agoraSound.y)
+    }
+
+    @Test
+    fun everyWorldHasItsOwnPicture() {
+        val pictures = Place.entries.map { place ->
+            val px = worldPreview(place, 116, 42)
+            assertEquals(116 to 42, px.width to px.height)
+            assertTrue((0 until 42).all { y -> (0 until 116).all { x -> px[x, y] != TRANSPARENT } }, place.title)
+            (0 until 42).flatMap { y -> (0 until 116).map { x -> px[x, y] } }
+        }
+        assertEquals(Place.entries.size, pictures.toSet().size)
     }
 
     @Test
@@ -339,7 +358,7 @@ class ScreenTest {
         val s = screen()
         val l = s.layout!!
         s.tap(l.dayLabel(s.game.day))
-        s.tap(l.agoraRow(Place.UNDERWORLD.ordinal))
+        s.tap(l.worldRow(Place.UNDERWORLD.ordinal))
         assertTrue(s.back())
         assertNull(s.moving)
         assertTrue(s.worldsOpen)

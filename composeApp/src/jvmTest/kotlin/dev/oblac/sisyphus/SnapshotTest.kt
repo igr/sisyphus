@@ -166,7 +166,7 @@ class SnapshotTest {
             fun tap(r: Rect) = s.press((r.x + r.w / 2f) * s.scale + s.offsetX, (r.y + r.h / 2f) * s.scale + s.offsetY)
             tap(l.dayLabel(s.game.day))
             write(s.render(), name, 3)
-            tap(l.agoraRow(1))
+            tap(l.worldRow(1))
             write(s.render(), name.replace("worlds", "move"), 3)
         }
     }
