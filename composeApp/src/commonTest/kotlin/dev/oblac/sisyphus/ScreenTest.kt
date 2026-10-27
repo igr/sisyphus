@@ -1,6 +1,7 @@
 package dev.oblac.sisyphus
 
 import dev.oblac.sisyphus.game.DAY_LENGTH
+import dev.oblac.sisyphus.game.FIRST_OBOL
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.PX_PER_TURN
@@ -200,7 +201,7 @@ class ScreenTest {
         val store = MemoryStore(mapOf("shop.rock" to 3.0, "shop.alone" to 2.0))
         val s = devScreen(store)
         s.openDev()
-        assertEquals(Touch.DEV, s.tap(s.layout!!.devReset))
+        assertEquals(Touch.DEV, s.tap(s.layout!!.devResetShop))
         assertTrue(Line.entries.all { s.game.shop.tier(it) == 0 })
         assertEquals(0.0, store.load("shop.rock"))
     }
@@ -224,7 +225,9 @@ class ScreenTest {
         assertTrue(PixelFont.width("+100") + 4 <= l.devStep(0).w)
         assertTrue(l.devStep(4).right <= l.agoraRow(0).right)
         assertTrue(l.devStep(0).bottom <= l.agoraRow(0).bottom)
-        assertTrue(l.devReset.bottom <= l.agoraRow(1).bottom)
+        assertTrue(l.devResetShop.bottom <= l.agoraRow(1).bottom)
+        assertTrue(l.devResetClimb.right < l.devNextObol.x && l.devNextObol.right < l.devTop.x && l.devTop.right <= l.agoraRow(2).right)
+        assertTrue(l.devTop.bottom <= l.agoraRow(2).bottom)
         assertTrue(l.devWorlds.bottom <= l.agoraRow(3).bottom)
     }
 
@@ -393,6 +396,37 @@ class ScreenTest {
             return (d.bottom until d.bottom + 10).flatMap { y -> (d.x until d.right).map { x -> px[x, y] } }
         }
         assertNotEquals(underDay(0), underDay(2))
+    }
+
+    @Test
+    fun theDevScreenStartsTheClimbAgain() {
+        val store = MemoryStore(mapOf("effort" to 5000.0, "position" to 900.0, "obols" to 7.5, "shop.rock" to 2.0, "climbs" to 2.0))
+        val s = devScreen(store)
+        s.openDev()
+        assertEquals(Touch.DEV, s.tap(s.layout!!.devResetClimb))
+        assertEquals(1, s.game.day)
+        assertEquals(0.0, s.game.position)
+        assertEquals(0.0, s.game.shop.obols)
+        assertTrue(Line.entries.all { s.game.shop.tier(it) == 0 })
+        assertEquals(FIRST_OBOL, s.game.shop.nextObol)
+        assertEquals(2, s.game.climbs)
+        assertEquals(Place.CORINTH, s.game.place)
+        assertEquals(0.0, store.load("position"))
+    }
+
+    /** The next obol is three clicks of the knob away, and the sun has moved as if he pushed all the way there. */
+    @Test
+    fun theDevScreenTakesHimNearTheNextObol() {
+        val store = MemoryStore(mapOf("obols" to 2.25, "nextObol" to 700.0, "shop.rock" to 1.0))
+        val s = devScreen(store)
+        val effort = s.game.effort
+        s.openDev()
+        assertEquals(Touch.DEV, s.tap(s.layout!!.devNextObol))
+        assertEquals(2, s.game.shop.obols.toInt())
+        assertEquals(3 * 1.5 / 24, (3 - s.game.shop.obols) * 700, 1e-6)
+        val turns = 0.75 * 700 / 1.5 - 3.0 / 24
+        assertEquals(turns * SUN_CAP * PX_PER_TURN, s.game.effort - effort, 1e-6)
+        assertEquals(s.game.shop.obols, store.load("obols"))
     }
 
     @Test

@@ -38,6 +38,8 @@ Obols come from **work**:
 - The work for the next obol is set when the obol before it comes, and it is saved.
 - Blessings lower the work per obol (see the shop). A blessing also makes the next obol smaller in the same proportion. The part of the next obol that is earned is kept.
 
+To test the obols, the Climb row of the dev screen has two buttons. Reset starts the climb again from day 1, so the first obol comes again. Next obol pushes Sisyphus on until three clicks of the knob are left before the next obol. The sun moves with him.
+
 ## The shop
 
 Each line is bought from left to right (I, then II, then III). A newer item replaces the effect of the one before it in the same line.

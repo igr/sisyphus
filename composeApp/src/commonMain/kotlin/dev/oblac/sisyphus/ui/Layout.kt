@@ -69,10 +69,16 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     }
 
     /** In the dev screen, the button that empties the shop, below the "Shop" title. */
-    val devReset = agoraRow(1).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("Reset") + 8, BUTTON_HEIGHT) }
+    val devResetShop = agoraRow(1).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("Reset") + 8, BUTTON_HEIGHT) }
+
+    /** In the dev screen, below the "Climb" title, the button that starts the climb again: day 1, no items and no obols. */
+    val devResetClimb = agoraRow(2).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("Reset") + 8, BUTTON_HEIGHT) }
+
+    /** In the dev screen, the button that takes him to a few clicks of the knob before the next obol. */
+    val devNextObol = Rect(devResetClimb.right + 2, devResetClimb.y, PixelFont.width("Next obol") + 8, BUTTON_HEIGHT)
 
     /** In the dev screen, the button that buys everything and takes him to two turns below the top. */
-    val devTop = agoraRow(2).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("Top") + 8, BUTTON_HEIGHT) }
+    val devTop = Rect(devNextObol.right + 2, devResetClimb.y, PixelFont.width("Top") + 8, BUTTON_HEIGHT)
 
     /** In the dev screen, the button that opens every world without the store, and gives the store's answer back. */
     val devWorlds = agoraRow(3).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("As bought") + 8, BUTTON_HEIGHT) }

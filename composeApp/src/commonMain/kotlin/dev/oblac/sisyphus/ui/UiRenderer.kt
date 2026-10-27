@@ -402,16 +402,21 @@ class UiRenderer {
         button(px, layout.confirmNo, "No")
     }
 
-    /** In dev builds only: buttons that add or take away obols, reset the shop, take him near the top, and open every world. */
+    /**
+     * In dev builds only: buttons that add or take away obols, reset the shop, start the climb again,
+     * take him near the next obol or near the top, and open every world.
+     */
     private fun devScreen(px: Pixels, layout: Layout, openWorlds: Boolean) {
         val obols = layout.agoraRow(0)
         PixelFont.draw(px, "Obols", obols.x, obols.y, TERRA)
         DEV_STEPS.forEachIndexed { i, step -> button(px, layout.devStep(i), if (step > 0) "+$step" else "$step") }
         val shop = layout.agoraRow(1)
         PixelFont.draw(px, "Shop", shop.x, shop.y, TERRA)
-        button(px, layout.devReset, "Reset")
+        button(px, layout.devResetShop, "Reset")
         val climb = layout.agoraRow(2)
         PixelFont.draw(px, "Climb", climb.x, climb.y, TERRA)
+        button(px, layout.devResetClimb, "Reset")
+        button(px, layout.devNextObol, "Next obol")
         button(px, layout.devTop, "Top")
         val worlds = layout.agoraRow(3)
         PixelFont.draw(px, "Worlds", worlds.x, worlds.y, TERRA)

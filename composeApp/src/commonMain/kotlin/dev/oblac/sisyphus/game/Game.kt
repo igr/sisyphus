@@ -41,6 +41,9 @@ private const val KEY_CLIMBS = "climbs"
 private const val KEY_PLACE = "place"
 private const val SAVE_EVERY = 1.0
 
+/** How many clicks of the knob the dev screen leaves before the next obol. */
+private const val CLICKS_TO_OBOL = 3
+
 private fun shopKey(line: Line) = "shop." + line.id
 
 fun wrapAngle(a: Double): Double {
@@ -329,6 +332,21 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     fun resetShop() {
         shop.reset()
         summit = null
+        save()
+    }
+
+    /** For dev builds: the climb starts again from day 1, with no items and no obols. */
+    fun resetClimb() = begin()
+
+    /** For dev builds: he pushes on until [CLICKS_TO_OBOL] clicks of the knob are left before the next obol. The sun moves with him. */
+    fun nearTheNextObol() {
+        val turns = (floor(shop.obols) + 1 - shop.obols) * shop.nextObol / shop.bonus - CLICKS_TO_OBOL.toDouble() / TICKS_PER_TURN
+        if (turns <= 0) return
+        var moved = turns * min(shop.bonus, SUN_CAP) * PX_PER_TURN
+        summit?.let { moved = min(moved, it - position) }
+        position += moved
+        effort += moved
+        shop.addWork(turns * shop.bonus)
         save()
     }
 

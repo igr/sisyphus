@@ -191,6 +191,18 @@ class GameTest {
     }
 
     @Test
+    fun nearTheNextObolThreeClicksBringIt() {
+        val game = Game(MemoryStore(mapOf("obols" to 0.5, "nextObol" to 300.0)), seed = 1, wall = { 0.0 })
+        var coins = 0
+        game.onObol = { coins++ }
+        game.nearTheNextObol()
+        game.turn(0.7)
+        assertEquals(0, coins)
+        game.turn(0.2)
+        assertEquals(1, coins)
+    }
+
+    @Test
     fun obolsThatCameWhileAwayAreToldOnReturn() {
         var now = 0.0
         val game = Game(MemoryStore(mapOf("shop.alone" to 3.0, "nextObol" to 100.0)), seed = 1, wall = { now })

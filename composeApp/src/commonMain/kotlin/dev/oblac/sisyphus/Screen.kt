@@ -234,7 +234,12 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
                 val step = DEV_STEPS.indices.firstOrNull { l.devStep(it).near(x, y, 0) }
                 when {
                     step != null -> game.addObols(DEV_STEPS[step])
-                    l.devReset.near(x, y, 0) -> game.resetShop()
+                    l.devResetShop.near(x, y, 0) -> game.resetShop()
+                    l.devResetClimb.near(x, y, 0) -> {
+                        game.resetClimb()
+                        geo?.let { world.reset(it, game.weather) }
+                    }
+                    l.devNextObol.near(x, y, 0) -> game.nearTheNextObol()
                     l.devTop.near(x, y, 0) -> game.nearTheTop()
                     l.devWorlds.near(x, y, 0) -> openWorlds = !openWorlds
                     else -> return Touch.NONE
