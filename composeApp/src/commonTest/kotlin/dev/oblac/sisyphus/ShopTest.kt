@@ -1,5 +1,6 @@
 package dev.oblac.sisyphus
 
+import dev.oblac.sisyphus.game.FAST_OBOLS
 import dev.oblac.sisyphus.game.FIRST_OBOL
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.OBOL_SPREAD
@@ -67,23 +68,49 @@ class ShopTest {
     }
 
     @Test
-    fun theFirstObolComesSoon() {
-        val shop = Shop()
+    fun theFirstFourObolsComeSoon() {
+        val shop = Shop(random = Random(1))
         shop.addWork(FIRST_OBOL - 1)
         assertEquals(0, shop.obols.toInt())
         shop.addWork(1.0)
         assertEquals(1.0, shop.obols, 1e-9)
+        shop.addWork((FAST_OBOLS - 1) * FIRST_OBOL)
+        assertEquals(FAST_OBOLS.toDouble(), shop.obols, 1e-9)
+        assertTrue(shop.nextObol in WORK_PER_OBOL - OBOL_SPREAD..WORK_PER_OBOL + OBOL_SPREAD)
+    }
+
+    /** The fast obols are the first four of the climb, also when some of them are spent. */
+    @Test
+    fun spentObolsCountAmongTheFastOnes() {
+        val shop = Shop(random = Random(1))
+        shop.addWork(FIRST_OBOL)
+        assertTrue(shop.buy(Line.GODS))
+        shop.addWork(2 * FIRST_OBOL)
+        assertTrue(shop.buy(Line.ROCK))
+        shop.addWork(FIRST_OBOL)
+        assertEquals(1.0, shop.obols, 1e-9)
+        assertTrue(shop.nextObol in WORK_PER_OBOL - OBOL_SPREAD..WORK_PER_OBOL + OBOL_SPREAD)
     }
 
     @Test
-    fun eachObolAfterTheFirstNeedsTheWorkPerObolGiveOrTakeHalfADay() {
+    fun aBlessingMakesTheFastObolsSmallerToo() {
+        val shop = Shop(random = Random(1))
+        shop.addWork(2 * FIRST_OBOL)
+        assertTrue(shop.buy(Line.BLESSING))
+        assertEquals(FIRST_OBOL * 504 / 720, shop.nextObol, 1e-9)
+        shop.addWork(shop.nextObol)
+        assertEquals(FIRST_OBOL * 504 / 720, shop.nextObol, 1e-9)
+    }
+
+    @Test
+    fun eachObolAfterTheFastOnesNeedsTheWorkPerObolGiveOrTakeHalfADay() {
         for ((tiers, perObol) in listOf(emptyMap<Line, Int>() to WORK_PER_OBOL, mapOf(Line.BLESSING to 3) to 216.0)) {
-            val shop = Shop(tiers, obols = 1.0, random = Random(1))
+            val shop = Shop(tiers, obols = FAST_OBOLS.toDouble(), random = Random(1))
             val needs = List(200) {
                 shop.addWork(shop.nextObol)
                 shop.nextObol
             }
-            assertEquals(201.0, shop.obols, 1e-6)
+            assertEquals(FAST_OBOLS + 200.0, shop.obols, 1e-6)
             assertTrue(needs.all { it in perObol - OBOL_SPREAD..perObol + OBOL_SPREAD }, "$needs")
             assertTrue(needs.min() < perObol - OBOL_SPREAD / 2 && needs.max() > perObol + OBOL_SPREAD / 2, "$needs")
         }
@@ -107,10 +134,13 @@ class ShopTest {
         assertEquals(700.0, goat.nextObol, 1e-9)
     }
 
+    /** Without the saved work, the shop counts the obols of the climb, the spent ones too. */
     @Test
-    fun onlyANewShopWaitsForTheFirstObol() {
+    fun withoutTheSavedWorkTheShopCountsTheObolsOfTheClimb() {
         assertEquals(FIRST_OBOL, Shop().nextObol)
-        assertEquals(WORK_PER_OBOL, Shop(obols = 3.5).nextObol)
+        assertEquals(FIRST_OBOL, Shop(obols = 3.5).nextObol)
+        assertEquals(WORK_PER_OBOL, Shop(obols = 4.5).nextObol)
+        assertEquals(WORK_PER_OBOL, Shop(mapOf(Line.ROCK to 1, Line.GODS to 1), obols = 1.5).nextObol)
         assertEquals(216.0, Shop(mapOf(Line.BLESSING to 3), obols = 0.5).nextObol)
         assertEquals(216.0, Shop(mapOf(Line.BLESSING to 3)).nextObol)
     }

@@ -30,10 +30,13 @@ const val SUN_CAP = 1.5
 /** Turns of work for one obol, before any blessing: 10 days of pushing, on average. */
 const val WORK_PER_OBOL = 720.0
 
-/** Turns of work for the first obol of a climb: two and a half days of pushing, so that the first item comes soon. */
+/** Turns of work for each of the first obols of a climb, before any blessing: two and a half days of pushing, so that the first items come soon. */
 const val FIRST_OBOL = 180.0
 
-/** Each obol after the first needs the work per obol, give or take up to half a day, so that obols come at any time of the day. */
+/** How many obols at the start of a climb are fast: each needs [FIRST_OBOL], made smaller by a blessing. */
+const val FAST_OBOLS = 4
+
+/** Each obol after the fast ones needs the work per obol, give or take up to half a day, so that obols come at any time of the day. */
 const val OBOL_SPREAD = TURNS_PER_DAY / 2
 
 /** The items of Corinth. Their prices and effects hold in every world. */
@@ -155,7 +158,7 @@ fun items(place: Place): List<Item> = when (place) {
 
 /**
  * What the player owns in [place], and their obols. Each line is bought in order; the newest item of a line sets its effect.
- * [random] gives each obol after the first its work.
+ * [random] gives each obol after the fast ones its work.
  */
 class Shop(
     tiers: Map<Line, Int> = emptyMap(),
@@ -173,10 +176,15 @@ class Shop(
 
     /**
      * The work that the next obol needs. It is set when the obol before it comes, and a blessing makes it smaller in step.
-     * Without it, a shop that has nothing yet waits for its first obol, and a shop saved before keeps the work per obol.
+     * Without it, the shop counts the obols of the climb: the first [FAST_OBOLS] are fast.
      */
-    var nextObol = nextObol ?: if (obols == 0.0 && Line.entries.all { tier(it) == 0 }) FIRST_OBOL else workPerObol
+    var nextObol = nextObol ?: if (earned < FAST_OBOLS) fastObol else workPerObol
         private set
+
+    /** The obols that came in this climb: those in hand and those spent on items. */
+    private val earned: Int get() = floor(obols).toInt() + stock.filter { it.tier <= tier(it.line) }.sumOf { it.price }
+
+    private val fastObol: Double get() = FIRST_OBOL * workPerObol / WORK_PER_OBOL
 
     fun tier(line: Line): Int = tiers.getValue(line)
 
@@ -215,7 +223,7 @@ class Shop(
             }
             work -= left
             obols = whole
-            nextObol = workPerObol + random.nextDouble(-OBOL_SPREAD, OBOL_SPREAD)
+            nextObol = if (earned < FAST_OBOLS) fastObol else workPerObol + random.nextDouble(-OBOL_SPREAD, OBOL_SPREAD)
         }
     }
 

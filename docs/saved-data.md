@@ -42,7 +42,7 @@ When a key is not there, the game uses a start value:
 - `summit`: no final climb.
 - `quoteSeed`: a random number.
 - `savedAt`: no time away.
-- `nextObol`: 180 in a new game. A game saved before there was this key keeps the work per obol of its blessing.
+- `nextObol`: 180 in a new game. A game saved before there was this key counts the obols of its climb, the spent ones too: each of the first four needs 180, made smaller by a blessing. After them, an obol needs the work per obol of the blessing.
 - All other keys: 0.
 
 ## Ids that never change

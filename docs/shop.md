@@ -33,12 +33,12 @@ Obols come from **work**:
 
 - One turn of the knob is 1 unit of work, multiplied by the bonus from the rock and the helper beside him (1× to 6×).
 - Helpers that push on their own add their own work every hour.
-- The first obol of a climb needs 180 units of work: two and a half days of pushing. Thus the first item comes soon.
-- Each obol after it needs 720 units of work, plus or minus up to 36 (half a day). On average, that is 10 days of pushing (a day is 72 turns). Because each obol is a little shorter or longer, obols come at all times of the day, not always at the same hour.
+- The first four obols of a climb need 180 units of work each: two and a half days of pushing for each. Thus the first items come soon: three items in the first 20 minutes of turning.
+- Each obol after them needs 720 units of work, plus or minus up to 36 (half a day). On average, that is 10 days of pushing (a day is 72 turns). Because each obol is a little shorter or longer, obols come at all times of the day, not always at the same hour.
 - The work for the next obol is set when the obol before it comes, and it is saved.
-- Blessings lower the work per obol (see the shop). A blessing also makes the next obol smaller in the same proportion. The part of the next obol that is earned is kept.
+- Blessings lower the work per obol (see the shop). A blessing also makes the next obol, and the fast obols after it, smaller in the same proportion. The part of the next obol that is earned is kept.
 
-To test the obols, the Climb row of the dev screen has two buttons. Reset starts the climb again from day 1, so the first obol comes again. Next obol pushes Sisyphus on until three clicks of the knob are left before the next obol. The sun moves with him.
+To test the obols, the Climb row of the dev screen has two buttons. Reset starts the climb again from day 1, so the fast obols come again. Next obol pushes Sisyphus on until three clicks of the knob are left before the next obol. The sun moves with him.
 
 ## The shop
 
@@ -80,14 +80,14 @@ Simulation, assuming one knob turn per second while the player plays, and the av
 
 | Daily play | First item | All 15 | Longest wait between items | Top reached |
 |---|---|---|---|---|
-| 2 minutes | Day 2 | Day 59 | 6 days | Day 67 |
-| 5 minutes | Day 1 | Day 33 | 3 days | Day 36 |
-| 10 minutes | Day 1 | Day 19 | 2 days | Day 21 |
+| 2 minutes | Day 2 | Day 56 | 6 days | Day 63 |
+| 5 minutes | Day 1 | Day 31 | 3 days | Day 34 |
+| 10 minutes | Day 1 | Day 18 | 2 days | Day 20 |
 | 30 minutes | Day 1 | Day 7 | 1 day | Day 8 |
 
-Non-stop play is allowed: at one turn a second, about 4 hours of turning buys everything.
+Non-stop play is allowed: at one turn a second, about three and a half hours of turning buys everything.
 
-Turning speed matters too: at 5 minutes a day, a slow turner (30 turns a minute) buys everything on day 54, a fast one (90 a minute) on day 25.
+Turning speed matters too: at 5 minutes a day, a slow turner (30 turns a minute) buys everything on day 49, a fast one (90 a minute) on day 23.
 
 Order of purchases at 5 minutes a day, buying the cheapest affordable item: Goat, River stone, Hermes, Merope, Dolphins, Pan, Pumice, Bellerophon, Tyche, Pegasus, Thanatos, Sphere, Heracles, Plutus, Pleiades.
 
