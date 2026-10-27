@@ -20,6 +20,7 @@ import kotlin.math.cos
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -103,8 +104,26 @@ private val LOCK = listOf(
 internal val COIN_COLORS = mapOf('#' to BRONZE[1], 'h' to BRONZE[5], 'f' to BRONZE[4], 's' to BRONZE[3])
 private val COIN_GRAY = mapOf('#' to rgb(0x2E2924), 'h' to rgb(0x7A7068), 'f' to DISABLED, 's' to rgb(0x4A423A))
 
-/** The bronze of the obol bar, as far as the next obol has come. */
+/** The bronze of the Greek key of the obol bar, as far as the next obol has come. */
 internal val OBOL_FILL = BRONZE[4]
+
+/** The dark bronze of the key, where the next obol has not come yet. */
+internal val OBOL_EMPTY = BRONZE[1]
+
+/** The light of the glint on the coin of the count when new obols come. */
+internal val GLINT = CREAM
+
+/** The number of new obols, such as "+1", that rises under the count. */
+internal val GAIN = BRONZE[5]
+
+/** Seconds that the number of new obols rises under the count, and fades in the second half. */
+internal const val GAIN_TIME = 1.0
+
+/** Seconds that the coin of the count glints when new obols come. */
+private const val COIN_GLINT = 0.4
+
+/** How far the number of new obols rises, in virtual pixels. */
+private const val GAIN_RISE = 4
 
 /** A color at a third of its light, for what the help does not point at. */
 private fun dim(c: Int) = rgb((c shr 16 and 0xFF) / 3, (c shr 8 and 0xFF) / 3, (c and 0xFF) / 3)
@@ -204,22 +223,48 @@ class UiRenderer {
 
     /** The obols: a coin and how many there are, outlined like the day across from them. */
     fun coins(px: Pixels, r: Rect, obols: Int) {
-        val count = min(obols, 9999).toString()
-        val x = r.right - PixelFont.width(count)
-        PixelFont.drawOutlined(px, count, x, r.y, CREAM, SHADOW)
-        coin(px, x - 2 - Layout.COIN_SIZE, r.y, COIN_COLORS, outline = true)
+        val x = coinOf(r, obols)
+        PixelFont.drawOutlined(px, min(obols, 9999).toString(), x + Layout.COIN_SIZE + 2, r.y, CREAM, SHADOW)
+        coin(px, x, r.y, COIN_COLORS, outline = true)
+    }
+
+    /** Where [coins] draws the coin: left of the count, which ends at the right of [r]. */
+    private fun coinOf(r: Rect, obols: Int) = r.right - PixelFont.width(min(obols, 9999).toString()) - 2 - Layout.COIN_SIZE
+
+    /**
+     * New obols, [age] seconds after they came: the coin of the count glints, and their number, such as "+1", rises under the count
+     * and fades. [count] is the count that the coin is next to.
+     */
+    fun gain(px: Pixels, r: Rect, obols: Int, age: Double, count: Int) {
+        val coinX = coinOf(r, count)
+        if (age < COIN_GLINT) {
+            val arm = if (age < COIN_GLINT / 2) 2 else 1
+            for (d in -arm..arm) {
+                px[coinX + 5 + d, r.y + 1] = GLINT
+                px[coinX + 5, r.y + 1 + d] = GLINT
+            }
+        }
+        val text = "+$obols"
+        val y = r.bottom + 2 + GAIN_RISE - (age / GAIN_TIME * GAIN_RISE).roundToInt()
+        val fade = ((age / GAIN_TIME - 0.5) * 2).coerceIn(0.0, 1.0).toFloat()
+        PixelFont.drawOutlined(px, text, r.right - PixelFont.width(text), y, GAIN, SHADOW, fade)
     }
 
     /**
-     * The bar between the day and the obols: a dark border that fills up with bronze as the next obol comes,
-     * and empties when it is there. The display shows through the empty part.
+     * The bar between the day and the obols: tiles of the Greek key from the band, outlined in dark. The key turns bronze
+     * as the next obol comes, and goes dark again when the obol is there.
      */
     fun obolBar(px: Pixels, r: Rect, obols: Double) {
-        val filled = (obols % 1.0 * (r.w - 2)).toInt()
-        frame(px, r, SHADOW)
-        if (filled == 0) return
-        px.fillRect(r.x + 1, r.y + 1, filled, r.h - 2, OBOL_FILL)
-        px.hline(r.x + 1, r.x + filled, r.y + 1, BRONZE[5])
+        val filled = (obols % 1.0 * r.w).toInt()
+        fun stroke(x: Int, y: Int) = x in 0 until r.w && y in MEANDER.indices && MEANDER[y][x % MEANDER[0].length] == '#'
+        for (y in MEANDER.indices) for (x in 0 until r.w) {
+            if (!stroke(x, y)) continue
+            for ((ox, oy) in listOf(-1 to 0, 1 to 0, 0 to -1, 0 to 1)) if (!stroke(x + ox, y + oy)) px[r.x + x + ox, r.y + y + oy] = SHADOW
+        }
+        for (y in MEANDER.indices) for (x in 0 until r.w) {
+            if (!stroke(x, y)) continue
+            px[r.x + x, r.y + y] = if (x < filled) OBOL_FILL else OBOL_EMPTY
+        }
     }
 
     /** A helper bought in the Agora, with a dark outline, so it shows on any ground. */

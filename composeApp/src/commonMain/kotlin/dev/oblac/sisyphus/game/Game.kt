@@ -193,8 +193,8 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     var quotes = QuoteBox(quoteSeed, drawn = store.load(KEY_QUOTES_DRAWN)?.toInt() ?: 0, firstTime = effort == 0.0)
         private set
     var onTick: () -> Unit = {}
-    /** New obols came: while the game runs, or for the time away. It is called once for the obols that come together. */
-    var onObol: () -> Unit = {}
+    /** New obols came, while the game runs or for the time away: it tells how many came together. */
+    var onObol: (Int) -> Unit = {}
 
     private var lastTick = floor(knob.angle / TICK_ANGLE).toInt()
     private var tickCooldown = 0.0
@@ -234,13 +234,14 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         if (dirty && sinceSave > SAVE_EVERY) save()
     }
 
-    /** Work fills the obols. A new obol is saved soon, with the work of the obol after it. */
+    /** Work fills the obols. New obols are saved soon, with the work of the obol after them. */
     private fun earn(work: Double) {
         val before = floor(shop.obols)
         shop.addWork(work)
-        if (floor(shop.obols) == before) return
+        val gained = (floor(shop.obols) - before).toInt()
+        if (gained == 0) return
         dirty = true
-        onObol()
+        onObol(gained)
     }
 
     private fun tick(dt: Double) {

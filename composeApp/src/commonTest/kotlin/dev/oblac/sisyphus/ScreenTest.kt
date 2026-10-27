@@ -19,7 +19,11 @@ import dev.oblac.sisyphus.scene.SceneGeometry
 import dev.oblac.sisyphus.scene.SceneRenderer
 import dev.oblac.sisyphus.scene.World
 import dev.oblac.sisyphus.scene.lookOf
+import dev.oblac.sisyphus.ui.GAIN
+import dev.oblac.sisyphus.ui.GAIN_TIME
+import dev.oblac.sisyphus.ui.GLINT
 import dev.oblac.sisyphus.ui.Layout
+import dev.oblac.sisyphus.ui.OBOL_EMPTY
 import dev.oblac.sisyphus.ui.OBOL_FILL
 import dev.oblac.sisyphus.ui.Rect
 import dev.oblac.sisyphus.ui.buyText
@@ -302,30 +306,84 @@ class ScreenTest {
         assertTrue(pixels(help, l.band).sumOf(::light) < pixels(plain, l.band).sumOf(::light) / 2)
     }
 
-    @Test
-    fun theBarShowsHowFarTheNextObolHasCome() {
-        fun filled(obols: Double): Int {
-            val s = screen(MemoryStore(mapOf("obols" to obols)))
-            val px = s.render()
-            val bar = s.layout!!.obolBar
-            return (bar.x + 1 until bar.right - 1).count { px[it, bar.y + bar.h / 2] == OBOL_FILL }
-        }
-        val inner = screen().layout!!.obolBar.w - 2
-        assertEquals(0, filled(3.0))
-        assertEquals(inner / 4, filled(0.25))
-        assertEquals(inner / 2, filled(2.5))
+    /** Turns the knob a little: more than the three clicks that the dev screen leaves before the next obol. */
+    private fun Screen.turnALittle() {
+        game.knob.grab(0.0)
+        game.knob.drag(1.0)
+        update(1 / 60.0)
+    }
+
+    /** Earns the next obol with a turn of the knob, from three clicks before it. */
+    private fun Screen.earnAnObol() {
+        game.nearTheNextObol()
+        turnALittle()
     }
 
     @Test
-    fun theDisplayShowsThroughTheEmptyPartOfTheBar() {
-        val s = screen(MemoryStore(mapOf("obols" to 3.25)))
-        val l = s.layout!!
-        val px = s.render()
-        val scene = Pixels(l.scene.w, l.scene.h)
-        SceneRenderer(SceneGeometry(l.scene.w, l.scene.h)).render(scene, s.game, s.world, banner = 0.0)
-        val bar = l.obolBar
-        val y = bar.y + bar.h / 2
-        for (x in bar.x + 1 + (bar.w - 2) / 4 until bar.right - 1) assertEquals(scene[x - l.scene.x, y - l.scene.y], px[x, y], "x $x")
+    fun aNewObolGoesIntoTheCountAtOnceAndRings() {
+        val s = screen(MemoryStore(mapOf("obols" to 2.5, "nextObol" to 300.0)))
+        var rings = 0
+        s.onCoin = { rings++ }
+        s.earnAnObol()
+        assertEquals(3, s.game.shop.obols.toInt())
+        assertEquals(1, rings)
+        assertEquals(1, s.gain?.obols)
+        s.update(GAIN_TIME)
+        assertNull(s.gain)
+    }
+
+    @Test
+    fun obolsSpentOrAddedInTheDevScreenShowNoGain() {
+        val s = screen(MemoryStore(mapOf("obols" to 5.0)))
+        assertTrue(s.game.buy(Line.GODS))
+        s.game.addObols(10)
+        s.update(1 / 60.0)
+        assertNull(s.gain)
+    }
+
+    /** The coin of the count glints, and "+1" rises under the count and fades. Nothing else moves. */
+    @Test
+    fun theCoinGlintsAndPlusOneRisesUnderTheCountAndFades() {
+        val s = screen(MemoryStore(mapOf("obols" to 2.5, "nextObol" to 300.0)))
+        val icon = s.layout!!.coinIcon
+        val glint = icon.right - PixelFont.width("3") - 2 - Layout.COIN_SIZE + 5 to icon.y + 1
+        fun plus(px: Pixels) = (icon.bottom until icon.bottom + 14).flatMap { y -> (icon.x until icon.right).filter { x -> px[x, y] == GAIN }.map { y } }
+        s.game.nearTheNextObol()
+        assertEquals(emptyList(), plus(s.render()))
+        s.turnALittle()
+        val first = s.render()
+        assertEquals(GLINT, first[glint.first, glint.second])
+        val start = plus(first)
+        s.update(GAIN_TIME * 0.4)
+        assertTrue(plus(s.render()).min() < start.min())
+        s.update(GAIN_TIME * 0.45)
+        val late = s.render()
+        assertTrue(plus(late).size < start.size / 2, "${plus(late).size} of ${start.size}")
+        assertNotEquals(GLINT, late[glint.first, glint.second])
+        s.update(GAIN_TIME * 0.2)
+        assertEquals(emptyList(), plus(s.render()))
+    }
+
+    /** The Greek key of the bar is bronze as far as the next obol has come, and dark after that: 1 is a bronze column, 0 a dark one. */
+    @Test
+    fun theKeyTurnsBronzeAsFarAsTheNextObolHasCome() {
+        fun columns(obols: Double): List<Int> {
+            val s = screen(MemoryStore(mapOf("obols" to obols)))
+            val px = s.render()
+            val bar = s.layout!!.obolBar
+            return (bar.x until bar.right).map { x ->
+                val colors = (bar.y until bar.bottom).map { px[x, it] }
+                when {
+                    OBOL_FILL in colors && OBOL_EMPTY !in colors -> 1
+                    OBOL_EMPTY in colors && OBOL_FILL !in colors -> 0
+                    else -> -1
+                }
+            }
+        }
+        val w = screen().layout!!.obolBar.w
+        assertEquals(List(w) { 0 }, columns(3.0))
+        assertEquals(List(w) { if (it < w / 4) 1 else 0 }, columns(0.25))
+        assertEquals(List(w) { if (it < w / 2) 1 else 0 }, columns(2.5))
     }
 
     /** At their highest, at noon and at midnight, the sun and the moon of every world stay a little under the obol bar. */

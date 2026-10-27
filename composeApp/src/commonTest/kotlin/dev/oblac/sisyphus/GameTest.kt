@@ -202,17 +202,18 @@ class GameTest {
         assertEquals(1, coins)
     }
 
+    /** All the obols that came while the app was away are told at once, with their number. */
     @Test
     fun obolsThatCameWhileAwayAreToldOnReturn() {
         var now = 0.0
         val game = Game(MemoryStore(mapOf("shop.alone" to 3.0, "nextObol" to 100.0)), seed = 1, wall = { now })
-        var coins = 0
-        game.onObol = { coins++ }
+        val told = mutableListOf<Int>()
+        game.onObol = { told += it }
         game.pause()
-        now += 8 * 3600.0
+        now += 80 * 3600.0
         game.resume()
-        assertEquals(1, game.shop.obols.toInt())
-        assertEquals(1, coins)
+        assertTrue(game.shop.obols.toInt() >= 2)
+        assertEquals(listOf(game.shop.obols.toInt()), told)
     }
 
     @Test

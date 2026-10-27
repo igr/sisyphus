@@ -117,6 +117,20 @@ class SnapshotTest {
         write(s.render(), "8-dev", 3)
     }
 
+    /** A new obol: the coin of the count glints, and "+1" rises under the count and fades. */
+    @Test
+    fun newObol() {
+        val s = Screen(Game(MemoryStore(mapOf("obols" to 2.5, "nextObol" to 300.0)), seed = 3), seed = 5).apply { resize(1179, 2556, 177, 102) }
+        s.game.nearTheNextObol()
+        s.idle(1.0)
+        s.game.knob.grab(0.0)
+        s.game.knob.drag(1.0)
+        s.update(1 / 60.0)
+        write(s.render(), "12-obol-1", 3)
+        s.update(0.4)
+        write(s.render(), "12-obol-2", 3)
+    }
+
     /** The offer for the river stone, on a big phone and on the narrowest one. */
     @Test
     fun offer() {

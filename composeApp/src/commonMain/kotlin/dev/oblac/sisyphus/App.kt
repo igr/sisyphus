@@ -37,15 +37,15 @@ fun SisyphusApp(game: Game, haptics: Haptics = NoHaptics, sound: Sound = Silence
     val uploader = remember { frameUploader() }
     var frame by remember { mutableLongStateOf(0L) }
 
-    DisposableEffect(game, haptics, sound) {
+    DisposableEffect(game, haptics, sound, screen) {
         game.onTick = {
             haptics.tick()
             sound.tick(game.soundOn)
         }
-        game.onObol = { sound.obol(game.soundOn) }
+        screen.onCoin = { sound.obol(game.soundOn) }
         onDispose {
             game.onTick = {}
-            game.onObol = {}
+            screen.onCoin = {}
         }
     }
 

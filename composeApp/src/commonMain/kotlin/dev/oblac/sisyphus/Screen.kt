@@ -10,6 +10,7 @@ import dev.oblac.sisyphus.scene.SceneRenderer
 import dev.oblac.sisyphus.scene.World
 import dev.oblac.sisyphus.scene.atmosphere
 import dev.oblac.sisyphus.ui.DEV_STEPS
+import dev.oblac.sisyphus.ui.GAIN_TIME
 import dev.oblac.sisyphus.ui.Layout
 import dev.oblac.sisyphus.ui.Rect
 import dev.oblac.sisyphus.ui.UiRenderer
@@ -27,6 +28,9 @@ import kotlin.random.Random
  * [MOVE] is the Yes that goes to another world.
  */
 enum class Touch { NONE, KNOB, SOUND, SHOP, BUY, DEV, HELP, AGAIN, WORLDS, LIST, MOVE }
+
+/** New obols on the main screen: how many came together, and the seconds since. */
+class Gain(val obols: Int, val age: Double)
 
 /** The whole screen is one small framebuffer, scaled up by a whole number so every pixel stays sharp. */
 private const val TARGET_WIDTH = 144f
@@ -100,6 +104,19 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
     var ending: Ending? = null
         private set
 
+    /** New obols that just came: the coin of the count glints, and their number rises under the count and fades. */
+    var gain: Gain? = null
+        private set
+    /** Called when new obols come. */
+    var onCoin: () -> Unit = {}
+
+    init {
+        game.onObol = { obols ->
+            gain = Gain(obols + (gain?.obols ?: 0), 0.0)
+            onCoin()
+        }
+    }
+
     val world = World(seed)
     private var geo: SceneGeometry? = null
     private val ui = UiRenderer()
@@ -136,6 +153,7 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
     fun update(dt: Double) {
         geo?.top = game.summit?.let { floor(it).toInt() }
         game.update(dt)
+        gain = gain?.let { Gain(it.obols, it.age + dt) }?.takeIf { it.age < GAIN_TIME }
         val end = ending ?: if (game.atTop) Ending().also { ending = it } else null
         if (end != null) {
             val black = end.time >= Ending.BLACK_AT
@@ -180,7 +198,9 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
             ui.knob(pixels, l, game)
             ui.helpButton(pixels, l.helpIcon)
         }
-        ui.coins(pixels, l.coinIcon, game.shop.obols.toInt())
+        val count = game.shop.obols.toInt()
+        ui.coins(pixels, l.coinIcon, count)
+        if (!agoraOpen && !worldsOpen && !helpOpen) gain?.let { ui.gain(pixels, l.coinIcon, it.obols, it.age, count) }
         if (helpOpen) ui.help(pixels, l, game.day, game.shop.obols)
         ending?.let { ui.ending(pixels, l, it, game.climbs) }
         return pixels
