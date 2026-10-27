@@ -26,6 +26,9 @@ import dev.oblac.sisyphus.ui.Layout
 import dev.oblac.sisyphus.ui.OBOL_EMPTY
 import dev.oblac.sisyphus.ui.OBOL_FILL
 import dev.oblac.sisyphus.ui.Rect
+import dev.oblac.sisyphus.ui.SQUARE_BOUGHT
+import dev.oblac.sisyphus.ui.SQUARE_LATER
+import dev.oblac.sisyphus.ui.SQUARE_OFFERED
 import dev.oblac.sisyphus.ui.buyText
 import dev.oblac.sisyphus.ui.buyTitle
 import dev.oblac.sisyphus.ui.itemIcon
@@ -124,10 +127,10 @@ class ScreenTest {
     }
 
     @Test
-    fun onlyThePriceAndTheSquaresShowWhatYouCannotAfford() {
-        /** The pixels of the rock row: its price, its three squares, and the rest. */
+    fun onlyThePriceShowsWhatYouCannotAfford() {
+        /** The pixels of the rock row: its price, and the rest. */
         fun rockRow(obols: Double): Map<String, List<Int>> {
-            val s = screen(MemoryStore(mapOf("obols" to obols)))
+            val s = screen(MemoryStore(mapOf("obols" to obols, "shop.rock" to 1.0)))
             val l = s.layout!!
             s.tap(l.coinIcon)
             val px = s.render()
@@ -135,18 +138,33 @@ class ScreenTest {
             val nameY = r.y + PixelFont.LINE_HEIGHT
             val noteY = nameY + PixelFont.LINE_HEIGHT
             return (r.y until r.bottom).flatMap { y -> (r.x until r.right).map { x -> x to y } }.groupBy({ (x, y) ->
-                when {
-                    x >= r.right - 20 && y in nameY until noteY -> "price"
-                    x >= r.right - 11 && y >= noteY -> "squares"
-                    else -> "rest"
-                }
+                if (x >= r.right - 20 && y in nameY until noteY) "price" else "rest"
             }, { (x, y) -> px[x, y] })
         }
         val poor = rockRow(0.0)
         val rich = rockRow(100.0)
         assertEquals(rich["rest"], poor["rest"])
         assertNotEquals(rich["price"], poor["price"])
-        assertNotEquals(rich["squares"], poor["squares"])
+    }
+
+    /** After the name of a line, a square for each of its items, from the left: the ones bought, the one on offer, and the ones after it. */
+    @Test
+    fun squaresAfterTheLineNameShowWhatIsBoughtOnOfferAndLater() {
+        fun squares(tier: Int): List<String> {
+            val s = screen(MemoryStore(mapOf("shop.rock" to tier.toDouble())))
+            val l = s.layout!!
+            s.tap(l.coinIcon)
+            val px = s.render()
+            val r = l.agoraRow(Line.ROCK.ordinal)
+            val looks = mapOf(SQUARE_BOUGHT to "bought", SQUARE_OFFERED to "offered", SQUARE_LATER to "later")
+            val columns = (r.x + PixelFont.width("Rock") until r.right).map { x ->
+                (r.y until r.y + PixelFont.CAP_HEIGHT).firstNotNullOfOrNull { looks[px[x, it]] }
+            }
+            return columns.filterIndexed { i, look -> look != null && look != columns.getOrNull(i - 1) }.filterNotNull()
+        }
+        assertEquals(listOf("offered", "later", "later"), squares(0))
+        assertEquals(listOf("bought", "offered", "later"), squares(1))
+        assertEquals(listOf("bought", "bought", "bought"), squares(3))
     }
 
     @Test

@@ -110,6 +110,14 @@ internal val OBOL_FILL = BRONZE[4]
 /** The dark bronze of the key, where the next obol has not come yet. */
 internal val OBOL_EMPTY = BRONZE[1]
 
+/** In the Agora, the squares after the name of a line, one for each of its items: bought, on offer, and for later. */
+internal val SQUARE_BOUGHT = BRONZE[4]
+internal val SQUARE_OFFERED = CREAM
+internal val SQUARE_LATER = TERRA_DARK
+
+/** The size of a square after the name of a line, in pixels. */
+private const val SQUARE = 4
+
 /** The light of the glint on the coin of the count when new obols come. */
 internal val GLINT = CREAM
 
@@ -477,7 +485,9 @@ class UiRenderer {
         val next = shop.next(line)
         val item = next ?: shop.owned(line) ?: return
         val bright = next == null || shop.obols >= next.price
-        PixelFont.draw(px, LINE_TITLES[line.ordinal], r.x, r.y, TERRA)
+        val title = LINE_TITLES[line.ordinal]
+        PixelFont.draw(px, title, r.x, r.y, TERRA)
+        squares(px, r.x + PixelFont.width(title) + 4, r.y + PixelFont.CAP_HEIGHT - SQUARE, shop.tier(line))
         val y = r.y + PixelFont.LINE_HEIGHT
         PixelFont.draw(px, item.name, r.x, y, CREAM)
         if (next != null) {
@@ -487,12 +497,18 @@ class UiRenderer {
         } else {
             check(px, r.right - Layout.COIN_SIZE, y + 1)
         }
-        val noteY = y + PixelFont.LINE_HEIGHT
-        PixelFont.draw(px, item.note, r.x, noteY, TERRA_LIGHT)
+        PixelFont.draw(px, item.note, r.x, y + PixelFont.LINE_HEIGHT, TERRA_LIGHT)
+    }
+
+    /** A square for each item of a line, from [x]: filled for the [bought] ones, bright for the one on offer, dim for the ones after it. */
+    private fun squares(px: Pixels, x: Int, y: Int, bought: Int) {
         for (k in 0 until 3) {
-            val pip = Rect(r.right - 11 + k * 4, noteY + 2, 3, 3)
-            if (k < shop.tier(line)) px.fillRect(pip.x, pip.y, pip.w, pip.h, if (bright) TERRA_LIGHT else DISABLED)
-            else frame(px, pip, if (bright) TERRA else DISABLED)
+            val square = Rect(x + k * (SQUARE + 2), y, SQUARE, SQUARE)
+            when {
+                k < bought -> px.fillRect(square.x, square.y, SQUARE, SQUARE, SQUARE_BOUGHT)
+                k == bought -> frame(px, square, SQUARE_OFFERED)
+                else -> frame(px, square, SQUARE_LATER)
+            }
         }
     }
 
