@@ -151,7 +151,7 @@ class SceneRenderer(private val geo: SceneGeometry) {
         drawBirds(px, world, game.clock, look)
         if (game.place == Place.UNDERWORLD && beauty >= 3) drawLights(px, geo, atm, p, game.clock)
         drawRock(px, atm, game.position, look.rocks[game.shop.tier(Line.ROCK)], rolled)
-        drawHero(px, atm, game, p)
+        drawHero(px, atm, game, p, rolled)
         drawParticles(px, world, atm)
         drawRain(px, world, atm, look.ash)
         if (hud) drawDay(px, game.day, game.climbs, banner)
@@ -425,9 +425,11 @@ class SceneRenderer(private val geo: SceneGeometry) {
         paintRock(px, x, y, r, (position - (rolled ?: 0.0)) / r, rock, atm.light)
     }
 
-    private fun drawHero(px: Pixels, atm: Atmosphere, game: Game, p: Int) {
-        val frame = if (game.stillFor > 0.5) hero.idle[if (sin(game.clock * 2.2) > 0.2) 1 else 0]
-        else hero.walk[p.mod(HeroSprites.WALK_FRAMES)]
+    /** He pushes, rests, or at the top, as the rock rolls back [rolled] pixels, stands up and turns to watch it go. */
+    private fun drawHero(px: Pixels, atm: Atmosphere, game: Game, p: Int, rolled: Double?) {
+        val frame = rolled?.let { hero.atTop(it) }
+            ?: if (game.stillFor > 0.5) hero.idle[if (sin(game.clock * 2.2) > 0.2) 1 else 0]
+            else hero.walk[p.mod(HeroSprites.WALK_FRAMES)]
         px.draw(frame, geo.heroX - HeroSprites.ORIGIN_X, geo.baseY - HeroSprites.ORIGIN_Y, light = atm.light)
     }
 

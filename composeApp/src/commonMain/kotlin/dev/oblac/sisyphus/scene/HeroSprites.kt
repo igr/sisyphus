@@ -18,7 +18,8 @@ private val BELT = rgb(0xB4482A)
 private val HAIR = rgb(0x3C2618)
 private val SANDAL = rgb(0x6A4024)
 private val SANDAL_FAR = rgb(0x4A2C18)
-private val EYE = rgb(0x2A1A10)
+/** His eye: it looks up the hill while he pushes, and down it when he turns around at the top. */
+internal val HERO_EYE = rgb(0x2A1A10)
 private val OUTLINE = rgb(0x1C120C)
 
 private class P(val x: Double, val y: Double) {
@@ -37,10 +38,21 @@ class HeroSprites(rockDx: Double, rockDy: Double, private val rockR: Double) {
 
     val walk: List<Pixels> = List(WALK_FRAMES) { draw(it.toDouble() / WALK_FRAMES, walking = true, breath = 0.0) }
     val idle: List<Pixels> = listOf(draw(0.0, walking = false, breath = 0.0), draw(0.0, walking = false, breath = 1.0))
+    /** Standing up straight at the top, as the rock slips back. */
+    val stand: Pixels = standing(facing = 1.0)
+    /** Turned around at the top, to watch the rock roll down the hill. */
+    val turned: Pixels = standing(facing = -1.0)
+
+    /** At the top, as the rock rolls back [rolled] pixels: he stands up when it slips away, and turns around once it is past him. */
+    fun atTop(rolled: Double): Pixels? = when {
+        rolled > rock.x -> turned
+        rolled > 0 -> stand
+        else -> null
+    }
 
     private fun draw(phase: Double, walking: Boolean, breath: Double): Pixels {
-        val px = Pixels(26, 28)
-        val o = P(9.0, 24.0)
+        val px = Pixels(FRAME_W, FRAME_H)
+        val o = P(ORIGIN_X - 1.0, ORIGIN_Y - 1.0)
         fun seg(a: P, b: P, w: Double, c: Int) = px.segment(a.x + o.x, a.y + o.y, b.x + o.x, b.y + o.y, w, c)
         fun disc(a: P, r: Double, c: Int) = px.disc(a.x + o.x, a.y + o.y, r, c)
 
@@ -86,20 +98,72 @@ class HeroSprites(rockDx: Double, rockDy: Double, private val rockR: Double) {
         seg(shoulder, nearElbow, 1.9, SKIN)
         seg(nearElbow, nearHand, 1.8, SKIN)
 
-        // head, last, so the face is never hidden
-        seg(shoulder, head, 1.8, SKIN)
-        disc(head, 2.7, SKIN)
-        disc(head + P(2.5, 0.2), 0.6, SKIN)
+        head(px, o, shoulder, head, facing = 1.0)
+        return px.outlined(OUTLINE)
+    }
+
+    /** Upright, with the arms down, facing up the hill when [facing] is 1 and down it when -1. The feet stay on the slope. */
+    private fun standing(facing: Double): Pixels {
+        val px = Pixels(FRAME_W, FRAME_H)
+        val o = P(ORIGIN_X - 1.0, ORIGIN_Y - 1.0)
+        fun seg(a: P, b: P, w: Double, c: Int) = px.segment(a.x + o.x, a.y + o.y, b.x + o.x, b.y + o.y, w, c)
+
+        val dir = P(sin(STAND_LEAN) * facing, -cos(STAND_LEAN))
+        val down = P(cos(STAND_LEAN) * facing, sin(STAND_LEAN))
+        val hip = P(-0.2 * facing, -12.9)
+        val shoulder = hip + dir * 7.0
+        val head = shoulder + P(0.5 * facing, -3.0)
+
+        val nearFoot = P(0.9, -0.45)
+        val farFoot = P(-1.3, 0.65)
+        val nearAnkle = nearFoot + P(0.0, -1.1)
+        val farAnkle = farFoot + P(0.0, -1.1)
+        val nearKnee = joint(hip, nearAnkle, THIGH, SHIN, -facing)
+        val farKnee = joint(hip, farAnkle, THIGH, SHIN, -facing)
+
+        val nearHand = shoulder + P(1.0 * facing, 8.4)
+        val farHand = shoulder + P(-0.6 * facing, 8.2)
+        val nearElbow = joint(shoulder, nearHand, UPPER_ARM, FOREARM, facing)
+        val farElbow = joint(shoulder, farHand, UPPER_ARM, FOREARM, facing)
+
+        // far side, behind the body
+        seg(hip, farKnee, 2.2, SKIN_FAR)
+        seg(farKnee, farAnkle, 2.0, SKIN_FAR)
+        sandal(::seg, farFoot, SANDAL_FAR)
+        seg(shoulder, farElbow, 1.9, SKIN_FAR)
+        seg(farElbow, farHand, 1.8, SKIN_FAR)
+
+        // body
+        seg(hip, shoulder, 4.6, TUNIC)
+        seg(hip + down * 1.4, shoulder + down * 1.4 - dir * 0.8, 1.4, TUNIC_SHADOW)
+        val belt = hip + dir * 1.6
+        seg(belt - down * 2.3, belt + down * 2.3, 1.3, BELT)
+
+        // near side
+        seg(hip, nearKnee, 2.2, SKIN)
+        seg(nearKnee, nearAnkle, 2.0, SKIN)
+        sandal(::seg, nearFoot, SANDAL)
+        seg(hip, hip + (nearKnee - hip) * 0.6, 3.8, TUNIC)
+        seg(shoulder, nearElbow, 1.9, SKIN)
+        seg(nearElbow, nearHand, 1.8, SKIN)
+
+        head(px, o, shoulder, head, facing)
+        return px.outlined(OUTLINE)
+    }
+
+    /** The neck and the head, with the hair and the beard, the nose and the eye, looking the way of [facing]. Drawn last, so the face is never hidden. */
+    private fun head(px: Pixels, o: P, shoulder: P, head: P, facing: Double) {
+        px.segment(shoulder.x + o.x, shoulder.y + o.y, head.x + o.x, head.y + o.y, 1.8, SKIN)
+        px.disc(head.x + o.x, head.y + o.y, 2.7, SKIN)
+        px.disc(head.x + 2.5 * facing + o.x, head.y + 0.2 + o.y, 0.6, SKIN)
         for (j in 0 until px.height) for (i in 0 until px.width) {
             if (px[i, j] != SKIN) continue
-            val dx = i + 0.5 - o.x - head.x
+            val dx = (i + 0.5 - o.x - head.x) * facing
             val dy = j + 0.5 - o.y - head.y
             if (dx * dx + dy * dy > 2.8 * 2.8) continue
             if (dy < -1.0 || (dx < -0.5 && dy < 1.3) || (dy > 0.8 && dx > -1.1)) px[i, j] = HAIR
         }
-        disc(head + P(1.2, -0.4), 0.5, EYE)
-
-        return px.outlined(OUTLINE)
+        px.disc(head.x + 1.2 * facing + o.x, head.y - 0.4 + o.y, 0.5, HERO_EYE)
     }
 
     private fun onRock(angle: Double) = rock + P(cos(angle), sin(angle)) * (rockR - 0.3)
@@ -136,9 +200,12 @@ class HeroSprites(rockDx: Double, rockDy: Double, private val rockR: Double) {
         const val WALK_FRAMES = 12
         /** Where the hero stands inside a frame. */
         const val ORIGIN_X = 10
-        const val ORIGIN_Y = 25
+        const val ORIGIN_Y = 31
+        private const val FRAME_W = 26
+        private const val FRAME_H = 34
 
         private const val LEAN = 48.0 * PI / 180
+        private const val STAND_LEAN = 6.0 * PI / 180
         private const val THIGH = 5.9
         private const val SHIN = 6.1
         private const val UPPER_ARM = 4.5

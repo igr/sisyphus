@@ -1,7 +1,8 @@
 package dev.oblac.sisyphus.scene
 
 /**
- * The top. He stands still a moment, then the rock rolls back past him and down the hill until it is gone.
+ * The top. He holds the rock a moment, then it rolls back past him and down the hill until it is gone:
+ * he stands up, and turns around to watch it go.
  * The screen goes black for Camus' words, and after a while a tap brings the first morning back.
  */
 class Ending {

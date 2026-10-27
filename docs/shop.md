@@ -109,7 +109,7 @@ Order of purchases at 5 minutes a day, buying the cheapest affordable item: Goat
 - **The goal.** At the first purchase of each climb, Hermes says: "One of fifteen. Buy them all, and the top will come in sight."
 - **The climb.** After the 15th item, Hermes says the top is in sight. Reaching it takes as much pushing as 7 days at 5 minutes a day: 2,100 turns at the fastest walk. Only the player's own turns move him up; the gods do not climb for him, so he always reaches the top while someone plays. The Greek key in the top row shows how far he has come. Obols stop coming, because there is nothing more to buy. The corner shows only the coin, which still opens the Agora and its sound setting.
 - **The top** is a flat hill. It comes into view just before he gets there, and the knob stops moving him on it.
-- **The rock rolls down.** He stands a moment, then the rock rolls back past him and down the hill, faster and faster, until it is out of sight.
+- **The rock rolls down.** He holds it a moment. Then the rock slips back, and he stands up straight. When it rolls past him, he turns around and watches it go down the hill, faster and faster, until it is out of sight.
 - **The black screen.** The screen goes black for Camus: "The struggle itself toward the heights is enough to fill a man's heart. One must imagine Sisyphus happy." It also says how many times he reached the top. After a few seconds, a tap begins again.
 - **Everything starts from the beginning:** day 1, the shop, the obols. Only the number of climbs is kept, with the sound setting. After the first climb, a small peak and the count sit under the day.
 - **To test it,** the dev screen has a Top button: it buys everything and takes him to two turns below the top.
