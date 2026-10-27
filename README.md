@@ -27,7 +27,8 @@ Website, support and privacy policy: https://igr.github.io/sisyphus/ (from the `
   (roll it out in Play Console) and a build in App Store Connect (submit it for review there).
   Never send a test build to the stores: do not promote internal builds to production, or submit TestFlight builds from `just beta`.
 - Dev screen: in debug builds (Run in Xcode, `installDebug`, `just run`), tap the "Agora Market" title
-  to add or take away obols, or to reset the shop. Release builds do not have it.
+  to add or take away obols, to reset the shop, to go near the top, or to open every world without buying.
+  Release builds do not have it.
 - Tests: `./gradlew :composeApp:jvmTest`. The tests also write PNG snapshots and `clicks.wav`
   to `composeApp/build/snapshots`.
 

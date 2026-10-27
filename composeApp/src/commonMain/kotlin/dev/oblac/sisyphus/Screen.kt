@@ -85,6 +85,9 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
     /** The store looks for the worlds bought before. */
     var restoring = false
         private set
+    /** In dev builds, the dev screen opens every world without the store, until it is tapped again or the app restarts. */
+    var openWorlds = false
+        private set
     /** How far the list of worlds is scrolled, in virtual pixels. */
     val worldsScroll get() = listScroll.roundToInt()
     private var listScroll = 0.0
@@ -100,6 +103,10 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
     val world = World(seed)
     private var geo: SceneGeometry? = null
     private val ui = UiRenderer()
+    /** The worlds as the screen sees them: what the store says, or every world while the dev screen opens them. */
+    private val worlds = object : Billing by billing {
+        override fun owns(place: Place) = openWorlds || billing.owns(place)
+    }
     private var scene = Pixels(1, 1)
     private var sceneRenderer: SceneRenderer? = null
     private var lastResize = emptyList<Int>()
@@ -154,10 +161,10 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
         val renderer = sceneRenderer ?: return pixels
         ui.background(pixels)
         if (agoraOpen) {
-            ui.agora(pixels, l, game.shop, game.soundOn, devOpen)
+            ui.agora(pixels, l, game.shop, game.soundOn, devOpen, openWorlds)
             offer?.let { game.shop.next(it) }?.let { ui.offer(pixels, l, it) }
         } else if (worldsOpen) {
-            ui.worlds(pixels, l, game.place, worldsScroll, billing)
+            ui.worlds(pixels, l, game.place, worldsScroll, worlds)
             if (canRestore) ui.restore(pixels, l.restore, restoring)
             moving?.let { ui.confirm(pixels, l, it) }
             buying?.let { ui.buy(pixels, l, it, billing.price(it), paying) }
@@ -229,6 +236,7 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
                     step != null -> game.addObols(DEV_STEPS[step])
                     l.devReset.near(x, y, 0) -> game.resetShop()
                     l.devTop.near(x, y, 0) -> game.nearTheTop()
+                    l.devWorlds.near(x, y, 0) -> openWorlds = !openWorlds
                     else -> return Touch.NONE
                 }
                 return Touch.DEV
@@ -319,7 +327,7 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
     }
 
     /** While a world is not bought, the Worlds screen can ask the store for the worlds bought before. */
-    private val canRestore get() = Place.entries.any { !billing.owns(it) }
+    private val canRestore get() = Place.entries.any { !worlds.owns(it) }
 
     /** The finger lifts: the knob coasts on, or a tap on the list asks to go to that world, or to buy it. Tells what the lift did. */
     fun release(): Touch {
@@ -332,7 +340,7 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
         val row = Place.entries.indices.firstOrNull { l.worldRow(it).near(d.x, d.y + worldsScroll, 0) } ?: return Touch.NONE
         val place = Place.entries[row]
         if (place == game.place) return Touch.NONE
-        if (billing.owns(place)) moving = place else buying = place
+        if (worlds.owns(place)) moving = place else buying = place
         return Touch.WORLDS
     }
 

@@ -290,11 +290,11 @@ class UiRenderer {
     }
 
     /** The Agora: what the obols can buy next, line by line, and the sound setting. */
-    fun agora(px: Pixels, layout: Layout, shop: Shop, soundOn: Boolean, dev: Boolean = false) {
+    fun agora(px: Pixels, layout: Layout, shop: Shop, soundOn: Boolean, dev: Boolean = false, openWorlds: Boolean = false) {
         val t = layout.agoraTitle
         PixelFont.draw(px, if (dev) "Dev" else "Agora Market", t.x, t.y, CREAM)
         px.hline(t.x, t.right - 1, t.bottom + 2, TERRA_DARK)
-        if (dev) devScreen(px, layout) else for (line in Line.entries) row(px, layout.agoraRow(line.ordinal), line, shop)
+        if (dev) devScreen(px, layout, openWorlds) else for (line in Line.entries) row(px, layout.agoraRow(line.ordinal), line, shop)
         speaker(px, layout.agoraSound, soundOn)
     }
 
@@ -402,8 +402,8 @@ class UiRenderer {
         button(px, layout.confirmNo, "No")
     }
 
-    /** In dev builds only: buttons that add or take away obols, and one that resets the shop. */
-    private fun devScreen(px: Pixels, layout: Layout) {
+    /** In dev builds only: buttons that add or take away obols, reset the shop, take him near the top, and open every world. */
+    private fun devScreen(px: Pixels, layout: Layout, openWorlds: Boolean) {
         val obols = layout.agoraRow(0)
         PixelFont.draw(px, "Obols", obols.x, obols.y, TERRA)
         DEV_STEPS.forEachIndexed { i, step -> button(px, layout.devStep(i), if (step > 0) "+$step" else "$step") }
@@ -413,6 +413,9 @@ class UiRenderer {
         val climb = layout.agoraRow(2)
         PixelFont.draw(px, "Climb", climb.x, climb.y, TERRA)
         button(px, layout.devTop, "Top")
+        val worlds = layout.agoraRow(3)
+        PixelFont.draw(px, "Worlds", worlds.x, worlds.y, TERRA)
+        button(px, layout.devWorlds, if (openWorlds) "As bought" else "Open all")
     }
 
     private fun button(px: Pixels, r: Rect, label: String) {

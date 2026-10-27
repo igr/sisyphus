@@ -225,6 +225,31 @@ class ScreenTest {
         assertTrue(l.devStep(4).right <= l.agoraRow(0).right)
         assertTrue(l.devStep(0).bottom <= l.agoraRow(0).bottom)
         assertTrue(l.devReset.bottom <= l.agoraRow(1).bottom)
+        assertTrue(l.devWorlds.bottom <= l.agoraRow(3).bottom)
+    }
+
+    /** Testers reach every world from the dev screen, without the store. A second tap gives the store's answer back. */
+    @Test
+    fun theDevScreenOpensEveryWorld() {
+        val s = Screen(Game(MemoryStore(), seed = 1), seed = 2, dev = true, billing = FakeBilling()).apply { resize(1179, 2556, 177, 102) }
+        val l = s.layout!!
+        fun chooseEtna() {
+            s.tap(l.coinIcon)
+            s.tap(l.dayLabel(s.game.day))
+            s.choose(l.worldRow(Place.ETNA.ordinal))
+        }
+        s.openDev()
+        assertEquals(Touch.DEV, s.tap(l.devWorlds))
+        assertTrue(s.openWorlds)
+        chooseEtna()
+        assertEquals(Place.ETNA, s.moving)
+        assertNull(s.buying)
+        s.back()
+        s.openDev()
+        assertEquals(Touch.DEV, s.tap(l.devWorlds))
+        assertFalse(s.openWorlds)
+        chooseEtna()
+        assertEquals(Place.ETNA, s.buying)
     }
 
     @Test
