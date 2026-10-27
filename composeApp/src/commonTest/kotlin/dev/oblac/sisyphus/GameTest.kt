@@ -326,6 +326,33 @@ class GameTest {
 
     private val allBought = Line.entries.associate { "shop." + it.id to 3.0 }
 
+    /** During the final climb there is nothing more to buy: obols stop coming, from the knob and from the gods. */
+    @Test
+    fun duringTheFinalClimbObolsStopComing() {
+        var now = 0.0
+        val game = Game(MemoryStore(allBought + mapOf("obols" to 2.5, "position" to 1000.0, "summit" to 1000.0 + CLIMB)), seed = 1, wall = { now })
+        var told = 0
+        game.onObol = { told++ }
+        game.turn(20 * PI)
+        repeat(60) { game.update(1.0) }
+        assertTrue(game.position > 1000.0)
+        game.pause()
+        now += 24 * 3600.0
+        game.resume()
+        assertEquals(2.5, game.shop.obols, 1e-9)
+        assertEquals(0, told)
+    }
+
+    /** The final climb counts from 0 when it begins to 1 at the top. Before it begins, there is nothing to count. */
+    @Test
+    fun theFinalClimbCountsHowFarHeHasClimbed() {
+        assertNull(Game(seed = 1).climbed)
+        fun at(position: Double) = Game(MemoryStore(allBought + mapOf("position" to position, "summit" to 1000.0 + CLIMB)), seed = 1, wall = { 0.0 }).climbed!!
+        assertEquals(0.0, at(1000.0), 1e-9)
+        assertEquals(0.5, at(1000.0 + CLIMB / 2), 1e-9)
+        assertEquals(1.0, at(1000.0 + CLIMB), 1e-9)
+    }
+
     @Test
     fun buyingTheLastItemBeginsTheFinalClimb() {
         val store = MemoryStore(allBought + mapOf("shop.beauty" to 2.0, "obols" to 11.0, "position" to 500.0))

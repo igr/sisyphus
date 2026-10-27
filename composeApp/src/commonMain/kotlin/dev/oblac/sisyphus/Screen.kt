@@ -190,7 +190,7 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
             renderer.render(scene, game, world, banner, rolled = ending?.rolled)
             pixels.draw(scene, l.scene.x, l.scene.y)
             ui.bezel(pixels, l.display)
-            ui.obolBar(pixels, l.obolBar, game.shop.obols)
+            ui.obolBar(pixels, l.obolBar, game.shop.obols, game.climbed)
             val corner = listOfNotNull(game.shop.owned(Line.SIDEKICKS), game.shop.owned(Line.GODS), game.shop.owned(Line.BLESSING))
             corner.forEachIndexed { i, item -> ui.helper(pixels, l.helper(corner.size - 1 - i), item) }
             ui.band(pixels, l.band)
@@ -199,9 +199,9 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
             ui.helpButton(pixels, l.helpIcon)
         }
         val count = game.shop.obols.toInt()
-        ui.coins(pixels, l.coinIcon, count)
+        ui.coins(pixels, l.coinIcon, if (game.climbed != null) null else count)
         if (!agoraOpen && !worldsOpen && !helpOpen) gain?.let { ui.gain(pixels, l.coinIcon, it.obols, it.age, count) }
-        if (helpOpen) ui.help(pixels, l, game.day, game.shop.obols)
+        if (helpOpen) ui.help(pixels, l, game.day, game.shop.obols, game.climbed)
         ending?.let { ui.ending(pixels, l, it, game.climbs) }
         return pixels
     }

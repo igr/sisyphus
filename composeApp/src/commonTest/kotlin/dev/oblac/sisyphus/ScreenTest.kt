@@ -1,5 +1,6 @@
 package dev.oblac.sisyphus
 
+import dev.oblac.sisyphus.game.CLIMB
 import dev.oblac.sisyphus.game.DAY_LENGTH
 import dev.oblac.sisyphus.game.FIRST_OBOL
 import dev.oblac.sisyphus.game.Game
@@ -20,6 +21,7 @@ import dev.oblac.sisyphus.scene.SceneGeometry
 import dev.oblac.sisyphus.scene.SceneRenderer
 import dev.oblac.sisyphus.scene.World
 import dev.oblac.sisyphus.scene.lookOf
+import dev.oblac.sisyphus.ui.CLIMB_FILL
 import dev.oblac.sisyphus.ui.GAIN
 import dev.oblac.sisyphus.ui.GAIN_TIME
 import dev.oblac.sisyphus.ui.GLINT
@@ -30,10 +32,12 @@ import dev.oblac.sisyphus.ui.Rect
 import dev.oblac.sisyphus.ui.SQUARE_BOUGHT
 import dev.oblac.sisyphus.ui.SQUARE_LATER
 import dev.oblac.sisyphus.ui.SQUARE_OFFERED
+import dev.oblac.sisyphus.ui.barNote
 import dev.oblac.sisyphus.ui.buyText
 import dev.oblac.sisyphus.ui.buyTitle
 import dev.oblac.sisyphus.ui.itemIcon
 import dev.oblac.sisyphus.ui.itemsBought
+import dev.oblac.sisyphus.ui.obolsNote
 import dev.oblac.sisyphus.ui.worldPreview
 import kotlin.math.cos
 import kotlin.math.sin
@@ -470,6 +474,51 @@ class ScreenTest {
     }
 
     private val allBought = Line.entries.associate { "shop." + it.id to 3.0 }
+
+    /** During the final climb the corner shows only the coin, as the way into the Agora: no count, because obols stop coming. */
+    @Test
+    fun duringTheFinalClimbTheCornerShowsOnlyTheCoin() {
+        fun corner(obols: Double, climbing: Boolean): List<Int> {
+            val climb = if (climbing) allBought + mapOf("position" to 1000.0, "summit" to 1000.0 + CLIMB) else emptyMap()
+            val s = screen(MemoryStore(climb + mapOf("obols" to obols)))
+            val px = s.render()
+            val r = s.layout!!.coinIcon
+            return (r.y until r.bottom).flatMap { y -> (r.x until r.right).map { px[it, y] } }
+        }
+        assertEquals(corner(12.0, climbing = true), corner(345.0, climbing = true))
+        assertNotEquals(corner(12.0, climbing = false), corner(345.0, climbing = false))
+        val s = screen(MemoryStore(allBought + mapOf("position" to 1000.0, "summit" to 1000.0 + CLIMB)))
+        val l = s.layout!!
+        val px = s.render()
+        assertTrue((l.coinIcon.right - Layout.COIN_SIZE until l.coinIcon.right).any { x -> (l.coinIcon.y until l.coinIcon.bottom).any { px[x, it] == OBOL_FILL } })
+        assertEquals(Touch.SHOP, s.tap(l.coinIcon))
+        assertTrue(s.agoraOpen)
+        assertEquals("Tap the coin for the market.", obolsNote(climbing = true))
+    }
+
+    /** The help during the final climb shows the coin as the main screen does: without a count. */
+    @Test
+    fun theHelpDuringTheFinalClimbShowsOnlyTheCoin() {
+        val s = screen(MemoryStore(allBought + mapOf("obols" to 12.0, "position" to 1000.0, "summit" to 1000.0 + CLIMB)))
+        val l = s.layout!!
+        fun light(c: Int) = (c shr 16 and 0xFF) + (c shr 8 and 0xFF) + (c and 0xFF)
+        fun brightest() = s.render().let { px -> (l.coinIcon.y until l.coinIcon.bottom).maxOf { y -> (l.coinIcon.x until l.coinIcon.right).maxOf { light(px[it, y]) } } }
+        val plain = brightest()
+        s.tap(l.helpIcon)
+        assertEquals(plain, brightest())
+    }
+
+    /** During the final climb the key shows the way to the top: cream as far as he has climbed, and no bronze for the obols. */
+    @Test
+    fun duringTheFinalClimbTheKeyShowsTheWayToTheTop() {
+        val s = screen(MemoryStore(allBought + mapOf("obols" to 2.5, "position" to 1000.0 + CLIMB / 2, "summit" to 1000.0 + CLIMB)))
+        val px = s.render()
+        val bar = s.layout!!.obolBar
+        val columns = (bar.x until bar.right).map { x -> (bar.y until bar.bottom).map { px[x, it] } }
+        assertEquals(bar.w / 2, columns.count { CLIMB_FILL in it })
+        assertTrue(columns.none { OBOL_FILL in it })
+        assertEquals("The bar fills up to the top.", barNote(climbing = true))
+    }
 
     @Test
     fun atTheTopTheRockRollsAwayTheScreenGoesBlackAndATapStartsOver() {

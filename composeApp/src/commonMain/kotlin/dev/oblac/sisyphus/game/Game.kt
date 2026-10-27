@@ -186,6 +186,9 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     /** How many times Sisyphus reached the top. Starting over keeps it. */
     var climbs = store.load(KEY_CLIMBS)?.toInt() ?: 0
         private set
+    /** How far the final climb has come: from 0 when it begins to 1 at the top; null before it begins. */
+    val climbed: Double? get() = summit?.let { (1 - (it - position) / CLIMB).coerceIn(0.0, 1.0) }
+
     /** He stands on the top: the knob moves him no more. */
     val atTop get() = summit?.let { position >= it } == true
 
@@ -234,8 +237,12 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         if (dirty && sinceSave > SAVE_EVERY) save()
     }
 
-    /** Work fills the obols. New obols are saved soon, with the work of the obol after them. */
+    /**
+     * Work fills the obols, but not during the final climb: there is nothing more to buy then.
+     * New obols are saved soon, with the work of the obol after them.
+     */
     private fun earn(work: Double) {
+        if (summit != null) return
         val before = floor(shop.obols)
         shop.addWork(work)
         val gained = (floor(shop.obols) - before).toInt()

@@ -119,6 +119,15 @@ internal val SQUARE_LATER = TERRA_DARK
 /** The size of a square after the name of a line, in pixels. */
 private const val SQUARE = 4
 
+/** The light of the key during the final climb, as far as he has climbed. */
+internal val CLIMB_FILL = CREAM
+
+/** What the help says of the obols. During the final climb, obols stop coming, and the coin only opens the market. */
+internal fun obolsNote(climbing: Boolean) = if (climbing) "Tap the coin for the market." else "Obols you earn by pushing. Tap them for the market."
+
+/** What the help says of the bar: it fills up to the next obol, and during the final climb, to the top. */
+internal fun barNote(climbing: Boolean) = if (climbing) "The bar fills up to the top." else "The bar fills up to the next obol."
+
 /** The light of the glint on the coin of the count when new obols come. */
 internal val GLINT = CREAM
 
@@ -236,15 +245,16 @@ class UiRenderer {
         }
     }
 
-    /** The obols: a coin and how many there are, outlined like the day across from them. */
-    fun coins(px: Pixels, r: Rect, obols: Int) {
+    /** The obols: a coin and how many there are, outlined like the day across from them. Without [obols], only the coin. */
+    fun coins(px: Pixels, r: Rect, obols: Int?) {
         val x = coinOf(r, obols)
-        PixelFont.drawOutlined(px, min(obols, 9999).toString(), x + Layout.COIN_SIZE + 2, r.y, CREAM, SHADOW)
+        if (obols != null) PixelFont.drawOutlined(px, min(obols, 9999).toString(), x + Layout.COIN_SIZE + 2, r.y, CREAM, SHADOW)
         coin(px, x, r.y, COIN_COLORS, outline = true)
     }
 
-    /** Where [coins] draws the coin: left of the count, which ends at the right of [r]. */
-    private fun coinOf(r: Rect, obols: Int) = r.right - PixelFont.width(min(obols, 9999).toString()) - 2 - Layout.COIN_SIZE
+    /** Where [coins] draws the coin: left of the count, which ends at the right of [r], or at the right itself without a count. */
+    private fun coinOf(r: Rect, obols: Int?) =
+        r.right - Layout.COIN_SIZE - (obols?.let { PixelFont.width(min(it, 9999).toString()) + 2 } ?: 0)
 
     /**
      * New obols, [age] seconds after they came: the coin of the count glints, and their number, such as "+1", rises under the count
@@ -267,10 +277,12 @@ class UiRenderer {
 
     /**
      * The bar between the day and the obols: tiles of the Greek key from the band, outlined in dark. The key turns bronze
-     * as the next obol comes, and goes dark again when the obol is there.
+     * as the next obol comes, and goes dark again when the obol is there. During the final climb, it shows the way to the top
+     * instead: it turns cream as far as he has [climbed].
      */
-    fun obolBar(px: Pixels, r: Rect, obols: Double) {
-        val filled = (obols % 1.0 * r.w).toInt()
+    fun obolBar(px: Pixels, r: Rect, obols: Double, climbed: Double? = null) {
+        val filled = ((climbed ?: (obols % 1.0)) * r.w).toInt()
+        val fill = if (climbed != null) CLIMB_FILL else OBOL_FILL
         fun stroke(x: Int, y: Int) = x in 0 until r.w && y in MEANDER.indices && MEANDER[y][x % MEANDER[0].length] == '#'
         for (y in MEANDER.indices) for (x in 0 until r.w) {
             if (!stroke(x, y)) continue
@@ -278,7 +290,7 @@ class UiRenderer {
         }
         for (y in MEANDER.indices) for (x in 0 until r.w) {
             if (!stroke(x, y)) continue
-            px[r.x + x, r.y + y] = if (x < filled) OBOL_FILL else OBOL_EMPTY
+            px[r.x + x, r.y + y] = if (x < filled) fill else OBOL_EMPTY
         }
     }
 
@@ -288,7 +300,7 @@ class UiRenderer {
     fun helpButton(px: Pixels, r: Rect) = PixelFont.draw(px, "(?)", r.x, r.y, TERRA)
 
     /** The help, over the main screen: all dims but the day, the obol bar, the obols and the knob, and a note points at each. */
-    fun help(px: Pixels, layout: Layout, day: Int, obols: Double) {
+    fun help(px: Pixels, layout: Layout, day: Int, obols: Double, climbed: Double? = null) {
         val kx = layout.knobX + 0.5
         val ky = layout.knobY + 0.5
         val kr = layout.knobR + 6.0
@@ -299,13 +311,14 @@ class UiRenderer {
         val coins = layout.coinIcon
         val bar = layout.obolBar
         PixelFont.drawOutlined(px, "DAY $day", dayLabel.x + 1, dayLabel.y + 1, CREAM, SHADOW)
-        obolBar(px, bar, obols)
-        coins(px, coins, obols.toInt())
+        val shown = if (climbed != null) null else obols.toInt()
+        obolBar(px, bar, obols, climbed)
+        coins(px, coins, shown)
         helpButton(px, layout.helpIcon)
 
         // Each arrow runs down to its note, past the notes above it: the bar's note goes first, then the day's, then the obols'.
-        val obolsArrow = coins.right - PixelFont.width(min(obols.toInt(), 9999).toString()) - 6
-        val barNote = PixelFont.wrap("The bar fills up to the next obol.", layout.scene.w * 3 / 5)
+        val obolsArrow = coinOf(coins, shown) + 3
+        val barNote = PixelFont.wrap(barNote(climbed != null), layout.scene.w * 3 / 5)
         val barY = bar.bottom + 9
         for ((i, line) in barNote.withIndex()) {
             PixelFont.drawOutlined(px, line, bar.x + bar.w / 2 - PixelFont.width(line) / 2, barY + i * PixelFont.LINE_HEIGHT, CREAM, OUTLINE)
@@ -317,7 +330,7 @@ class UiRenderer {
         note(px, dayNote, dayLabel.x + 1, dayY, right = false)
         arrowUp(px, dayLabel.x + 6, dayLabel.bottom + 1, dayY - 3)
 
-        val obolsNote = PixelFont.wrap("Obols you earn by pushing. Tap them for the market.", layout.scene.w - 8)
+        val obolsNote = PixelFont.wrap(obolsNote(climbed != null), layout.scene.w - 8)
         val obolsY = dayY + dayNote.size * PixelFont.LINE_HEIGHT + 8
         note(px, obolsNote, coins.right, obolsY, right = true)
         arrowUp(px, obolsArrow, coins.bottom + 2, obolsY - 3)
