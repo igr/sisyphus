@@ -34,6 +34,12 @@ class QuotesTest {
     }
 
     @Test
+    fun everyQuoteIsThereOnce() {
+        val twice = QUOTES.groupBy { it.text }.filterValues { it.size > 1 }.keys
+        assertTrue(twice.isEmpty(), "twice: $twice")
+    }
+
+    @Test
     fun wrapKeepsAllWords() {
         val text = "The way up and the way down are one and the same."
         assertEquals(text, PixelFont.wrap(text, 60).joinToString(" "))
