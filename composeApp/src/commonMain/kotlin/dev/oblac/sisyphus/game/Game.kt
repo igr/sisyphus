@@ -289,6 +289,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
 
     fun buy(line: Line): Boolean {
         if (!shop.buy(line)) return false
+        if (shop.bought == 1) quotes.announce(GOAL)
         beginClimb()
         save()
         return true

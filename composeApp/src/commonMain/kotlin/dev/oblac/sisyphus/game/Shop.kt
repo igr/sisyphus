@@ -180,6 +180,9 @@ class Shop(
 
     fun tier(line: Line): Int = tiers.getValue(line)
 
+    /** How many items are bought, in all of the lines. */
+    val bought: Int get() = Line.entries.sumOf { tier(it) }
+
     /** All 15 items are bought: the final climb can begin. */
     val allBought get() = Line.entries.all { tier(it) == 3 }
 

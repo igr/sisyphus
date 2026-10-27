@@ -116,6 +116,13 @@ class ShopTest {
     }
 
     @Test
+    fun boughtCountsTheItemsOfEveryLine() {
+        assertEquals(0, Shop().bought)
+        assertEquals(3, Shop(mapOf(Line.ROCK to 2, Line.GODS to 1)).bought)
+        assertEquals(15, Shop(Line.entries.associateWith { 3 }).bought)
+    }
+
+    @Test
     fun helpersOnTheirOwnPushByTheHour() {
         assertEquals(0.0, Shop().helpersPerHour)
         assertNull(Shop().helper)

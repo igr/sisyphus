@@ -3,6 +3,7 @@ package dev.oblac.sisyphus
 import dev.oblac.sisyphus.game.CLIMB
 import dev.oblac.sisyphus.game.DAY_LENGTH
 import dev.oblac.sisyphus.game.FIRST_OBOL
+import dev.oblac.sisyphus.game.GOAL
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.Knob
 import dev.oblac.sisyphus.game.Line
@@ -214,6 +215,18 @@ class GameTest {
         game.resume()
         assertTrue(game.shop.obols.toInt() >= 2)
         assertEquals(listOf(game.shop.obols.toInt()), told)
+    }
+
+    /** The first purchase of a climb tells the goal: all 15 items bring the top in sight. */
+    @Test
+    fun theFirstPurchaseOfAClimbTellsTheGoal() {
+        val game = Game(MemoryStore(mapOf("obols" to 10.0)), seed = 1, wall = { 0.0 })
+        assertTrue(game.buy(Line.GODS))
+        assertSame(GOAL, game.quotes.quote)
+        assertTrue(PixelFont.wrap(GOAL.text, 119).size <= 3)
+        val later = Game(MemoryStore(mapOf("obols" to 10.0, "shop.rock" to 1.0)), seed = 1, wall = { 0.0 })
+        assertTrue(later.buy(Line.GODS))
+        assertFalse(later.quotes.quote === GOAL)
     }
 
     @Test

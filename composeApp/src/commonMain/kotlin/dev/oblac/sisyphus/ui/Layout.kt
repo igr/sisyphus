@@ -39,6 +39,9 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
 
     val agoraTitle = Rect(left + 2, coinIcon.y, coinIcon.right - left - 2, PixelFont.LINE_HEIGHT)
 
+    /** After the title of the Agora, how many of its items are bought, such as "3/15". */
+    val agoraCount = Rect(agoraTitle.x + PixelFont.width(AGORA_TITLE) + 6, agoraTitle.y, PixelFont.width("15/15"), PixelFont.CAP_HEIGHT)
+
     /**
      * In the display's bottom-right corner, the sidekick, the god and the blessing bought so far, outlined, in that order:
      * [slot] 0 is the corner, 1 is next to it, 2 is next to that.

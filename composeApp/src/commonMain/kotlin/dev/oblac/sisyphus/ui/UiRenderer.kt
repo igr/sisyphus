@@ -7,6 +7,7 @@ import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.Shop
 import dev.oblac.sisyphus.game.QuoteBox
+import dev.oblac.sisyphus.game.items
 import dev.oblac.sisyphus.gfx.PixelFont
 import dev.oblac.sisyphus.gfx.TRANSPARENT
 import dev.oblac.sisyphus.gfx.Pixels
@@ -139,6 +140,12 @@ private fun dim(c: Int) = rgb((c shr 16 and 0xFF) / 3, (c shr 8 and 0xFF) / 3, (
 private val BLACK = rgb(0x000000)
 
 /** The question before buying a world, and what the world costs: once, and the store's price when it has answered. */
+/** The title of the Agora. */
+internal const val AGORA_TITLE = "Agora Market"
+
+/** After the title of the Agora, how many of its items are bought, such as "3/15". */
+internal fun itemsBought(shop: Shop) = "${shop.bought}/${items(shop.place).size}"
+
 internal fun buyTitle(place: Place) = "Buy ${place.title}?"
 
 internal fun buyText(price: String?) = "You pay ${if (price == null) "" else "$price "}once, and the world is yours forever."
@@ -345,7 +352,8 @@ class UiRenderer {
     /** The Agora: what the obols can buy next, line by line, and the sound setting. */
     fun agora(px: Pixels, layout: Layout, shop: Shop, soundOn: Boolean, dev: Boolean = false, openWorlds: Boolean = false) {
         val t = layout.agoraTitle
-        PixelFont.draw(px, if (dev) "Dev" else "Agora Market", t.x, t.y, CREAM)
+        PixelFont.draw(px, if (dev) "Dev" else AGORA_TITLE, t.x, t.y, CREAM)
+        if (!dev) PixelFont.draw(px, itemsBought(shop), layout.agoraCount.x, layout.agoraCount.y, TERRA)
         px.hline(t.x, t.right - 1, t.bottom + 2, TERRA_DARK)
         if (dev) devScreen(px, layout, openWorlds) else for (line in Line.entries) row(px, layout.agoraRow(line.ordinal), line, shop)
         speaker(px, layout.agoraSound, soundOn)

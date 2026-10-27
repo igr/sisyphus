@@ -6,6 +6,7 @@ import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.game.Place
+import dev.oblac.sisyphus.game.Shop
 import dev.oblac.sisyphus.game.START_TIME
 import dev.oblac.sisyphus.game.SUN_CAP
 import dev.oblac.sisyphus.game.Weather
@@ -32,6 +33,7 @@ import dev.oblac.sisyphus.ui.SQUARE_OFFERED
 import dev.oblac.sisyphus.ui.buyText
 import dev.oblac.sisyphus.ui.buyTitle
 import dev.oblac.sisyphus.ui.itemIcon
+import dev.oblac.sisyphus.ui.itemsBought
 import dev.oblac.sisyphus.ui.worldPreview
 import kotlin.math.cos
 import kotlin.math.sin
@@ -165,6 +167,31 @@ class ScreenTest {
         assertEquals(listOf("offered", "later", "later"), squares(0))
         assertEquals(listOf("bought", "offered", "later"), squares(1))
         assertEquals(listOf("bought", "bought", "bought"), squares(3))
+    }
+
+    /** The title of the Agora counts the items bought, so that the 15 read as one goal. The dev screen has no count. */
+    @Test
+    fun theAgoraTitleCountsTheItemsBought() {
+        assertEquals("3/15", itemsBought(Shop(mapOf(Line.ROCK to 2, Line.GODS to 1))))
+        fun count(store: Map<String, Double>, dev: Boolean = false): List<Int> {
+            val s = Screen(Game(MemoryStore(store), seed = 1), seed = 2, dev = dev).apply { resize(1179, 2556, 177, 102) }
+            val l = s.layout!!
+            s.tap(l.coinIcon)
+            if (dev) s.tap(l.agoraTitle)
+            val px = s.render()
+            val r = l.agoraCount
+            return (r.y until r.bottom).flatMap { y -> (r.x until r.right).map { px[it, y] } }
+        }
+        val bought = mapOf("shop.rock" to 2.0, "shop.alone" to 1.0)
+        assertNotEquals(count(emptyMap()), count(bought))
+        assertEquals(count(emptyMap(), dev = true), count(bought, dev = true))
+    }
+
+    @Test
+    fun theCountOfTheAgoraFitsBeforeTheObolsOnTheSmallestPhone() {
+        val l = smallest().layout!!
+        assertTrue(PixelFont.width("15/15") <= l.agoraCount.w)
+        assertTrue(l.agoraCount.right + 2 <= l.coinIcon.x, "the count ends at ${l.agoraCount.right}, the obols start at ${l.coinIcon.x}")
     }
 
     @Test
