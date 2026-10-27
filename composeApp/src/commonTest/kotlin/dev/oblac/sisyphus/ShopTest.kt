@@ -1,9 +1,13 @@
 package dev.oblac.sisyphus
 
+import dev.oblac.sisyphus.game.FIRST_OBOL
 import dev.oblac.sisyphus.game.Line
+import dev.oblac.sisyphus.game.OBOL_SPREAD
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.Shop
+import dev.oblac.sisyphus.game.WORK_PER_OBOL
 import dev.oblac.sisyphus.game.items
+import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -63,13 +67,52 @@ class ShopTest {
     }
 
     @Test
-    fun workTurnsIntoObols() {
+    fun theFirstObolComesSoon() {
         val shop = Shop()
-        shop.addWork(720.0)
+        shop.addWork(FIRST_OBOL - 1)
+        assertEquals(0, shop.obols.toInt())
+        shop.addWork(1.0)
         assertEquals(1.0, shop.obols, 1e-9)
-        val blessed = Shop(tiers = mapOf(Line.BLESSING to 3))
-        blessed.addWork(216.0)
-        assertEquals(1.0, blessed.obols, 1e-9)
+    }
+
+    @Test
+    fun eachObolAfterTheFirstNeedsTheWorkPerObolGiveOrTakeHalfADay() {
+        for ((tiers, perObol) in listOf(emptyMap<Line, Int>() to WORK_PER_OBOL, mapOf(Line.BLESSING to 3) to 216.0)) {
+            val shop = Shop(tiers, obols = 1.0, random = Random(1))
+            val needs = List(200) {
+                shop.addWork(shop.nextObol)
+                shop.nextObol
+            }
+            assertEquals(201.0, shop.obols, 1e-6)
+            assertTrue(needs.all { it in perObol - OBOL_SPREAD..perObol + OBOL_SPREAD }, "$needs")
+            assertTrue(needs.min() < perObol - OBOL_SPREAD / 2 && needs.max() > perObol + OBOL_SPREAD / 2, "$needs")
+        }
+    }
+
+    @Test
+    fun workLeftOverGoesToTheNextObol() {
+        val shop = Shop(random = Random(1))
+        shop.addWork(FIRST_OBOL + 100)
+        assertEquals(1 + 100 / shop.nextObol, shop.obols, 1e-9)
+    }
+
+    @Test
+    fun aBlessingMakesTheNextObolSmallerAndKeepsWhatWasEarned() {
+        val shop = Shop(obols = 2.4, nextObol = 700.0)
+        assertTrue(shop.buy(Line.BLESSING))
+        assertEquals(0.4, shop.obols, 1e-9)
+        assertEquals(700.0 * 504 / 720, shop.nextObol, 1e-9)
+        val goat = Shop(obols = 1.4, nextObol = 700.0)
+        assertTrue(goat.buy(Line.GODS))
+        assertEquals(700.0, goat.nextObol, 1e-9)
+    }
+
+    @Test
+    fun onlyANewShopWaitsForTheFirstObol() {
+        assertEquals(FIRST_OBOL, Shop().nextObol)
+        assertEquals(WORK_PER_OBOL, Shop(obols = 3.5).nextObol)
+        assertEquals(216.0, Shop(mapOf(Line.BLESSING to 3), obols = 0.5).nextObol)
+        assertEquals(216.0, Shop(mapOf(Line.BLESSING to 3)).nextObol)
     }
 
     @Test

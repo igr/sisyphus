@@ -2,12 +2,15 @@ package dev.oblac.sisyphus
 
 import dev.oblac.sisyphus.game.CLIMB
 import dev.oblac.sisyphus.game.DAY_LENGTH
+import dev.oblac.sisyphus.game.FIRST_OBOL
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.Knob
 import dev.oblac.sisyphus.game.Line
+import dev.oblac.sisyphus.game.OBOL_SPREAD
 import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.START_TIME
+import dev.oblac.sisyphus.game.WORK_PER_OBOL
 import dev.oblac.sisyphus.game.Weather
 import dev.oblac.sisyphus.gfx.PixelFont
 import kotlin.math.PI
@@ -150,7 +153,7 @@ class GameTest {
     fun oneTurnEarnsItsShareOfAnObol() {
         val game = Game(seed = 1)
         game.turn(2 * PI)
-        assertEquals(1.0 / 720, game.shop.obols, 1e-4)
+        assertEquals(1.0 / FIRST_OBOL, game.shop.obols, 1e-4)
     }
 
     @Test
@@ -160,6 +163,44 @@ class GameTest {
         assertEquals(PX_PER_TURN * 1.5, game.effort, 0.5)
         assertEquals(PX_PER_TURN * 1.5, game.position, 0.5)
         assertEquals(6.0 / 720, game.shop.obols, 1e-3)
+    }
+
+    @Test
+    fun theWorkForTheNextObolIsSavedAsSoonAsTheObolComes() {
+        val store = MemoryStore(mapOf("shop.alone" to 3.0, "obols" to 0.99, "nextObol" to 700.0))
+        val game = Game(store, seed = 1, wall = { 0.0 })
+        assertEquals(700.0, game.shop.nextObol)
+        // Thanatos pushes the 7 turns that are left in 1050 seconds; the knob does not move.
+        repeat(1060) { game.update(1.0) }
+        assertEquals(1, game.shop.obols.toInt())
+        assertTrue(game.shop.nextObol in WORK_PER_OBOL - OBOL_SPREAD..WORK_PER_OBOL + OBOL_SPREAD)
+        assertEquals(game.shop.nextObol, store.load("nextObol"))
+        assertEquals(game.shop.nextObol, Game(store, seed = 2, wall = { 0.0 }).shop.nextObol)
+    }
+
+    @Test
+    fun aNewObolIsTold() {
+        val game = Game(MemoryStore(mapOf("obols" to 0.99, "nextObol" to 100.0)), seed = 1, wall = { 0.0 })
+        var coins = 0
+        game.onObol = { coins++ }
+        game.turn(4 * PI)
+        assertEquals(1, game.shop.obols.toInt())
+        assertEquals(1, coins)
+        game.addObols(10)
+        assertEquals(1, coins)
+    }
+
+    @Test
+    fun obolsThatCameWhileAwayAreToldOnReturn() {
+        var now = 0.0
+        val game = Game(MemoryStore(mapOf("shop.alone" to 3.0, "nextObol" to 100.0)), seed = 1, wall = { now })
+        var coins = 0
+        game.onObol = { coins++ }
+        game.pause()
+        now += 8 * 3600.0
+        game.resume()
+        assertEquals(1, game.shop.obols.toInt())
+        assertEquals(1, coins)
     }
 
     @Test
@@ -381,9 +422,9 @@ class GameTest {
         Game(store, seed = 1, wall = { now }).save()
         now += 365 * 24 * 3600.0
         val game = Game(store, seed = 1, wall = { now })
-        assertEquals(24 * 24 * 365.0 / 216, game.shop.obols, 1e-6)
+        assertEquals(24 * 24 * 365.0 / 216, game.shop.obols, 10.0)
         val q = game.quotes.quote
-        assertEquals("Hermes · 973 obols", q.author)
+        assertEquals("Hermes · ${game.shop.obols.toInt()} obols", q.author)
         assertTrue(PixelFont.wrap(q.text, 119).size <= 3)
         assertTrue(PixelFont.width("— ${q.author}") <= 119)
     }

@@ -34,6 +34,7 @@ private const val KEY_KNOB = "knob"
 private const val KEY_QUOTE_SEED = "quoteSeed"
 private const val KEY_QUOTES_DRAWN = "quotesDrawn"
 private const val KEY_OBOLS = "obols"
+private const val KEY_NEXT_OBOL = "nextObol"
 private const val KEY_SAVED_AT = "savedAt"
 private const val KEY_SUMMIT = "summit"
 private const val KEY_CLIMBS = "climbs"
@@ -169,7 +170,11 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     /** The world he pushes in. */
     var place = store.load(KEY_PLACE)?.toInt().let { id -> Place.entries.firstOrNull { it.id == id } } ?: Place.CORINTH
         private set
-    var shop = Shop(Line.entries.associateWith { store.load(shopKey(it))?.toInt() ?: 0 }, store.load(KEY_OBOLS) ?: 0.0, place)
+    private val random = Random(seed)
+    var shop = Shop(
+        Line.entries.associateWith { store.load(shopKey(it))?.toInt() ?: 0 }, store.load(KEY_OBOLS) ?: 0.0, place,
+        store.load(KEY_NEXT_OBOL)?.takeIf { it > 0 }, random,
+    )
         private set
 
     /** Where the hill ends, in pixels walked; null until all 15 items are bought and the final climb begins. */
@@ -185,6 +190,8 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     var quotes = QuoteBox(quoteSeed, drawn = store.load(KEY_QUOTES_DRAWN)?.toInt() ?: 0, firstTime = effort == 0.0)
         private set
     var onTick: () -> Unit = {}
+    /** New obols came: while the game runs, or for the time away. It is called once for the obols that come together. */
+    var onObol: () -> Unit = {}
 
     private var lastTick = floor(knob.angle / TICK_ANGLE).toInt()
     private var tickCooldown = 0.0
@@ -210,10 +217,9 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         summit?.let { if (position + moved >= it - 1e-6) moved = it - position }
         position += moved
         effort += moved
-        shop.addWork(turns * shop.bonus)
         val helped = if (pausedAt == null) shop.helpersPerHour * dt / 3600 else 0.0
         effort += helped * PX_PER_TURN
-        shop.addWork(helped)
+        earn(turns * shop.bonus + helped)
         if (moved != 0.0) dirty = true
         if (dt > 0) speed += (moved / dt - speed) * (1 - exp(-dt * 8))
         stillFor = if (moved > 1e-4) 0.0 else stillFor + dt
@@ -223,6 +229,15 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         if (quotes.drawn != drawn) dirty = true
         sinceSave += dt
         if (dirty && sinceSave > SAVE_EVERY) save()
+    }
+
+    /** Work fills the obols. A new obol is saved soon, with the work of the obol after it. */
+    private fun earn(work: Double) {
+        val before = floor(shop.obols)
+        shop.addWork(work)
+        if (floor(shop.obols) == before) return
+        dirty = true
+        onObol()
     }
 
     private fun tick(dt: Double) {
@@ -255,7 +270,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         val turns = shop.helpersPerHour * seconds / 3600
         val before = floor(shop.obols)
         effort += turns * PX_PER_TURN
-        shop.addWork(turns)
+        earn(turns)
         dirty = true
         if (turns < 1) return
         val gained = (floor(shop.obols) - before).toInt()
@@ -299,7 +314,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         position = 0.0
         effort = 0.0
         summit = null
-        shop = Shop(place = place)
+        shop = Shop(place = place, random = random)
         quotes = QuoteBox(quoteSeed, drawn = 0, firstTime = true)
         save()
     }
@@ -337,6 +352,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         store.save(KEY_QUOTE_SEED, quoteSeed.toDouble())
         store.save(KEY_QUOTES_DRAWN, quotes.drawn.toDouble())
         store.save(KEY_OBOLS, shop.obols)
+        store.save(KEY_NEXT_OBOL, shop.nextObol)
         store.save(KEY_SAVED_AT, pausedAt ?: wall())
         store.save(KEY_SUMMIT, summit ?: -1.0)
         store.save(KEY_CLIMBS, climbs.toDouble())

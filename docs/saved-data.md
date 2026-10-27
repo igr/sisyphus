@@ -22,6 +22,7 @@ The last two columns show what happens to each value when Sisyphus reaches the t
 | `position` | How far Sisyphus walked up the hill, in pixels. | Back to 0 | Back to 0 |
 | `knob` | The angle of the knob, in radians. | Kept | Kept |
 | `obols` | The obols, with the part of the next obol. | Back to 0 | Back to 0 |
+| `nextObol` | The work that the next obol needs, in turns. It is set when the obol before it comes. | Back to 180 | Back to 180 |
 | `shop.rock` | The tier bought in the Rock line: 0 to 3. | Back to 0 | Back to 0 |
 | `shop.beside` | The tier bought in the Sidekicks line: 0 to 3. | Back to 0 | Back to 0 |
 | `shop.alone` | The tier bought in the Gods line: 0 to 3. | Back to 0 | Back to 0 |
@@ -41,6 +42,7 @@ When a key is not there, the game uses a start value:
 - `summit`: no final climb.
 - `quoteSeed`: a random number.
 - `savedAt`: no time away.
+- `nextObol`: 180 in a new game. A game saved before there was this key keeps the work per obol of its blessing.
 - All other keys: 0.
 
 ## Ids that never change
@@ -58,7 +60,7 @@ A test fails when an id or a product changes. New lines and new worlds get new i
 
 The game saves all keys at these times:
 
-- Every second while something changes: the knob turns, or new wise words come.
+- Every second while something changes: the knob turns, an obol comes, or new wise words come.
 - When the app goes to the background, and when the desktop window closes.
 - After a purchase, after a dev screen button, at the top, and after a move to another world.
 

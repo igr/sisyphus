@@ -1,5 +1,8 @@
 package dev.oblac.sisyphus.game
 
+import kotlin.math.floor
+import kotlin.random.Random
+
 /**
  * The five lines of the shop, in the order the Agora shows them. Saved games know a line by its [id], which never changes:
  * the Sidekicks and the Gods keep the ids they had before they got these names.
@@ -24,8 +27,14 @@ class Item(
 /** However strong the rock and the helpers, the sun and the walk move at most this much faster. */
 const val SUN_CAP = 1.5
 
-/** Turns of work for one obol, before any blessing: 10 days of pushing. */
+/** Turns of work for one obol, before any blessing: 10 days of pushing, on average. */
 const val WORK_PER_OBOL = 720.0
+
+/** Turns of work for the first obol of a climb: two and a half days of pushing, so that the first item comes soon. */
+const val FIRST_OBOL = 180.0
+
+/** Each obol after the first needs the work per obol, give or take up to half a day, so that obols come at any time of the day. */
+const val OBOL_SPREAD = TURNS_PER_DAY / 2
 
 /** The items of Corinth. Their prices and effects hold in every world. */
 private val CORINTH_ITEMS = listOf(
@@ -144,12 +153,29 @@ fun items(place: Place): List<Item> = when (place) {
     Place.UNDERWORLD -> UNDERWORLD_ITEMS
 }
 
-/** What the player owns in [place], and their obols. Each line is bought in order; the newest item of a line sets its effect. */
-class Shop(tiers: Map<Line, Int> = emptyMap(), obols: Double = 0.0, val place: Place = Place.CORINTH) {
+/**
+ * What the player owns in [place], and their obols. Each line is bought in order; the newest item of a line sets its effect.
+ * [random] gives each obol after the first its work.
+ */
+class Shop(
+    tiers: Map<Line, Int> = emptyMap(),
+    obols: Double = 0.0,
+    val place: Place = Place.CORINTH,
+    nextObol: Double? = null,
+    private val random: Random = Random,
+) {
     private val tiers = Line.entries.associateWith { (tiers[it] ?: 0).coerceIn(0, 3) }.toMutableMap()
     private val stock = items(place)
 
+    /** The obols, and the part of the next obol that is earned. */
     var obols = obols
+        private set
+
+    /**
+     * The work that the next obol needs. It is set when the obol before it comes, and a blessing makes it smaller in step.
+     * Without it, a shop that has nothing yet waits for its first obol, and a shop saved before keeps the work per obol.
+     */
+    var nextObol = nextObol ?: if (obols == 0.0 && Line.entries.all { tier(it) == 0 }) FIRST_OBOL else workPerObol
         private set
 
     fun tier(line: Line): Int = tiers.getValue(line)
@@ -162,8 +188,10 @@ class Shop(tiers: Map<Line, Int> = emptyMap(), obols: Double = 0.0, val place: P
     fun buy(line: Line): Boolean {
         val item = next(line) ?: return false
         if (obols < item.price) return false
+        val perObol = workPerObol
         obols -= item.price
         tiers[line] = item.tier
+        nextObol *= workPerObol / perObol
         return true
     }
 
@@ -172,8 +200,20 @@ class Shop(tiers: Map<Line, Int> = emptyMap(), obols: Double = 0.0, val place: P
     val workPerObol: Double get() = owned(Line.BLESSING)?.effect ?: WORK_PER_OBOL
     val helper: Item? get() = owned(Line.GODS)
 
+    /** The work fills the next obol. When it comes, the rest of the work goes to the obol after it. */
     fun addWork(turns: Double) {
-        obols += turns / workPerObol
+        var work = turns
+        while (work > 0) {
+            val whole = floor(obols) + 1
+            val left = (whole - obols) * nextObol
+            if (work < left) {
+                obols += work / nextObol
+                return
+            }
+            work -= left
+            obols = whole
+            nextObol = workPerObol + random.nextDouble(-OBOL_SPREAD, OBOL_SPREAD)
+        }
     }
 
     /** For dev builds: adds [obols], or takes them away, but never below zero. */

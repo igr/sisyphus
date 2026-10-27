@@ -2,6 +2,7 @@ package dev.oblac.sisyphus
 
 import dev.oblac.sisyphus.audio.SAMPLE_RATE
 import dev.oblac.sisyphus.audio.loadClick
+import dev.oblac.sisyphus.audio.loadCoin
 import dev.oblac.sisyphus.audio.loadFanfare
 import dev.oblac.sisyphus.audio.loadUi
 import dev.oblac.sisyphus.audio.loadWin
@@ -35,5 +36,12 @@ class SoundFileTest {
         val fanfare = runBlocking { loadFanfare() }
         assertTrue(fanfare.take(SAMPLE_RATE / 1000).any { abs(it) > 0.01f })
         assertTrue(fanfare.size in 2 * SAMPLE_RATE..5 * SAMPLE_RATE, "${fanfare.size} samples")
+    }
+
+    @Test
+    fun theCoinRingsWithinTenMillisecondsAndEndsWithinThreeSeconds() {
+        val coin = runBlocking { loadCoin() }
+        assertTrue(coin.take(SAMPLE_RATE / 100).any { abs(it) > 0.1f })
+        assertTrue(coin.size in SAMPLE_RATE / 2..3 * SAMPLE_RATE, "${coin.size} samples")
     }
 }

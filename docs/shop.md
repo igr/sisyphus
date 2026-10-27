@@ -33,8 +33,10 @@ Obols come from **work**:
 
 - One turn of the knob is 1 unit of work, multiplied by the bonus from the rock and the helper beside him (1× to 6×).
 - Helpers that push on their own add their own work every hour.
-- 720 units of work earn 1 obol. That is 10 days of pushing (a day is 72 turns).
-- Blessings lower the work per obol (see the shop). The fraction of the next obol is kept and saved.
+- The first obol of a climb needs 180 units of work: two and a half days of pushing. Thus the first item comes soon.
+- Each obol after it needs 720 units of work, plus or minus up to 36 (half a day). On average, that is 10 days of pushing (a day is 72 turns). Because each obol is a little shorter or longer, obols come at all times of the day, not always at the same hour.
+- The work for the next obol is set when the obol before it comes, and it is saved.
+- Blessings lower the work per obol (see the shop). A blessing also makes the next obol smaller in the same proportion. The part of the next obol that is earned is kept.
 
 ## The shop
 
@@ -54,6 +56,7 @@ All 15 items cost 87 obols together. In work per obol, the blessings are 504 (He
 
 - **The Agora Market.** The shop is a full screen, named after the Greek marketplace. The obol count sits in the top-right corner of the display, across from the day. Tapping it opens the Agora Market: the five lines, and the sound setting at the bottom. The count stays in the same place there, and tapping it again closes the market. Items you cannot afford yet show a gray price and do nothing. Tapping an item you can afford opens an offer: its picture, what it does, and Yes or No. Yes buys it, with a short fanfare. The speaker leaves the main screen.
 - **The obol bar.** Between the day and the obols, a small bar fills up with bronze as the next obol comes, and empties when it is there. It has only a thin border, so the sky shows through its empty part. The help points at it.
+- **The coin.** A coin rings when an obol comes, unless the sound is off. It also rings when the game comes back from the background with obols that the gods earned.
 - **Rocks.** Each rock looks different: the river stone smooth and grey, the pumice light and full of small holes, the sphere of Daedalus perfectly round and polished.
 - **Helpers and blessings** are not drawn on the hill. Their pictures stand side by side in the bottom-right corner of the display: the sidekick, the god, and the blessing in the corner itself.
 - **Dolphins** jump in the sea now and then.
@@ -71,20 +74,20 @@ All 15 items cost 87 obols together. In work per obol, the blessings are 504 (He
 
 ## How long it takes
 
-Simulation, assuming one knob turn per second while the player plays. "Top reached" adds the final climb.
+Simulation, assuming one knob turn per second while the player plays, and the average work for each obol. "Top reached" adds the final climb.
 
 | Daily play | First item | All 15 | Longest wait between items | Top reached |
 |---|---|---|---|---|
-| 2 minutes | Day 6 | Day 66 | 6 days | Day 84 |
-| 5 minutes | Day 3 | Day 37 | 3 days | Day 44 |
-| 10 minutes | Day 2 | Day 22 | 2 days | Day 26 |
-| 30 minutes | Day 1 | Day 9 | 1 day | Day 11 |
+| 2 minutes | Day 2 | Day 59 | 6 days | Day 77 |
+| 5 minutes | Day 1 | Day 33 | 3 days | Day 40 |
+| 10 minutes | Day 1 | Day 19 | 2 days | Day 23 |
+| 30 minutes | Day 1 | Day 7 | 1 day | Day 9 |
 
 Non-stop play is allowed: at one turn a second, about 4 hours of turning buys everything.
 
-Turning speed matters too: at 5 minutes a day, a slow turner (30 turns a minute) buys everything on day 58, a fast one (90 a minute) on day 28.
+Turning speed matters too: at 5 minutes a day, a slow turner (30 turns a minute) buys everything on day 54, a fast one (90 a minute) on day 25.
 
-Order of purchases at 5 minutes a day, buying the cheapest affordable item: Goat, River stone, Hermes, Merope, Dolphins, Pan, Pumice, Tyche, Bellerophon, Pegasus, Thanatos, Sphere, Heracles, Plutus, Pleiades.
+Order of purchases at 5 minutes a day, buying the cheapest affordable item: Goat, River stone, Hermes, Merope, Dolphins, Pan, Pumice, Bellerophon, Tyche, Pegasus, Thanatos, Sphere, Heracles, Plutus, Pleiades.
 
 ## Left to the builder
 
