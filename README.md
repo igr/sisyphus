@@ -46,6 +46,8 @@ The stores sell each world as a product of the same name, except Google Play, wh
   `SisyphusApp.swift` and `MainActivity.kt` set `testStore` only in debug builds.
 - The keys are public. The Test Store key is in `RevenueCatBilling.kt`, the store keys in `RevenueCatBilling.android.kt`
   and `RevenueCatBilling.ios.kt`.
+- Support: the Worlds screen shows the end of the player's RevenueCat id, and a tap copies all of it.
+  Find the player in the RevenueCat dashboard by that id.
 - The RevenueCat CLI `rc` shows and changes the products: `rc products list`, `rc offerings verify`.
   `rc setup apple app7651e8d161` and `rc setup google app62a1b9ad7a` connect the stores, with two-factor sign-in.
 

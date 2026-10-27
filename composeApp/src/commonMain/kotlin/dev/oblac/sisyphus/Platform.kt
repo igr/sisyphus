@@ -28,6 +28,8 @@ interface Billing {
     fun buy(place: Place, done: (Boolean) -> Unit)
     /** Asks the store for the worlds bought before: on another phone, or before the game was installed again. */
     fun restore(done: () -> Unit)
+    /** The player's id at the store's service, which support can look up; null where there is no store. */
+    val userId: String? get() = null
 }
 
 /** On the desktop there is no store: every world is open. */
@@ -102,7 +104,7 @@ fun Sound.play(touch: Touch, on: Boolean) {
         Touch.KNOB -> prepare()
         Touch.BUY -> win()
         Touch.MOVE -> fanfare()
-        Touch.SOUND, Touch.SHOP, Touch.DEV, Touch.HELP, Touch.AGAIN, Touch.WORLDS -> ui()
+        Touch.SOUND, Touch.SHOP, Touch.DEV, Touch.HELP, Touch.AGAIN, Touch.WORLDS, Touch.COPY -> ui()
     }
 }
 

@@ -130,6 +130,12 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     /** In the bottom-left corner of the Worlds screen, the button that asks the store for the worlds bought before. */
     val restore = Rect(left + 2, agoraSound.y, PixelFont.width(RESTORE), PixelFont.CAP_HEIGHT)
 
+    /** In the bottom-right corner of the Worlds screen, across from Restore, the player's id for support. A tap copies it. */
+    /** On the Worlds screen, after its title, the version and the build of the game, such as "v1.2 (41)". */
+    val version = Rect(agoraTitle.x + PixelFont.width(WORLDS_TITLE) + 6, agoraTitle.y, PixelFont.width("v9.99 (999)"), PixelFont.CAP_HEIGHT)
+
+    val supportId = PixelFont.width("ID 3f9a").let { w -> Rect(coinIcon.right - w, agoraSound.y, w, PixelFont.CAP_HEIGHT) }
+
     val knobX: Int
     val knobY: Int
     val knobR: Int

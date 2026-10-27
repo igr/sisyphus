@@ -21,7 +21,7 @@ class SoundTest {
         val sound = Recorder()
         sound.tick(on = true)
         for (touch in Touch.entries) sound.play(touch, on = true)
-        assertEquals(listOf("click", "prepare", "ui", "ui", "win", "ui", "ui", "ui", "ui", "fanfare"), sound.played)
+        assertEquals(listOf("click", "prepare", "ui", "ui", "win", "ui", "ui", "ui", "ui", "fanfare", "ui"), sound.played)
     }
 
     @Test

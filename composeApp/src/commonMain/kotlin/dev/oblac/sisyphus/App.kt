@@ -33,7 +33,13 @@ private const val BUSY_FRAME = 14_000_000L
 private const val IDLE_FRAME = 31_000_000L
 
 @Composable
-fun SisyphusApp(game: Game, haptics: Haptics = NoHaptics, sound: Sound = Silence, screen: Screen = remember(game) { Screen(game) }) {
+fun SisyphusApp(
+    game: Game,
+    haptics: Haptics = NoHaptics,
+    sound: Sound = Silence,
+    screen: Screen = remember(game) { Screen(game) },
+    copy: (String) -> Unit = {},
+) {
     val uploader = remember { frameUploader() }
     var frame by remember { mutableLongStateOf(0L) }
 
@@ -78,6 +84,7 @@ fun SisyphusApp(game: Game, haptics: Haptics = NoHaptics, sound: Sound = Silence
                     val down = awaitFirstDown()
                     val touch = screen.press(down.position.x, down.position.y)
                     sound.play(touch, game.soundOn)
+                    if (touch == Touch.COPY) screen.supportId?.let(copy)
                     when (touch) {
                         Touch.NONE -> return@awaitEachGesture
                         Touch.KNOB -> haptics.prepare()

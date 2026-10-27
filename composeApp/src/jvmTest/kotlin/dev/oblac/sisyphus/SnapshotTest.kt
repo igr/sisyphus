@@ -216,11 +216,12 @@ class SnapshotTest {
         val notBought = object : Billing {
             override fun owns(place: Place) = place.product == null
             override fun price(place: Place) = "$0.99"
+            override val userId = "\$RCAnonymousID:9c4e2b7a51d84f0e8a3b6c2d1f7e3f9a"
             override fun buy(place: Place, done: (Boolean) -> Unit) {}
             override fun restore(done: () -> Unit) {}
         }
         for ((name, size) in listOf("11-locked" to listOf(1179, 2556, 177, 102), "11-locked-small" to listOf(1080, 2340, 144, 102))) {
-            val s = Screen(Game(MemoryStore(mapOf("effort" to effortAt(3, 0.4))), seed = 3), seed = 5, billing = notBought)
+            val s = Screen(Game(MemoryStore(mapOf("effort" to effortAt(3, 0.4))), seed = 3), seed = 5, billing = notBought, version = "1.2 (41)")
             s.resize(size[0], size[1], size[2], size[3])
             val l = s.layout!!
             fun tap(r: Rect) = s.press((r.x + r.w / 2f) * s.scale + s.offsetX, (r.y + r.h / 2f) * s.scale + s.offsetY)

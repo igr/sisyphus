@@ -25,9 +25,9 @@ import kotlin.random.Random
 
 /**
  * What a finger touched. [LIST] is a finger on the list of worlds: a drag scrolls it, and a tap chooses a world when the finger lifts.
- * [MOVE] is the Yes that goes to another world.
+ * [MOVE] is the Yes that goes to another world. [COPY] copies the player's id for support.
  */
-enum class Touch { NONE, KNOB, SOUND, SHOP, BUY, DEV, HELP, AGAIN, WORLDS, LIST, MOVE }
+enum class Touch { NONE, KNOB, SOUND, SHOP, BUY, DEV, HELP, AGAIN, WORLDS, LIST, MOVE, COPY }
 
 /** New obols on the main screen: how many came together, and the seconds since. */
 class Gain(val obols: Int, val age: Double)
@@ -41,6 +41,9 @@ private const val TOUCH_SLOP = 6
 /** A finger on a list that moves less than this, in virtual pixels, taps; more scrolls. */
 private const val TAP_SLOP = 3f
 
+/** Seconds that the Worlds screen says "Copied" after a tap copied the player's id. */
+private const val COPIED_FOR = 2.0
+
 /** A coasting list slows down by this much a second, like the knob. */
 private const val LIST_FRICTION = 3.0
 
@@ -49,9 +52,15 @@ private const val STOP_SPEED = 20.0
 
 /**
  * Owns the framebuffer and maps real screen pixels to virtual ones.
- * Platform code only forwards touches and shows [pixels].
+ * Platform code only forwards touches and shows [pixels]. The Worlds screen shows [version], the version and the build of the app.
  */
-class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Boolean = false, private val billing: Billing = NoBilling) {
+class Screen(
+    val game: Game,
+    seed: Int = Random.nextInt(),
+    private val dev: Boolean = false,
+    private val billing: Billing = NoBilling,
+    private val version: String? = null,
+) {
     var scale = 1
         private set
     var offsetX = 0
@@ -104,6 +113,11 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
     var ending: Ending? = null
         private set
 
+    /** The player's id at the store's service: a tap on the Worlds screen copies it, for support. Null without a store. */
+    val supportId: String? get() = billing.userId
+    /** Seconds that the Worlds screen still says that the id is copied. */
+    private var copied = 0.0
+
     /** New obols that just came: the coin of the count glints, and their number rises under the count and fades. */
     var gain: Gain? = null
         private set
@@ -154,6 +168,7 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
         geo?.top = game.summit?.let { floor(it).toInt() }
         game.update(dt)
         gain = gain?.let { Gain(it.obols, it.age + dt) }?.takeIf { it.age < GAIN_TIME }
+        copied = max(0.0, copied - dt)
         val end = ending ?: if (game.atTop) Ending().also { ending = it } else null
         if (end != null) {
             val black = end.time >= Ending.BLACK_AT
@@ -182,8 +197,9 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
             ui.agora(pixels, l, game.shop, game.soundOn, devOpen, openWorlds)
             offer?.let { game.shop.next(it) }?.let { ui.offer(pixels, l, it) }
         } else if (worldsOpen) {
-            ui.worlds(pixels, l, game.place, worldsScroll, worlds)
+            ui.worlds(pixels, l, game.place, worldsScroll, worlds, version)
             if (canRestore) ui.restore(pixels, l.restore, restoring)
+            supportId?.let { ui.supportId(pixels, l.supportId, it, copied > 0) }
             moving?.let { ui.confirm(pixels, l, it) }
             buying?.let { ui.buy(pixels, l, it, billing.price(it), paying) }
         } else {
@@ -332,6 +348,10 @@ class Screen(val game: Game, seed: Int = Random.nextInt(), private val dev: Bool
             restoring = true
             billing.restore { restoring = false }
             return Touch.WORLDS
+        }
+        if (supportId != null && l.supportId.near(x, y, TOUCH_SLOP)) {
+            copied = COPIED_FOR
+            return Touch.COPY
         }
         if (!l.worldList.near(x, y, 0)) return Touch.NONE
         drag = ListDrag(x, y, listScroll, stopped = abs(listSpeed) > STOP_SPEED)

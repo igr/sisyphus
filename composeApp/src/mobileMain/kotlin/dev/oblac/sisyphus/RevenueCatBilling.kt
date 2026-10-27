@@ -44,6 +44,8 @@ class RevenueCatBilling(testStore: Boolean) : Billing {
         withPackages {}
     }
 
+    override val userId: String get() = Purchases.sharedInstance.appUserID
+
     override fun owns(place: Place) = place.product.let { it == null || it in owned }
 
     override fun price(place: Place) =

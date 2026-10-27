@@ -149,6 +149,12 @@ private fun dim(c: Int) = rgb((c shr 16 and 0xFF) / 3, (c shr 8 and 0xFF) / 3, (
 private val BLACK = rgb(0x000000)
 
 /** The question before buying a world, and what the world costs: once, and the store's price when it has answered. */
+/** The player's id for support, as the Worlds screen shows it: "ID" and its last characters. A tap copies all of it. */
+internal fun supportTag(id: String) = "ID " + id.takeLast(4)
+
+/** The title of the Worlds screen. */
+internal const val WORLDS_TITLE = "Worlds"
+
 /** The title of the Agora. */
 internal const val AGORA_TITLE = "Agora Market"
 
@@ -297,6 +303,12 @@ class UiRenderer {
     /** A helper bought in the Agora, with a dark outline, so it shows on any ground. */
     fun helper(px: Pixels, r: Rect, item: Item) = px.draw(outlined.getOrPut(item) { itemIcon(item).outlined(SHADOW) }, r.x, r.y)
 
+    /** The player's id for support, at the right of [r], or "Copied" just after a tap copied it. */
+    fun supportId(px: Pixels, r: Rect, id: String, copied: Boolean) {
+        val text = if (copied) "Copied" else supportTag(id)
+        PixelFont.draw(px, text, r.right - PixelFont.width(text), r.y, if (copied) TERRA_LIGHT else DISABLED)
+    }
+
     fun helpButton(px: Pixels, r: Rect) = PixelFont.draw(px, "(?)", r.x, r.y, TERRA)
 
     /** The help, over the main screen: all dims but the day, the obol bar, the obols and the knob, and a note points at each. */
@@ -418,9 +430,10 @@ class UiRenderer {
      * and the worlds not bought yet locked, with their price.
      * The list is drawn on a sheet of its own, so that it scrolls by [scroll] and its edges cut clean.
      */
-    fun worlds(px: Pixels, layout: Layout, here: Place, scroll: Int, billing: Billing) {
+    fun worlds(px: Pixels, layout: Layout, here: Place, scroll: Int, billing: Billing, version: String? = null) {
         val t = layout.agoraTitle
-        PixelFont.draw(px, "Worlds", t.x, t.y, CREAM)
+        PixelFont.draw(px, WORLDS_TITLE, t.x, t.y, CREAM)
+        version?.let { PixelFont.draw(px, "v$it", layout.version.x, layout.version.y, DISABLED) }
         px.hline(t.x, t.right - 1, t.bottom + 2, TERRA_DARK)
         val list = layout.worldList
         val sheet = worldSheet?.takeIf { it.width == list.w && it.height == list.h } ?: Pixels(list.w, list.h).also { worldSheet = it }

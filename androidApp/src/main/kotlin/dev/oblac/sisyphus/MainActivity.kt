@@ -21,7 +21,10 @@ class MainActivity : ComponentActivity() {
             hide(WindowInsetsCompat.Type.systemBars())
         }
         volumeControlStream = AudioManager.STREAM_MUSIC
-        sisyphus = SisyphusController(this, window.decorView, dev = BuildConfig.DEBUG || BuildConfig.BETA, testStore = BuildConfig.DEBUG)
+        sisyphus = SisyphusController(
+            this, window.decorView, dev = BuildConfig.DEBUG || BuildConfig.BETA, testStore = BuildConfig.DEBUG,
+            version = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
+        )
         setContent { sisyphus.Content() }
         onBackPressedDispatcher.addCallback(this) {
             if (sisyphus.back()) return@addCallback

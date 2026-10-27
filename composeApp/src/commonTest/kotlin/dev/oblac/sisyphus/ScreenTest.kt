@@ -34,12 +34,14 @@ import dev.oblac.sisyphus.ui.Rect
 import dev.oblac.sisyphus.ui.SQUARE_BOUGHT
 import dev.oblac.sisyphus.ui.SQUARE_LATER
 import dev.oblac.sisyphus.ui.SQUARE_OFFERED
+import dev.oblac.sisyphus.ui.WORLDS_TITLE
 import dev.oblac.sisyphus.ui.barNote
 import dev.oblac.sisyphus.ui.buyText
 import dev.oblac.sisyphus.ui.buyTitle
 import dev.oblac.sisyphus.ui.itemIcon
 import dev.oblac.sisyphus.ui.itemsBought
 import dev.oblac.sisyphus.ui.obolsNote
+import dev.oblac.sisyphus.ui.supportTag
 import dev.oblac.sisyphus.ui.worldPreview
 import kotlin.math.cos
 import kotlin.math.sin
@@ -477,6 +479,62 @@ class ScreenTest {
 
     private val allBought = Line.entries.associate { "shop." + it.id to 3.0 }
 
+    /** On the Worlds screen, across from Restore, the player's id for support: its last characters. A tap copies the whole id. */
+    @Test
+    fun theWorldsScreenShowsTheSupportIdAndATapCopiesIt() {
+        val billing = FakeBilling()
+        val s = Screen(Game(MemoryStore(), seed = 1), seed = 2, billing = billing).apply { resize(1179, 2556, 177, 102) }
+        val l = s.layout!!
+        s.tap(l.dayLabel(s.game.day))
+        fun corner() = s.render().let { px -> (l.supportId.y until l.supportId.bottom).flatMap { y -> (l.supportId.x until l.supportId.right).map { px[it, y] } } }
+        val tag = corner()
+        assertEquals("ID cdef", supportTag(billing.userId))
+        assertEquals(Touch.COPY, s.tap(l.supportId))
+        assertEquals(billing.userId, s.supportId)
+        assertNotEquals(tag, corner())
+        s.update(3.0)
+        assertEquals(tag, corner())
+    }
+
+    /** After the title of the Worlds screen, the version and the build of the game. Without a version, nothing shows there. */
+    @Test
+    fun theWorldsScreenShowsTheVersion() {
+        fun shown(version: String?): List<Int> {
+            val s = Screen(Game(MemoryStore(), seed = 1), seed = 2, version = version).apply { resize(1179, 2556, 177, 102) }
+            val l = s.layout!!
+            s.tap(l.dayLabel(s.game.day))
+            val px = s.render()
+            return (l.version.y until l.version.bottom).flatMap { y -> (l.version.x until l.version.right).map { px[it, y] } }
+        }
+        assertNotEquals(shown(null), shown("1.2 (41)"))
+        assertNotEquals(shown("1.2 (41)"), shown("1.2 (42)"))
+    }
+
+    @Test
+    fun theVersionFitsBetweenTheTitleAndTheObolsOnTheSmallestPhone() {
+        val l = smallest().layout!!
+        assertTrue(l.version.x > l.agoraTitle.x + PixelFont.width(WORLDS_TITLE))
+        assertTrue(PixelFont.width("v9.99 (999)") <= l.version.w)
+        assertTrue(l.version.right + 2 <= l.coinIcon.x, "the version ends at ${l.version.right}, the obols start at ${l.coinIcon.x}")
+    }
+
+    @Test
+    fun withoutAStoreThereIsNoSupportId() {
+        val s = screen()
+        val l = s.layout!!
+        s.tap(l.dayLabel(s.game.day))
+        assertNull(s.supportId)
+        assertEquals(Touch.NONE, s.tap(l.supportId))
+    }
+
+    @Test
+    fun theSupportIdFitsBesideRestoreOnTheSmallestPhone() {
+        val l = smallest().layout!!
+        assertTrue(l.restore.right + 6 <= l.supportId.x, "Restore ends at ${l.restore.right}, the id starts at ${l.supportId.x}")
+        assertTrue(PixelFont.width("Copied") <= l.supportId.w)
+        assertEquals(l.coinIcon.right, l.supportId.right)
+    }
+
     /** In the final climb, a herm stands on the slope ahead of him: the scene changes only where it stands. */
     @Test
     fun aHermStandsOnTheSlopeAhead() {
@@ -747,6 +805,7 @@ class ScreenTest {
     /** A store that sells every world but [owned] for $0.99. A purchase waits in [pending] until the test answers for the player. */
     private class FakeBilling(vararg owned: Place) : Billing {
         private val owned = owned.toMutableSet()
+        override val userId = "\$RCAnonymousID:0123456789abcdef"
         var pending: ((Boolean) -> Unit)? = null
         var restores = 0
         override fun owns(place: Place) = place.product == null || place in owned
