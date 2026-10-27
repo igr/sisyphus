@@ -522,7 +522,40 @@ The table lists the 506 sayings added in October 2026, with the place in the sou
 | He is really wise who is nettled at nothing. | La Rochefoucauld | Reflections; or Sentences and Moral Maxims, no. 203, tr. J. W. Willis Bund and J. Hain Friswell (1871) |
 | If cheerfulness knocks at our door, we should throw it wide open. | Schopenhauer | The Wisdom of Life, ch. 2, tr. T. Bailey Saunders (1890) |
 
-The source texts:
+## Older sayings
+
+Before October 2026, the game had 83 real sayings. In October 2026, each one was compared with its source:
+
+- 22 had words that are not in the source, or the wrong author. The table gives their words now, and the source of these words.
+- 4 have no true source, so the game does not show them any more. "Difficulties strengthen the mind, as labor does the body" is not in Seneca. "It does not matter how slowly you go, as long as you do not stop" is not in Confucius. "If it's endurable, then endure it. Stop complaining" is from a translation of Marcus Aurelius from 2002. "Life can only be understood backwards; but it must be lived forwards" is a short form of a note by Kierkegaard, and no translation of this note is from before 1929.
+- The others did not change. They are word-for-word translations of short sayings, proverbs, and the words of later writers, such as Camus and Frost.
+
+| Saying | Author | Source | Before |
+|---|---|---|---|
+| You cannot step twice into the same rivers. | Heraclitus | John Burnet, Early Greek Philosophy, 2nd ed. (1908), fr. 41-42 | No man ever steps in the same river twice. |
+| That which is an obstacle on the road helps us on this road. | Marcus Aurelius | Meditations 5.20, tr. George Long (1862) | What stands in the way becomes the way. |
+| Very little indeed is necessary for living a happy life. | Marcus Aurelius | Meditations 7.67, tr. George Long (1862) | Very little is needed to make a happy life. |
+| Discourse no more of what a good man should be; but be one. | Marcus Aurelius | Meditations 10.16, tr. George W. Chrystal (1902) | Waste no more time arguing what a good man should be. Be one. |
+| Nothing great is produced suddenly, since not even the grape or the fig is. | Epictetus | Discourses 1.15, tr. George Long (1877) | No great thing is created suddenly. |
+| First say to yourself what you would be; and then do what you have to do. | Epictetus | Discourses 3.23, tr. Thomas Wentworth Higginson (1865) | First say what you would be; then do what you have to do. |
+| Well begun is half done. | Proverb | A Greek proverb: in Lucian, Hermotimus 3, tr. H. W. and F. G. Fowler (Oxford, 1905), Lycinus gives it to Hesiod | The same words, by Aristotle |
+| Happiness is thought to depend on leisure. | Aristotle | Aristotle, Nicomachean Ethics, tr. W. D. Ross (Oxford, 1925), 10.7 | Happiness depends upon ourselves. |
+| The beginning is the most important part of any work. | Plato | Plato, Republic 377a, tr. Benjamin Jowett (3rd ed., 1892) | The beginning is the most important part of the work. |
+| Slow but steady wins the race. | Aesop | Fables, "The Hare and the Tortoise" (moral), tr. George Fyler Townsend (1867) | Slow and steady wins the race. |
+| Adapt yourself to the things with which your lot has been cast. | Marcus Aurelius | Meditations 6.39, tr. George Long (1862) | Accept the things to which fate binds you. |
+| Such as are your habitual thoughts, such also will be the character of your mind. | Marcus Aurelius | Meditations 5.16, tr. George Long (1862) | Our life is what our thoughts make it. |
+| Men are disturbed not by things, but by the views which they take of things. | Epictetus | Encheiridion 5, tr. Thomas Wentworth Higginson (1865) | People are not disturbed by things, but by their view of them. |
+| The sun is new every day. | Heraclitus | John Burnet, Early Greek Philosophy, 2nd ed. (1908), fr. 32 | The sun is new each day. |
+| Cold things become warm, and what is warm cools. | Heraclitus | John Burnet, Early Greek Philosophy, 2nd ed. (1908), fr. 39 | Nothing endures but change. |
+| He who adds to what he has, will keep off bright-eyed hunger. | Hesiod | Works and Days, ll. 352-369, tr. Hugh G. Evelyn-White (1914) | Put a little upon a little, and soon it will become big. |
+| We should not spoil what we have by desiring what we have not. | Epicurus | Cyril Bailey, Epicurus: The Extant Remains (1926), Vatican Sayings 35 | Do not spoil what you have by desiring what you have not. |
+| It is the way of Heaven not to strive, and yet it skillfully overcomes. | Lao Tzu | Tao Teh King, ch. 73, tr. James Legge (1891) | Nature does not hurry, yet everything is accomplished. |
+| Even by the falling of water-drops a water-pot is filled. | Buddha | Dhammapada, verse 122, tr. F. Max Muller (1881) | Drop by drop is the water pot filled. |
+| Nature never hurries: atom by atom, little by little, she achieves her work. | Emerson | Society and Solitude (1870), 'Farming' | Adopt the pace of nature: her secret is patience. |
+| The higher we are placed, the more humbly should we walk. | Cicero | De Officiis, Book I, 90, tr. Walter Miller (Loeb, 1913) | The higher we are placed, the more humbly we should walk. |
+| He who overcomes others is strong; he who overcomes himself is mighty. | Lao Tzu | Tao Teh King, ch. 33, tr. James Legge (1891) | He who conquers others is strong; he who conquers himself is mighty. |
+
+## Source texts
 
 - http://classics.mit.edu/Aristotle/metaphysics.mb.txt
 - http://classics.mit.edu/Aristotle/nicomachaen.mb.txt
@@ -531,6 +564,8 @@ The source texts:
 - https://archive.org/download/BaileyTheGreekAtomistsAndEpicurusCropped/Bailey%20-%20The%20Greek%20Atomists%20and%20Epicurus_cropped_djvu.txt
 - https://archive.org/download/EpicurusTheExtantRemainsBaileyOxford1926_201309/Epicurus-the-Extant-Remains-Bailey-Oxford-1926_djvu.txt
 - https://archive.org/download/bwb_Y0-AHQ-764/bwb_Y0-AHQ-764_djvu.txt
+- https://archive.org/download/cicerodeofficiis0000walt_m8c4/cicerodeofficiis0000walt_m8c4_djvu.txt
+- https://archive.org/download/cu31924029001606/cu31924029001606_djvu.txt
 - https://archive.org/download/cu31924029002149/cu31924029002149_djvu.txt
 - https://archive.org/download/fastitristiapon00ovid/fastitristiapon00ovid_djvu.txt
 - https://archive.org/download/fastitristiapont00oviduoft/fastitristiapont00oviduoft_djvu.txt
@@ -604,6 +639,7 @@ The source texts:
 - https://www.gutenberg.org/cache/epub/62618/pg62618.txt
 - https://www.gutenberg.org/cache/epub/64576/pg64576.txt
 - https://www.gutenberg.org/cache/epub/652/pg652.txt
+- https://www.gutenberg.org/cache/epub/6585/pg6585.txt
 - https://www.gutenberg.org/cache/epub/67097/pg67097.txt
 - https://www.gutenberg.org/cache/epub/674/pg674.txt
 - https://www.gutenberg.org/cache/epub/6829/pg6829.txt
