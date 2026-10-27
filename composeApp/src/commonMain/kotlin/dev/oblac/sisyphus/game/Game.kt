@@ -9,6 +9,7 @@ import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.floor
 import kotlin.math.min
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
 /** How far Sisyphus walks, in pixels, for one full turn of the knob. */
@@ -19,11 +20,14 @@ const val DAY_LENGTH = PX_PER_TURN * TURNS_PER_DAY
 /** The first day starts just after sunrise. */
 const val START_TIME = 0.27
 
-/**
- * The final climb, in pixels walked: as much pushing as 7 days of 5 minutes, at one turn a second,
- * with everything bought, so at the fastest walk.
- */
-const val CLIMB = 7 * 5 * 60 * SUN_CAP * PX_PER_TURN
+/** Turns of the knob for the final climb, at the fastest walk: as much pushing as 3 days of 5 minutes, at one turn a second. */
+const val CLIMB_TURNS = 900
+
+/** A herm, the stone marker of Greek roads, stands by the path after every this many turns of the final climb. */
+const val MILESTONE_TURNS = 100
+
+/** The final climb, in pixels walked. Everything is bought by then, so he walks at the fastest. */
+const val CLIMB = CLIMB_TURNS * SUN_CAP * PX_PER_TURN
 
 private const val TICKS_PER_TURN = 24
 private const val TICK_ANGLE = 2 * PI / TICKS_PER_TURN
@@ -189,6 +193,11 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     /** How far the final climb has come: from 0 when it begins to 1 at the top; null before it begins. */
     val climbed: Double? get() = summit?.let { (1 - (it - position) / CLIMB).coerceIn(0.0, 1.0) }
 
+    /** Where the herms of the final climb stand, in pixels walked: one every [MILESTONE_TURNS], up to the top. None before the climb. */
+    val herms: List<Double>
+        get() = summit?.let { top -> (1 until CLIMB_TURNS / MILESTONE_TURNS).map { top - CLIMB + it * MILESTONE_TURNS * SUN_CAP * PX_PER_TURN } }
+            ?: emptyList()
+
     /** He stands on the top: the knob moves him no more. */
     val atTop get() = summit?.let { position >= it } == true
 
@@ -221,7 +230,9 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         val turns = if (atTop) 0.0 else abs(turn) / (2 * PI)
         moved = turns * min(shop.bonus, SUN_CAP) * PX_PER_TURN
         summit?.let { if (position + moved >= it - 1e-6) moved = it - position }
+        val from = position
         position += moved
+        passHerm(from)
         effort += moved
         val helped = if (pausedAt == null) shop.helpersPerHour * dt / 3600 else 0.0
         effort += helped * PX_PER_TURN
@@ -249,6 +260,14 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         if (gained == 0) return
         dirty = true
         onObol(gained)
+    }
+
+    /** As he passes a herm, Hermes says how far the top is. */
+    private fun passHerm(from: Double) {
+        val top = summit ?: return
+        val herm = herms.firstOrNull { it > from && it <= position } ?: return
+        val left = ((top - herm) / (SUN_CAP * PX_PER_TURN)).roundToInt()
+        quotes.announce(Quote("$left turns to the top.", "Hermes"))
     }
 
     private fun tick(dt: Double) {
@@ -306,7 +325,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     private fun beginClimb() {
         if (summit != null || !shop.allBought) return
         summit = position + CLIMB
-        quotes.announce(Quote("The top is in sight: seven more days of pushing.", "Hermes"))
+        quotes.announce(Quote("The top is in sight: three more days of pushing.", "Hermes"))
         dirty = true
     }
 

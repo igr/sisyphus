@@ -3,6 +3,10 @@ package dev.oblac.sisyphus
 import dev.oblac.sisyphus.game.DAY_LENGTH
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.Game
+import dev.oblac.sisyphus.game.PX_PER_TURN
+import dev.oblac.sisyphus.game.SUN_CAP
+import dev.oblac.sisyphus.game.MILESTONE_TURNS
+import dev.oblac.sisyphus.game.CLIMB
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.items
 import dev.oblac.sisyphus.game.START_TIME
@@ -115,6 +119,20 @@ class SnapshotTest {
         write(s.render(), "8-agora", 3)
         s.press((l.agoraTitle.x + 2f) * s.scale + s.offsetX, (l.agoraTitle.y + 2f) * s.scale + s.offsetY)
         write(s.render(), "8-dev", 3)
+    }
+
+    /** A herm of the final climb by the path ahead, in each world, at noon. */
+    @Test
+    fun herms() {
+        val bought = Line.entries.associate { "shop." + it.id to 3.0 }
+        for (place in Place.entries) {
+            val position = 20_000.0
+            val summit = position + 40 - MILESTONE_TURNS * SUN_CAP * PX_PER_TURN + CLIMB
+            val store = MemoryStore(bought + mapOf("effort" to effortAt(30, 0.5), "position" to position, "summit" to summit, "place" to place.id.toDouble()))
+            val s = Screen(Game(store, seed = 3), seed = 5).apply { resize(1179, 2556, 177, 102) }
+            val prefix = if (place == Place.CORINTH) "" else place.name.lowercase() + "-"
+            write(s.render(), "${prefix}10-herm", 3)
+        }
     }
 
     /** A new obol: the coin of the count glints, and "+1" rises under the count and fades. */

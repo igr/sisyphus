@@ -148,6 +148,7 @@ class SceneRenderer(private val geo: SceneGeometry) {
         }
         drawGround(px, atm, p, look)
         drawProps(px, atm, p, look.props)
+        drawHerms(px, atm, game, p)
         drawBirds(px, world, game.clock, look)
         if (game.place == Place.UNDERWORLD && beauty >= 3) drawLights(px, geo, atm, p, game.clock)
         drawRock(px, atm, game.position, look.rocks[game.shop.tier(Line.ROCK)], rolled)
@@ -389,6 +390,15 @@ class SceneRenderer(private val geo: SceneGeometry) {
             val x = slot * PROP_SLOT + (hash(slot, 1, 61) and 0x1F) - p + geo.heroX
             val top = geo.surfaceY(x, p) - (sprite.height - 1)
             px.draw(sprite, x - sprite.width / 2, top, flipX = hash(slot, 2, 61) < 0, light = atm.light)
+        }
+    }
+
+    /** The herms of the final climb, set into the slope where they stand: the base touches the ground at its lower, left end. */
+    private fun drawHerms(px: Pixels, atm: Atmosphere, game: Game, p: Int) {
+        for (herm in game.herms) {
+            val x = floor(herm).toInt() - p + geo.heroX - HERM.width / 2
+            if (x < -HERM.width || x > px.width) continue
+            px.draw(HERM, x, geo.surfaceY(x, p) - (HERM.height - 1), light = atm.light)
         }
     }
 

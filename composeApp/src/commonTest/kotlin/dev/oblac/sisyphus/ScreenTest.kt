@@ -5,6 +5,7 @@ import dev.oblac.sisyphus.game.DAY_LENGTH
 import dev.oblac.sisyphus.game.FIRST_OBOL
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.Line
+import dev.oblac.sisyphus.game.MILESTONE_TURNS
 import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.Shop
@@ -17,6 +18,7 @@ import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.gfx.TRANSPARENT
 import dev.oblac.sisyphus.gfx.rgb
 import dev.oblac.sisyphus.scene.Ending
+import dev.oblac.sisyphus.scene.HERM
 import dev.oblac.sisyphus.scene.SceneGeometry
 import dev.oblac.sisyphus.scene.SceneRenderer
 import dev.oblac.sisyphus.scene.World
@@ -474,6 +476,26 @@ class ScreenTest {
     }
 
     private val allBought = Line.entries.associate { "shop." + it.id to 3.0 }
+
+    /** In the final climb, a herm stands on the slope ahead of him: the scene changes only where it stands. */
+    @Test
+    fun aHermStandsOnTheSlopeAhead() {
+        val position = 5000.0
+        val step = MILESTONE_TURNS * SUN_CAP * PX_PER_TURN
+        fun scene(ahead: Double): Pixels {
+            val s = screen(MemoryStore(allBought + mapOf("position" to position, "summit" to position + ahead - step + CLIMB)))
+            val l = s.layout!!
+            return Pixels(l.scene.w, l.scene.h).also { SceneRenderer(SceneGeometry(l.scene.w, l.scene.h)).render(it, s.game, s.world, banner = 0.0, hud = false) }
+        }
+        val near = scene(50.0)
+        val far = scene(900.0)
+        val geo = SceneGeometry(near.width, near.height)
+        val x = geo.heroX + 50
+        val changed = (0 until near.height).flatMap { y -> (0 until near.width).filter { near[it, y] != far[it, y] }.map { it to y } }
+        assertTrue(changed.size > 20, "${changed.size} pixels")
+        assertTrue(changed.all { (cx, _) -> cx in x - 5..x + 5 }, "${changed.map { it.first }.distinct()}")
+        assertEquals(geo.surfaceY(x - HERM.width / 2, position.toInt()), changed.maxOf { it.second })
+    }
 
     /** During the final climb the corner shows only the coin, as the way into the Agora: no count, because obols stop coming. */
     @Test

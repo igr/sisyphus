@@ -212,6 +212,30 @@ val BUSH = Prop(
     weight = 10,
 )
 
+/** A herm: the stone marker of Greek roads, a pillar with the head of Hermes. One stands after every 100 turns of the final climb. */
+val HERM: Pixels = sprite(
+    PROP_COLORS,
+    """
+    ..wwW..
+    .wwwwW.
+    .wwwWW.
+    .wwWWW.
+    ..WWD..
+    ...wW..
+    wwwwWWW
+    .wwwWW.
+    .wwwW..
+    .wwwW..
+    .wwwW..
+    .wwwW..
+    .wwwW..
+    .wwwW..
+    .wwwW..
+    wwwwwWW
+    WWWWWWW
+    """,
+)
+
 /** The props of Corinth. */
 val PROPS = listOf(OLIVE, YOUNG_OLIVE, CYPRESS, STONE_PINE, POPLAR, ALMOND, LEMON, DEAD_TREE, COLUMN, BUSH)
 

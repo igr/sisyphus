@@ -7,10 +7,12 @@ import dev.oblac.sisyphus.game.GOAL
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.Knob
 import dev.oblac.sisyphus.game.Line
+import dev.oblac.sisyphus.game.MILESTONE_TURNS
 import dev.oblac.sisyphus.game.OBOL_SPREAD
 import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.START_TIME
+import dev.oblac.sisyphus.game.SUN_CAP
 import dev.oblac.sisyphus.game.WORK_PER_OBOL
 import dev.oblac.sisyphus.game.Weather
 import dev.oblac.sisyphus.gfx.PixelFont
@@ -326,6 +328,23 @@ class GameTest {
 
     private val allBought = Line.entries.associate { "shop." + it.id to 3.0 }
 
+    /** In the final climb, a herm stands by the path every 100 turns before the top. As he passes one, Hermes says how far the top is. */
+    @Test
+    fun hermsMarkEveryHundredTurnsOfTheClimbAndHermesCountsDown() {
+        val start = 1000.0
+        val game = Game(MemoryStore(allBought + mapOf("position" to start, "summit" to start + CLIMB)), seed = 1, wall = { 0.0 })
+        val step = MILESTONE_TURNS * SUN_CAP * PX_PER_TURN
+        assertEquals((1..8).map { start + it * step }, game.herms)
+        game.turn(99 * 2 * PI, step = 1.0)
+        assertFalse(game.quotes.quote.text.endsWith("turns to the top."))
+        game.turn(2 * 2 * PI, step = 1.0)
+        assertEquals("800 turns to the top.", game.quotes.quote.text)
+        assertEquals("Hermes", game.quotes.quote.author)
+        game.turn(100 * 2 * PI, step = 1.0)
+        assertEquals("700 turns to the top.", game.quotes.quote.text)
+        assertTrue(Game(seed = 1).herms.isEmpty())
+    }
+
     /** During the final climb there is nothing more to buy: obols stop coming, from the knob and from the gods. */
     @Test
     fun duringTheFinalClimbObolsStopComing() {
@@ -370,10 +389,13 @@ class GameTest {
         assertEquals(500.0 + CLIMB, game.summit!!, 1e-9)
     }
 
+    /** From the 15th purchase, the top is as much pushing as 3 days of 5 minutes away, at a turn a second. Hermes says so. */
     @Test
-    fun theTopIsSevenDaysOfFiveMinutesAway() {
-        val game = Game(MemoryStore(allBought), seed = 1, wall = { 0.0 })
-        game.turn((7 * 300 - 1) * 2 * PI)
+    fun theTopIsThreeDaysOfFiveMinutesAway() {
+        val game = Game(MemoryStore(allBought + mapOf("shop.beauty" to 2.0, "obols" to 20.0)), seed = 1, wall = { 0.0 })
+        assertTrue(game.buy(Line.BEAUTY))
+        assertEquals("The top is in sight: three more days of pushing.", game.quotes.quote.text)
+        game.turn((3 * 300 - 1) * 2 * PI)
         assertFalse(game.atTop)
         game.turn(2 * 2 * PI)
         assertTrue(game.atTop)
