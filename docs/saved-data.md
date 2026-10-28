@@ -33,6 +33,10 @@ The last two columns show what happens to each value when Sisyphus reaches the t
 | `place` | The id of the world: 0 is Corinth, 1 is Mount Etna, 2 is The Underworld. | Kept | The new world |
 | `quoteSeed` | The number that sets the order of the wise words. | Kept | Kept |
 | `quotesDrawn` | How many wise words came so far. | Back to 0 | Back to 0 |
+| `nextVision` | The player's own turns until the next vision. Set when a vision comes. | Kept | Kept |
+| `visionSeed` | The number that sets the order of the visions. | Kept | Kept |
+| `visionsDrawn` | How many visions came so far. | Kept | Kept |
+| `rightAnswers` | How many questions of the visions the player answered right. | Kept | Kept |
 | `sound` | 1 when the sound is on, 0 when it is off. | Kept | Kept |
 | `savedAt` | The time of the last save, in seconds since 1970. | Saved again | Saved again |
 
@@ -41,6 +45,8 @@ When a key is not there, the game uses a start value:
 - `sound`: on.
 - `summit`: no final climb.
 - `quoteSeed`: a random number.
+- `nextVision`: from 300 to 600 turns, at random, in a new game and in a game saved before the visions.
+- `visionSeed`: a random number.
 - `savedAt`: no time away.
 - `nextObol`: 180 in a new game. A game saved before there was this key counts the obols of its climb, the spent ones too: each of the first four needs 180, made smaller by a blessing. After them, an obol needs the work per obol of the blessing.
 - All other keys: 0.

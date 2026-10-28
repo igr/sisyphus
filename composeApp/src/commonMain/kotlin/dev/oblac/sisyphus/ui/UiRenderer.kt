@@ -7,6 +7,7 @@ import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.Shop
 import dev.oblac.sisyphus.game.QuoteBox
+import dev.oblac.sisyphus.game.Vision
 import dev.oblac.sisyphus.game.items
 import dev.oblac.sisyphus.gfx.PixelFont
 import dev.oblac.sisyphus.gfx.TRANSPARENT
@@ -122,6 +123,9 @@ private const val SQUARE = 4
 /** The light of the key during the final climb, as far as he has climbed. */
 internal val CLIMB_FILL = CREAM
 
+/** The thin line around the panel while a god asks in it. */
+internal val VOICE_FRAME = TERRA_DARK
+
 /** What the help says of the obols. During the final climb, obols stop coming, and the coin only opens the market. */
 internal fun obolsNote(climbing: Boolean) = if (climbing) "Tap the coin for the market." else "Obols you earn by pushing. Tap them for the market."
 
@@ -214,7 +218,9 @@ class UiRenderer {
         px.hline(x0, x0 + count * tile - 1, r.y + MEANDER.size + 1, TERRA_DARK)
     }
 
-    fun quote(px: Pixels, r: Rect, box: QuoteBox, clock: Double) {
+    /** The wise words. While a god asks in the panel, it is the [voice]: a thin line frames the panel, and the god's name is lighter. */
+    fun quote(px: Pixels, r: Rect, box: QuoteBox, clock: Double, voice: Boolean = false) {
+        if (voice) frame(px, Rect(r.x - 2, r.y - 1, r.w + 4, r.h + 2), VOICE_FRAME)
         val q = box.quote
         val lines = PixelFont.wrap(q.text, r.w - 4)
         val blockH = (lines.size + 1) * PixelFont.LINE_HEIGHT - 2
@@ -238,7 +244,7 @@ class UiRenderer {
         if (shown > 0) {
             val author = "— ${q.author}"
             val x = r.x + (r.w - PixelFont.width(author)) / 2
-            PixelFont.draw(px, author.take(2 + shown), x, y + 2, TERRA, box.fade)
+            PixelFont.draw(px, author.take(2 + shown), x, y + 2, if (voice) TERRA_LIGHT else TERRA, box.fade)
         }
         val typing = box.phase == QuoteBox.Phase.TYPING && cursorX >= 0
         if (typing && floor(clock * 4).toInt() % 2 == 0) px.fillRect(cursorX, cursorY, 3, PixelFont.CAP_HEIGHT, TERRA)
@@ -508,6 +514,10 @@ class UiRenderer {
         val worlds = layout.agoraRow(3)
         PixelFont.draw(px, "Worlds", worlds.x, worlds.y, TERRA)
         button(px, layout.devWorlds, if (openWorlds) "As bought" else "Open all")
+        val voices = layout.agoraRow(4)
+        PixelFont.draw(px, "Voices", voices.x, voices.y, TERRA)
+        button(px, layout.devVision, "Now")
+        button(px, layout.devNextVision, "Next turn")
     }
 
     private fun button(px: Pixels, r: Rect, label: String) {
@@ -601,6 +611,10 @@ class UiRenderer {
             arrow(px, kx, ky, r + 8.0, -0.45, 0.45)
             arrow(px, kx, ky, r + 8.0, PI - 0.45, PI + 0.45)
         }
+        if (game.vision?.phase == Vision.Phase.ASKING) {
+            arrow(px, kx, ky, r + 8.0, -PI / 2 - 0.95, -PI / 2 - 1.55, TERRA_LIGHT)
+            arrow(px, kx, ky, r + 8.0, -PI / 2 + 0.95, -PI / 2 + 1.55, TERRA_LIGHT)
+        }
     }
 
     /** The grip on the knob edge: grooves turn with the knob, the light stays put. */
@@ -624,21 +638,23 @@ class UiRenderer {
         return BRONZE[tone.coerceIn(1, 4)]
     }
 
-    private fun arrow(px: Pixels, kx: Double, ky: Double, r: Double, from: Double, to: Double) {
+    /** An arc around the knob from the angle [from] to [to], with its head at [to], pointing the way the angle goes. */
+    private fun arrow(px: Pixels, kx: Double, ky: Double, r: Double, from: Double, to: Double, color: Int = CREAM) {
         val steps = 18
         for (k in 0..steps) {
             val a = from + (to - from) * k / steps
-            dot(px, kx + cos(a) * r, ky + sin(a) * r, CREAM)
+            dot(px, kx + cos(a) * r, ky + sin(a) * r, color)
         }
+        val way = if (to >= from) 1.0 else -1.0
         val ex = kx + cos(to) * r
         val ey = ky + sin(to) * r
-        val tx = -sin(to)
-        val ty = cos(to)
+        val tx = -sin(to) * way
+        val ty = cos(to) * way
         val nx = cos(to)
         val ny = sin(to)
         for (k in 1..2) {
-            dot(px, ex - tx * k + nx * k, ey - ty * k + ny * k, CREAM)
-            dot(px, ex - tx * k - nx * k, ey - ty * k - ny * k, CREAM)
+            dot(px, ex - tx * k + nx * k, ey - ty * k + ny * k, color)
+            dot(px, ex - tx * k - nx * k, ey - ty * k - ny * k, color)
         }
     }
 

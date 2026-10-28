@@ -86,6 +86,12 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     /** In the dev screen, the button that opens every world without the store, and gives the store's answer back. */
     val devWorlds = agoraRow(3).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("As bought") + 8, BUTTON_HEIGHT) }
 
+    /** In the dev screen, under the voices, the button that brings a vision at once. */
+    val devVision = agoraRow(4).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("Now") + 8, BUTTON_HEIGHT) }
+
+    /** In the dev screen, next to Now, the button that brings a vision at the next click of the knob. */
+    val devNextVision = Rect(devVision.right + 2, devVision.y, PixelFont.width("Next turn") + 8, BUTTON_HEIGHT)
+
     private val offerHeight = 5 + OFFER_ICON + 5 + PixelFont.LINE_HEIGHT + 3 + OFFER_LINES * PixelFont.LINE_HEIGHT +
         4 + PixelFont.LINE_HEIGHT + 4 + BUTTON_HEIGHT + 5
 

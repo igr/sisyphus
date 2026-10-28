@@ -4,24 +4,30 @@ import dev.oblac.sisyphus.game.CLIMB
 import dev.oblac.sisyphus.game.DAY_LENGTH
 import dev.oblac.sisyphus.game.FIRST_OBOL
 import dev.oblac.sisyphus.game.Game
+import dev.oblac.sisyphus.game.God
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.MILESTONE_TURNS
 import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.game.Place
+import dev.oblac.sisyphus.game.Question
 import dev.oblac.sisyphus.game.Shop
 import dev.oblac.sisyphus.game.START_TIME
 import dev.oblac.sisyphus.game.SUN_CAP
+import dev.oblac.sisyphus.game.Vision
 import dev.oblac.sisyphus.game.Weather
 import dev.oblac.sisyphus.game.items
 import dev.oblac.sisyphus.gfx.PixelFont
 import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.gfx.TRANSPARENT
+import dev.oblac.sisyphus.gfx.luminance
 import dev.oblac.sisyphus.gfx.rgb
+import dev.oblac.sisyphus.scene.ANSWER
 import dev.oblac.sisyphus.scene.Ending
 import dev.oblac.sisyphus.scene.HERM
 import dev.oblac.sisyphus.scene.SceneGeometry
 import dev.oblac.sisyphus.scene.SceneRenderer
 import dev.oblac.sisyphus.scene.World
+import dev.oblac.sisyphus.scene.drawVision
 import dev.oblac.sisyphus.scene.lookOf
 import dev.oblac.sisyphus.ui.CLIMB_FILL
 import dev.oblac.sisyphus.ui.GAIN
@@ -34,6 +40,7 @@ import dev.oblac.sisyphus.ui.Rect
 import dev.oblac.sisyphus.ui.SQUARE_BOUGHT
 import dev.oblac.sisyphus.ui.SQUARE_LATER
 import dev.oblac.sisyphus.ui.SQUARE_OFFERED
+import dev.oblac.sisyphus.ui.VOICE_FRAME
 import dev.oblac.sisyphus.ui.WORLDS_TITLE
 import dev.oblac.sisyphus.ui.barNote
 import dev.oblac.sisyphus.ui.buyText
@@ -1139,4 +1146,141 @@ class ScreenTest {
     }
 
     private val allItems = Place.entries.flatMap { items(it) }
+
+    /** A screen whose vision asks: it came, its question is typed out, and the answers show. */
+    private fun asking(s: Screen = screen()): Screen {
+        s.game.summonVision()
+        repeat(600) { if (s.game.vision?.phase == Vision.Phase.COMING) s.update(1 / 60.0) }
+        assertEquals(Vision.Phase.ASKING, s.game.vision?.phase)
+        return s
+    }
+
+    @Test
+    fun aVoiceFramesThePanel() {
+        val s = screen()
+        val l = s.layout!!
+        fun edge() = s.render()[l.quote.x - 2, l.quote.y + 5]
+        assertNotEquals(VOICE_FRAME, edge())
+        s.game.summonVision()
+        repeat(180) { s.update(1 / 60.0) }
+        assertEquals(VOICE_FRAME, edge())
+    }
+
+    @Test
+    fun openingTheAgoraEndsTheVision() {
+        val s = asking()
+        s.tap(s.layout!!.coinIcon)
+        assertNull(s.game.vision)
+    }
+
+    @Test
+    fun openingTheHelpEndsTheVision() {
+        val s = asking()
+        s.tap(s.layout!!.helpIcon)
+        assertNull(s.game.vision)
+    }
+
+    @Test
+    fun openingTheWorldsEndsTheVision() {
+        val s = asking()
+        s.tap(s.layout!!.dayLabel(s.game.day))
+        assertTrue(s.worldsOpen)
+        assertNull(s.game.vision)
+    }
+
+    @Test
+    fun theDevScreenSummonsAVision() {
+        val s = devScreen()
+        s.openDev()
+        s.tap(s.layout!!.devVision)
+        assertNotNull(s.game.vision)
+        assertFalse(s.agoraOpen)
+        assertFalse(s.devOpen)
+    }
+
+    @Test
+    fun theDevScreenBringsAVisionOnTheNextTurn() {
+        val s = devScreen()
+        s.openDev()
+        s.tap(s.layout!!.devNextVision)
+        assertFalse(s.agoraOpen)
+        repeat(60) { s.update(1 / 60.0) }
+        assertNull(s.game.vision)
+        s.turnALittle()
+        assertNotNull(s.game.vision)
+    }
+
+    @Test
+    fun theVisionButtonsFitTheSmallestPhone() {
+        val l = smallest().layout!!
+        val row = l.agoraRow(4)
+        assertTrue(l.devVision.y > row.y && l.devNextVision.y == l.devVision.y)
+        assertTrue(l.devNextVision.x > l.devVision.right)
+        assertTrue(l.devNextVision.right <= row.right, "the buttons end at ${l.devNextVision.right}, the row at ${row.right}")
+    }
+
+    @Test
+    fun theVisionDarkensTheScene() {
+        val s = screen()
+        val l = s.layout!!
+        /** The light of the bottom third of the scene, away from the god. */
+        fun light(): Long {
+            val px = s.render()
+            return (l.scene.bottom - l.scene.h / 3 until l.scene.bottom).sumOf { y -> (l.scene.x until l.scene.right).sumOf { x -> luminance(px[x, y]).toLong() } }
+        }
+        val before = light()
+        s.game.summonVision()
+        repeat(90) { s.update(1 / 60.0) }
+        val after = light()
+        assertTrue(after < before * 0.6, "before $before, after $after")
+    }
+
+    @Test
+    fun theLongestAnswersFitTheSmallestPhone() {
+        val l = smallest().layout!!
+        /** The columns of the answer pixels when only [left], or only [right], stands in its corner. */
+        fun columns(left: String, right: String): List<Int> {
+            val px = Pixels(l.scene.w, l.scene.h).apply { clear(rgb(0x404040)) }
+            val v = Vision(Question(God.HERMES, "Who?", left, right, "Yes.", "No."), rightOnLeft = true)
+            v.update(1.0)
+            v.ask()
+            drawVision(px, v)
+            return (0 until px.height).flatMap { y -> (0 until px.width).filter { x -> px[x, y] == ANSWER } }
+        }
+        val left = columns("Marcus Aurelius", "")
+        val right = columns("", "Publilius Syrus")
+        assertTrue(left.isNotEmpty() && right.isNotEmpty())
+        assertTrue(left.min() > 0 && left.max() < l.scene.w / 2, "left answer from ${left.min()} to ${left.max()}")
+        assertTrue(right.min() >= l.scene.w / 2 && right.max() < l.scene.w - 1, "right answer from ${right.min()} to ${right.max()}")
+    }
+
+    @Test
+    fun theHelpersMakeRoomForTheAnswers() {
+        /** Where the answers of a vision that asks are drawn, with or without the three helpers in the corner of the scene. */
+        fun answers(store: Map<String, Double>): Set<Pair<Int, Int>> {
+            val s = asking(screen(MemoryStore(store)))
+            val l = s.layout!!
+            val px = s.render()
+            return (l.scene.y until l.scene.bottom).flatMap { y -> (l.scene.x until l.scene.right).filter { px[it, y] == ANSWER }.map { it to y } }.toSet()
+        }
+        assertEquals(answers(emptyMap()), answers(mapOf("shop.beside" to 3.0, "shop.alone" to 3.0, "shop.blessing" to 3.0)))
+    }
+
+    @Test
+    fun aCoastingKnobBringsNoVisionUnderTheAgora() {
+        val s = screen(MemoryStore(mapOf("nextVision" to 0.6)))
+        val game = s.game
+        var touch = 0.0
+        game.knob.grab(touch)
+        repeat(6) {
+            touch += 0.5
+            game.knob.drag(touch)
+            s.update(1 / 60.0)
+        }
+        game.knob.release()
+        s.tap(s.layout!!.coinIcon)
+        assertTrue(s.agoraOpen)
+        repeat(180) { s.update(1 / 60.0) }
+        assertNull(game.vision)
+    }
 }

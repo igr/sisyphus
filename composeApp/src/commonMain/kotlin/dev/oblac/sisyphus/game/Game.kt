@@ -43,6 +43,10 @@ private const val KEY_SAVED_AT = "savedAt"
 private const val KEY_SUMMIT = "summit"
 private const val KEY_CLIMBS = "climbs"
 private const val KEY_PLACE = "place"
+private const val KEY_NEXT_VISION = "nextVision"
+private const val KEY_VISION_SEED = "visionSeed"
+private const val KEY_VISIONS_DRAWN = "visionsDrawn"
+private const val KEY_RIGHT_ANSWERS = "rightAnswers"
 private const val SAVE_EVERY = 1.0
 
 /** How many clicks of the knob the dev screen leaves before the next obol. */
@@ -65,12 +69,22 @@ class Knob(angle: Double = 0.0) {
         private set
     var held = false
         private set
+    /** How many times a finger touched the knob. */
+    var grabs = 0
+        private set
     private var touch: Double? = null
     private var pending = 0.0
 
     fun grab(touchAngle: Double?) {
         held = true
+        grabs++
         touch = touchAngle
+        velocity = 0.0
+        pending = 0.0
+    }
+
+    /** The knob stops at once: it does not coast. */
+    fun stop() {
         velocity = 0.0
         pending = 0.0
     }
@@ -208,6 +222,21 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     /** New obols came, while the game runs or for the time away: it tells how many came together. */
     var onObol: (Int) -> Unit = {}
 
+    private val visionSeed = store.load(KEY_VISION_SEED)?.toInt() ?: seed
+    /** The gods who come as visions, and ask. Only the player's own turns bring them. */
+    val voices = Voices(
+        visionSeed, store.load(KEY_VISIONS_DRAWN)?.toInt() ?: 0, store.load(KEY_NEXT_VISION),
+        store.load(KEY_RIGHT_ANSWERS)?.toInt() ?: 0, random,
+    )
+    val vision: Vision? get() = voices.vision
+    /** A vision came. */
+    var onVision: () -> Unit = {}
+    /** The touches of the knob when the answers showed, and of the touch whose turn picks an answer. */
+    private var askedGrabs = 0
+    private var answerGrabs = 0
+    /** How far the newest touch turned the knob since the answers showed, in turns: plus is clockwise. */
+    private var answerTurn = 0.0
+
     private var lastTick = floor(knob.angle / TICK_ANGLE).toInt()
     private var tickCooldown = 0.0
     private var sinceSave = 0.0
@@ -227,7 +256,8 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     fun update(dt: Double) {
         clock += dt
         val turn = knob.update(dt)
-        val turns = if (atTop) 0.0 else abs(turn) / (2 * PI)
+        val held = vision?.let { it.phase != Vision.Phase.LEAVING } == true
+        val turns = if (atTop || held) 0.0 else abs(turn) / (2 * PI)
         moved = turns * min(shop.bonus, SUN_CAP) * PX_PER_TURN
         summit?.let { if (position + moved >= it - 1e-6) moved = it - position }
         val from = position
@@ -244,8 +274,89 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         val drawn = quotes.drawn
         quotes.update(dt, moved, stillFor)
         if (quotes.drawn != drawn) dirty = true
+        listen(turn, dt)
         sinceSave += dt
         if (dirty && sinceSave > SAVE_EVERY) save()
+    }
+
+    /**
+     * The voices. With no vision, the player's own turns bring the next one, but not in the final climb.
+     * A vision asks once it is fully in and its question is typed out. Then a new touch that turns the knob
+     * [Voices.ANSWER_TURN] to one side picks the answer on that side.
+     */
+    private fun listen(turn: Double, dt: Double) {
+        val v = vision
+        if (v == null) {
+            if (summit == null && !atTop) voices.pushed(abs(turn) / (2 * PI))?.let { come(it) }
+            return
+        }
+        v.update(dt)
+        when (v.phase) {
+            Vision.Phase.COMING -> when {
+                quotes.quote.text != v.question.text -> quotes.announce(Quote(v.question.text, v.question.god.title))
+                v.light >= 1.0 && quotes.phase == QuoteBox.Phase.SHOWING -> {
+                    v.ask()
+                    askedGrabs = knob.grabs
+                    answerGrabs = knob.grabs
+                    answerTurn = 0.0
+                }
+            }
+            Vision.Phase.ASKING -> {
+                if (knob.grabs != answerGrabs) {
+                    answerGrabs = knob.grabs
+                    answerTurn = 0.0
+                }
+                if (knob.grabs > askedGrabs) answerTurn += turn / (2 * PI)
+                when {
+                    answerTurn >= Voices.ANSWER_TURN -> pick(v, left = false)
+                    answerTurn <= -Voices.ANSWER_TURN -> pick(v, left = true)
+                    v.asked >= Voices.ASK_TIME -> {
+                        quotes.announce(Quote(v.question.god.farewell, v.question.god.title))
+                        v.leave()
+                    }
+                }
+            }
+            Vision.Phase.LEAVING -> if (v.over) voices.end()
+        }
+    }
+
+    /** A vision comes: the knob stops, and the god asks in the panel of the wise words. */
+    private fun come(v: Vision) {
+        knob.stop()
+        quotes.announce(Quote(v.question.text, v.question.god.title))
+        onVision()
+        save()
+    }
+
+    /** The player picked the answer on one side. A right answer brings an obol. */
+    private fun pick(v: Vision, left: Boolean) {
+        val right = left == v.rightOnLeft
+        if (right) {
+            shop.add(1.0)
+            onObol(1)
+        }
+        voices.answer(right)
+        quotes.announce(Quote(if (right) v.question.yes else v.question.no, v.question.god.title))
+        save()
+    }
+
+    /** A vision that comes or asks ends without an answer, and its god says farewell. */
+    fun endVision() {
+        val v = vision ?: return
+        if (v.phase != Vision.Phase.LEAVING) quotes.announce(Quote(v.question.god.farewell, v.question.god.title))
+        voices.end()
+    }
+
+    /** For dev builds: a vision comes at once. */
+    fun summonVision() {
+        voices.end()
+        come(voices.summon())
+    }
+
+    /** For dev builds: a vision comes at the next click of the knob. */
+    fun nearTheNextVision() {
+        voices.soon(1.0 / TICKS_PER_TURN)
+        save()
     }
 
     /**
@@ -281,8 +392,9 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         }
     }
 
-    /** Pausing again keeps the first time: iOS also pauses on its way back to the foreground. */
+    /** Pausing again keeps the first time: iOS also pauses on its way back to the foreground. A vision ends. */
     fun pause() {
+        endVision()
         if (pausedAt == null) pausedAt = wall()
         save()
     }
@@ -324,6 +436,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     /** Once everything is bought, the top comes within reach: [CLIMB] more pixels of pushing. */
     private fun beginClimb() {
         if (summit != null || !shop.allBought) return
+        endVision()
         summit = position + CLIMB
         quotes.announce(Quote("The top is in sight: three more days of pushing.", "Hermes"))
         dirty = true
@@ -342,6 +455,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     }
 
     private fun begin() {
+        endVision()
         position = 0.0
         effort = 0.0
         summit = null
@@ -403,6 +517,10 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         store.save(KEY_SUMMIT, summit ?: -1.0)
         store.save(KEY_CLIMBS, climbs.toDouble())
         store.save(KEY_PLACE, place.id.toDouble())
+        store.save(KEY_NEXT_VISION, voices.count)
+        store.save(KEY_VISION_SEED, visionSeed.toDouble())
+        store.save(KEY_VISIONS_DRAWN, voices.drawn.toDouble())
+        store.save(KEY_RIGHT_ANSWERS, voices.rightAnswers.toDouble())
         for (line in Line.entries) store.save(shopKey(line), shop.tier(line).toDouble())
         dirty = false
         sinceSave = 0.0

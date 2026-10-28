@@ -62,8 +62,11 @@ object NoHaptics : Haptics {
 }
 
 interface Sound {
-    /** Takes the knob click, the click of every other tap, the sound of buying, the fanfare and the coin, as mono samples at 44.1 kHz. */
-    fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray) {}
+    /**
+     * Takes the knob click, the click of every other tap, the sound of buying, the fanfare, the coin and the spell of a vision,
+     * as mono samples at 44.1 kHz.
+     */
+    fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray, spell: FloatArray) {}
     /** Called when a finger touches the knob, before the first click. */
     fun prepare() {}
     /** One detent of the knob. */
@@ -76,6 +79,8 @@ interface Sound {
     fun fanfare() {}
     /** Plays when a new obol comes. */
     fun coin() {}
+    /** Plays when a god comes as a vision. */
+    fun spell() {}
     /** Releases the audio hardware until the next click. */
     fun pause() {}
 }
@@ -88,6 +93,11 @@ fun Sound.tick(on: Boolean) {
 /** A new obol plays the coin, unless the sound is off. */
 fun Sound.obol(on: Boolean) {
     if (on) coin()
+}
+
+/** A vision plays the spell, unless the sound is off. */
+fun Sound.vision(on: Boolean) {
+    if (on) spell()
 }
 
 /**

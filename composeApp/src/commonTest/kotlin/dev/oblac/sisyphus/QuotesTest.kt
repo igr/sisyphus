@@ -1,5 +1,6 @@
 package dev.oblac.sisyphus
 
+import dev.oblac.sisyphus.game.NARROWEST_TEXT
 import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.game.QUOTES
 import dev.oblac.sisyphus.game.Quote
@@ -11,9 +12,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotSame
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
-
-/** Text width of the quote panel on the narrowest phone (iPhone mini: 135 virtual pixels). */
-private const val NARROWEST_TEXT = 119
 
 class QuotesTest {
     private val all = QUOTES + TUTORIAL

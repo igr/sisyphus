@@ -392,4 +392,25 @@ class SnapshotTest {
         frames.forEachIndexed { i, f -> sheet.draw(f, (i % 6) * 52, (i / 6) * 44) }
         write(sheet, "hero-sheet", 6)
     }
+
+    /** A vision at noon in each world, each world with another god; one on the smallest phone, and one with the three helpers. */
+    @Test
+    fun voices() {
+        fun asked(s: Screen, gods: Int) {
+            repeat(gods) { s.game.summonVision() }
+            s.idle(4.0)
+        }
+        for (place in Place.entries) {
+            val s = screen(1, 0.5, place = place)
+            asked(s, place.id + 1)
+            write(s.render(), "voice-${place.id}", 3)
+        }
+        val small = Screen(Game(MemoryStore(mapOf("effort" to effortAt(1, 0.5))), seed = 3), seed = 5).apply { resize(1080, 2340, 144, 102) }
+        asked(small, 1)
+        write(small.render(), "voice-small", 3)
+        val helped = mapOf("effort" to effortAt(1, 0.5), "shop.beside" to 3.0, "shop.alone" to 3.0, "shop.blessing" to 3.0)
+        val helpers = Screen(Game(MemoryStore(helped), seed = 3), seed = 5).apply { resize(1179, 2556, 177, 102) }
+        asked(helpers, 1)
+        write(helpers.render(), "voice-helpers", 3)
+    }
 }

@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.IntSize
 import dev.oblac.sisyphus.audio.loadClick
 import dev.oblac.sisyphus.audio.loadCoin
 import dev.oblac.sisyphus.audio.loadFanfare
+import dev.oblac.sisyphus.audio.loadSpell
 import dev.oblac.sisyphus.audio.loadUi
 import dev.oblac.sisyphus.audio.loadWin
 import dev.oblac.sisyphus.game.Game
@@ -49,13 +50,15 @@ fun SisyphusApp(
             sound.tick(game.soundOn)
         }
         screen.onCoin = { sound.obol(game.soundOn) }
+        game.onVision = { sound.vision(game.soundOn) }
         onDispose {
             game.onTick = {}
             screen.onCoin = {}
+            game.onVision = {}
         }
     }
 
-    LaunchedEffect(sound) { sound.load(loadClick(), loadUi(), loadWin(), loadFanfare(), loadCoin()) }
+    LaunchedEffect(sound) { sound.load(loadClick(), loadUi(), loadWin(), loadFanfare(), loadCoin(), loadSpell()) }
 
     LaunchedEffect(screen) {
         var last = 0L

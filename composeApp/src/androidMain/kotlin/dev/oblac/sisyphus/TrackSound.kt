@@ -7,7 +7,7 @@ import dev.oblac.sisyphus.audio.SAMPLE_RATE
 
 /**
  * Plays the knob click: three short tracks take turns, each restarted at a detent.
- * The click of every other tap, the sound of buying, the fanfare and the coin have a track each. Without audio it stays silent.
+ * The click of every other tap, the sound of buying, the fanfare, the coin and the spell have a track each. Without audio it stays silent.
  */
 internal class TrackSound : Sound {
     private var tracks: List<AudioTrack> = emptyList()
@@ -15,21 +15,24 @@ internal class TrackSound : Sound {
     private var winTrack: AudioTrack? = null
     private var fanfareTrack: AudioTrack? = null
     private var coinTrack: AudioTrack? = null
+    private var spellTrack: AudioTrack? = null
     private var next = 0
 
-    override fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray) {
+    override fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray, spell: FloatArray) {
         try {
             tracks = List(3) { track(click) }.filter { it.state == AudioTrack.STATE_INITIALIZED }
             uiTrack = track(ui).takeIf { it.state == AudioTrack.STATE_INITIALIZED }
             winTrack = track(win).takeIf { it.state == AudioTrack.STATE_INITIALIZED }
             fanfareTrack = track(fanfare).takeIf { it.state == AudioTrack.STATE_INITIALIZED }
             coinTrack = track(coin).takeIf { it.state == AudioTrack.STATE_INITIALIZED }
+            spellTrack = track(spell).takeIf { it.state == AudioTrack.STATE_INITIALIZED }
         } catch (e: Exception) {
             tracks = emptyList()
             uiTrack = null
             winTrack = null
             fanfareTrack = null
             coinTrack = null
+            spellTrack = null
         }
     }
 
@@ -54,12 +57,17 @@ internal class TrackSound : Sound {
         coinTrack?.restart()
     }
 
+    override fun spell() {
+        spellTrack?.restart()
+    }
+
     fun release() {
         tracks.forEach { it.release() }
         uiTrack?.release()
         winTrack?.release()
         fanfareTrack?.release()
         coinTrack?.release()
+        spellTrack?.release()
     }
 
     private fun AudioTrack.restart() {

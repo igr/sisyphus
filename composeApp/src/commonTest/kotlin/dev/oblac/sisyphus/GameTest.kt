@@ -13,6 +13,7 @@ import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.START_TIME
 import dev.oblac.sisyphus.game.SUN_CAP
+import dev.oblac.sisyphus.game.Vision
 import dev.oblac.sisyphus.game.WORK_PER_OBOL
 import dev.oblac.sisyphus.game.Weather
 import dev.oblac.sisyphus.gfx.PixelFont
@@ -21,6 +22,7 @@ import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
@@ -502,5 +504,242 @@ class GameTest {
         assertEquals("Hermes · ${game.shop.obols.toInt()} obols", q.author)
         assertTrue(PixelFont.wrap(q.text, 119).size <= 3)
         assertTrue(PixelFont.width("— ${q.author}") <= 119)
+    }
+
+    /** A game whose vision came and asks: the question is typed out, and the answers show. */
+    private fun asking(store: MemoryStore = MemoryStore(mapOf("nextVision" to 0.5))): Game {
+        val game = Game(store, seed = 1, wall = { 0.0 })
+        game.turn(2 * PI)
+        repeat(600) { if (game.vision?.phase == Vision.Phase.COMING) game.update(DT) }
+        assertEquals(Vision.Phase.ASKING, game.vision?.phase)
+        return game
+    }
+
+    /** A new touch turns a quarter turn toward the right answer, or toward the wrong one. */
+    private fun Game.answer(right: Boolean) {
+        val toLeft = vision!!.rightOnLeft == right
+        turn(if (toLeft) -PI / 2 else PI / 2)
+    }
+
+    @Test
+    fun aVisionComesWhenTheCountRunsOut() {
+        val game = Game(MemoryStore(mapOf("nextVision" to 2.0)), seed = 1, wall = { 0.0 })
+        game.turn(2.5 * 2 * PI)
+        val vision = assertNotNull(game.vision)
+        assertEquals(vision.question.text, game.quotes.quote.text)
+        assertEquals(vision.question.god.title, game.quotes.quote.author)
+    }
+
+    @Test
+    fun theBonusDoesNotCountTowardAVision() {
+        val game = Game(MemoryStore(mapOf("nextVision" to 10.0, "shop.rock" to 3.0)), seed = 1, wall = { 0.0 })
+        game.turn(5 * 2 * PI)
+        assertEquals(5.0, game.voices.count, 0.01)
+    }
+
+    @Test
+    fun theGodsDoNotBringAVision() {
+        var now = 0.0
+        val game = Game(MemoryStore(mapOf("shop.alone" to 3.0, "nextVision" to 1.0)), seed = 1, wall = { now })
+        game.pause()
+        now += 86400.0
+        game.resume()
+        repeat(60) { game.update(DT) }
+        assertNull(game.vision)
+        assertEquals(1.0, game.voices.count, 1e-9)
+    }
+
+    @Test
+    fun noVisionInTheFinalClimb() {
+        val game = Game(MemoryStore(mapOf("nextVision" to 1.0)), seed = 1, wall = { 0.0 })
+        game.nearTheTop()
+        game.turn(1.5 * 2 * PI)
+        assertNull(game.vision)
+        assertEquals(1.0, game.voices.count, 1e-9)
+    }
+
+    @Test
+    fun aVisionHoldsSisyphus() {
+        val game = Game(MemoryStore(mapOf("nextVision" to 0.5)), seed = 1, wall = { 0.0 })
+        game.turn(2 * PI)
+        assertNotNull(game.vision)
+        val position = game.position
+        val effort = game.effort
+        val obols = game.shop.obols
+        game.turn(3 * 2 * PI)
+        assertEquals(position, game.position)
+        assertEquals(effort, game.effort)
+        assertEquals(obols, game.shop.obols)
+    }
+
+    @Test
+    fun aFlickBeforeAVisionPicksNoAnswer() {
+        val game = Game(MemoryStore(mapOf("nextVision" to 1.0)), seed = 1, wall = { 0.0 })
+        var touch = 0.0
+        game.knob.grab(touch)
+        repeat(6) {
+            touch += 0.5
+            game.knob.drag(touch)
+            game.update(DT)
+        }
+        game.knob.release()
+        repeat(240) { if (game.vision == null) game.update(DT) }
+        assertNotNull(game.vision)
+        assertEquals(0.0, game.knob.velocity)
+        val angle = game.knob.angle
+        repeat(300) { game.update(DT) }
+        assertEquals(angle, game.knob.angle)
+        assertEquals(Vision.Phase.ASKING, game.vision?.phase)
+    }
+
+    @Test
+    fun anAnswerNeedsANewTouch() {
+        val game = Game(MemoryStore(mapOf("nextVision" to 0.5)), seed = 1, wall = { 0.0 })
+        var touch = 0.0
+        game.knob.grab(touch)
+        repeat(60) {
+            touch += 0.06
+            game.knob.drag(touch)
+            game.update(DT)
+        }
+        repeat(600) { if (game.vision?.phase == Vision.Phase.COMING) game.update(DT) }
+        assertEquals(Vision.Phase.ASKING, game.vision?.phase)
+        repeat(16) {
+            touch += 0.1
+            game.knob.drag(touch)
+            game.update(DT)
+        }
+        assertEquals(Vision.Phase.ASKING, game.vision?.phase)
+        game.turn(PI / 2)
+        assertEquals(Vision.Phase.LEAVING, game.vision?.phase)
+    }
+
+    @Test
+    fun aRightAnswerGivesOneObol() {
+        val game = asking()
+        var told = 0
+        game.onObol = { told += it }
+        val obols = game.shop.obols
+        val question = game.vision!!.question
+        game.answer(right = true)
+        assertEquals(obols + 1, game.shop.obols, 0.01)
+        assertEquals(1, told)
+        assertEquals(1, game.voices.rightAnswers)
+        assertEquals(question.yes, game.quotes.quote.text)
+    }
+
+    @Test
+    fun aWrongAnswerGivesNothing() {
+        val game = asking()
+        var told = 0
+        game.onObol = { told += it }
+        val obols = game.shop.obols
+        val question = game.vision!!.question
+        game.answer(right = false)
+        assertEquals(obols, game.shop.obols, 0.01)
+        assertEquals(0, told)
+        assertEquals(0, game.voices.rightAnswers)
+        assertEquals(question.no, game.quotes.quote.text)
+    }
+
+    @Test
+    fun noAnswerSaysFarewell() {
+        val game = asking()
+        val god = game.vision!!.question.god
+        repeat(25 * 60) { if (game.vision?.phase == Vision.Phase.ASKING) game.update(DT) }
+        assertEquals(Vision.Phase.LEAVING, game.vision?.phase)
+        assertEquals(god.farewell, game.quotes.quote.text)
+    }
+
+    @Test
+    fun theKnobPushesAgainAfterTheAnswer() {
+        val game = asking()
+        game.answer(right = true)
+        val position = game.position
+        game.turn(2 * PI)
+        assertTrue(game.position > position)
+    }
+
+    @Test
+    fun pausingEndsTheVision() {
+        val game = asking()
+        game.pause()
+        assertNull(game.vision)
+        game.resume()
+        val position = game.position
+        game.turn(2 * PI)
+        assertTrue(game.position > position)
+    }
+
+    @Test
+    fun theFinalClimbEndsTheVision() {
+        val all = Line.entries.filter { it != Line.BEAUTY }.associate { "shop." + it.id to 3.0 }
+        val game = asking(MemoryStore(all + mapOf("shop.beauty" to 2.0, "obols" to 100.0, "nextVision" to 0.5)))
+        assertTrue(game.buy(Line.BEAUTY))
+        assertNull(game.vision)
+        assertTrue(game.summit != null)
+    }
+
+    @Test
+    fun movingEndsTheVision() {
+        val game = asking()
+        game.moveTo(Place.ETNA)
+        assertNull(game.vision)
+    }
+
+    @Test
+    fun theVoicesAreSaved() {
+        val store = MemoryStore(mapOf("nextVision" to 0.5))
+        val game = Game(store, seed = 1, wall = { 0.0 })
+        game.turn(2 * PI)
+        assertNotNull(game.vision)
+        val again = Game(store, seed = 2, wall = { 0.0 })
+        assertEquals(game.voices.drawn, again.voices.drawn)
+        assertEquals(game.voices.count, again.voices.count, 1e-9)
+        assertEquals(game.voices.visionAt(5).question.text, again.voices.visionAt(5).question.text)
+        assertNull(again.vision)
+    }
+
+    @Test
+    fun theCountStaysAtTheTopAndInAnotherWorld() {
+        val game = asking()
+        game.answer(right = true)
+        repeat(180) { game.update(DT) }
+        assertNull(game.vision)
+        val count = game.voices.count
+        val drawn = game.voices.drawn
+        game.startOver()
+        game.moveTo(Place.ETNA)
+        assertEquals(count, game.voices.count, 1e-9)
+        assertEquals(drawn, game.voices.drawn)
+        assertEquals(1, game.voices.rightAnswers)
+    }
+
+    @Test
+    fun theDevScreenBringsAVisionAtTheNextClick() {
+        val game = Game(MemoryStore(mapOf("nextVision" to 900.0)), seed = 1, wall = { 0.0 })
+        game.nearTheNextVision()
+        repeat(60) { game.update(DT) }
+        assertNull(game.vision)
+        game.turn(0.5)
+        assertNotNull(game.vision)
+    }
+
+    @Test
+    fun aComingVisionAsksAgainWhenItsQuestionIsGone() {
+        val game = Game(MemoryStore(mapOf("obols" to 5.0)), seed = 1, wall = { 0.0 })
+        game.summonVision()
+        repeat(30) { game.update(DT) }
+        assertEquals(Vision.Phase.COMING, game.vision?.phase)
+        assertTrue(game.buy(Line.GODS))
+        repeat(600) { if (game.vision?.phase == Vision.Phase.COMING) game.update(DT) }
+        assertEquals(Vision.Phase.ASKING, game.vision?.phase)
+        assertEquals(game.vision!!.question.text, game.quotes.quote.text)
+    }
+
+    @Test
+    fun anOldSaveMeetsTheVoicesSoon() {
+        val game = Game(MemoryStore(mapOf("effort" to 5000.0)), seed = 1, wall = { 0.0 })
+        assertTrue(game.voices.count in 300.0..600.0)
     }
 }

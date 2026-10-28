@@ -14,7 +14,7 @@ import platform.AVFAudio.AVAudioSessionCategoryAmbient
 import platform.AVFAudio.setPreferredIOBufferDuration
 
 /**
- * Plays the knob click, the click of every other tap, the sound of buying, the fanfare and the coin. The ambient session mixes with other apps' music
+ * Plays the knob click, the click of every other tap, the sound of buying, the fanfare, the coin and the spell. The ambient session mixes with other apps' music
  * and stays quiet when the phone is on silent.
  */
 @OptIn(ExperimentalForeignApi::class)
@@ -26,12 +26,14 @@ internal class EngineSound : Sound {
     private val winPlayer = AVAudioPlayerNode()
     private val fanfarePlayer = AVAudioPlayerNode()
     private val coinPlayer = AVAudioPlayerNode()
-    private val nodes = players + uiPlayer + winPlayer + fanfarePlayer + coinPlayer
+    private val spellPlayer = AVAudioPlayerNode()
+    private val nodes = players + uiPlayer + winPlayer + fanfarePlayer + coinPlayer + spellPlayer
     private var clickBuffer: AVAudioPCMBuffer? = null
     private var uiBuffer: AVAudioPCMBuffer? = null
     private var winBuffer: AVAudioPCMBuffer? = null
     private var fanfareBuffer: AVAudioPCMBuffer? = null
     private var coinBuffer: AVAudioPCMBuffer? = null
+    private var spellBuffer: AVAudioPCMBuffer? = null
     private var next = 0
 
     init {
@@ -44,12 +46,13 @@ internal class EngineSound : Sound {
         }
     }
 
-    override fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray) {
+    override fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray, spell: FloatArray) {
         clickBuffer = buffer(click)
         uiBuffer = buffer(ui)
         winBuffer = buffer(win)
         fanfareBuffer = buffer(fanfare)
         coinBuffer = buffer(coin)
+        spellBuffer = buffer(spell)
     }
 
     override fun prepare() {
@@ -85,6 +88,12 @@ internal class EngineSound : Sound {
         val buffer = coinBuffer ?: return
         if (!start()) return
         coinPlayer.scheduleBuffer(buffer, atTime = null, options = AVAudioPlayerNodeBufferInterrupts, completionHandler = null)
+    }
+
+    override fun spell() {
+        val buffer = spellBuffer ?: return
+        if (!start()) return
+        spellPlayer.scheduleBuffer(buffer, atTime = null, options = AVAudioPlayerNodeBufferInterrupts, completionHandler = null)
     }
 
     override fun pause() {

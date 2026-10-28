@@ -12,6 +12,7 @@ private class Recorder : Sound {
     override fun win() { played += "win" }
     override fun fanfare() { played += "fanfare" }
     override fun coin() { played += "coin" }
+    override fun spell() { played += "spell" }
     override fun pause() { played += "pause" }
 }
 
@@ -38,5 +39,14 @@ class SoundTest {
         sound.obol(on = false)
         for (touch in Touch.entries) sound.play(touch, on = false)
         assertEquals(listOf("pause"), sound.played)
+    }
+
+    @Test
+    fun theVisionIsSilentWhenTheSoundIsOff() {
+        val sound = Recorder()
+        sound.vision(on = false)
+        assertEquals(emptyList(), sound.played)
+        sound.vision(on = true)
+        assertEquals(listOf("spell"), sound.played)
     }
 }

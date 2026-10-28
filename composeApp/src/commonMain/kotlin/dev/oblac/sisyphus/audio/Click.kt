@@ -20,6 +20,9 @@ suspend fun loadFanfare(): FloatArray = readWav(Res.readBytes("files/success-fan
 /** The coin of a new obol, from composeResources/files/coin.wav. */
 suspend fun loadCoin(): FloatArray = readWav(Res.readBytes("files/coin.wav"))
 
+/** The spell of a vision, from composeResources/files/magic-spell.wav, at 40% of its volume, so that it is softer than the fanfare. */
+suspend fun loadSpell(): FloatArray = readWav(Res.readBytes("files/magic-spell.wav")).apply { for (i in indices) this[i] *= 0.4f }
+
 /**
  * Reads a WAV file of PCM, 16 or 24 bits, as mono samples in [-1, 1] at [SAMPLE_RATE].
  * The quiet before and after the sound is cut off, so the sound plays at once.

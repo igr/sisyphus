@@ -3,12 +3,14 @@ package dev.oblac.sisyphus
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.Place
+import dev.oblac.sisyphus.game.Vision
 import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.scene.Ending
 import dev.oblac.sisyphus.scene.SceneGeometry
 import dev.oblac.sisyphus.scene.SceneRenderer
 import dev.oblac.sisyphus.scene.World
 import dev.oblac.sisyphus.scene.atmosphere
+import dev.oblac.sisyphus.scene.drawVision
 import dev.oblac.sisyphus.ui.DEV_STEPS
 import dev.oblac.sisyphus.ui.GAIN_TIME
 import dev.oblac.sisyphus.ui.Layout
@@ -204,13 +206,16 @@ class Screen(
             buying?.let { ui.buy(pixels, l, it, billing.price(it), paying) }
         } else {
             renderer.render(scene, game, world, banner, rolled = ending?.rolled)
+            game.vision?.let { drawVision(scene, it) }
             pixels.draw(scene, l.scene.x, l.scene.y)
             ui.bezel(pixels, l.display)
             ui.obolBar(pixels, l.obolBar, game.shop.obols, game.climbed)
-            val corner = listOfNotNull(game.shop.owned(Line.SIDEKICKS), game.shop.owned(Line.GODS), game.shop.owned(Line.BLESSING))
-            corner.forEachIndexed { i, item -> ui.helper(pixels, l.helper(corner.size - 1 - i), item) }
+            if (game.vision == null) {
+                val corner = listOfNotNull(game.shop.owned(Line.SIDEKICKS), game.shop.owned(Line.GODS), game.shop.owned(Line.BLESSING))
+                corner.forEachIndexed { i, item -> ui.helper(pixels, l.helper(corner.size - 1 - i), item) }
+            }
             ui.band(pixels, l.band)
-            ui.quote(pixels, l.quote, game.quotes, game.clock)
+            ui.quote(pixels, l.quote, game.quotes, game.clock, voice = game.vision?.let { it.phase != Vision.Phase.LEAVING } == true)
             ui.knob(pixels, l, game)
             ui.helpButton(pixels, l.helpIcon)
         }
@@ -238,6 +243,7 @@ class Screen(
             return Touch.HELP
         }
         if (l.coinIcon.near(x, y, TOUCH_SLOP)) {
+            cover()
             agoraOpen = !agoraOpen
             devOpen = false
             offer = null
@@ -278,6 +284,16 @@ class Screen(
                     l.devNextObol.near(x, y, 0) -> game.nearTheNextObol()
                     l.devTop.near(x, y, 0) -> game.nearTheTop()
                     l.devWorlds.near(x, y, 0) -> openWorlds = !openWorlds
+                    l.devVision.near(x, y, 0) -> {
+                        agoraOpen = false
+                        devOpen = false
+                        game.summonVision()
+                    }
+                    l.devNextVision.near(x, y, 0) -> {
+                        agoraOpen = false
+                        devOpen = false
+                        game.nearTheNextVision()
+                    }
                     else -> return Touch.NONE
                 }
                 return Touch.DEV
@@ -290,6 +306,7 @@ class Screen(
             return Touch.SHOP
         }
         if (l.dayLabel(game.day).near(x, y, TOUCH_SLOP)) {
+            cover()
             worldsOpen = true
             listScroll = 0.0
             listSpeed = 0.0
@@ -297,6 +314,7 @@ class Screen(
             return Touch.WORLDS
         }
         if (l.helpIcon.near(x, y, TOUCH_SLOP)) {
+            cover()
             helpOpen = true
             return Touch.HELP
         }
@@ -437,6 +455,12 @@ class Screen(
         agoraOpen = false
         devOpen = false
         return true
+    }
+
+    /** A screen covers the game: a vision ends, and the knob stops, so that no vision comes unseen behind the screen. */
+    private fun cover() {
+        game.endVision()
+        game.knob.stop()
     }
 
     /** Near the center the direction of the finger is noise, so it does not count. */

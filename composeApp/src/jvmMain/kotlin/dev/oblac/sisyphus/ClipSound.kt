@@ -5,28 +5,31 @@ import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.Clip
 
-/** Plays the knob click, the click of every other tap, the sound of buying, the fanfare and the coin on desktop. Without an audio device it stays silent. */
+/** Plays the knob click, the click of every other tap, the sound of buying, the fanfare, the coin and the spell on desktop. Without an audio device it stays silent. */
 internal class ClipSound : Sound {
     private var clips: List<Clip> = emptyList()
     private var uiClip: Clip? = null
     private var winClip: Clip? = null
     private var fanfareClip: Clip? = null
     private var coinClip: Clip? = null
+    private var spellClip: Clip? = null
     private var next = 0
 
-    override fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray) {
+    override fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray, spell: FloatArray) {
         try {
             clips = List(6) { clip(click) }
             uiClip = clip(ui)
             winClip = clip(win)
             fanfareClip = clip(fanfare)
             coinClip = clip(coin)
+            spellClip = clip(spell)
         } catch (e: Exception) {
             clips = emptyList()
             uiClip = null
             winClip = null
             fanfareClip = null
             coinClip = null
+            spellClip = null
         }
     }
 
@@ -49,6 +52,10 @@ internal class ClipSound : Sound {
 
     override fun coin() {
         coinClip?.restart()
+    }
+
+    override fun spell() {
+        spellClip?.restart()
     }
 
     private fun clip(samples: FloatArray): Clip {
