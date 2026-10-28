@@ -17,6 +17,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class VoicesTest {
@@ -36,9 +37,19 @@ class VoicesTest {
 
     @Test
     fun everyQuestionAndReplyFitsThePanel() {
-        for (t in all.flatMap { listOf(it.text, it.yes, it.no) } + farewells) {
+        for (t in all.flatMap { listOf(it.text, it.reply(right = true), it.reply(right = false)) } + farewells) {
             assertTrue(fits(t, NARROWEST_TEXT, 3), "too long: \"$t\" -> ${PixelFont.wrap(t, NARROWEST_TEXT)}")
         }
+    }
+
+    @Test
+    fun aReplySaysFirstWhetherTheAnswerWasRight() {
+        for (q in all) {
+            assertTrue(q.reply(right = true).startsWith("Correct. "))
+            assertTrue(q.reply(right = false).startsWith("Wrong. "))
+        }
+        val again = Regex("^(Yes|No)\\b")
+        for (t in all.flatMap { listOf(it.yes, it.no) }) assertFalse(again.containsMatchIn(t), "says it twice: \"$t\"")
     }
 
     @Test

@@ -625,7 +625,7 @@ class GameTest {
         assertEquals(obols + 1, game.shop.obols, 0.01)
         assertEquals(1, told)
         assertEquals(1, game.voices.rightAnswers)
-        assertEquals(question.yes, game.quotes.quote.text)
+        assertEquals("Correct. ${question.yes}", game.quotes.quote.text)
     }
 
     @Test
@@ -639,7 +639,7 @@ class GameTest {
         assertEquals(obols, game.shop.obols, 0.01)
         assertEquals(0, told)
         assertEquals(0, game.voices.rightAnswers)
-        assertEquals(question.no, game.quotes.quote.text)
+        assertEquals("Wrong. ${question.no}", game.quotes.quote.text)
     }
 
     @Test

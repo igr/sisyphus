@@ -40,7 +40,7 @@ A climb needs moments that the player does not expect, not only a new item now a
 2. **The question** types out in the panel of the wise words, as the wise words do. A thin terra line frames the panel, and the name of the god stands under the question in light orange, for example "— the Sphinx". The wise words wait.
 3. **The answers** stand in the dark scene, under the vision: the left answer in the bottom-left corner, and the right answer in the bottom-right corner. Each is cream with a dark outline, with a small terra triangle that points outward, and it may take 2 lines. By the knob, two curved arrows show which way to turn: down the left side of the knob for the left answer, and down the right side for the right one.
 4. **While the vision shows, the knob does not move Sisyphus.** A vision always comes while the player turns, and the knob coasts after a flick. So when a vision comes, the knob stops at once and does not coast. A turn counts as an answer only after the answers show, and only from a new touch: the finger lifts and touches the knob again. Then an eighth of a turn to one side picks the answer on that side.
-5. **The reply** types out in the panel. After a right answer, one obol comes as any new obol does: the coin sounds and glints, and "+1" rises under the obol count. After a wrong answer, the god gives the right answer, and nothing else happens.
+5. **The reply** types out in the panel. It starts with "Correct." or "Wrong.", so the player knows at once. After a right answer, one obol comes as any new obol does: the coin sounds and glints, and "+1" rises under the obol count. After a wrong answer, the god gives the right answer, and nothing else happens.
 6. **The vision fades,** the light comes back, and the wise words go on. The knob pushes again as soon as the answer is picked.
 
 With no answer in 20 seconds, the god says a farewell line, and the vision fades. A vision also ends without an answer when the app goes to the background, when the Agora, the Worlds screen or the help opens, when the final climb begins, and when the player moves to another world. In all these cases, nothing is lost, and the count to the next vision starts again.
@@ -55,7 +55,7 @@ Three gods come in turn, in an order that the game shuffles:
 | Hermes | "Who said this?" | One of the wise words, its author, and the author of another one. |
 | Hecate, at a crossroads | Which road a wise man takes | Two roads, such as the steep road and the easy road. |
 
-- Each riddle and each crossroads has a question, a right answer, a wrong answer, a reply for a right answer, and a reply for a wrong answer. The first version has 20 riddles and 20 crossroads.
+- Each riddle and each crossroads has a question, a right answer, a wrong answer, a reply for a right answer, and a reply for a wrong answer. The game puts "Correct." or "Wrong." before the reply, so a reply does not start with "Yes" or "No". The first version has 20 riddles and 20 crossroads.
 - The riddles, the crossroads and the replies may be written for the game. They do not need an old source, but they keep the calm and warm mood of the wise words.
 - Hermes makes his questions from the wise words, so they never run out. He uses only sayings of real people, not the lines of Sisyphus and his world, and the other author is never the same person under another name.
 - The right answer stands on the left or on the right at random.

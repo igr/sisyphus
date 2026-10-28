@@ -336,7 +336,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
             onObol(1)
         }
         voices.answer(right)
-        quotes.announce(Quote(if (right) v.question.yes else v.question.no, v.question.god.title))
+        quotes.announce(Quote(v.question.reply(right), v.question.god.title))
         save()
     }
 
