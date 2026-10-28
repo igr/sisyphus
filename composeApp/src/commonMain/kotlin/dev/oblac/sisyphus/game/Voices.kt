@@ -11,185 +11,268 @@ const val NARROWEST_TEXT = 119
 /** The narrowest answer of a vision, in a bottom corner of the scene on the smallest phone. */
 const val NARROWEST_ANSWER = 46
 
-/** The gods who come as visions. Each says its [farewell] when nobody answers. */
-enum class God(val title: String, val farewell: String) {
-    SPHINX("the Sphinx", "You are silent. I will ask again another day."),
-    HERMES("Hermes", "No answer? Then I fly on."),
-    HECATE("Hecate", "The roads will wait for you."),
+/** The gods who come as visions: Hermes in every world, the others only in their [place]. Each says its [farewell] when nobody answers. */
+enum class God(val title: String, val farewell: String, val place: Place?) {
+    SPHINX("the Sphinx", "You are silent. I will ask again another day.", Place.CORINTH),
+    HERMES("Hermes", "No answer? Then I fly on.", null),
+    HECATE("Hecate", "The roads will wait for you.", Place.CORINTH),
+    HEPHAESTUS("Hephaestus", "The forge is cooling. I go back down to it.", Place.ETNA),
+    EMPEDOCLES("Empedocles", "Silence is an answer too. Farewell.", Place.ETNA),
+    CHARON("Charon", "No answer. The river waits for everyone.", Place.UNDERWORLD),
+    PERSEPHONE("Persephone", "Spring is calling me. I will ask again.", Place.UNDERWORLD),
 }
 
-/** A question of a god, with its [right] and [wrong] answer: [yes] is the reply to a right answer, [no] to a wrong one. */
-class Question(val god: God, val text: String, val right: String, val wrong: String, val yes: String, val no: String) {
+/** The three gods of [place]: Hermes, and the two who ask its riddles. */
+fun godsOf(place: Place) = God.entries.filter { it.place == null || it.place == place }
+
+/** A question, with its [right] and [wrong] answer: [yes] is the reply to a right answer, [no] to a wrong one. */
+class Question(val text: String, val right: String, val wrong: String, val yes: String, val no: String) {
     /** What the god says after the answer: first whether it was right. */
     fun reply(right: Boolean) = if (right) "Correct. $yes" else "Wrong. $no"
 }
 
-/** The riddles of the Sphinx. */
+/** The riddles: one pool for all worlds, from which the two gods of each world ask in turn. */
 val RIDDLES = listOf(
     Question(
-        God.SPHINX, "What walks on four feet at dawn, on two at noon, and on three at dusk?", "A man", "A horse",
+        "What walks on four feet at dawn, on two at noon, and on three at dusk?", "A man", "A horse",
         "A child crawls, a man walks, and the old lean on a staff.",
         "A man. A child crawls, a man walks, and the old lean on a staff.",
     ),
     Question(
-        God.SPHINX, "I have a mouth but never eat, and I run to the sea. What am I?", "A river", "A road",
+        "I have a mouth but never eat, and I run to the sea. What am I?", "A river", "A road",
         "Even water does not rest.", "A river. It runs, and it never rests.",
     ),
     Question(
-        God.SPHINX, "The more you take, the more you leave behind. What are they?", "Steps", "Obols",
+        "The more you take, the more you leave behind. What are they?", "Steps", "Obols",
         "You leave many on this hill.", "Steps. You leave many on this hill.",
     ),
     Question(
-        God.SPHINX, "I climb without legs or hands, and every evening I go back down. What am I?", "The sun", "The rock",
+        "I climb without legs or hands, and every evening I go back down. What am I?", "The sun", "The rock",
         "It climbs each day, and nobody pushes it.", "The sun. Your rock needs your hands.",
     ),
     Question(
-        God.SPHINX, "What has a face but no eyes, and tells the hour only while the sun shines?", "A sundial", "A mirror",
+        "What has a face but no eyes, and tells the hour only while the sun shines?", "A sundial", "A mirror",
         "On a cloudy day, it keeps its secrets.", "A sundial. On a cloudy day, it keeps its secrets.",
     ),
     Question(
-        God.SPHINX, "The more of it there is, the less you see. What is it?", "Darkness", "Light",
+        "The more of it there is, the less you see. What is it?", "Darkness", "Light",
         "And yet the stars need it.", "Darkness. And yet the stars need it.",
     ),
     Question(
-        God.SPHINX, "What can you keep after you have given it to someone?", "Your word", "Your obols",
+        "What can you keep after you have given it to someone?", "Your word", "Your obols",
         "Keep it, and it is worth more than gold.", "Your word. Obols, once given, are gone.",
     ),
     Question(
-        God.SPHINX, "What goes up the hill and down again, yet never moves?", "The path", "Your shadow",
+        "What goes up the hill and down again, yet never moves?", "The path", "Your shadow",
         "It waits for you every morning.", "The path. Your shadow follows you everywhere.",
     ),
     Question(
-        God.SPHINX, "What has many teeth, but never bites?", "A comb", "A wolf",
+        "What has many teeth, but never bites?", "A comb", "A wolf",
         "Even Medusa had no use for one.", "A comb. A wolf bites, as you well know.",
     ),
     Question(
-        God.SPHINX, "What has a neck but no head, and two ears but no face?", "An amphora", "A goose",
+        "What has a neck but no head, and two ears but no face?", "An amphora", "A goose",
         "Dionysus keeps a few full ones.", "An amphora. A goose has a head, and no wine.",
     ),
     Question(
-        God.SPHINX, "Feed me and I live. Give me a drink and I die. What am I?", "Fire", "A horse",
+        "Feed me and I live. Give me a drink and I die. What am I?", "Fire", "A horse",
         "Prometheus paid dearly to bring it.", "Fire. A horse likes a drink, as you do.",
     ),
     Question(
-        God.SPHINX, "What has one eye, but cannot see?", "A needle", "A Cyclops",
+        "What has one eye, but cannot see?", "A needle", "A Cyclops",
         "A Cyclops has one eye too, and sees well enough.", "A needle. A Cyclops sees well enough, for a while.",
     ),
     Question(
-        God.SPHINX, "What belongs to you, but others use it more than you do?", "Your name", "Your rock",
+        "What belongs to you, but others use it more than you do?", "Your name", "Your rock",
         "It travels where you cannot.", "Your name. Nobody else wants your rock.",
     ),
     Question(
-        God.SPHINX, "What breaks as soon as you say its name?", "Silence", "A jar",
+        "What breaks as soon as you say its name?", "Silence", "A jar",
         "And now it is broken.", "Silence. You just broke it.",
     ),
     Question(
-        God.SPHINX, "What runs around the whole field without moving?", "A fence", "A goat",
+        "What runs around the whole field without moving?", "A fence", "A goat",
         "It runs all day and never tires.", "A fence. The goat runs, then it lies down.",
     ),
     Question(
-        God.SPHINX, "What flies without wings, and weeps without eyes?", "A cloud", "An owl",
+        "What flies without wings, and weeps without eyes?", "A cloud", "An owl",
         "It weeps, and the grass is glad.", "A cloud. The owl has wings, and dry eyes.",
     ),
     Question(
-        God.SPHINX, "What is lighter than a feather, yet even Heracles cannot hold it for long?", "Breath", "A feather",
+        "What is lighter than a feather, yet even Heracles cannot hold it for long?", "Breath", "A feather",
         "Even the strongest must breathe out.", "Breath. A feather he could hold all day.",
     ),
     Question(
-        God.SPHINX, "The poor have it, the rich need it, and if you eat it, you starve. What is it?", "Nothing", "Bread",
+        "The poor have it, the rich need it, and if you eat it, you starve. What is it?", "Nothing", "Bread",
         "A riddle about nothing, and you solved it.", "Nothing. Bread, at least, keeps you going.",
     ),
     Question(
-        God.SPHINX, "What is full of holes, yet still holds water?", "A sponge", "A sieve",
+        "What is full of holes, yet still holds water?", "A sponge", "A sieve",
         "It drinks the sea and gives it back.", "A sponge. A sieve lets it all go.",
     ),
     Question(
-        God.SPHINX, "What has cities but no houses, and hills that nobody climbs?", "A map", "A garden",
+        "What has cities but no houses, and hills that nobody climbs?", "A map", "A garden",
         "On a map, every hill is easy.", "A map. A garden has no cities, only bees.",
     ),
-)
-
-/** Hecate at a crossroads: which road a wise man takes. */
-val ROADS = listOf(
     Question(
-        God.HECATE, "Two roads: one short and easy, one long and steep. Which does a wise man take?", "The steep one", "The easy one",
+        "Two roads: one short and easy, one long and steep. Which does a wise man take?", "The steep one", "The easy one",
         "The road to virtue is steep at first, then it grows easy.", "The easy road is short, but it leads nowhere worth going.",
     ),
     Question(
-        God.HECATE, "When does a wise man begin?", "Today", "Tomorrow",
+        "When does a wise man begin?", "Today", "Tomorrow",
         "Tomorrow is only a word.", "Today. Tomorrow never comes on its own.",
     ),
     Question(
-        God.HECATE, "What does a wise man want?", "Little", "Much",
+        "What does a wise man want?", "Little", "Much",
         "He who wants little has much.", "Little. He who wants much is always poor.",
     ),
     Question(
-        God.HECATE, "A wise man stumbles on the road. What does he do?", "Gets up", "Turns back",
+        "A wise man stumbles on the road. What does he do?", "Gets up", "Turns back",
         "Every road has stones.", "He gets up. Every road has stones.",
     ),
     Question(
-        God.HECATE, "Two cups at noon: one of water, one of wine. Which does a wise man drink?", "The water", "The wine",
+        "Two cups at noon: one of water, one of wine. Which does a wise man drink?", "The water", "The wine",
         "The wine can wait for the evening.", "The water. The wine can wait for the evening.",
     ),
     Question(
-        God.HECATE, "The road ahead is long. What does a wise man count?", "His steps", "The miles",
+        "The road ahead is long. What does a wise man count?", "His steps", "The miles",
         "The miles take care of themselves.", "His steps. The miles take care of themselves.",
     ),
     Question(
-        God.HECATE, "A storm comes over the hill. What does a wise man do?", "Shelters", "Pushes on",
+        "A storm comes over the hill. What does a wise man do?", "Shelters", "Pushes on",
         "The storm passes, and the hill will wait.", "He shelters. The storm passes, and the hill will wait.",
     ),
     Question(
-        God.HECATE, "A stranger comes to the crossroads. What does a wise man offer?", "Bread", "A cold look",
+        "A stranger comes to the crossroads. What does a wise man offer?", "Bread", "A cold look",
         "Bread first; the road can wait.", "Bread. A cold look feeds nobody.",
     ),
     Question(
-        God.HECATE, "The road is dark. What does a wise man carry?", "A torch", "A sword",
-        "I have two, if you need one.", "A torch. I have two, if you need one.",
+        "The road is dark. What does a wise man carry?", "A torch", "A sword",
+        "A light shows the way for the next one too.", "A torch. A sword does not show the way.",
     ),
     Question(
-        God.HECATE, "At the top of the hill, what does a wise man do?", "Looks around", "Boasts",
+        "At the top of the hill, what does a wise man do?", "Looks around", "Boasts",
         "The view does not last, so he looks well.", "He looks around. Boasting spoils the view.",
     ),
     Question(
-        God.HECATE, "What does a wise man say most often?", "Thank you", "I know",
+        "What does a wise man say most often?", "Thank you", "I know",
         "Two small words that open many doors.", "He says thank you. Who says 'I know' stops learning.",
     ),
     Question(
-        God.HECATE, "The rock rolls back down. What does a wise man do?", "Walks down", "Weeps",
+        "The rock rolls back down. What does a wise man do?", "Walks down", "Weeps",
         "The walk down is a rest of its own.", "He walks down. The rock waits for him at the bottom.",
     ),
     Question(
-        God.HECATE, "Whom does a wise man try to beat?", "Himself", "Others",
+        "Whom does a wise man try to beat?", "Himself", "Others",
         "The only rival who never leaves.", "Himself. Others have their own hills.",
     ),
     Question(
-        God.HECATE, "What does a wise man do with the past?", "Lets it go", "Carries it",
+        "What does a wise man do with the past?", "Lets it go", "Carries it",
         "One rock is enough to carry.", "He lets it go. One rock is enough to carry.",
     ),
     Question(
-        God.HECATE, "When does a wise man rest?", "When tired", "Never",
+        "When does a wise man rest?", "When tired", "Never",
         "Even the sun sets.", "When he is tired. Even the sun sets.",
     ),
     Question(
-        God.HECATE, "A friend is slower on the hill. What does a wise man do?", "Walks with him", "Walks ahead",
+        "A friend is slower on the hill. What does a wise man do?", "Walks with him", "Walks ahead",
         "A hill is shorter for two.", "He walks with him. A hill is shorter for two.",
     ),
     Question(
-        God.HECATE, "Where does a wise man find quiet?", "In himself", "In the hills",
+        "Where does a wise man find quiet?", "In himself", "In the hills",
         "He carries it on every road.", "In himself. He carries it on every road.",
     ),
     Question(
-        God.HECATE, "What makes a long road short?", "Good company", "Grumbling",
+        "What makes a long road short?", "Good company", "Grumbling",
         "Talk well, and the miles fly.", "Good company. Grumbling makes every mile longer.",
     ),
     Question(
-        God.HECATE, "A wise man finds a coin on the road. What does he ask?", "Whose is it?", "Who saw me?",
+        "A wise man finds a coin on the road. What does he ask?", "Whose is it?", "Who saw me?",
         "A light heart is worth more than a coin.", "Whose is it? A light heart is worth more than a coin.",
     ),
     Question(
-        God.HECATE, "Which is richer: a full purse or a full heart?", "A full heart", "A full purse",
+        "Which is richer: a full purse or a full heart?", "A full heart", "A full purse",
         "A heart cannot be stolen.", "A full heart. A purse can be stolen.",
+    ),
+    Question(
+        "Who answers every call, but has no voice of her own?", "Echo", "A lark",
+        "She can only say the last words of others.", "Echo. A lark sings a song of her own.",
+    ),
+    Question(
+        "What has a head and a tail, but no body?", "An obol", "A snake",
+        "Every coin has two faces, and no body at all.", "An obol. A snake is nearly all body.",
+    ),
+    Question(
+        "What must be broken before you can use it?", "An egg", "A shield",
+        "And the hen will lay another one.", "An egg. A broken shield helps nobody.",
+    ),
+    Question(
+        "What has four legs, a head and a foot, yet never walks?", "A bed", "A goat",
+        "Rest in it well; the hill will wait.", "A bed. A goat walks all day long.",
+    ),
+    Question(
+        "What flies all day and never rests, though it has no wings?", "The wind", "An eagle",
+        "It pushes the clouds, as you push the rock.", "The wind. An eagle rests on the rocks.",
+    ),
+    Question(
+        "What follows you in the sun, and leaves you in the dark?", "Your shadow", "Your dog",
+        "It climbs the hill with you every day.", "Your shadow. A dog stays by you at night.",
+    ),
+    Question(
+        "What can you break without touching it?", "A promise", "A loaf",
+        "So keep it whole.", "A promise. Bread you break with your hands.",
+    ),
+    Question(
+        "What is always ahead of you, yet you can never see it?", "Tomorrow", "The path",
+        "Today is the only day you can push.", "Tomorrow. The path you can see, a little.",
+    ),
+    Question(
+        "Which is heavier: a talent of feathers, or a talent of stone?", "They weigh the same", "The stone",
+        "A talent is a talent. Your rock is heavier.", "They weigh the same. A talent is a talent.",
+    ),
+    Question(
+        "Who has a hundred eyes and never sleeps?", "Argus", "A peacock",
+        "Later, Hera set his eyes on the peacock's tail.", "Argus. The peacock only wears his eyes.",
+    ),
+    Question(
+        "Who carries the sky on his shoulders?", "Atlas", "Hermes",
+        "And you thought your rock was heavy.", "Atlas. Hermes carries only messages.",
+    ),
+    Question(
+        "Who flew too close to the sun?", "Icarus", "Daedalus",
+        "His wings were wax. Your rock is stone.", "Icarus. His father flew low, and lived.",
+    ),
+    Question(
+        "What did Prometheus steal from the gods, for men?", "Fire", "Gold",
+        "He was chained to a rock for it. You only push one.", "Fire. The gods kept their gold.",
+    ),
+    Question(
+        "Who opened the jar that let all the troubles out?", "Pandora", "Penelope",
+        "Only hope stayed inside.", "Pandora. Penelope wove, and waited.",
+    ),
+    Question(
+        "Who waited twenty years for her husband to come home?", "Penelope", "Helen",
+        "She wove by day, and undid it by night.", "Penelope. Helen was the one who left.",
+    ),
+    Question(
+        "Who stands in water he can never drink?", "Tantalus", "Orpheus",
+        "Your rock is kinder than his thirst.", "Tantalus. Orpheus had other troubles.",
+    ),
+    Question(
+        "Who looked back, and lost his love at the gates of the dead?", "Orpheus", "Odysseus",
+        "Some roads are walked without looking back.", "Orpheus. Odysseus found his way home.",
+    ),
+    Question(
+        "Who cleaned the stables of King Augeas in one day?", "Heracles", "Theseus",
+        "He turned two rivers through them.", "Heracles. He turned two rivers through them.",
+    ),
+    Question(
+        "Who found the way out of the labyrinth with a thread?", "Theseus", "Minos",
+        "Ariadne gave him the thread.", "Theseus. Minos kept the beast inside.",
+    ),
+    Question(
+        "Who pushes a rock up a hill, forever?", "Sisyphus", "Atlas",
+        "And one day, you may smile at it.", "Sisyphus. You of all people should know.",
     ),
 )
 
@@ -213,12 +296,12 @@ val SAYINGS: List<Quote> = QUOTES.filter { it.author in PEOPLE && '"' !in it.tex
 
 /** Hermes asks who said [saying], and names [other] too. */
 fun hermes(saying: Quote, other: String) = Question(
-    God.HERMES, whoSaid(saying), saying.author, other,
+    whoSaid(saying), saying.author, other,
     "These are the words of ${saying.author}.", "These are the words of ${saying.author}.",
 )
 
-/** A god on the screen: it comes in, asks, and leaves. The right answer stands on the left when [rightOnLeft]. */
-class Vision(val question: Question, val rightOnLeft: Boolean) {
+/** A [god] on the screen: it comes in, asks its [question], and leaves. The right answer stands on the left when [rightOnLeft]. */
+class Vision(val question: Question, val god: God, val rightOnLeft: Boolean) {
     enum class Phase { COMING, ASKING, LEAVING }
 
     var phase = Phase.COMING
@@ -272,35 +355,36 @@ class Voices(private val seed: Int, drawn: Int, count: Double?, rightAnswers: In
     var vision: Vision? = null
         private set
 
-    /** The gods come in turn, each round in a new order. Each god asks all its questions before one comes again. */
-    fun visionAt(k: Int): Vision {
-        val round = k / God.entries.size
-        val god = God.entries.shuffled(Random(seed + round * 7919))[k % God.entries.size]
-        val question = when (god) {
-            God.SPHINX -> pick(RIDDLES, god, round)
-            God.HECATE -> pick(ROADS, god, round)
-            God.HERMES -> pick(SAYINGS, god, round).let { saying ->
-                hermes(saying, PEOPLE.filter { it != saying.author }.random(Random(seed xor k)))
-            }
-        }
-        return Vision(question, Random(seed + k * 31).nextBoolean())
+    /**
+     * Each round of three visions brings Hermes with the next saying, and the two gods of [place] with the next two riddles,
+     * in an order made from the seed. So no saying and no riddle comes again before all have come, also across a move.
+     */
+    fun visionAt(k: Int, place: Place): Vision {
+        val round = k / 3
+        val order = Random(seed + round * 7919)
+        val slot = listOf(0, 1, 2).shuffled(order)[k % 3]
+        val gods = godsOf(place).filter { it != God.HERMES }.shuffled(order)
+        if (slot > 0) return Vision(nth(RIDDLES, 2 * round + slot - 1, 0), gods[slot - 1], Random(seed + k * 31).nextBoolean())
+        val saying = nth(SAYINGS, round, HERMES_ORDER)
+        return Vision(hermes(saying, PEOPLE.filter { it != saying.author }.random(Random(seed xor k))), God.HERMES, Random(seed + k * 31).nextBoolean())
     }
 
-    private fun <T> pick(list: List<T>, god: God, round: Int): T {
-        val order = list.indices.shuffled(Random(seed + god.ordinal * 104729 + round / list.size * 7919))
-        return list[order[round % list.size]]
+    /** The [n]th of [list], which comes in a new shuffle each time through it, made from the seed and [salt]. */
+    private fun <T> nth(list: List<T>, n: Int, salt: Int): T {
+        val order = list.indices.shuffled(Random(seed + salt + n / list.size * 7919))
+        return list[order[n % list.size]]
     }
 
     /** The player turned the knob [turns] times. When the count runs out, the next vision comes, and it is returned. */
-    fun pushed(turns: Double): Vision? {
+    fun pushed(turns: Double, place: Place): Vision? {
         if (vision != null) return null
         count -= turns
-        return if (count > 0) null else summon()
+        return if (count > 0) null else summon(place)
     }
 
     /** The next vision comes at once, and the count starts again. */
-    fun summon(): Vision {
-        val v = visionAt(drawn++)
+    fun summon(place: Place): Vision {
+        val v = visionAt(drawn++, place)
         vision = v
         count = random.nextDouble(NEXT.start, NEXT.endInclusive)
         return v
@@ -326,5 +410,7 @@ class Voices(private val seed: Int, drawn: Int, count: Double?, rightAnswers: In
         const val ASK_TIME = 20.0
         /** The turn, after a new touch, that picks an answer: an eighth of a turn. */
         const val ANSWER_TURN = 1.0 / 8
+        /** Hermes keeps the order of his sayings from before the gods of each world. */
+        private const val HERMES_ORDER = 104729
     }
 }

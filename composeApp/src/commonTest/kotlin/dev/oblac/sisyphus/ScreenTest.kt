@@ -18,6 +18,7 @@ import dev.oblac.sisyphus.game.Weather
 import dev.oblac.sisyphus.game.items
 import dev.oblac.sisyphus.game.LABORS
 import dev.oblac.sisyphus.game.progress
+import dev.oblac.sisyphus.game.RIDDLES
 import dev.oblac.sisyphus.gfx.PixelFont
 import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.ui.AGORA_NOTE
@@ -1248,7 +1249,7 @@ class ScreenTest {
         /** The columns of the answer pixels when only [left], or only [right], stands in its corner. */
         fun columns(left: String, right: String): List<Int> {
             val px = Pixels(l.scene.w, l.scene.h).apply { clear(rgb(0x404040)) }
-            val v = Vision(Question(God.HERMES, "Who?", left, right, "Yes.", "No."), rightOnLeft = true)
+            val v = Vision(Question("Who?", left, right, "Yes.", "No."), God.HERMES, rightOnLeft = true)
             v.update(1.0)
             v.ask()
             drawVision(px, v)
@@ -1510,5 +1511,14 @@ class ScreenTest {
         }
         assertNotEquals(right(5.0, 1), right(6.0, 1))
         assertEquals(right(5.0, 2), right(6.0, 2))
+    }
+
+    @Test
+    fun eachGodHasItsOwnPicture() {
+        val pictures = God.entries.map { god ->
+            val v = Vision(RIDDLES[0], god, rightOnLeft = true).apply { update(1.0) }
+            Pixels(120, 120).apply { clear(rgb(0x404040)); drawVision(this, v) }.data.toList()
+        }
+        assertEquals(God.entries.size, pictures.toSet().size)
     }
 }

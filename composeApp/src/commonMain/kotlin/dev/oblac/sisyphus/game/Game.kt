@@ -320,13 +320,13 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     private fun listen(turn: Double, dt: Double) {
         val v = vision
         if (v == null) {
-            if (summit == null && !atTop) voices.pushed(abs(turn) / (2 * PI))?.let { come(it) }
+            if (summit == null && !atTop) voices.pushed(abs(turn) / (2 * PI), place)?.let { come(it) }
             return
         }
         v.update(dt)
         when (v.phase) {
             Vision.Phase.COMING -> when {
-                quotes.quote.text != v.question.text -> quotes.announce(Quote(v.question.text, v.question.god.title))
+                quotes.quote.text != v.question.text -> quotes.announce(Quote(v.question.text, v.god.title))
                 v.light >= 1.0 && quotes.phase == QuoteBox.Phase.SHOWING -> {
                     v.ask()
                     askedGrabs = knob.grabs
@@ -344,7 +344,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
                     answerTurn >= Voices.ANSWER_TURN -> pick(v, left = false)
                     answerTurn <= -Voices.ANSWER_TURN -> pick(v, left = true)
                     v.asked >= Voices.ASK_TIME -> {
-                        quotes.announce(Quote(v.question.god.farewell, v.question.god.title))
+                        quotes.announce(Quote(v.god.farewell, v.god.title))
                         v.leave()
                     }
                 }
@@ -368,7 +368,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     /** A vision comes: the knob stops, and the god asks in the panel of the wise words. */
     private fun come(v: Vision) {
         knob.stop()
-        quotes.announce(Quote(v.question.text, v.question.god.title))
+        quotes.announce(Quote(v.question.text, v.god.title))
         onVision()
         save()
     }
@@ -381,21 +381,21 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
             onObol(1)
         }
         voices.answer(right)
-        quotes.announce(Quote(v.question.reply(right), v.question.god.title))
+        quotes.announce(Quote(v.question.reply(right), v.god.title))
         save()
     }
 
     /** A vision that comes or asks ends without an answer, and its god says farewell. */
     fun endVision() {
         val v = vision ?: return
-        if (v.phase != Vision.Phase.LEAVING) quotes.announce(Quote(v.question.god.farewell, v.question.god.title))
+        if (v.phase != Vision.Phase.LEAVING) quotes.announce(Quote(v.god.farewell, v.god.title))
         voices.end()
     }
 
     /** For dev builds: a vision comes at once. */
     fun summonVision() {
         voices.end()
-        come(voices.summon())
+        come(voices.summon(place))
     }
 
     /** For dev builds: the next labor of the knob turns is done at the next click of the knob. */

@@ -159,6 +159,8 @@ The items of Mount Etna:
 
 The beauty of Etna: now and then the crater throws fire into the sky; the eagle of Zeus flies by with a thunderbolt; at night, Demeter's two torches cross the lava fields.
 
+The voices of Etna: Hephaestus and Empedocles ask the riddles, and Hermes asks "Who said this?". See `docs/voices.md`.
+
 The items of The Underworld:
 
 | Line | I | II | III |
@@ -170,6 +172,8 @@ The items of The Underworld:
 | Beauty | Boat of Charon | Psyche | Lights of Elysium |
 
 The beauty of The Underworld: now and then Charon rows his boat across the Styx; Psyche flies by on butterfly wings; at night, the souls of Elysium drift over the meadow as small lights.
+
+The voices of The Underworld: Charon and Persephone ask the riddles, and Hermes asks "Who said this?".
 
 ## Later
 

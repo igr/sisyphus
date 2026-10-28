@@ -4,11 +4,12 @@ import dev.oblac.sisyphus.game.God
 import dev.oblac.sisyphus.game.NARROWEST_ANSWER
 import dev.oblac.sisyphus.game.NARROWEST_TEXT
 import dev.oblac.sisyphus.game.PEOPLE
+import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.RIDDLES
-import dev.oblac.sisyphus.game.ROADS
 import dev.oblac.sisyphus.game.SAYINGS
 import dev.oblac.sisyphus.game.Vision
 import dev.oblac.sisyphus.game.Voices
+import dev.oblac.sisyphus.game.godsOf
 import dev.oblac.sisyphus.game.hermes
 import dev.oblac.sisyphus.gfx.PixelFont
 import kotlin.random.Random
@@ -21,7 +22,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class VoicesTest {
-    private val all = RIDDLES + ROADS + SAYINGS.map { hermes(it, "Seneca") }
+    private val all = RIDDLES + SAYINGS.map { hermes(it, "Seneca") }
     private val farewells = God.entries.map { it.farewell }
 
     private fun fits(text: String, width: Int, lines: Int): Boolean {
@@ -68,16 +69,29 @@ class VoicesTest {
     }
 
     @Test
-    fun riddlesBelongToTheSphinxAndRoadsToHecate() {
-        assertTrue(RIDDLES.all { it.god == God.SPHINX })
-        assertTrue(ROADS.all { it.god == God.HECATE })
+    fun eachWorldHasHermesAndTwoGodsOfItsOwn() {
+        assertEquals(setOf(God.SPHINX, God.HERMES, God.HECATE), godsOf(Place.CORINTH).toSet())
+        assertEquals(setOf(God.HEPHAESTUS, God.HERMES, God.EMPEDOCLES), godsOf(Place.ETNA).toSet())
+        assertEquals(setOf(God.CHARON, God.HERMES, God.PERSEPHONE), godsOf(Place.UNDERWORLD).toSet())
+        for (place in Place.entries) assertEquals(3, godsOf(place).size)
+    }
+
+    @Test
+    fun hermesAsksTheQuotesAndTheOthersTheRiddles() {
+        val v = Voices(1, 0, null, 0, Random(2))
+        for (place in Place.entries) for (k in 0 until 30) {
+            val vision = v.visionAt(k, place)
+            assertTrue(vision.god in godsOf(place))
+            if (vision.god == God.HERMES) assertTrue(vision.question.text.startsWith("Who said this?"))
+            else assertTrue(vision.question in RIDDLES, vision.question.text)
+        }
     }
 
     @Test
     fun noQuestionComesTwice() {
-        val texts = (RIDDLES + ROADS).map { it.text }
+        val texts = RIDDLES.map { it.text }
         assertEquals(texts.size, texts.toSet().size)
-        assertTrue((RIDDLES + ROADS).all { it.right != it.wrong })
+        assertTrue(RIDDLES.all { it.right != it.wrong })
     }
 
     @Test
@@ -88,8 +102,8 @@ class VoicesTest {
     @Test
     fun theCountRunsDownWithTurns() {
         val v = Voices(1, 0, 10.0, 0, Random(2))
-        assertNull(v.pushed(9.5))
-        assertNotNull(v.pushed(1.0))
+        assertNull(v.pushed(9.5, Place.CORINTH))
+        assertNotNull(v.pushed(1.0, Place.CORINTH))
         assertEquals(1, v.drawn)
         assertTrue(v.count in 600.0..1800.0)
     }
@@ -97,14 +111,16 @@ class VoicesTest {
     @Test
     fun theGodsComeInTurn() {
         val v = Voices(1, 0, null, 0, Random(2))
-        for (r in 0..9) assertEquals(God.entries.toSet(), (0..2).map { v.visionAt(3 * r + it).question.god }.toSet())
+        for (place in Place.entries) for (r in 0..9) assertEquals(godsOf(place).toSet(), (0..2).map { v.visionAt(3 * r + it, place).god }.toSet())
     }
 
+    /** The world changes every 7 visions, also in the middle of a round: still no riddle comes twice before all have come. */
     @Test
-    fun aRiddleComesAgainOnlyAfterAllRiddles() {
+    fun noRiddleComesAgainBeforeAllHaveComeInAllWorlds() {
         val v = Voices(1, 0, null, 0, Random(2))
-        val riddles = generateSequence(0) { it + 1 }.map { v.visionAt(it).question }.filter { it.god == God.SPHINX }.take(RIDDLES.size).toList()
-        assertEquals(RIDDLES.size, riddles.map { it.text }.toSet().size)
+        val riddles = generateSequence(0) { it + 1 }.map { k -> v.visionAt(k, Place.entries[k / 7 % Place.entries.size]) }
+            .filter { it.god != God.HERMES }.map { it.question }.take(RIDDLES.size).toList()
+        assertEquals(RIDDLES.size, riddles.toSet().size)
     }
 
     @Test
@@ -112,15 +128,15 @@ class VoicesTest {
         val a = Voices(5, 0, null, 0, Random(1))
         val b = Voices(5, 0, null, 0, Random(2))
         for (k in 0..30) {
-            assertEquals(a.visionAt(k).question.text, b.visionAt(k).question.text)
-            assertEquals(a.visionAt(k).rightOnLeft, b.visionAt(k).rightOnLeft)
+            assertEquals(a.visionAt(k, Place.CORINTH).question.text, b.visionAt(k, Place.CORINTH).question.text)
+            assertEquals(a.visionAt(k, Place.CORINTH).rightOnLeft, b.visionAt(k, Place.CORINTH).rightOnLeft)
         }
     }
 
     @Test
     fun hermesNamesAnotherPerson() {
         val v = Voices(1, 0, null, 0, Random(2))
-        val asked = (0..60).map { v.visionAt(it).question }.filter { it.god == God.HERMES }
+        val asked = (0..60).map { v.visionAt(it, Place.CORINTH) }.filter { it.god == God.HERMES }.map { it.question }
         assertTrue(asked.size >= 20)
         for (q in asked) {
             assertNotEquals(q.right, q.wrong)
@@ -130,7 +146,7 @@ class VoicesTest {
 
     @Test
     fun aVisionComesInAsksAndLeaves() {
-        val v = Vision(RIDDLES[0], rightOnLeft = true)
+        val v = Vision(RIDDLES[0], God.SPHINX, rightOnLeft = true)
         v.update(0.5)
         assertEquals(0.5, v.light, 1e-9)
         v.update(1.0)
@@ -143,5 +159,27 @@ class VoicesTest {
         assertTrue(v.over)
         assertEquals(RIDDLES[0].right, v.left)
         assertEquals(RIDDLES[0].wrong, v.right)
+    }
+
+    @Test
+    fun sixtyRiddles() {
+        assertEquals(60, RIDDLES.size)
+        assertEquals(60, RIDDLES.map { it.text }.toSet().size)
+    }
+
+    /** Any god of any world can ask any riddle, so no riddle names one of them. */
+    @Test
+    fun noRiddleNamesAGod() {
+        val names = God.entries.filter { it.place != null }.map { it.title.removePrefix("the ") }
+        for (q in RIDDLES) for (t in listOf(q.text, q.right, q.wrong, q.yes, q.no)) {
+            assertTrue(names.none { it in t }, "names a god: \"$t\"")
+        }
+        assertTrue(RIDDLES.none { "I have two" in it.yes || "I have two" in it.no })
+    }
+
+    /** The name of the god stands under its question, as the author under the wise words. */
+    @Test
+    fun everyGodsNameFitsThePanel() {
+        for (g in God.entries) assertTrue(PixelFont.width("— ${g.title}") <= NARROWEST_TEXT, g.title)
     }
 }

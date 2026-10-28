@@ -3,6 +3,8 @@ package dev.oblac.sisyphus
 import dev.oblac.sisyphus.game.DAY_LENGTH
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.Game
+import dev.oblac.sisyphus.game.godsOf
+import dev.oblac.sisyphus.game.God
 import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.game.SUN_CAP
 import dev.oblac.sisyphus.game.MILESTONE_TURNS
@@ -423,8 +425,12 @@ class SnapshotTest {
         }
         for (place in Place.entries) {
             val s = screen(1, 0.5, place = place)
-            asked(s, place.id + 1)
-            write(s.render(), "voice-${place.id}", 3)
+            val seen = mutableSetOf<God>()
+            while (seen.size < godsOf(place).size) {
+                asked(s, 1)
+                val god = s.game.vision!!.god
+                if (seen.add(god)) write(s.render(), "voice-${place.id}-${god.name.lowercase()}", 3)
+            }
         }
         val small = Screen(Game(MemoryStore(mapOf("effort" to effortAt(1, 0.5))), seed = 3), seed = 5).apply { resize(1080, 2340, 144, 102) }
         asked(small, 1)

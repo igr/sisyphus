@@ -15,7 +15,7 @@ A climb needs moments that the player does not expect, not only a new item now a
 
 ## Not in this project
 
-- Voices of their own in each world, such as Charon and Persephone in The Underworld. All the worlds have the same three voices first. See "Later".
+- Questions of each world's own. All worlds share the same riddles and the same wise words; only the gods who ask them change.
 - The gods change their minds over the climbs. See "Later".
 - The legendary tasks. This project only counts the right answers for them.
 
@@ -47,20 +47,34 @@ With no answer in 20 seconds, the god says a farewell line, and the vision fades
 
 ## The voices
 
-Three gods come in turn, in an order that the game shuffles:
+In each world, three gods come in turn, in an order that the game shuffles. Hermes comes in every world. The two other gods belong to the world:
 
-| God | Asks | Example |
+| World | The two gods of the world |
+|---|---|
+| Corinth | The Sphinx, and Hecate of the crossroads |
+| Mount Etna | Hephaestus, the smith of the gods, whose forge is under the volcano, and Empedocles, the philosopher who leapt into its crater |
+| The Underworld | Charon, the ferryman of the dead, and Persephone, their queen |
+
+There are two kinds of questions:
+
+| Kind | Who asks | Example |
 |---|---|---|
-| The Sphinx | A riddle | "What walks on four feet at dawn, on two at noon, and on three at dusk?" A man, or a horse. |
-| Hermes | "Who said this?" | One of the wise words, its author, and the author of another one. |
-| Hecate, at a crossroads | Which road a wise man takes | Two roads, such as the steep road and the easy road. |
+| A riddle | The two gods of the world | "What walks on four feet at dawn, on two at noon, and on three at dusk?" A man, or a horse. |
+| "Who said this?" | Hermes | One of the wise words, its author, and the author of another one. |
 
-- Each riddle and each crossroads has a question, a right answer, a wrong answer, a reply for a right answer, and a reply for a wrong answer. The game puts "Correct." or "Wrong." before the reply, so a reply does not start with "Yes" or "No". The first version has 20 riddles and 20 crossroads.
-- The riddles, the crossroads and the replies may be written for the game. They do not need an old source, but they keep the calm and warm mood of the wise words.
+- All worlds share one pool of 60 riddles: the 20 riddles of the Sphinx, the 20 questions of Hecate's crossroads, and 20 new ones. Some of the new ones ask about the myths, such as "Who carries the sky on his shoulders?" The two gods of the world take the riddles from the pool in turn.
+- Any god can ask any riddle, so no question and no reply names or describes the god who asks it.
+- Each riddle has a question, a right answer, a wrong answer, a reply for a right answer, and a reply for a wrong answer. The game puts "Correct." or "Wrong." before the reply, so a reply does not start with "Yes" or "No". Only one answer is right, and the wrong one is clearly wrong.
+- The riddles and the replies may be written for the game. They do not need an old source, but they keep the calm and warm mood of the wise words.
+- Each god has a farewell of its own, which it says when nobody answers.
 - Hermes makes his questions from the wise words, so they never run out. He uses only sayings of real people, not the lines of Sisyphus and his world, and the other author is never the same person under another name.
 - The right answer stands on the left or on the right at random.
-- A question does not come again until all the questions of its god have come.
+- A riddle does not come again until all 60 riddles have come, in all worlds together. A saying of Hermes does not come again until all his sayings have come.
 - Every text uses only the letters of `PixelFont`, and fits on the smallest phone: a question or a reply in 3 lines of the panel, and an answer in 2 lines of its half of the scene, 46 pixels wide. Today, 5 names of authors do not fit: Antisthenes, Empedocles, La Rochefoucauld, Schopenhauer and Xenophanes. Hermes leaves them out. A test checks every text, as `QuotesTest` does for the wise words.
+
+## A new world
+
+Each new world names the two gods who ask its riddles, draws their sprites, and writes their farewells. The `new-world` skill lists them among the parts of a world.
 
 ## The reward
 
@@ -69,7 +83,7 @@ Three gods come in turn, in an order that the game shuffles:
 
 ## The art
 
-- Three large sprites, one for each god, about 50 by 30 pixels, drawn in code like the rest of the game: the Sphinx (a woman's head, a lion's body and wings), Hermes (the winged hat and the caduceus), and Hecate (a torch in each hand).
+- Seven large sprites, one for each god, about 50 by 30 pixels, drawn in code like the rest of the game: the Sphinx (a woman's head, a lion's body and wings), Hermes (the winged hat and the caduceus), Hecate (a torch in each hand), Hephaestus (a bearded smith with his hammer), Empedocles (a philosopher with the bronze sandal that the volcano threw back), Charon (a hooded ferryman with his pole), and Persephone (a crown, and a pomegranate in her hand).
 - The vision: the scene darkens toward deep blue by about 60%. A soft, dithered light surrounds the god, a cream line traces its edge, and the figure shows at about 80% over the dark scene.
 - In every world, the vision appears in the same place, high in the scene. In The Underworld, it appears under the rock roof.
 
@@ -84,10 +98,9 @@ Three gods come in turn, in an order that the game shuffles:
 
 - The dev screen gets a row for the voices. Now brings a vision at once, and Next turn brings one at the next click of the knob, the way a vision really comes.
 - Tests: a vision comes when the count of the player's turns runs out, and the work of the gods does not move the count; no vision in the final climb; a right answer adds one obol, and a wrong answer or no answer adds nothing; every text fits.
-- Snapshots: a vision in each world, and the answers under the vision on the smallest phone.
+- Snapshots: a vision of each of the seven gods, and the answers under the vision on the smallest phone.
 
 ## Later
 
-- Voices of their own in each world: Charon and Persephone in The Underworld, Hephaestus and Empedocles on Mount Etna.
 - The gods change their minds over the climbs: Zeus is angry, then puzzled, then silent.
 - More gods: Zeus and Heracles.

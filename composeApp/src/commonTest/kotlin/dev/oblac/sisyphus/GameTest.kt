@@ -17,6 +17,7 @@ import dev.oblac.sisyphus.game.SUN_CAP
 import dev.oblac.sisyphus.game.TUTORIAL
 import dev.oblac.sisyphus.game.Vision
 import dev.oblac.sisyphus.game.WORK_PER_OBOL
+import dev.oblac.sisyphus.game.godsOf
 import dev.oblac.sisyphus.game.Weather
 import dev.oblac.sisyphus.gfx.PixelFont
 import kotlin.math.PI
@@ -529,7 +530,7 @@ class GameTest {
         game.turn(2.5 * 2 * PI)
         val vision = assertNotNull(game.vision)
         assertEquals(vision.question.text, game.quotes.quote.text)
-        assertEquals(vision.question.god.title, game.quotes.quote.author)
+        assertEquals(vision.god.title, game.quotes.quote.author)
     }
 
     @Test
@@ -647,7 +648,7 @@ class GameTest {
     @Test
     fun noAnswerSaysFarewell() {
         val game = asking()
-        val god = game.vision!!.question.god
+        val god = game.vision!!.god
         repeat(25 * 60) { if (game.vision?.phase == Vision.Phase.ASKING) game.update(DT) }
         assertEquals(Vision.Phase.LEAVING, game.vision?.phase)
         assertEquals(god.farewell, game.quotes.quote.text)
@@ -698,7 +699,7 @@ class GameTest {
         val again = Game(store, seed = 2, wall = { 0.0 })
         assertEquals(game.voices.drawn, again.voices.drawn)
         assertEquals(game.voices.count, again.voices.count, 1e-9)
-        assertEquals(game.voices.visionAt(5).question.text, again.voices.visionAt(5).question.text)
+        assertEquals(game.voices.visionAt(5, Place.CORINTH).question.text, again.voices.visionAt(5, Place.CORINTH).question.text)
         assertNull(again.vision)
     }
 
@@ -889,5 +890,23 @@ class GameTest {
         game.turn(0.5)
         assertEquals(done + 1, game.laborsDone)
         assertEquals("A labor is done: Spin Doctor.", game.wiseWords(30.0)[1].text)
+    }
+
+    @Test
+    fun aMoveBringsTheGodsOfTheNewWorld() {
+        val game = Game(MemoryStore(), seed = 1, wall = { 0.0 })
+        game.moveTo(Place.ETNA)
+        repeat(6) {
+            game.summonVision()
+            assertTrue(game.vision!!.god in godsOf(Place.ETNA))
+        }
+    }
+
+    @Test
+    fun anOlderSaveGoesOnAsking() {
+        val store = MemoryStore(mapOf("visionsDrawn" to 7.0, "visionSeed" to 42.0, "place" to Place.ETNA.id.toDouble(), "nextVision" to 0.5))
+        val game = Game(store, seed = 1, wall = { 0.0 })
+        game.turn(2 * PI)
+        assertTrue(game.vision!!.god in godsOf(Place.ETNA))
     }
 }
