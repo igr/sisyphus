@@ -22,7 +22,7 @@ The last two columns show what happens to each value when Sisyphus reaches the t
 | `position` | How far Sisyphus walked up the hill, in pixels. | Back to 0 | Back to 0 |
 | `knob` | The angle of the knob, in radians. | Kept | Kept |
 | `obols` | The obols, with the part of the next obol. | Back to 0 | Back to 0 |
-| `nextObol` | The work that the next obol needs, in turns. It is set when the obol before it comes. | Back to 180 | Back to 180 |
+| `nextObol` | The work that the next obol needs, in turns. It is set when the obol before it comes. | Back to 36 | Back to 36 |
 | `shop.rock` | The tier bought in the Rock line: 0 to 3. | Back to 0 | Back to 0 |
 | `shop.beside` | The tier bought in the Sidekicks line: 0 to 3. | Back to 0 | Back to 0 |
 | `shop.alone` | The tier bought in the Gods line: 0 to 3. | Back to 0 | Back to 0 |
@@ -48,10 +48,11 @@ When a key is not there, the game uses a start value:
 - `sound`: on.
 - `summit`: no final climb.
 - `quoteSeed`: a random number.
-- `nextVision`: from 300 to 600 turns, at random, in a new game and in a game saved before the visions.
+- `nextVision`: from 150 to 300 turns, at random, in a new game and in a game saved before the visions. A count saved with other numbers is never more than the longest wait between visions now: 600 turns.
 - `visionSeed`: a random number.
 - `savedAt`: no time away.
-- `nextObol`: 180 in a new game. A game saved before there was this key counts the obols of its climb, the spent ones too: each of the first four needs 180, made smaller by a blessing. After them, an obol needs the work per obol of the blessing.
+- `nextObol`: 36 in a new game. A game saved before there was this key counts the obols of its climb, the spent ones too: each of the first four needs 36, made smaller by a blessing. After them, an obol needs the work per obol of the blessing. An obol saved with other numbers needs no more work than an obol can need now, and what was earned of it is kept.
+- `summit`: a top saved with other numbers is no farther than the final climb is now.
 - All other keys: 0.
 
 ## Ids that never change

@@ -24,7 +24,7 @@ A world is a new look and new names on the same game. The rules, the economy and
 | Life | Birds by day | `Look.birdUp`, `Look.birdFlat` |
 | Weather | Clear, fair, cloudy, windy, rain | `Weather.of`, the same days in every world; `Look.ash` turns rain into ash |
 | Small things | Dust at his feet, sweat, splashes of rain | `Look.dust`; `SWEAT`, `SPLASH` in `scene/World.kt` |
-| Rocks | River stone, Pumice, Sphere of Daedalus | `items` in `game/Shop.kt`; `Look.rocks`: `ROCKS` in `SceneRenderer.kt`, `ETNA_ROCKS`, `UNDERWORLD_ROCKS` |
+| Rocks | River stone, Pumice, Sphere of Daedalus | `items` in `game/Shop.kt`, prices and effects in `game/Config.kt`; `Look.rocks`: `ROCKS` in `SceneRenderer.kt`, `ETNA_ROCKS`, `UNDERWORLD_ROCKS` |
 | Sidekicks | Merope, Bellerophon, Heracles | `items`; `ICONS` in `ui/Icons.kt`, `ETNA_ICONS`, `UNDERWORLD_ICONS` in `ui/<World>Icons.kt` |
 | Gods | Amalthea, Pan, Thanatos | `items`; icons |
 | Blessings | Purse of Hermes, Gift of Tyche, Wealth of Plutus | `items`; icons |
@@ -41,7 +41,7 @@ These are the same in every world: the price of $0.99, Sisyphus, the first rock,
 3. Add the world last to `Place`, with the next id that was never used, and the product `world_<name>`. Never change or reuse an id or a product: saved games keep the id, and the stores keep the product.
 4. Add the code of the world, as Mount Etna and The Underworld do:
    - `scene/<World>.kt`: its `Look`, props, birds, flyer, rocks, far view and sights. Its sky keys go in `scene/Atmosphere.kt`.
-   - `game/Shop.kt`: its 15 items, made with `item(...)` in `with(Place.<WORLD>)`, so that they get the prices and the effects of Corinth.
+   - `game/Shop.kt`: its 15 items, made with `item(...)` in `with(Place.<WORLD>)`, so that they get the prices and the effects of `game/Config.kt`. Where a details text tells a number, write {x} for the effect, {days} for the days per obol of a blessing, and {base} for the days without one, as Corinth does.
    - `ui/<World>Icons.kt`: its 12 icons.
    - Add the world to the `when (place)` branches: `lookOf`, `items`, `itemIcon`, `SceneRenderer.render` (far view and sights) and `World.update` (sights).
    - Sell the world in RevenueCat with the CLI `rc`. This changes the user's accounts, so ask first. Create the product in the Test Store app (`--type non_consumable`, then `rc products prices set <id> --price USD=0.99`), in the App Store app and in the Play Store app. Create the entitlement of the same name and attach the three products. Create the package of the same name in the `worlds` offering and attach them. Then create the store products: the App Store ones with `rc products store plan` and `apply`, for all 175 App Store countries; the Google Play ones by the user in Play Console, which converts the price for every country. The user finishes their review details there. A store never gives back a product id, even after a delete: if one is lost, give the store product a new id, such as `world_underworld2`, and attach it to the same entitlement and package. `Place.product` stays.

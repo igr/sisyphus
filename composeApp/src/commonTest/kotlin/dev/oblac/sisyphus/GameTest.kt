@@ -1,22 +1,19 @@
 package dev.oblac.sisyphus
 
 import dev.oblac.sisyphus.game.CLIMB
+import dev.oblac.sisyphus.game.Config
 import dev.oblac.sisyphus.game.DAY_LENGTH
 import dev.oblac.sisyphus.game.FIRST_OBOL
 import dev.oblac.sisyphus.game.GOAL
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.Knob
 import dev.oblac.sisyphus.game.Line
-import dev.oblac.sisyphus.game.MILESTONE_TURNS
-import dev.oblac.sisyphus.game.OBOL_SPREAD
 import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.game.Quote
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.START_TIME
-import dev.oblac.sisyphus.game.SUN_CAP
 import dev.oblac.sisyphus.game.TUTORIAL
 import dev.oblac.sisyphus.game.Vision
-import dev.oblac.sisyphus.game.WORK_PER_OBOL
 import dev.oblac.sisyphus.game.godsOf
 import dev.oblac.sisyphus.game.Weather
 import dev.oblac.sisyphus.gfx.PixelFont
@@ -161,7 +158,7 @@ class GameTest {
     fun oneTurnEarnsItsShareOfAnObol() {
         val game = Game(seed = 1)
         game.turn(2 * PI)
-        assertEquals(1.0 / FIRST_OBOL, game.shop.obols, 1e-4)
+        assertEquals(1.0 / FIRST_OBOL, game.shop.obols, 0.02 / FIRST_OBOL)
     }
 
     @Test
@@ -170,18 +167,18 @@ class GameTest {
         game.turn(2 * PI)
         assertEquals(PX_PER_TURN * 1.5, game.effort, 0.5)
         assertEquals(PX_PER_TURN * 1.5, game.position, 0.5)
-        assertEquals(6.0 / 720, game.shop.obols, 1e-3)
+        assertEquals(6.0 / Config.WORK_PER_OBOL, game.shop.obols, 1e-3)
     }
 
     @Test
     fun theWorkForTheNextObolIsSavedAsSoonAsTheObolComes() {
-        val store = MemoryStore(mapOf("shop.alone" to 3.0, "obols" to 0.99, "nextObol" to 700.0))
+        val store = MemoryStore(mapOf("shop.alone" to 3.0, "obols" to 0.99, "nextObol" to 150.0))
         val game = Game(store, seed = 1, wall = { 0.0 })
-        assertEquals(700.0, game.shop.nextObol)
-        // Thanatos pushes the 7 turns that are left in 1050 seconds; the knob does not move.
+        assertEquals(150.0, game.shop.nextObol)
+        // Thanatos pushes the 1.5 turns that are left in 225 seconds; the knob does not move.
         repeat(1060) { game.update(1.0) }
         assertEquals(1, game.shop.obols.toInt())
-        assertTrue(game.shop.nextObol in WORK_PER_OBOL - OBOL_SPREAD..WORK_PER_OBOL + OBOL_SPREAD)
+        assertTrue(game.shop.nextObol in Config.WORK_PER_OBOL * (1 - Config.OBOL_SPREAD)..Config.WORK_PER_OBOL * (1 + Config.OBOL_SPREAD))
         assertEquals(game.shop.nextObol, store.load("nextObol"))
         assertEquals(game.shop.nextObol, Game(store, seed = 2, wall = { 0.0 }).shop.nextObol)
     }
@@ -252,7 +249,7 @@ class GameTest {
         repeat(3600) { game.update(1.0) }
         assertEquals(24 * PX_PER_TURN, game.effort, 1e-6)
         assertEquals(0.0, game.position)
-        assertEquals(24.0 / 720, game.shop.obols, 1e-9)
+        assertEquals(24.0 / Config.WORK_PER_OBOL, game.shop.obols, 1e-9)
     }
 
     @Test
@@ -263,7 +260,7 @@ class GameTest {
         now += 3 * 3600
         val again = Game(store, seed = 1, wall = { now })
         assertEquals(72 * PX_PER_TURN, again.effort, 1e-6)
-        assertEquals(72.0 / 720, again.shop.obols, 1e-9)
+        assertEquals(72.0 / Config.WORK_PER_OBOL, again.shop.obols, 1e-9)
         assertEquals("Thanatos pushed 72 times while you were away.", again.quotes.quote.text)
         assertEquals("Hermes", again.quotes.quote.author)
     }
@@ -338,15 +335,15 @@ class GameTest {
     fun hermsMarkEveryHundredTurnsOfTheClimbAndHermesCountsDown() {
         val start = 1000.0
         val game = Game(MemoryStore(allBought + mapOf("position" to start, "summit" to start + CLIMB)), seed = 1, wall = { 0.0 })
-        val step = MILESTONE_TURNS * SUN_CAP * PX_PER_TURN
-        assertEquals((1..8).map { start + it * step }, game.herms)
-        game.turn(99 * 2 * PI, step = 1.0)
+        val step = Config.HERM_TURNS * Config.SUN_CAP * PX_PER_TURN
+        assertEquals((1 until Config.CLIMB_TURNS / Config.HERM_TURNS).map { start + it * step }, game.herms)
+        game.turn((Config.HERM_TURNS - 1) * 2 * PI, step = 1.0)
         assertFalse(game.quotes.quote.text.endsWith("turns to the top."))
         game.turn(2 * 2 * PI, step = 1.0)
-        assertEquals("800 turns to the top.", game.quotes.quote.text)
+        assertEquals("${Config.CLIMB_TURNS - Config.HERM_TURNS} turns to the top.", game.quotes.quote.text)
         assertEquals("Hermes", game.quotes.quote.author)
-        game.turn(100 * 2 * PI, step = 1.0)
-        assertEquals("700 turns to the top.", game.quotes.quote.text)
+        game.turn(Config.HERM_TURNS * 2 * PI, step = 1.0)
+        assertEquals("${Config.CLIMB_TURNS - 2 * Config.HERM_TURNS} turns to the top.", game.quotes.quote.text)
         assertTrue(Game(seed = 1).herms.isEmpty())
     }
 
@@ -394,16 +391,23 @@ class GameTest {
         assertEquals(500.0 + CLIMB, game.summit!!, 1e-9)
     }
 
-    /** From the 15th purchase, the top is as much pushing as 3 days of 5 minutes away, at a turn a second. Hermes says so. */
+    /** From the 15th purchase, the top is the turns of the final climb away. Hermes says that it is in sight. */
     @Test
-    fun theTopIsThreeDaysOfFiveMinutesAway() {
+    fun theTopIsTheFinalClimbAway() {
         val game = Game(MemoryStore(allBought + mapOf("shop.beauty" to 2.0, "obols" to 20.0)), seed = 1, wall = { 0.0 })
         assertTrue(game.buy(Line.BEAUTY))
-        assertEquals("The top is in sight: three more days of pushing.", game.quotes.quote.text)
-        game.turn((3 * 300 - 1) * 2 * PI)
+        assertEquals("The top is in sight. Push on.", game.quotes.quote.text)
+        game.turn((Config.CLIMB_TURNS - 1) * 2 * PI)
         assertFalse(game.atTop)
         game.turn(2 * 2 * PI)
         assertTrue(game.atTop)
+    }
+
+    /** A top saved with other numbers is no farther than the final climb is now. */
+    @Test
+    fun aSavedTopIsNoFartherThanTheFinalClimb() {
+        val game = Game(MemoryStore(allBought + mapOf("position" to 1000.0, "summit" to 1000.0 + 3 * CLIMB)), seed = 1, wall = { 0.0 })
+        assertEquals(1000.0 + CLIMB, game.summit)
     }
 
     @Test
@@ -502,7 +506,8 @@ class GameTest {
         Game(store, seed = 1, wall = { now }).save()
         now += 365 * 24 * 3600.0
         val game = Game(store, seed = 1, wall = { now })
-        assertEquals(24 * 24 * 365.0 / 216, game.shop.obols, 10.0)
+        val plutus = Config.WORK_PER_OBOL * Config.ITEMS.getValue(Line.BLESSING)[2].second
+        assertEquals(24 * 24 * 365.0 / plutus, game.shop.obols, 24 * 24 * 365.0 / plutus / 100)
         val q = game.quotes.quote
         assertEquals("Hermes · ${game.shop.obols.toInt()} obols", q.author)
         assertTrue(PixelFont.wrap(q.text, 119).size <= 3)
@@ -743,7 +748,7 @@ class GameTest {
     @Test
     fun anOldSaveMeetsTheVoicesSoon() {
         val game = Game(MemoryStore(mapOf("effort" to 5000.0)), seed = 1, wall = { 0.0 })
-        assertTrue(game.voices.count in 300.0..600.0)
+        assertTrue(game.voices.count in Config.FIRST_VISION)
     }
 
     @Test

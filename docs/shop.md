@@ -10,7 +10,7 @@ Players need a reason to come back day after day. They push the rock, earn coins
 
 - Players earn coins by pushing. There is no real money in the game.
 - The shop has 15 items: five lines of three.
-- A player who turns the knob about 5 minutes a day buys everything in about a month.
+- A player who turns the knob about 5 minutes a day buys everything in about a week.
 - The day and night animation keeps its calm pace.
 - Some helpers push on their own, also when the app is closed.
 
@@ -33,8 +33,8 @@ Obols come from **work**:
 
 - One turn of the knob is 1 unit of work, multiplied by the bonus from the rock and the helper beside him (1× to 6×).
 - Helpers that push on their own add their own work every hour.
-- The first four obols of a climb need a quarter of the work per obol each: 180 units of work, two and a half days of pushing for each. Thus the first items come soon: three items in the first 20 minutes of turning.
-- Each obol after them needs 720 units of work, plus or minus up to 36 (half a day). On average, that is 10 days of pushing (a day is 72 turns). Because each obol is a little shorter or longer, obols come at all times of the day, not always at the same hour.
+- The first four obols of a climb need a quarter of the work per obol each: 36 units of work, half a day of pushing for each. Thus the first items come soon: four items in the first 5 minutes of turning.
+- Each obol after them needs 144 units of work, plus or minus up to a quarter of it: 36, half a day. On average, that is 2 days of pushing (a day is 72 turns). Because each obol is a little shorter or longer, obols come at all times of the day, not always at the same hour.
 - The work for the next obol is set when the obol before it comes, and it is saved.
 - Blessings lower the work per obol (see the shop). A blessing also makes the next obol, and the fast obols after it, smaller in the same proportion. The part of the next obol that is earned is kept.
 
@@ -49,10 +49,12 @@ Each line is bought from left to right (I, then II, then III). A newer item repl
 | **Rock**: your turns count more | River stone of Asopus · 2 obols · 1.5× | Pumice from Hephaestus' forge · 5 · 2× | Sphere of Daedalus · 9 · 3× |
 | **Sidekicks**: help only while you push | Merope, his wife · 3 · 1.25× | Bellerophon, his grandson · 6 · 1.5× | Heracles · 10 · 2× |
 | **Gods**: push all the time, also with the app closed | Amalthea, the goat who nursed Zeus · 1 · 6 turns an hour | Pan · 4 · 12 turns an hour | Thanatos, who never sleeps · 8 · 24 turns an hour |
-| **Blessings**: more obols | Purse of Hermes · 2 · an obol per 7 days of work | Gift of Tyche · 6 · per 5 days | Wealth of Plutus · 10 · per 3 days |
+| **Blessings**: more obols | Purse of Hermes · 2 · an obol per 1.5 days of work | Gift of Tyche · 6 · per day | Wealth of Plutus · 10 · per half day |
 | **Beauty**: in the background, no effect on progress | Dolphins of Poseidon · 1 | Pegasus · 2 | The Pleiades · 3 |
 
-All 15 items cost 72 obols together. A blessing leaves a part of the work per obol of 720: 0.7 with Hermes (504), 0.5 with Tyche (360), and 0.3 with Plutus (216). So a new work per obol changes all of them.
+All 15 items cost 72 obols together. A blessing leaves a part of the work per obol of 144: 0.75 with Hermes (108), 0.5 with Tyche (72), and 0.25 with Plutus (36). So a new work per obol changes all of them.
+
+All the numbers of the economy are in `game/Config.kt`: the work per obol, the fast obols, the prices and effects of the items, the final climb, the herms and the visions. The texts that show a number, such as "obol per day", are made from them.
 
 ## What the player sees
 
@@ -80,20 +82,20 @@ Simulation, assuming one knob turn per second while the player plays, and the av
 
 | Daily play | First item | All 15 | Longest wait between items | Top reached | Visions |
 |---|---|---|---|---|---|
-| 2 minutes | Day 2 | Day 55 | 5 days | Day 63 | 6 (5 to 7) |
-| 5 minutes | Day 1 | Day 31 | 3 days | Day 34 | 8 (7 to 9) |
-| 10 minutes | Day 1 | Day 18 | 2 days | Day 19 | 9 (8 to 10) |
-| 30 minutes | Day 1 | Day 7 | 1 day | Day 7 | 10 (9 to 11) |
+| 2 minutes | Day 1 | Day 13 | 2 days | Day 15 | 4 (3 to 4) |
+| 5 minutes | Day 1 | Day 7 | 1 day | Day 8 | 5 (4 to 6) |
+| 10 minutes | Day 1 | Day 4 | 1 day | Day 5 | 6 (5 to 6) |
+| 30 minutes | Day 1 | Day 2 | 1 day | Day 2 | 6 (5 to 7) |
 
-Only the player's own turns bring a vision. So a player who plays less, and lets the gods push while the app is closed, sees fewer visions. Each right answer gives one obol: a player who answers every vision right buys everything about 4 days sooner at 5 minutes a day, on day 27, and reaches the top on day 30.
+Only the player's own turns bring a vision. So a player who plays less, and lets the gods push while the app is closed, sees fewer visions. Each right answer gives one obol: a player who answers every vision right buys everything a day sooner at 5 minutes a day, on day 6, and reaches the top on day 7.
 
-Non-stop play is allowed: at one turn a second, about three and a half hours of turning buys everything, and about 10 visions come.
+Non-stop play is allowed: at one turn a second, about 40 minutes of turning buys everything, and about 6 visions come.
 
-Turning speed matters too: at 5 minutes a day, a slow turner (30 turns a minute) buys everything on day 49, a fast one (90 a minute) on day 23.
+Turning speed matters too: at 5 minutes a day, a slow turner (30 turns a minute) buys everything on day 11, a fast one (90 a minute) on day 5.
 
 Order of purchases at 5 minutes a day, buying the cheapest affordable item: Goat, Dolphins, River stone, Hermes, Pegasus, Merope, Pleiades, Pan, Pumice, Bellerophon, Tyche, Thanatos, Sphere, Heracles, Plutus.
 
-The order matters too. At 5 minutes a day, the fastest order reaches the top on day 27, and the slowest on day 68. The fastest buys the blessings early and Beauty last. The slowest buys Beauty first and the blessings last. A random order reaches the top on day 34, the middle of 300 random orders. A player who saves every obol and buys everything at the end reaches the top on day 169. Beauty is cheap, so that a player who buys it first loses only a week: the top on day 41.
+The order matters too. At 5 minutes a day, the fastest order reaches the top on day 6, and the slowest on day 15. The fastest buys the blessings early and Beauty last. The slowest buys Beauty first and the blessings last. A random order reaches the top on day 8, the middle of 300 random orders. A player who saves every obol and buys everything at the end reaches the top on day 35. Beauty is cheap, so that a player who buys it first loses only a day: the top on day 9.
 
 ## Left to the builder
 
@@ -126,8 +128,8 @@ Other ideas from the same talk, not planned: trials of the gods (a harder climb 
 ## The final climb
 
 - **The goal.** At the first purchase of each climb, Hermes says: "One of fifteen. Buy them all, and the top will come in sight."
-- **The climb.** After the 15th item, Hermes says the top is in sight. Reaching it takes as much pushing as 3 days at 5 minutes a day: 900 turns at the fastest walk. Only the player's own turns move him up; the gods do not climb for him, so he always reaches the top while someone plays. The Greek key in the top row shows how far he has come. Obols stop coming, because there is nothing more to buy. The corner shows only the coin, which still opens the Agora and its sound setting.
-- **Herms.** After every 100 turns of the climb, a herm stands by the path: the stone marker of Greek roads, a pillar with the head of Hermes. As Sisyphus passes it, Hermes says how far the top is, for example "600 turns to the top."
+- **The climb.** After the 15th item, Hermes says the top is in sight. Reaching it takes as much pushing as a day at 5 minutes a day: 300 turns at the fastest walk. Only the player's own turns move him up; the gods do not climb for him, so he always reaches the top while someone plays. The Greek key in the top row shows how far he has come. Obols stop coming, because there is nothing more to buy. The corner shows only the coin, which still opens the Agora and its sound setting.
+- **Herms.** After every 100 turns of the climb, a herm stands by the path: the stone marker of Greek roads, a pillar with the head of Hermes. As Sisyphus passes it, Hermes says how far the top is, for example "200 turns to the top."
 - **The top** is a flat hill. It comes into view just before he gets there, and the knob stops moving him on it. A victory fanfare plays as he reaches it.
 - **The rock rolls down.** He holds it a moment. Then the rock slips back, and he stands up straight. When it rolls past him, he turns around and watches it go down the hill, faster and faster, until it is out of sight.
 - **The black screen.** The screen goes black for Camus: "The struggle itself toward the heights is enough to fill a man's heart. One must imagine Sisyphus happy." It also says how many times he reached the top. After a few seconds, a tap opens the Worlds screen, so that the player can begin again in the same world or in a new one. When the Worlds screen closes, the first morning comes back in the world the player is in.

@@ -14,20 +14,13 @@ import kotlin.random.Random
 
 /** How far Sisyphus walks, in pixels, for one full turn of the knob. */
 const val PX_PER_TURN = 12.0
-const val TURNS_PER_DAY = 72.0
-const val DAY_LENGTH = PX_PER_TURN * TURNS_PER_DAY
+const val DAY_LENGTH = PX_PER_TURN * Config.TURNS_PER_DAY
 
 /** The first day starts just after sunrise. */
 const val START_TIME = 0.27
 
-/** Turns of the knob for the final climb, at the fastest walk: as much pushing as 3 days of 5 minutes, at one turn a second. */
-const val CLIMB_TURNS = 900
-
-/** A herm, the stone marker of Greek roads, stands by the path after every this many turns of the final climb. */
-const val MILESTONE_TURNS = 100
-
 /** The final climb, in pixels walked. Everything is bought by then, so he walks at the fastest. */
-const val CLIMB = CLIMB_TURNS * SUN_CAP * PX_PER_TURN
+const val CLIMB = Config.CLIMB_TURNS * Config.SUN_CAP * PX_PER_TURN
 
 private const val TICKS_PER_TURN = 24
 private const val TICK_ANGLE = 2 * PI / TICKS_PER_TURN
@@ -165,7 +158,7 @@ enum class Place(val id: Int, val title: String, val note: String, val product: 
 /**
  * The state of the push. The knob moves Sisyphus up the hill, whichever way it turns.
  * Effort is what moves the sun: days pass only when he works. A strong rock and strong helpers
- * earn obols faster, but move the sun at most [SUN_CAP] times faster. Helpers on their own push
+ * earn obols faster, but move the sun at most [Config.SUN_CAP] times faster. Helpers on their own push
  * all the time: while the game runs, and for the time it was away, measured by the [wall] clock.
  * Everything the player can see comes back from [store] when the game starts again.
  */
@@ -202,7 +195,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         private set
 
     /** Where the hill ends, in pixels walked; null until all 15 items are bought and the final climb begins. */
-    var summit = store.load(KEY_SUMMIT)?.takeIf { it >= 0 }
+    var summit = store.load(KEY_SUMMIT)?.takeIf { it >= 0 }?.let { min(it, position + CLIMB) }
         private set
     /** How many times Sisyphus reached the top. Starting over keeps it. */
     var climbs = store.load(KEY_CLIMBS)?.toInt() ?: 0
@@ -219,9 +212,9 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     /** How far the final climb has come: from 0 when it begins to 1 at the top; null before it begins. */
     val climbed: Double? get() = summit?.let { (1 - (it - position) / CLIMB).coerceIn(0.0, 1.0) }
 
-    /** Where the herms of the final climb stand, in pixels walked: one every [MILESTONE_TURNS], up to the top. None before the climb. */
+    /** Where the herms of the final climb stand, in pixels walked: one every [Config.HERM_TURNS], up to the top. None before the climb. */
     val herms: List<Double>
-        get() = summit?.let { top -> (1 until CLIMB_TURNS / MILESTONE_TURNS).map { top - CLIMB + it * MILESTONE_TURNS * SUN_CAP * PX_PER_TURN } }
+        get() = summit?.let { top -> (1 until Config.CLIMB_TURNS / Config.HERM_TURNS).map { top - CLIMB + it * Config.HERM_TURNS * Config.SUN_CAP * PX_PER_TURN } }
             ?: emptyList()
 
     /** He stands on the top: the knob moves him no more. */
@@ -290,7 +283,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         val held = vision?.let { it.phase != Vision.Phase.LEAVING } == true
         val turns = if (atTop || held) 0.0 else abs(turn) / (2 * PI)
         turnsPushed += turns
-        moved = turns * min(shop.bonus, SUN_CAP) * PX_PER_TURN
+        moved = turns * min(shop.bonus, Config.SUN_CAP) * PX_PER_TURN
         summit?.let { if (position + moved >= it - 1e-6) moved = it - position }
         val from = position
         position += moved
@@ -373,12 +366,12 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         save()
     }
 
-    /** The player picked the answer on one side. A right answer brings an obol. */
+    /** The player picked the answer on one side. A right answer brings [Config.VISION_OBOLS] obols. */
     private fun pick(v: Vision, left: Boolean) {
         val right = left == v.rightOnLeft
         if (right) {
-            shop.add(1.0)
-            onObol(1)
+            shop.add(Config.VISION_OBOLS.toDouble())
+            onObol(Config.VISION_OBOLS)
         }
         voices.answer(right)
         quotes.announce(Quote(v.question.reply(right), v.god.title))
@@ -429,7 +422,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     private fun passHerm(from: Double) {
         val top = summit ?: return
         val herm = herms.firstOrNull { it > from && it <= position } ?: return
-        val left = ((top - herm) / (SUN_CAP * PX_PER_TURN)).roundToInt()
+        val left = ((top - herm) / (Config.SUN_CAP * PX_PER_TURN)).roundToInt()
         quotes.announce(Quote("$left turns to the top.", "Hermes"))
     }
 
@@ -490,7 +483,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         if (summit != null || !shop.allBought) return
         endVision()
         summit = position + CLIMB
-        quotes.announce(Quote("The top is in sight: three more days of pushing.", "Hermes"))
+        quotes.announce(Quote("The top is in sight. Push on.", "Hermes"))
         dirty = true
     }
 
@@ -537,7 +530,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     fun nearTheNextObol() {
         val turns = (floor(shop.obols) + 1 - shop.obols) * shop.nextObol / shop.bonus - CLICKS_TO_OBOL.toDouble() / TICKS_PER_TURN
         if (turns <= 0) return
-        var moved = turns * min(shop.bonus, SUN_CAP) * PX_PER_TURN
+        var moved = turns * min(shop.bonus, Config.SUN_CAP) * PX_PER_TURN
         summit?.let { moved = min(moved, it - position) }
         position += moved
         effort += moved
@@ -549,7 +542,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     fun nearTheTop() {
         shop.complete()
         beginClimb()
-        summit?.let { position = it - 2 * SUN_CAP * PX_PER_TURN }
+        summit?.let { position = it - 2 * Config.SUN_CAP * PX_PER_TURN }
         save()
     }
 

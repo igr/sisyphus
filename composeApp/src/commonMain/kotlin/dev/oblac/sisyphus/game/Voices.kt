@@ -348,7 +348,7 @@ class Voices(private val seed: Int, drawn: Int, count: Double?, rightAnswers: In
     var drawn = drawn
         private set
     /** The player's turns until the next vision. */
-    var count = count ?: random.nextDouble(FIRST.start, FIRST.endInclusive)
+    var count = count?.coerceAtMost(Config.NEXT_VISION.endInclusive) ?: random.nextDouble(Config.FIRST_VISION.start, Config.FIRST_VISION.endInclusive)
         private set
     var rightAnswers = rightAnswers
         private set
@@ -386,7 +386,7 @@ class Voices(private val seed: Int, drawn: Int, count: Double?, rightAnswers: In
     fun summon(place: Place): Vision {
         val v = visionAt(drawn++, place)
         vision = v
-        count = random.nextDouble(NEXT.start, NEXT.endInclusive)
+        count = random.nextDouble(Config.NEXT_VISION.start, Config.NEXT_VISION.endInclusive)
         return v
     }
 
@@ -405,8 +405,6 @@ class Voices(private val seed: Int, drawn: Int, count: Double?, rightAnswers: In
     }
 
     companion object {
-        val FIRST = 300.0..600.0
-        val NEXT = 600.0..1800.0
         const val ASK_TIME = 20.0
         /** The turn, after a new touch, that picks an answer: an eighth of a turn. */
         const val ANSWER_TURN = 1.0 / 8

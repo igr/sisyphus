@@ -1,6 +1,7 @@
 package dev.oblac.sisyphus.game
 
 import kotlin.math.floor
+import kotlin.math.roundToLong
 import kotlin.random.Random
 
 /**
@@ -24,81 +25,71 @@ class Item(
     val place: Place = Place.CORINTH,
 )
 
-/** However strong the rock and the helpers, the sun and the walk move at most this much faster. */
-const val SUN_CAP = 1.5
+/** Turns of work for each of the fast obols at the start of a climb, before any blessing. */
+const val FIRST_OBOL = Config.WORK_PER_OBOL * Config.FAST_PART
 
-/** Turns of work for one obol, before any blessing: 10 days of pushing, on average. */
-const val WORK_PER_OBOL = 720.0
-
-/** Turns of work for each of the first obols of a climb, before any blessing: a quarter of an obol, two and a half days of pushing, so that the first items come soon. */
-const val FIRST_OBOL = WORK_PER_OBOL / 4
-
-/** How many obols at the start of a climb are fast: each needs [FIRST_OBOL], made smaller by a blessing. */
-const val FAST_OBOLS = 4
-
-/** Each obol after the fast ones needs the work per obol, give or take up to half a day, so that obols come at any time of the day. */
-const val OBOL_SPREAD = TURNS_PER_DAY / 2
-
-/** The items of Corinth. Their prices and effects hold in every world. */
-private val CORINTH_ITEMS = listOf(
-    Item(Line.ROCK, 1, "River stone", "turns count 1.5x", 2, 1.5,
-        "Worn smooth by the river. Every turn of the knob counts 1.5 times, so obols come faster."),
-    Item(Line.ROCK, 2, "Pumice", "turns count 2x", 5, 2.0,
-        "Light, and full of holes. Every turn counts 2 times. It takes the place of the river stone."),
-    Item(Line.ROCK, 3, "Sphere of Daedalus", "turns count 3x", 9, 3.0,
-        "Made perfectly round by the great inventor. Every turn counts 3 times. It takes the place of the pumice."),
-    Item(Line.SIDEKICKS, 1, "Merope", "helps push 1.25x", 3, 1.25,
-        "His wife pushes beside him while you turn the knob. Each turn counts 1.25 times more, on top of the rock."),
-    Item(Line.SIDEKICKS, 2, "Bellerophon", "helps push 1.5x", 6, 1.5,
-        "His grandson, the rider of Pegasus, pushes beside him. Each turn counts 1.5 times more. He takes Merope's place."),
-    Item(Line.SIDEKICKS, 3, "Heracles", "helps push 2x", 10, 2.0,
-        "The strongest of the heroes pushes beside him. Each turn counts 2 times more. He takes Bellerophon's place."),
-    Item(Line.GODS, 1, "Amalthea", "6 pushes an hour", 1, 6.0,
-        "The goat who nursed Zeus pushes the rock 6 times an hour, even when the app is closed."),
-    Item(Line.GODS, 2, "Pan", "12 pushes an hour", 4, 12.0,
-        "The god of the wild pushes 12 times an hour, even when the app is closed. He takes Amalthea's place."),
-    Item(Line.GODS, 3, "Thanatos", "24 pushes an hour", 8, 24.0,
-        "Death, whom Sisyphus once chained, pushes 24 times an hour, day and night. He takes Pan's place."),
-    Item(Line.BLESSING, 1, "Purse of Hermes", "obol per 7 days", 2, 0.7,
-        "Hermes fills your purse faster: one obol for every 7 days of pushing, not 10."),
-    Item(Line.BLESSING, 2, "Gift of Tyche", "obol per 5 days", 6, 0.5,
-        "Fortune smiles on you: one obol for every 5 days of pushing. It takes the place of the purse."),
-    Item(Line.BLESSING, 3, "Wealth of Plutus", "obol per 3 days", 10, 0.3,
-        "The god of wealth is on your side: one obol for every 3 days of pushing. It takes the place of Tyche's gift."),
-    Item(Line.BEAUTY, 1, "Dolphins", "leap in the sea", 1, 0.0,
-        "Dolphins leap from the sea now and then. Beauty stays, whatever else you buy."),
-    Item(Line.BEAUTY, 2, "Pegasus", "flies by", 2, 0.0,
-        "The winged horse flies across the sky now and then."),
-    Item(Line.BEAUTY, 3, "The Pleiades", "seven stars at night", 3, 0.0,
-        "The seven sisters shine at night. The faintest one is Merope."),
-)
+/** The items of Corinth. */
+private val CORINTH_ITEMS = with(Place.CORINTH) {
+    listOf(
+        item(Line.ROCK, 1, "River stone",
+            "Worn smooth by the river. Every turn of the knob counts {x} times, so obols come faster."),
+        item(Line.ROCK, 2, "Pumice",
+            "Light, and full of holes. Every turn counts {x} times. It takes the place of the river stone."),
+        item(Line.ROCK, 3, "Sphere of Daedalus",
+            "Made perfectly round by the great inventor. Every turn counts {x} times. It takes the place of the pumice."),
+        item(Line.SIDEKICKS, 1, "Merope",
+            "His wife pushes beside him while you turn the knob. Each turn counts {x} times more, on top of the rock."),
+        item(Line.SIDEKICKS, 2, "Bellerophon",
+            "His grandson, the rider of Pegasus, pushes beside him. Each turn counts {x} times more. He takes Merope's place."),
+        item(Line.SIDEKICKS, 3, "Heracles",
+            "The strongest of the heroes pushes beside him. Each turn counts {x} times more. He takes Bellerophon's place."),
+        item(Line.GODS, 1, "Amalthea",
+            "The goat who nursed Zeus pushes the rock {x} times an hour, even when the app is closed."),
+        item(Line.GODS, 2, "Pan",
+            "The god of the wild pushes {x} times an hour, even when the app is closed. He takes Amalthea's place."),
+        item(Line.GODS, 3, "Thanatos",
+            "Death, whom Sisyphus once chained, pushes {x} times an hour, day and night. He takes Pan's place."),
+        item(Line.BLESSING, 1, "Purse of Hermes",
+            "Hermes fills your purse faster: one obol for every {days} of pushing, not {base}."),
+        item(Line.BLESSING, 2, "Gift of Tyche",
+            "Fortune smiles on you: one obol for every {days} of pushing. It takes the place of the purse."),
+        item(Line.BLESSING, 3, "Wealth of Plutus",
+            "The god of wealth is on your side: one obol for every {days} of pushing. It takes the place of Tyche's gift."),
+        item(Line.BEAUTY, 1, "Dolphins",
+            "Dolphins leap from the sea now and then. Beauty stays, whatever else you buy.", "leap in the sea"),
+        item(Line.BEAUTY, 2, "Pegasus",
+            "The winged horse flies across the sky now and then.", "flies by"),
+        item(Line.BEAUTY, 3, "The Pleiades",
+            "The seven sisters shine at night. The faintest one is Merope.", "seven stars at night"),
+    )
+}
 
 private val ETNA_ITEMS = with(Place.ETNA) {
     listOf(
         item(Line.ROCK, 1, "Lava stone",
-            "Black and rough, from an old flow of lava. Every turn of the knob counts 1.5 times, so obols come faster."),
+            "Black and rough, from an old flow of lava. Every turn of the knob counts {x} times, so obols come faster."),
         item(Line.ROCK, 2, "Volcanic bomb",
-            "Lava that the mountain threw into the air. It cooled round as it flew. Every turn counts 2 times. It takes the place of the lava stone."),
+            "Lava that the mountain threw into the air. It cooled round as it flew. Every turn counts {x} times. It takes the place of the lava stone."),
         item(Line.ROCK, 3, "Obsidian sphere",
-            "Black glass of the volcano, polished perfectly round. Every turn counts 3 times. It takes the place of the volcanic bomb."),
+            "Black glass of the volcano, polished perfectly round. Every turn counts {x} times. It takes the place of the volcanic bomb."),
         item(Line.SIDEKICKS, 1, "Empedocles",
-            "The wise man who leapt into the crater, and left only a sandal, pushes beside him. Each turn counts 1.25 times more, on top of the rock."),
+            "The wise man who leapt into the crater, and left only a sandal, pushes beside him. Each turn counts {x} times more, on top of the rock."),
         item(Line.SIDEKICKS, 2, "Odysseus",
-            "His son, some say, who tricked the Cyclops, pushes beside him. Each turn counts 1.5 times more. He takes Empedocles' place."),
+            "His son, some say, who tricked the Cyclops, pushes beside him. Each turn counts {x} times more. He takes Empedocles' place."),
         item(Line.SIDEKICKS, 3, "Polyphemus",
-            "The Cyclops who threw rocks at the ship of Odysseus pushes beside him. Each turn counts 2 times more. He takes Odysseus' place."),
+            "The Cyclops who threw rocks at the ship of Odysseus pushes beside him. Each turn counts {x} times more. He takes Odysseus' place."),
         item(Line.GODS, 1, "Aetna",
-            "The nymph who gave the mountain her name pushes the rock 6 times an hour, even when the app is closed."),
+            "The nymph who gave the mountain her name pushes the rock {x} times an hour, even when the app is closed."),
         item(Line.GODS, 2, "Hephaestus",
-            "The smith of the gods, whose forge is under the mountain, pushes 12 times an hour, even when the app is closed. He takes Aetna's place."),
+            "The smith of the gods, whose forge is under the mountain, pushes {x} times an hour, even when the app is closed. He takes Aetna's place."),
         item(Line.GODS, 3, "Typhon",
-            "The giant whom Zeus buried under the mountain pushes 24 times an hour, day and night. He takes Hephaestus' place."),
+            "The giant whom Zeus buried under the mountain pushes {x} times an hour, day and night. He takes Hephaestus' place."),
         item(Line.BLESSING, 1, "Sheaf of Demeter",
-            "Sicily is the island of Demeter. Her grain fills your purse faster: one obol for every 7 days of pushing, not 10."),
+            "Sicily is the island of Demeter. Her grain fills your purse faster: one obol for every {days} of pushing, not {base}."),
         item(Line.BLESSING, 2, "Wine of Dionysus",
-            "Vines love the black soil of the mountain: one obol for every 5 days of pushing. It takes the place of the sheaf."),
+            "Vines love the black soil of the mountain: one obol for every {days} of pushing. It takes the place of the sheaf."),
         item(Line.BLESSING, 3, "Silver of Arethusa",
-            "The silver of Syracuse, with the face of the nymph Arethusa: one obol for every 3 days of pushing. It takes the place of the wine."),
+            "The silver of Syracuse, with the face of the nymph Arethusa: one obol for every {days} of pushing. It takes the place of the wine."),
         item(Line.BEAUTY, 1, "Lava fountain",
             "Now and then the crater throws fire into the sky. Beauty stays, whatever else you buy.", "fire from the crater"),
         item(Line.BEAUTY, 2, "Eagle of Zeus",
@@ -111,29 +102,29 @@ private val ETNA_ITEMS = with(Place.ETNA) {
 private val UNDERWORLD_ITEMS = with(Place.UNDERWORLD) {
     listOf(
         item(Line.ROCK, 1, "Stone of Lethe",
-            "From the river of forgetting: it has forgotten how heavy it is. Every turn of the knob counts 1.5 times, so obols come faster."),
+            "From the river of forgetting: it has forgotten how heavy it is. Every turn of the knob counts {x} times, so obols come faster."),
         item(Line.ROCK, 2, "Rock of Tantalus",
-            "The rock that hangs over Tantalus, always about to fall. Every turn counts 2 times. It takes the place of the stone of Lethe."),
+            "The rock that hangs over Tantalus, always about to fall. Every turn counts {x} times. It takes the place of the stone of Lethe."),
         item(Line.ROCK, 3, "Adamant sphere",
-            "Adamant, the stone of the gates of Tartarus, made perfectly round. Every turn counts 3 times. It takes the place of the rock of Tantalus."),
+            "Adamant, the stone of the gates of Tartarus, made perfectly round. Every turn counts {x} times. It takes the place of the rock of Tantalus."),
         item(Line.SIDEKICKS, 1, "Orpheus",
-            "When he sang here, Sisyphus sat on his rock to listen. Now he pushes beside him. Each turn counts 1.25 times more, on top of the rock."),
+            "When he sang here, Sisyphus sat on his rock to listen. Now he pushes beside him. Each turn counts {x} times more, on top of the rock."),
         item(Line.SIDEKICKS, 2, "Theseus",
-            "The hero who sat stuck on the chair of forgetting pushes beside him. Each turn counts 1.5 times more. He takes Orpheus' place."),
+            "The hero who sat stuck on the chair of forgetting pushes beside him. Each turn counts {x} times more. He takes Orpheus' place."),
         item(Line.SIDEKICKS, 3, "Achilles",
-            "The greatest of the heroes, a shade now, pushes beside him. Each turn counts 2 times more. He takes Theseus' place."),
+            "The greatest of the heroes, a shade now, pushes beside him. Each turn counts {x} times more. He takes Theseus' place."),
         item(Line.GODS, 1, "Cerberus",
-            "The three-headed dog of the gate pushes the rock 6 times an hour, even when the app is closed."),
+            "The three-headed dog of the gate pushes the rock {x} times an hour, even when the app is closed."),
         item(Line.GODS, 2, "Persephone",
-            "The queen of the dead, whom Sisyphus once tricked, pushes 12 times an hour, even when the app is closed. She takes Cerberus' place."),
+            "The queen of the dead, whom Sisyphus once tricked, pushes {x} times an hour, even when the app is closed. She takes Cerberus' place."),
         item(Line.GODS, 3, "Hades",
-            "The king of the dead pushes 24 times an hour, day and night. He takes Persephone's place."),
+            "The king of the dead pushes {x} times an hour, day and night. He takes Persephone's place."),
         item(Line.BLESSING, 1, "Obol for the ferry",
-            "The dead pay the ferryman an obol, and now obols come your way: one obol for every 7 days of pushing, not 10."),
+            "The dead pay the ferryman an obol, and now obols come your way: one obol for every {days} of pushing, not {base}."),
         item(Line.BLESSING, 2, "Golden bough",
-            "The gift that opened the way for Aeneas: one obol for every 5 days of pushing. It takes the place of the obol."),
+            "The gift that opened the way for Aeneas: one obol for every {days} of pushing. It takes the place of the obol."),
         item(Line.BLESSING, 3, "Riches of Plouton",
-            "Hades is also Plouton, the rich one, and the gold under the earth is his: one obol for every 3 days of pushing. It takes the place of the bough."),
+            "Hades is also Plouton, the rich one, and the gold of the earth is his: one obol for every {days} of pushing. It takes the place of the bough."),
         item(Line.BEAUTY, 1, "Boat of Charon",
             "Now and then Charon rows the dead across the Styx. Beauty stays, whatever else you buy.", "crosses the Styx"),
         item(Line.BEAUTY, 2, "Psyche",
@@ -143,10 +134,39 @@ private val UNDERWORLD_ITEMS = with(Place.UNDERWORLD) {
     )
 }
 
-/** An item of this world: a name and details of its own, with the price, the effect and the note of the item of Corinth in its place. */
+/**
+ * An item of this world: a name and details of its own, with the price and the effect from [Config.ITEMS].
+ * In the details, {x} stands for the effect, {days} for the days of pushing for an obol with this blessing, and {base} for those without one.
+ * A beauty item has a [note] of its own; the other lines have the same notes in every world.
+ */
 private fun Place.item(line: Line, tier: Int, name: String, details: String, note: String? = null): Item {
-    val corinth = CORINTH_ITEMS.first { it.line == line && it.tier == tier }
-    return Item(line, tier, name, note ?: corinth.note, corinth.price, corinth.effect, details, this)
+    val (price, effect) = Config.ITEMS.getValue(line)[tier - 1]
+    val text = details.replace("{x}", plain(effect))
+        .replace("{days}", workDays(Config.WORK_PER_OBOL * effect))
+        .replace("{base}", plain(Config.WORK_PER_OBOL / Config.TURNS_PER_DAY))
+    return Item(line, tier, name, note ?: note(line, effect), price, effect, text, this)
+}
+
+/** The note of an item, from its effect: "turns count 1.5x", "helps push 2x", "6 pushes an hour", "obol per 1.5 days". */
+private fun note(line: Line, effect: Double): String = when (line) {
+    Line.ROCK -> "turns count ${plain(effect)}x"
+    Line.SIDEKICKS -> "helps push ${plain(effect)}x"
+    Line.GODS -> "${plain(effect)} pushes an hour"
+    Line.BLESSING -> "obol per ${workDays(Config.WORK_PER_OBOL * effect)}"
+    Line.BEAUTY -> error("A beauty item has a note of its own.")
+}
+
+/** The days of pushing that [work] takes, as the texts say them: "1.5 days", "day", "half day". */
+internal fun workDays(work: Double): String = when (val days = plain(work / Config.TURNS_PER_DAY)) {
+    "1" -> "day"
+    "0.5" -> "half day"
+    else -> "$days days"
+}
+
+/** A number as the texts show it, with two decimals at most: "1.5", "2", "1.25". */
+internal fun plain(x: Double): String {
+    val hundredths = (x * 100).roundToLong()
+    return if (hundredths % 100 == 0L) "${hundredths / 100}" else "${hundredths / 100.0}"
 }
 
 /** The 15 items of [place], in the order the Agora shows them. */
@@ -176,9 +196,10 @@ class Shop(
 
     /**
      * The work that the next obol needs. It is set when the obol before it comes, and a blessing makes it smaller in step.
-     * Without it, the shop counts the obols of the climb: the first [FAST_OBOLS] are fast.
+     * Without it, the shop counts the obols of the climb: the first [Config.FAST_OBOLS] are fast.
+     * An obol saved with other numbers needs no more work than an obol can need now.
      */
-    var nextObol = nextObol ?: if (earned < FAST_OBOLS) fastObol else workPerObol
+    var nextObol = (nextObol ?: if (earned < Config.FAST_OBOLS) fastObol else workPerObol).coerceAtMost(workPerObol * (1 + Config.OBOL_SPREAD))
         private set
 
     /** The obols that came in this climb: those in hand and those spent on items. */
@@ -208,7 +229,7 @@ class Shop(
 
     val bonus: Double get() = (owned(Line.ROCK)?.effect ?: 1.0) * (owned(Line.SIDEKICKS)?.effect ?: 1.0)
     val helpersPerHour: Double get() = owned(Line.GODS)?.effect ?: 0.0
-    val workPerObol: Double get() = WORK_PER_OBOL * blessing
+    val workPerObol: Double get() = Config.WORK_PER_OBOL * blessing
 
     /** The part of the work per obol that the newest blessing leaves: all of it before the first one. */
     private val blessing: Double get() = owned(Line.BLESSING)?.effect ?: 1.0
@@ -226,7 +247,7 @@ class Shop(
             }
             work -= left
             obols = whole
-            nextObol = if (earned < FAST_OBOLS) fastObol else workPerObol + random.nextDouble(-OBOL_SPREAD, OBOL_SPREAD)
+            nextObol = if (earned < Config.FAST_OBOLS) fastObol else workPerObol * (1 + random.nextDouble(-Config.OBOL_SPREAD, Config.OBOL_SPREAD))
         }
     }
 

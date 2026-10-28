@@ -44,7 +44,7 @@ Each labor has a plain line under its name:
 - Days: "Push through 10 days.", up to 100,000.
 - Right answers: "Answer a vision right." and "Answer 10 visions right.", up to 500.
 
-At 5 minutes a day, a climb takes about a month of play: about 10,000 turns of the player, about 330 game days, and about 5 right answers when 3 answers in 4 are right. So the first tier of each category comes in the first days or with the first top. The last tier of each category takes years. "Imagine Him Happy" needs 100 tops: about 9 years at 5 minutes a day, or about 2 years at 30 minutes a day.
+At 5 minutes a day, a climb takes about a week of play: about 2,300 turns of the player, about 80 game days, and about 4 right answers when 3 answers in 4 are right. So the first tier of each category comes in the first days or with the first top. The last tier of each category takes years. "Imagine Him Happy" needs 100 tops: about 2 years at 5 minutes a day, or about 7 months at 30 minutes a day.
 
 ## What counts
 

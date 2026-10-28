@@ -1,5 +1,6 @@
 package dev.oblac.sisyphus
 
+import dev.oblac.sisyphus.game.Config
 import dev.oblac.sisyphus.game.God
 import dev.oblac.sisyphus.game.NARROWEST_ANSWER
 import dev.oblac.sisyphus.game.NARROWEST_TEXT
@@ -96,7 +97,13 @@ class VoicesTest {
 
     @Test
     fun aNewGameMeetsTheFirstVoiceSoon() {
-        assertTrue(Voices(1, 0, null, 0, Random(2)).count in 300.0..600.0)
+        assertTrue(Voices(1, 0, null, 0, Random(2)).count in Config.FIRST_VISION)
+    }
+
+    /** A count saved with other numbers waits no longer than the next vision can. */
+    @Test
+    fun aSavedCountWaitsNoLongerThanTheNextVisionCan() {
+        assertEquals(Config.NEXT_VISION.endInclusive, Voices(1, 0, 10_000.0, 0, Random(2)).count)
     }
 
     @Test
@@ -105,7 +112,7 @@ class VoicesTest {
         assertNull(v.pushed(9.5, Place.CORINTH))
         assertNotNull(v.pushed(1.0, Place.CORINTH))
         assertEquals(1, v.drawn)
-        assertTrue(v.count in 600.0..1800.0)
+        assertTrue(v.count in Config.NEXT_VISION)
     }
 
     @Test

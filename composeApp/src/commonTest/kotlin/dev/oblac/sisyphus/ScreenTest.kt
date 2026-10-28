@@ -1,18 +1,17 @@
 package dev.oblac.sisyphus
 
 import dev.oblac.sisyphus.game.CLIMB
+import dev.oblac.sisyphus.game.Config
 import dev.oblac.sisyphus.game.DAY_LENGTH
 import dev.oblac.sisyphus.game.FIRST_OBOL
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.God
 import dev.oblac.sisyphus.game.Line
-import dev.oblac.sisyphus.game.MILESTONE_TURNS
 import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.Question
 import dev.oblac.sisyphus.game.Shop
 import dev.oblac.sisyphus.game.START_TIME
-import dev.oblac.sisyphus.game.SUN_CAP
 import dev.oblac.sisyphus.game.Vision
 import dev.oblac.sisyphus.game.Weather
 import dev.oblac.sisyphus.game.items
@@ -582,7 +581,7 @@ class ScreenTest {
     @Test
     fun aHermStandsOnTheSlopeAhead() {
         val position = 5000.0
-        val step = MILESTONE_TURNS * SUN_CAP * PX_PER_TURN
+        val step = Config.HERM_TURNS * Config.SUN_CAP * PX_PER_TURN
         fun scene(ahead: Double): Pixels {
             val s = screen(MemoryStore(allBought + mapOf("position" to position, "summit" to position + ahead - step + CLIMB)))
             val l = s.layout!!
@@ -731,15 +730,15 @@ class ScreenTest {
     /** The next obol is three clicks of the knob away, and the sun has moved as if he pushed all the way there. */
     @Test
     fun theDevScreenTakesHimNearTheNextObol() {
-        val store = MemoryStore(mapOf("obols" to 2.25, "nextObol" to 700.0, "shop.rock" to 1.0))
+        val store = MemoryStore(mapOf("obols" to 2.25, "nextObol" to 150.0, "shop.rock" to 1.0))
         val s = devScreen(store)
         val effort = s.game.effort
         s.openDev()
         assertEquals(Touch.DEV, s.tap(s.layout!!.devNextObol))
         assertEquals(2, s.game.shop.obols.toInt())
-        assertEquals(3 * 1.5 / 24, (3 - s.game.shop.obols) * 700, 1e-6)
-        val turns = 0.75 * 700 / 1.5 - 3.0 / 24
-        assertEquals(turns * SUN_CAP * PX_PER_TURN, s.game.effort - effort, 1e-6)
+        assertEquals(3 * 1.5 / 24, (3 - s.game.shop.obols) * 150, 1e-6)
+        val turns = 0.75 * 150 / 1.5 - 3.0 / 24
+        assertEquals(turns * Config.SUN_CAP * PX_PER_TURN, s.game.effort - effort, 1e-6)
         assertEquals(s.game.shop.obols, store.load("obols"))
     }
 
@@ -750,7 +749,7 @@ class ScreenTest {
         assertEquals(Touch.DEV, s.tap(s.layout!!.devTop))
         assertTrue(Line.entries.all { s.game.shop.tier(it) == 3 })
         val left = s.game.summit!! - s.game.position
-        assertTrue(left > 0 && left <= 2 * SUN_CAP * PX_PER_TURN, "left: $left")
+        assertTrue(left > 0 && left <= 2 * Config.SUN_CAP * PX_PER_TURN, "left: $left")
     }
 
     @Test
