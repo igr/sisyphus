@@ -179,6 +179,9 @@ private val CATEGORY_COLORS = mapOf(
     Category.ANSWERS to (rgb(0x8FA8E0) to rgb(0x1A2240)),
 )
 
+/** At the bottom of the Agora, until everything is bought. */
+internal const val AGORA_NOTE = "Buy all 15 for the top."
+
 /** The note of the help that points at the day. */
 internal const val DAY_NOTE = "The sun moves only while you push. Tap the day for worlds and labors."
 
@@ -411,6 +414,7 @@ class UiRenderer {
         if (!dev) PixelFont.draw(px, itemsBought(shop), layout.agoraCount.x, layout.agoraCount.y, TERRA)
         px.hline(t.x, t.right - 1, t.bottom + 2, TERRA_DARK)
         if (dev) devScreen(px, layout, openWorlds) else for (line in Line.entries) row(px, layout.agoraRow(line.ordinal), line, shop)
+        if (!dev && !shop.allBought) PixelFont.draw(px, AGORA_NOTE, layout.agoraNote.x, layout.agoraNote.y, NOT_DONE)
         speaker(px, layout.agoraSound, soundOn)
     }
 

@@ -20,6 +20,7 @@ import dev.oblac.sisyphus.game.LABORS
 import dev.oblac.sisyphus.game.progress
 import dev.oblac.sisyphus.gfx.PixelFont
 import dev.oblac.sisyphus.gfx.Pixels
+import dev.oblac.sisyphus.ui.AGORA_NOTE
 import dev.oblac.sisyphus.ui.BACKGROUND
 import dev.oblac.sisyphus.ui.DAY_NOTE
 import dev.oblac.sisyphus.gfx.TRANSPARENT
@@ -1469,5 +1470,27 @@ class ScreenTest {
             assertTrue(l.worldList.bottom + 4 <= l.restore.y, "the list ends at ${l.worldList.bottom}, Restore starts at ${l.restore.y}")
             assertTrue(l.worldList.bottom + 4 <= l.supportId.y)
         }
+    }
+
+    /** At the bottom of the Agora, a note says that all 15 items lead to the top. It goes when everything is bought, and the dev screen has none. */
+    @Test
+    fun theAgoraSaysToBuyAllForTheTop() {
+        fun note(s: Screen): List<Int> {
+            val r = s.layout!!.agoraNote
+            val px = s.render()
+            return (r.y until r.bottom).flatMap { y -> (r.x until r.right).map { px[it, y] } }
+        }
+        fun agora(store: MemoryStore) = screen(store).also { it.tap(it.layout!!.coinIcon) }
+        val none = note(agora(MemoryStore(allBought)))
+        assertNotEquals(none, note(agora(MemoryStore())))
+        assertEquals(none, note(devScreen().also { it.openDev() }))
+    }
+
+    @Test
+    fun theAgoraNoteFitsTheSmallestPhone() {
+        val l = smallest().layout!!
+        assertTrue(PixelFont.width(AGORA_NOTE) <= l.agoraNote.w)
+        assertTrue(l.agoraNote.right + 4 <= l.agoraSound.x)
+        assertTrue(AGORA_NOTE.all(PixelFont::hasGlyph))
     }
 }
