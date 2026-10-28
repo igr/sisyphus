@@ -17,6 +17,8 @@ import dev.oblac.sisyphus.game.Vision
 import dev.oblac.sisyphus.game.Weather
 import dev.oblac.sisyphus.game.items
 import dev.oblac.sisyphus.game.LABORS
+import dev.oblac.sisyphus.game.shortCount
+import dev.oblac.sisyphus.game.Category
 import dev.oblac.sisyphus.game.progress
 import dev.oblac.sisyphus.game.RIDDLES
 import dev.oblac.sisyphus.gfx.PixelFont
@@ -44,9 +46,9 @@ import dev.oblac.sisyphus.ui.Layout
 import dev.oblac.sisyphus.ui.OBOL_EMPTY
 import dev.oblac.sisyphus.ui.OBOL_FILL
 import dev.oblac.sisyphus.ui.Rect
-import dev.oblac.sisyphus.ui.SQUARE_BOUGHT
-import dev.oblac.sisyphus.ui.SQUARE_LATER
-import dev.oblac.sisyphus.ui.SQUARE_OFFERED
+import dev.oblac.sisyphus.ui.DOT_BOUGHT
+import dev.oblac.sisyphus.ui.DOT_LATER
+import dev.oblac.sisyphus.ui.DOT_OFFERED
 import dev.oblac.sisyphus.ui.VOICE_FRAME
 import dev.oblac.sisyphus.ui.WORLDS_TITLE
 import dev.oblac.sisyphus.ui.barNote
@@ -172,16 +174,16 @@ class ScreenTest {
         assertNotEquals(rich["price"], poor["price"])
     }
 
-    /** After the name of a line, a square for each of its items, from the left: the ones bought, the one on offer, and the ones after it. */
+    /** After the name of a line, a dot for each of its items, from the left: the ones bought, the one on offer, and the ones after it. */
     @Test
-    fun squaresAfterTheLineNameShowWhatIsBoughtOnOfferAndLater() {
+    fun dotsAfterTheLineNameShowWhatIsBoughtOnOfferAndLater() {
         fun squares(tier: Int): List<String> {
             val s = screen(MemoryStore(mapOf("shop.rock" to tier.toDouble())))
             val l = s.layout!!
             s.tap(l.coinIcon)
             val px = s.render()
             val r = l.agoraRow(Line.ROCK.ordinal)
-            val looks = mapOf(SQUARE_BOUGHT to "bought", SQUARE_OFFERED to "offered", SQUARE_LATER to "later")
+            val looks = mapOf(DOT_BOUGHT to "bought", DOT_OFFERED to "offered", DOT_LATER to "later")
             val columns = (r.x + PixelFont.width("Rock") until r.right).map { x ->
                 (r.y until r.y + PixelFont.CAP_HEIGHT).firstNotNullOfOrNull { looks[px[x, it]] }
             }
@@ -190,6 +192,21 @@ class ScreenTest {
         assertEquals(listOf("offered", "later", "later"), squares(0))
         assertEquals(listOf("bought", "offered", "later"), squares(1))
         assertEquals(listOf("bought", "bought", "bought"), squares(3))
+    }
+
+    /** The marks after the name of a line are dots, as the tiers of the labors are: round, with empty corners. */
+    @Test
+    fun theAgoraMarksItsItemsWithDots() {
+        val s = screen(MemoryStore(mapOf("shop.rock" to 1.0)))
+        val l = s.layout!!
+        s.tap(l.coinIcon)
+        val px = s.render()
+        val r = l.agoraRow(Line.ROCK.ordinal)
+        val x = r.x + PixelFont.width("Rock") + 4
+        val y = r.y + PixelFont.CAP_HEIGHT - 5
+        assertEquals(DOT_BOUGHT, px[x + 2, y])
+        assertEquals(DOT_BOUGHT, px[x + 2, y + 2])
+        assertNotEquals(DOT_BOUGHT, px[x, y])
     }
 
     /** The title of the Agora counts the items bought, so that the 15 read as one goal. The dev screen has no count. */
@@ -1378,27 +1395,28 @@ class ScreenTest {
     @Test
     fun everyLaborFitsTheSmallestPhone() {
         val l = smallest().layout!!
-        assertEquals(LABORS.size, l.laborRows.size)
+        assertEquals(Category.entries.size, l.laborCards.size)
         for (labor in LABORS) {
             val name = PixelFont.width(labor.name) + 4 + PixelFont.width(progress(labor.goal - 1.0, labor.goal))
             assertTrue(name <= l.laborText, "${labor.name}: $name > ${l.laborText}")
-            assertTrue(PixelFont.wrap(labor.line, l.laborText).size <= 2, labor.line)
+            assertTrue(9 + PixelFont.width(labor.name) <= l.laborText, "done: ${labor.name}")
+            assertTrue(PixelFont.width(shortCount(labor.goal)) + 2 <= l.laborText / 5, "tier ${labor.goal}")
         }
     }
 
     @Test
-    fun theLaborListScrollsToTheLastLabor() {
+    fun theLaborListScrollsToTheLastCategory() {
         val s = smallest()
         val l = s.layout!!
         s.tap(l.dayLabel(s.game.day))
         s.tap(l.laborsTab)
         assertTrue(l.laborScroll > 0)
-        val first = l.laborRows[0]
+        val first = l.laborCards[0]
         assertEquals(Touch.LIST, s.tap(first))
         s.drag(first.x + 10f, first.y + 10f - 2000f)
         assertEquals(Touch.NONE, s.release())
         assertEquals(l.laborScroll, s.worldsScroll)
-        assertTrue(l.laborRows.last().bottom - l.laborScroll <= l.worldList.bottom)
+        assertTrue(l.laborCards.last().bottom - l.laborScroll <= l.worldList.bottom)
     }
 
     @Test
@@ -1450,16 +1468,17 @@ class ScreenTest {
         return 0.2126 * lin(c shr 16 and 0xFF) + 0.7152 * lin(c shr 8 and 0xFF) + 0.0722 * lin(c and 0xFF)
     }
 
-    /** Most labors stay not done for months, so their gray text must still read well: 4.5 to 1 against the background. */
+    /** Most tiers stay not done for months, so their gray numbers must still read well: 4.5 to 1 against the background. */
     @Test
     fun aLaborNotDoneIsEasyToRead() {
         val s = smallest()
         val l = s.layout!!
         s.tap(l.dayLabel(s.game.day))
         s.tap(l.laborsTab)
-        val row = l.laborRows[0]
+        val card = l.laborCards[0]
         val px = s.render()
-        val text = (row.y + 2 until row.y + 2 + PixelFont.CAP_HEIGHT).flatMap { y -> (row.x + Layout.LABOR_PAD until row.right).map { px[it, y] } }.maxBy(::relativeLuminance)
+        val numbers = card.y + Layout.LABOR_TIERS
+        val text = (numbers until numbers + PixelFont.CAP_HEIGHT).flatMap { y -> (card.x + Layout.LABOR_PAD until card.right - 1).map { px[it, y] } }.maxBy(::relativeLuminance)
         val contrast = (relativeLuminance(text) + 0.05) / (relativeLuminance(BACKGROUND) + 0.05)
         assertTrue(contrast >= 4.5, "contrast $contrast")
     }
@@ -1497,20 +1516,25 @@ class ScreenTest {
         assertTrue(AGORA_NOTE.all(PixelFont::hasGlyph))
     }
 
-    /** Only the next labor of each category shows how far it has come. The ones after it show no number. */
+    /** Each category has one card: its next labor, a bar of how far it has come, and a dot for each tier, filled when done. */
     @Test
-    fun onlyTheNextLaborShowsItsProgress() {
-        fun right(climbs: Double, index: Int): List<Int> {
+    fun eachCardShowsItsNextLaborAndItsProgress() {
+        fun card(climbs: Double, from: Int, to: Int): List<Int> {
             val s = screen(MemoryStore(mapOf("climbs" to climbs, "laborsSeen" to 20.0)))
             val l = s.layout!!
             s.tap(l.dayLabel(s.game.day))
             s.tap(l.laborsTab)
-            val r = l.laborRows[index]
+            val r = l.laborCards[0]
             val px = s.render()
-            return (r.y until r.y + PixelFont.LINE_HEIGHT).flatMap { y -> (r.right - 40 until r.right).map { px[it, y] } }
+            return (r.y + from until r.y + to).flatMap { y -> (r.x + 1 until r.right - 1).map { px[it, y] } }
         }
-        assertNotEquals(right(5.0, 1), right(6.0, 1))
-        assertEquals(right(5.0, 2), right(6.0, 2))
+        val bar = Layout.LABOR_BAR to Layout.LABOR_BAR + 3
+        val dots = Layout.LABOR_DOTS to Layout.LABOR_DOTS + 5
+        val name = 3 to 3 + PixelFont.CAP_HEIGHT
+        assertNotEquals(card(5.0, bar.first, bar.second), card(6.0, bar.first, bar.second))
+        assertEquals(card(5.0, dots.first, dots.second), card(6.0, dots.first, dots.second))
+        assertNotEquals(card(9.0, dots.first, dots.second), card(10.0, dots.first, dots.second))
+        assertNotEquals(card(9.0, name.first, name.second), card(10.0, name.first, name.second))
     }
 
     @Test

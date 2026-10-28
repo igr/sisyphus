@@ -14,6 +14,7 @@ import dev.oblac.sisyphus.game.Vision
 import dev.oblac.sisyphus.game.done
 import dev.oblac.sisyphus.game.items
 import dev.oblac.sisyphus.game.progress
+import dev.oblac.sisyphus.game.shortCount
 import dev.oblac.sisyphus.gfx.PixelFont
 import dev.oblac.sisyphus.gfx.TRANSPARENT
 import dev.oblac.sisyphus.gfx.Pixels
@@ -38,6 +39,10 @@ val BACKGROUND = rgb(0x17110D)
 private val DISABLED = rgb(0x5A5048)
 /** A labor not done yet: gray, but still easy to read. */
 private val NOT_DONE = rgb(0x8A7E72)
+
+/** The dot of a tier of the labors, done and not done. */
+private val DOT_FULL = listOf(".###.", "#####", "#####", "#####", ".###.")
+private val DOT_RING = listOf(".###.", "#...#", "#...#", "#...#", ".###.")
 
 /** The card of a labor not done yet, and its edge: brighter for the next labor of its category. */
 private val CARD = rgb(0x211913)
@@ -125,13 +130,13 @@ internal val OBOL_FILL = BRONZE[4]
 /** The dark bronze of the key, where the next obol has not come yet. */
 internal val OBOL_EMPTY = BRONZE[1]
 
-/** In the Agora, the squares after the name of a line, one for each of its items: bought, on offer, and for later. */
-internal val SQUARE_BOUGHT = BRONZE[4]
-internal val SQUARE_OFFERED = CREAM
-internal val SQUARE_LATER = TERRA_DARK
+/** In the Agora, the dots after the name of a line, one for each of its items: bought, on offer, and for later. */
+internal val DOT_BOUGHT = BRONZE[4]
+internal val DOT_OFFERED = CREAM
+internal val DOT_LATER = TERRA_DARK
 
-/** The size of a square after the name of a line, in pixels. */
-private const val SQUARE = 4
+/** The size of a dot, after the name of a line in the Agora and for a tier of the labors, in pixels. */
+private const val DOT = 5
 
 /** The light of the key during the final climb, as far as he has climbed. */
 internal val CLIMB_FILL = CREAM
@@ -520,8 +525,8 @@ class UiRenderer {
     }
 
     /**
-     * The labors, under a header for each category, each on a small card. A labor that is done is on a card of its category's color,
-     * with a check; the others are gray, and the next one of each category shows how far it has come.
+     * The labors: under the header of each category, one card with its next labor and how far it has come, a bar,
+     * a dot and the goal of each tier, bright when done, and the last labor done.
      * The list is drawn on a sheet of its own, so that it scrolls by [scroll].
      */
     fun labors(px: Pixels, layout: Layout, counts: Counts, scroll: Int) {
@@ -529,32 +534,44 @@ class UiRenderer {
         val sheet = laborSheet?.takeIf { it.width == list.w && it.height == list.h } ?: Pixels(list.w, list.h).also { laborSheet = it }
         sheet.clear(TRANSPARENT)
         for (category in Category.entries) {
-            val color = CATEGORY_COLORS.getValue(category).first
-            val h = layout.laborHeaders[category.ordinal].offset(-list.x, -list.y - scroll)
+            val (color, band) = CATEGORY_COLORS.getValue(category)
             val labors = LABORS.filter { it.category == category }
+            val count = counts.of(category)
+            val h = layout.laborHeaders[category.ordinal].offset(-list.x, -list.y - scroll)
             val done = "${labors.count { it.done(counts) }}/${labors.size}"
             PixelFont.draw(sheet, category.title, h.x, h.y, color)
             PixelFont.draw(sheet, done, h.right - PixelFont.width(done), h.y, color)
-        }
-        val next = Category.entries.mapNotNull { category -> LABORS.firstOrNull { it.category == category && !it.done(counts) } }
-        for ((i, labor) in LABORS.withIndex()) {
-            val r = layout.laborRows[i].offset(-list.x, -list.y - scroll)
-            val (color, band) = CATEGORY_COLORS.getValue(labor.category)
-            val done = labor.done(counts)
-            sheet.fillRect(r.x, r.y, r.w, r.h, if (done) band else CARD)
-            frame(sheet, r, if (done) color else if (labor in next) NEXT_EDGE else CARD_EDGE)
+            val r = layout.laborCards[category.ordinal].offset(-list.x, -list.y - scroll)
+            sheet.fillRect(r.x, r.y, r.w, r.h, CARD)
+            frame(sheet, r, NEXT_EDGE)
             val x = r.x + Layout.LABOR_PAD
-            val y = r.y + 3
-            PixelFont.draw(sheet, labor.name, x, y, if (done) CREAM else NOT_DONE)
-            if (done) check(sheet, r.right - Layout.LABOR_PAD - CHECK[0].length, y, color)
-            if (labor in next) progress(counts.of(labor.category), labor.goal).let { PixelFont.draw(sheet, it, r.right - Layout.LABOR_PAD - PixelFont.width(it), y, color) }
-            for ((j, line) in PixelFont.wrap(labor.line, layout.laborText).withIndex()) {
-                PixelFont.draw(sheet, line, x, y + (j + 1) * PixelFont.LINE_HEIGHT, if (done) color else NOT_DONE)
+            val w = r.w - 2 * Layout.LABOR_PAD
+            val next = labors.firstOrNull { !it.done(counts) }
+            PixelFont.draw(sheet, (next ?: labors.last()).name, x, r.y + 3, CREAM)
+            if (next != null) progress(count, next.goal).let { PixelFont.draw(sheet, it, r.right - Layout.LABOR_PAD - PixelFont.width(it), r.y + 3, color) }
+            val fill = if (next == null) w else (w * (count / next.goal).coerceIn(0.0, 1.0)).toInt()
+            sheet.fillRect(x, r.y + Layout.LABOR_BAR, w, 3, band)
+            sheet.fillRect(x, r.y + Layout.LABOR_BAR, fill, 3, color)
+            val column = w / labors.size
+            for ((i, labor) in labors.withIndex()) {
+                val reached = labor.done(counts)
+                val cx = x + column * i + column / 2
+                tierDot(sheet, cx - 2, r.y + Layout.LABOR_DOTS, reached, color)
+                val goal = shortCount(labor.goal)
+                PixelFont.draw(sheet, goal, cx - PixelFont.width(goal) / 2, r.y + Layout.LABOR_TIERS, if (reached) color else NOT_DONE)
+            }
+            labors.lastOrNull { it.done(counts) }?.let { last ->
+                check(sheet, x, r.y + Layout.LABOR_DONE + 1, color)
+                PixelFont.draw(sheet, last.name, x + CHECK[0].length + 2, r.y + Layout.LABOR_DONE, color)
             }
         }
         px.draw(sheet, list.x, list.y)
         scrollbar(px, list, scroll, layout.laborScroll)
     }
+
+    /** The dot of a tier, five pixels wide: filled when the tier is [reached], else a ring. */
+    private fun tierDot(px: Pixels, x: Int, y: Int, reached: Boolean, color: Int) =
+        mark(px, x, y, if (reached) DOT_FULL else DOT_RING, if (reached) color else NOT_DONE)
 
     /** At the right of a [list] that can scroll by [most], the thumb shows where it is. */
     private fun scrollbar(px: Pixels, list: Rect, scroll: Int, most: Int) {
@@ -628,7 +645,7 @@ class UiRenderer {
         val bright = next == null || shop.obols >= next.price
         val title = LINE_TITLES[line.ordinal]
         PixelFont.draw(px, title, r.x, r.y, TERRA)
-        squares(px, r.x + PixelFont.width(title) + 4, r.y + PixelFont.CAP_HEIGHT - SQUARE, shop.tier(line))
+        dots(px, r.x + PixelFont.width(title) + 4, r.y + PixelFont.CAP_HEIGHT - DOT, shop.tier(line))
         val y = r.y + PixelFont.LINE_HEIGHT
         PixelFont.draw(px, item.name, r.x, y, CREAM)
         if (next != null) {
@@ -641,16 +658,20 @@ class UiRenderer {
         PixelFont.draw(px, item.note, r.x, y + PixelFont.LINE_HEIGHT, TERRA_LIGHT)
     }
 
-    /** A square for each item of a line, from [x]: filled for the [bought] ones, bright for the one on offer, dim for the ones after it. */
-    private fun squares(px: Pixels, x: Int, y: Int, bought: Int) {
+    /** A dot for each item of a line, from [x], as for the tiers of the labors: filled for the [bought] ones, a bright ring for the one on offer, dim rings for the ones after it. */
+    private fun dots(px: Pixels, x: Int, y: Int, bought: Int) {
         for (k in 0 until 3) {
-            val square = Rect(x + k * (SQUARE + 2), y, SQUARE, SQUARE)
+            val dx = x + k * (DOT + 2)
             when {
-                k < bought -> px.fillRect(square.x, square.y, SQUARE, SQUARE, SQUARE_BOUGHT)
-                k == bought -> frame(px, square, SQUARE_OFFERED)
-                else -> frame(px, square, SQUARE_LATER)
+                k < bought -> mark(px, dx, y, DOT_FULL, DOT_BOUGHT)
+                k == bought -> mark(px, dx, y, DOT_RING, DOT_OFFERED)
+                else -> mark(px, dx, y, DOT_RING, DOT_LATER)
             }
         }
+    }
+
+    private fun mark(px: Pixels, x: Int, y: Int, art: List<String>, color: Int) {
+        for ((dy, row) in art.withIndex()) for ((dx, ch) in row.withIndex()) if (ch == '#') px[x + dx, y + dy] = color
     }
 
     private fun check(px: Pixels, x: Int, y: Int, color: Int = TERRA_LIGHT) {

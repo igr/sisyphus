@@ -57,9 +57,13 @@ At 5 minutes a day, a climb takes about a month of play: about 10,000 turns of t
 
 1. **The tabs.** The title row of the Worlds screen holds "Worlds" and "Labors". The shown tab is cream, the other one is gray. A tap on the other tab shows it. A tap on the shown tab closes the screen, as a tap on the title does today. The terra line stays under the title row.
 2. **Opening.** A tap on the day opens the tab that was shown last since the app started. When the dot shows, it opens the Labors tab.
-3. **The list.** Each category has a header: its name in its color, and how many of its labors are done, such as "2/5". Under it stand its 5 labors, from the first tier to the last. The list scrolls as the list of worlds does: a drag, and a coast after a quick swipe.
-4. **A labor that is done**: a small card in a dark tint of its category's color, framed in that color, with its name in cream, its plain line, and a check. A plain line that is too wide takes two lines.
-5. **A labor that is not done**: a dark card, with its name and its line in gray. The next labor of each category has a brighter frame, and its progress at the right of the name, in the color of its category. The progress is short, so that it fits: "7/10", "850/1k", "12k/100k", "123k/1M".
+3. **The list.** Each category has a header, with its name in its color and how many of its labors are done, such as "2/5". Under it stands one card. The list scrolls as the list of worlds does: a drag, and a coast after a quick swipe.
+4. **The card** shows, from the top:
+   - the next labor of the category, with its name in cream and its progress at the right, in the color of its category: "5/10". The progress is short, so that it fits: "850/1k", "12k/100k", "123k/1M";
+   - a bar of how far the next labor has come, in the color of its category;
+   - a dot for each of the five tiers, filled when done, with the goal of the tier under it: "1 · 10 · 50 · 100 · 1k";
+   - a check and the name of the last labor done, such as "Top of the Morning", in the color of its category.
+5. **When all five are done,** the card shows the last labor, and a full bar.
 6. **The news.** When a labor is done, the panel of the wise words shows "A labor is done: Rolling Stone." from "Hermes". The news comes in place of the next wise word. So it never cuts a question, a reply or other news short. While the Agora, the Worlds screen or the help hides the panel, the news waits. When more labors are done at once, each one gets its own news, one after the other.
 7. **The dot.** A small bronze dot stands after "DAY n" while a labor is done that the player has not seen. It also stands after "Labors" on the tab. It goes away when the Labors tab opens.
 8. **At the start.** Labors that are already done when the game starts, for example from the counts of an older saved game, get no news. They show the dot.

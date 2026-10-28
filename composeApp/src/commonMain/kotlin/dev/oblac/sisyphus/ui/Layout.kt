@@ -137,30 +137,27 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     /** The width of the text in a row of the list of labors. */
     val laborText = worldList.w - 2 * LABOR_PAD
 
-    /** In the list of labors, before it scrolls: the header of each category, and the row of each labor, in the order of [LABORS]. */
+    /** In the list of labors, before it scrolls: the header of each category, and its card under it. */
     val laborHeaders: List<Rect>
-    val laborRows: List<Rect>
+    val laborCards: List<Rect>
 
     init {
         val headers = mutableListOf<Rect>()
-        val rows = mutableListOf<Rect>()
+        val cards = mutableListOf<Rect>()
         var y = worldList.y
         for (category in Category.entries) {
-            if (headers.isNotEmpty()) y += 6
+            if (headers.isNotEmpty()) y += 8
             headers += Rect(worldList.x, y, worldList.w, PixelFont.CAP_HEIGHT)
             y += PixelFont.LINE_HEIGHT
-            for (labor in LABORS.filter { it.category == category }) {
-                val h = 4 + PixelFont.LINE_HEIGHT * (1 + PixelFont.wrap(labor.line, laborText).size)
-                rows += Rect(worldList.x, y, worldList.w, h)
-                y += h + 3
-            }
+            cards += Rect(worldList.x, y, worldList.w, LABOR_CARD)
+            y += LABOR_CARD
         }
         laborHeaders = headers
-        laborRows = rows
+        laborCards = cards
     }
 
     /** How far the list of labors can scroll. */
-    val laborScroll = max(0, laborRows.last().bottom - worldList.bottom)
+    val laborScroll = max(0, laborCards.last().bottom - worldList.bottom)
 
     private val confirmHeight = 5 + PixelFont.LINE_HEIGHT + 4 + CONFIRM_LINES * PixelFont.LINE_HEIGHT + 4 + BUTTON_HEIGHT + 5
 
@@ -208,6 +205,12 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
         const val OFFER_BUTTON = 30
         const val HELPER = 18
         const val LABOR_PAD = 3
+        /** A card of the labors, from its top: the next labor at 3, its bar, the dots of the tiers, their goals, and the last labor done. */
+        const val LABOR_CARD = 46
+        const val LABOR_BAR = 14
+        const val LABOR_DOTS = 19
+        const val LABOR_TIERS = 26
+        const val LABOR_DONE = 36
     }
 }
 

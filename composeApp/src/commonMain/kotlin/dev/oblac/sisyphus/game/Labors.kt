@@ -52,9 +52,10 @@ private fun line(category: Category, goal: Long) = when (category) {
 private fun grouped(n: Long) = n.toString().reversed().chunked(3).joinToString(",").reversed()
 
 /** How far a labor has come, short enough for the smallest phone: "7/10", "850/1k", "12k/100k", "123k/1M". */
-fun progress(count: Double, goal: Long) = "${short(floor(count).toLong())}/${short(goal)}"
+fun progress(count: Double, goal: Long) = "${shortCount(floor(count).toLong())}/${shortCount(goal)}"
 
-private fun short(n: Long) = when {
+/** A count short enough for the smallest phone, such as "850", "12k" or "1M". */
+fun shortCount(n: Long) = when {
     n >= 1_000_000 -> "${n / 1_000_000}M"
     n >= 1_000 -> "${n / 1_000}k"
     else -> "$n"
