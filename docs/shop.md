@@ -104,6 +104,21 @@ Order of purchases at 5 minutes a day, buying the cheapest affordable item: Goat
 - Draw the helpers on the hill: Merope, Bellerophon and Heracles pushing beside Sisyphus; Amalthea, Pan and Thanatos somewhere on the hill.
 - The Lyre of Orpheus: music from a sound file, like the click. It can become a beauty item when it is built.
 
+### The next three things
+
+Sisyphus is an experience, not a clicker game. The rock always rolls back down, and Sisyphus never escapes. Nothing makes the next climb shorter. Each climb brings new moments instead, so that the player leaves with something profound and satisfying.
+
+1. **A better ending, which offers the next world.** The ending is the best moment to sell a world, because a new climb begins anyway. Ideas for it:
+   - The walk down. Camus calls the walk back to the rock "the hour of consciousness". After the rock rolls away, slow turns of the knob walk Sisyphus down the hill. No obols come. A few lines of Camus come one by one.
+   - A memory of the climb on the black screen: its days, its storms, the sights, and the voices answered.
+   - A different line of Camus at the end of each climb.
+   - The choice of the next world: push again here, or go to another world. A world that is not bought shows its price.
+   - After a few climbs, Sisyphus smiles at the top.
+2. **Voices.** Now and then, a god appears as a vision in the sky and asks a question with two answers. The knob answers, to the left or to the right, and a right answer gives one obol. See `docs/voices.md`.
+3. **Legendary tasks.** A list of tasks across climbs, like the labors of Heracles, in the Agora. For example: reach the top in each world, answer 50 voices, see Pegasus 10 times, climb without sidekicks. With records, such as the fastest climb.
+
+Other ideas from the same talk, not planned: trials of the gods (a harder climb that the player chooses, for a laurel), and traces of each climb in the world (a stone on a cairn, a star in the sky).
+
 ## The final climb
 
 - **The goal.** At the first purchase of each climb, Hermes says: "One of fifteen. Buy them all, and the top will come in sight."
@@ -157,3 +172,5 @@ The beauty of The Underworld: now and then Charon rows his boat across the Styx;
 ## Later
 
 - More worlds. The checklist for a new world is in `.claude/skills/new-world/SKILL.md`.
+- **A move keeps the climb.** The player can move to another world at any time and lose nothing: the day, the obols, the items and the final climb go with him. Each item becomes the item of the same line and tier in the new world, for example the River stone becomes the Lava stone. Thus no warning comes before a move. The black screen at the top can also offer the worlds, because a new climb begins there anyway.
+- **The same math in every world.** A world is chosen for its mood, so it never makes a climb faster or harder. Prices and speeds that differ would make a move cost the climb again, would let a player hop to the fastest world, and would make a bought world an advantage. The worlds differ in what happens instead: their own voices, such as Charon and Persephone in The Underworld; their own trials and Labors; and their own sights and lines.
