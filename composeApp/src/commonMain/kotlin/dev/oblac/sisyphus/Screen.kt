@@ -129,6 +129,8 @@ class Screen(
         private set
     /** Called when new obols come. */
     var onCoin: () -> Unit = {}
+    /** Called when he reaches the top. */
+    var onTop: () -> Unit = {}
 
     init {
         game.onObol = { obols ->
@@ -176,7 +178,7 @@ class Screen(
         game.update(dt)
         gain = gain?.let { Gain(it.obols, it.age + dt) }?.takeIf { it.age < GAIN_TIME }
         copied = max(0.0, copied - dt)
-        val end = ending ?: if (game.atTop) Ending().also { ending = it } else null
+        val end = ending ?: if (game.atTop) Ending().also { ending = it; onTop() } else null
         if (end != null) {
             val black = end.time >= Ending.BLACK_AT
             end.update(dt)

@@ -13,6 +13,7 @@ private class Recorder : Sound {
     override fun fanfare() { played += "fanfare" }
     override fun coin() { played += "coin" }
     override fun spell() { played += "spell" }
+    override fun victory() { played += "victory" }
     override fun pause() { played += "pause" }
 }
 
@@ -48,5 +49,14 @@ class SoundTest {
         assertEquals(emptyList(), sound.played)
         sound.vision(on = true)
         assertEquals(listOf("spell"), sound.played)
+    }
+
+    @Test
+    fun theTopPlaysTheVictoryUnlessTheSoundIsOff() {
+        val sound = Recorder()
+        sound.top(on = false)
+        assertEquals(emptyList(), sound.played)
+        sound.top(on = true)
+        assertEquals(listOf("victory"), sound.played)
     }
 }

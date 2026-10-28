@@ -5,7 +5,7 @@ import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.Clip
 
-/** Plays the knob click, the click of every other tap, the sound of buying, the fanfare, the coin and the spell on desktop. Without an audio device it stays silent. */
+/** Plays the knob click, the click of every other tap, the sound of buying, the fanfare, the coin, the spell and the victory on desktop. Without an audio device it stays silent. */
 internal class ClipSound : Sound {
     private var clips: List<Clip> = emptyList()
     private var uiClip: Clip? = null
@@ -13,9 +13,10 @@ internal class ClipSound : Sound {
     private var fanfareClip: Clip? = null
     private var coinClip: Clip? = null
     private var spellClip: Clip? = null
+    private var victoryClip: Clip? = null
     private var next = 0
 
-    override fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray, spell: FloatArray) {
+    override fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray, spell: FloatArray, victory: FloatArray) {
         try {
             clips = List(6) { clip(click) }
             uiClip = clip(ui)
@@ -23,6 +24,7 @@ internal class ClipSound : Sound {
             fanfareClip = clip(fanfare)
             coinClip = clip(coin)
             spellClip = clip(spell)
+            victoryClip = clip(victory)
         } catch (e: Exception) {
             clips = emptyList()
             uiClip = null
@@ -30,6 +32,7 @@ internal class ClipSound : Sound {
             fanfareClip = null
             coinClip = null
             spellClip = null
+            victoryClip = null
         }
     }
 
@@ -56,6 +59,10 @@ internal class ClipSound : Sound {
 
     override fun spell() {
         spellClip?.restart()
+    }
+
+    override fun victory() {
+        victoryClip?.restart()
     }
 
     private fun clip(samples: FloatArray): Clip {

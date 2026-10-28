@@ -6,6 +6,7 @@ import dev.oblac.sisyphus.audio.loadCoin
 import dev.oblac.sisyphus.audio.loadFanfare
 import dev.oblac.sisyphus.audio.loadSpell
 import dev.oblac.sisyphus.audio.loadUi
+import dev.oblac.sisyphus.audio.loadVictory
 import dev.oblac.sisyphus.audio.loadWin
 import kotlinx.coroutines.runBlocking
 import kotlin.math.abs
@@ -64,6 +65,14 @@ class SoundFileTest {
         val peak = spell.maxOf { abs(it) }
         assertTrue(spell.take(SAMPLE_RATE / 100).any { abs(it) > peak / 50 })
         assertTrue(spell.size in 2 * SAMPLE_RATE..5 * SAMPLE_RATE, "${spell.size} samples")
+    }
+
+    @Test
+    fun theVictoryLastsAboutAsLongAsTheRockRollsAndStartsAtOnce() {
+        val victory = runBlocking { loadVictory() }
+        assertTrue(victory.size in 5 * SAMPLE_RATE..8 * SAMPLE_RATE, "${victory.size} samples")
+        val peak = victory.maxOf { abs(it) }
+        assertTrue(victory.take(SAMPLE_RATE * 3 / 100).any { abs(it) > peak / 50 })
     }
 
     @Test

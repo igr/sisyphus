@@ -668,6 +668,16 @@ class ScreenTest {
         assertEquals(Touch.KNOB, s.tap(l.knobX + l.knobR * 0.6f, l.knobY + 0.5f))
     }
 
+    @Test
+    fun reachingTheTopPlaysTheVictoryOnce() {
+        val s = screen(MemoryStore(allBought + mapOf("position" to 100.0, "summit" to 100.0, "effort" to 50_000.0)))
+        var tops = 0
+        s.onTop = { tops++ }
+        val dt = 1 / 60.0
+        repeat(((Ending.BLACK_AT + Ending.READ) / dt).toInt()) { s.update(dt) }
+        assertEquals(1, tops)
+    }
+
     /** A screen at the top, after Camus' words have had time to be read. */
     private fun afterTheWords(): Screen {
         val s = screen(MemoryStore(allBought + mapOf("position" to 100.0, "summit" to 100.0, "effort" to 50_000.0)))

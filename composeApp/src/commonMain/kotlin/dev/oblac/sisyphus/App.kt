@@ -26,6 +26,7 @@ import dev.oblac.sisyphus.audio.loadCoin
 import dev.oblac.sisyphus.audio.loadFanfare
 import dev.oblac.sisyphus.audio.loadSpell
 import dev.oblac.sisyphus.audio.loadUi
+import dev.oblac.sisyphus.audio.loadVictory
 import dev.oblac.sisyphus.audio.loadWin
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.ui.BACKGROUND
@@ -51,14 +52,16 @@ fun SisyphusApp(
         }
         screen.onCoin = { sound.obol(game.soundOn) }
         game.onVision = { sound.vision(game.soundOn) }
+        screen.onTop = { sound.top(game.soundOn) }
         onDispose {
             game.onTick = {}
             screen.onCoin = {}
             game.onVision = {}
+            screen.onTop = {}
         }
     }
 
-    LaunchedEffect(sound) { sound.load(loadClick(), loadUi(), loadWin(), loadFanfare(), loadCoin(), loadSpell()) }
+    LaunchedEffect(sound) { sound.load(loadClick(), loadUi(), loadWin(), loadFanfare(), loadCoin(), loadSpell(), loadVictory()) }
 
     LaunchedEffect(screen) {
         var last = 0L
