@@ -1495,4 +1495,20 @@ class ScreenTest {
         assertTrue(l.agoraNote.right + 2 <= l.agoraSound.x)
         assertTrue(AGORA_NOTE.all(PixelFont::hasGlyph))
     }
+
+    /** Only the next labor of each category shows how far it has come. The ones after it show no number. */
+    @Test
+    fun onlyTheNextLaborShowsItsProgress() {
+        fun right(climbs: Double, index: Int): List<Int> {
+            val s = screen(MemoryStore(mapOf("climbs" to climbs, "laborsSeen" to 20.0)))
+            val l = s.layout!!
+            s.tap(l.dayLabel(s.game.day))
+            s.tap(l.laborsTab)
+            val r = l.laborRows[index]
+            val px = s.render()
+            return (r.y until r.y + PixelFont.LINE_HEIGHT).flatMap { y -> (r.right - 40 until r.right).map { px[it, y] } }
+        }
+        assertNotEquals(right(5.0, 1), right(6.0, 1))
+        assertEquals(right(5.0, 2), right(6.0, 2))
+    }
 }

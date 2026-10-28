@@ -38,6 +38,11 @@ val BACKGROUND = rgb(0x17110D)
 private val DISABLED = rgb(0x5A5048)
 /** A labor not done yet: gray, but still easy to read. */
 private val NOT_DONE = rgb(0x8A7E72)
+
+/** The card of a labor not done yet, and its edge: brighter for the next labor of its category. */
+private val CARD = rgb(0x211913)
+private val CARD_EDGE = rgb(0x3A2E24)
+private val NEXT_EDGE = rgb(0x5A5048)
 private val BACKGROUND_GRAIN = rgb(0x1D1611)
 private val OUTLINE = rgb(0x0A0705)
 private val TERRA = rgb(0xC8643C)
@@ -515,8 +520,9 @@ class UiRenderer {
     }
 
     /**
-     * The labors, under a header for each category: a labor that is done in cream on a band of its category's color,
-     * the others in gray with their progress. The list is drawn on a sheet of its own, so that it scrolls by [scroll].
+     * The labors, under a header for each category, each on a small card. A labor that is done is on a card of its category's color,
+     * with a check; the others are gray, and the next one of each category shows how far it has come.
+     * The list is drawn on a sheet of its own, so that it scrolls by [scroll].
      */
     fun labors(px: Pixels, layout: Layout, counts: Counts, scroll: Int) {
         val list = layout.worldList
@@ -530,16 +536,20 @@ class UiRenderer {
             PixelFont.draw(sheet, category.title, h.x, h.y, color)
             PixelFont.draw(sheet, done, h.right - PixelFont.width(done), h.y, color)
         }
+        val next = Category.entries.mapNotNull { category -> LABORS.firstOrNull { it.category == category && !it.done(counts) } }
         for ((i, labor) in LABORS.withIndex()) {
             val r = layout.laborRows[i].offset(-list.x, -list.y - scroll)
             val (color, band) = CATEGORY_COLORS.getValue(labor.category)
             val done = labor.done(counts)
-            if (done) sheet.fillRect(r.x, r.y, r.w, r.h, band)
+            sheet.fillRect(r.x, r.y, r.w, r.h, if (done) band else CARD)
+            frame(sheet, r, if (done) color else if (labor in next) NEXT_EDGE else CARD_EDGE)
             val x = r.x + Layout.LABOR_PAD
-            PixelFont.draw(sheet, labor.name, x, r.y + 2, if (done) CREAM else NOT_DONE)
-            if (!done) progress(counts.of(labor.category), labor.goal).let { PixelFont.draw(sheet, it, r.right - Layout.LABOR_PAD - PixelFont.width(it), r.y + 2, NOT_DONE) }
+            val y = r.y + 3
+            PixelFont.draw(sheet, labor.name, x, y, if (done) CREAM else NOT_DONE)
+            if (done) check(sheet, r.right - Layout.LABOR_PAD - CHECK[0].length, y, color)
+            if (labor in next) progress(counts.of(labor.category), labor.goal).let { PixelFont.draw(sheet, it, r.right - Layout.LABOR_PAD - PixelFont.width(it), y, color) }
             for ((j, line) in PixelFont.wrap(labor.line, layout.laborText).withIndex()) {
-                PixelFont.draw(sheet, line, x, r.y + 2 + (j + 1) * PixelFont.LINE_HEIGHT, if (done) color else NOT_DONE)
+                PixelFont.draw(sheet, line, x, y + (j + 1) * PixelFont.LINE_HEIGHT, if (done) color else NOT_DONE)
             }
         }
         px.draw(sheet, list.x, list.y)
@@ -643,8 +653,8 @@ class UiRenderer {
         }
     }
 
-    private fun check(px: Pixels, x: Int, y: Int) {
-        for ((dy, row) in CHECK.withIndex()) for ((dx, ch) in row.withIndex()) if (ch == '#') px[x + dx, y + dy] = TERRA_LIGHT
+    private fun check(px: Pixels, x: Int, y: Int, color: Int = TERRA_LIGHT) {
+        for ((dy, row) in CHECK.withIndex()) for ((dx, ch) in row.withIndex()) if (ch == '#') px[x + dx, y + dy] = color
     }
 
     private fun coin(px: Pixels, x: Int, y: Int, colors: Map<Char, Int>, outline: Boolean = false) {

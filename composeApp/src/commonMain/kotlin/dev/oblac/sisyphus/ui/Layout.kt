@@ -150,9 +150,9 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
             headers += Rect(worldList.x, y, worldList.w, PixelFont.CAP_HEIGHT)
             y += PixelFont.LINE_HEIGHT
             for (labor in LABORS.filter { it.category == category }) {
-                val h = 3 + PixelFont.LINE_HEIGHT * (1 + PixelFont.wrap(labor.line, laborText).size)
+                val h = 4 + PixelFont.LINE_HEIGHT * (1 + PixelFont.wrap(labor.line, laborText).size)
                 rows += Rect(worldList.x, y, worldList.w, h)
-                y += h + 2
+                y += h + 3
             }
         }
         laborHeaders = headers
