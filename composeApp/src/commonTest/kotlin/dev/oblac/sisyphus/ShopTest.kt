@@ -6,8 +6,10 @@ import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.OBOL_SPREAD
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.Shop
+import dev.oblac.sisyphus.game.TURNS_PER_DAY
 import dev.oblac.sisyphus.game.WORK_PER_OBOL
 import dev.oblac.sisyphus.game.items
+import kotlin.math.roundToInt
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -31,7 +33,7 @@ class ShopTest {
         assertEquals(listOf(2 to 1.5, 5 to 2.0, 9 to 3.0), of(Line.ROCK))
         assertEquals(listOf(3 to 1.25, 6 to 1.5, 10 to 2.0), of(Line.SIDEKICKS))
         assertEquals(listOf(1 to 6.0, 4 to 12.0, 8 to 24.0), of(Line.GODS))
-        assertEquals(listOf(2 to 504.0, 6 to 360.0, 10 to 216.0), of(Line.BLESSING))
+        assertEquals(listOf(2 to 0.7, 6 to 0.5, 10 to 0.3), of(Line.BLESSING))
         assertEquals(listOf(3, 7, 11), corinth.filter { it.line == Line.BEAUTY }.map { it.price })
     }
 
@@ -159,6 +161,16 @@ class ShopTest {
         val shop = Shop(tiers = mapOf(Line.GODS to 3))
         assertEquals(24.0, shop.helpersPerHour)
         assertEquals("Thanatos", shop.helper?.name)
+    }
+
+    @Test
+    fun theBlessingsTellTheirDaysOfPushing() {
+        for (place in Place.entries) for (item in items(place).filter { it.line == Line.BLESSING }) {
+            val days = (WORK_PER_OBOL * item.effect / TURNS_PER_DAY).roundToInt()
+            assertEquals("obol per $days days", item.note, item.name)
+            assertTrue("every $days days of pushing" in item.details, item.name)
+            if (item.tier == 1) assertTrue("not ${(WORK_PER_OBOL / TURNS_PER_DAY).roundToInt()}" in item.details, item.name)
+        }
     }
 
     @Test

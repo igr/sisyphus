@@ -16,7 +16,7 @@ enum class Line(val id: String) {
 }
 
 /**
- * One thing to buy in a [place]. Once owned, [effect] is its line's value: a bonus, turns an hour, or work per obol.
+ * One thing to buy in a [place]. Once owned, [effect] is its line's value: a bonus, turns an hour, or the part of the work per obol.
  * The Agora shows [note] in its row, and [details] when it asks to buy.
  */
 class Item(
@@ -30,8 +30,8 @@ const val SUN_CAP = 1.5
 /** Turns of work for one obol, before any blessing: 10 days of pushing, on average. */
 const val WORK_PER_OBOL = 720.0
 
-/** Turns of work for each of the first obols of a climb, before any blessing: two and a half days of pushing, so that the first items come soon. */
-const val FIRST_OBOL = 180.0
+/** Turns of work for each of the first obols of a climb, before any blessing: a quarter of an obol, two and a half days of pushing, so that the first items come soon. */
+const val FIRST_OBOL = WORK_PER_OBOL / 4
 
 /** How many obols at the start of a climb are fast: each needs [FIRST_OBOL], made smaller by a blessing. */
 const val FAST_OBOLS = 4
@@ -59,11 +59,11 @@ private val CORINTH_ITEMS = listOf(
         "The god of the wild pushes 12 times an hour, even when the app is closed. He takes Amalthea's place."),
     Item(Line.GODS, 3, "Thanatos", "24 pushes an hour", 8, 24.0,
         "Death, whom Sisyphus once chained, pushes 24 times an hour, day and night. He takes Pan's place."),
-    Item(Line.BLESSING, 1, "Purse of Hermes", "obol per 7 days", 2, 504.0,
+    Item(Line.BLESSING, 1, "Purse of Hermes", "obol per 7 days", 2, 0.7,
         "Hermes fills your purse faster: one obol for every 7 days of pushing, not 10."),
-    Item(Line.BLESSING, 2, "Gift of Tyche", "obol per 5 days", 6, 360.0,
+    Item(Line.BLESSING, 2, "Gift of Tyche", "obol per 5 days", 6, 0.5,
         "Fortune smiles on you: one obol for every 5 days of pushing. It takes the place of the purse."),
-    Item(Line.BLESSING, 3, "Wealth of Plutus", "obol per 3 days", 10, 216.0,
+    Item(Line.BLESSING, 3, "Wealth of Plutus", "obol per 3 days", 10, 0.3,
         "The god of wealth is on your side: one obol for every 3 days of pushing. It takes the place of Tyche's gift."),
     Item(Line.BEAUTY, 1, "Dolphins", "leap in the sea", 3, 0.0,
         "Dolphins leap from the sea now and then. Beauty stays, whatever else you buy."),
@@ -184,7 +184,7 @@ class Shop(
     /** The obols that came in this climb: those in hand and those spent on items. */
     private val earned: Int get() = floor(obols).toInt() + stock.filter { it.tier <= tier(it.line) }.sumOf { it.price }
 
-    private val fastObol: Double get() = FIRST_OBOL * workPerObol / WORK_PER_OBOL
+    private val fastObol: Double get() = FIRST_OBOL * blessing
 
     fun tier(line: Line): Int = tiers.getValue(line)
 
@@ -208,7 +208,10 @@ class Shop(
 
     val bonus: Double get() = (owned(Line.ROCK)?.effect ?: 1.0) * (owned(Line.SIDEKICKS)?.effect ?: 1.0)
     val helpersPerHour: Double get() = owned(Line.GODS)?.effect ?: 0.0
-    val workPerObol: Double get() = owned(Line.BLESSING)?.effect ?: WORK_PER_OBOL
+    val workPerObol: Double get() = WORK_PER_OBOL * blessing
+
+    /** The part of the work per obol that the newest blessing leaves: all of it before the first one. */
+    private val blessing: Double get() = owned(Line.BLESSING)?.effect ?: 1.0
     val helper: Item? get() = owned(Line.GODS)
 
     /** The work fills the next obol. When it comes, the rest of the work goes to the obol after it. */

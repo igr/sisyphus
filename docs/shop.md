@@ -33,7 +33,7 @@ Obols come from **work**:
 
 - One turn of the knob is 1 unit of work, multiplied by the bonus from the rock and the helper beside him (1× to 6×).
 - Helpers that push on their own add their own work every hour.
-- The first four obols of a climb need 180 units of work each: two and a half days of pushing for each. Thus the first items come soon: three items in the first 20 minutes of turning.
+- The first four obols of a climb need a quarter of the work per obol each: 180 units of work, two and a half days of pushing for each. Thus the first items come soon: three items in the first 20 minutes of turning.
 - Each obol after them needs 720 units of work, plus or minus up to 36 (half a day). On average, that is 10 days of pushing (a day is 72 turns). Because each obol is a little shorter or longer, obols come at all times of the day, not always at the same hour.
 - The work for the next obol is set when the obol before it comes, and it is saved.
 - Blessings lower the work per obol (see the shop). A blessing also makes the next obol, and the fast obols after it, smaller in the same proportion. The part of the next obol that is earned is kept.
@@ -52,7 +52,7 @@ Each line is bought from left to right (I, then II, then III). A newer item repl
 | **Blessings**: more obols | Purse of Hermes · 2 · an obol per 7 days of work | Gift of Tyche · 6 · per 5 days | Wealth of Plutus · 10 · per 3 days |
 | **Beauty**: in the background, no effect on progress | Dolphins of Poseidon · 3 | Pegasus · 7 | The Pleiades · 11 |
 
-All 15 items cost 87 obols together. In work per obol, the blessings are 504 (Hermes), 360 (Tyche) and 216 (Plutus).
+All 15 items cost 87 obols together. A blessing leaves a part of the work per obol of 720: 0.7 with Hermes (504), 0.5 with Tyche (360), and 0.3 with Plutus (216). So a new work per obol changes all of them.
 
 ## What the player sees
 
