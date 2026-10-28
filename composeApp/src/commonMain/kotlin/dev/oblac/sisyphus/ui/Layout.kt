@@ -113,7 +113,7 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     val offerNo = Rect(offer.x + offer.w / 2 + 4, offerYes.y, OFFER_BUTTON, BUTTON_HEIGHT)
 
     /** On the Worlds screen, the window that shows the list of worlds. The list scrolls when they do not fit. */
-    val worldList = Rect(agoraTitle.x, agoraTitle.bottom + 6, agoraTitle.w, agoraSound.y - agoraTitle.bottom - 6)
+    val worldList = Rect(agoraTitle.x, agoraTitle.bottom + 6, agoraTitle.w, agoraSound.y - agoraTitle.bottom - 12)
 
     /** How far a list of [count] worlds can scroll. */
     fun worldScroll(count: Int) = max(0, count * (WORLD_ROW + 6) - 6 - worldList.h)

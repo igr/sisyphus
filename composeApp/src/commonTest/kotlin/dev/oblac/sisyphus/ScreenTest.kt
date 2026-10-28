@@ -1460,4 +1460,14 @@ class ScreenTest {
         val contrast = (relativeLuminance(text) + 0.05) / (relativeLuminance(BACKGROUND) + 0.05)
         assertTrue(contrast >= 4.5, "contrast $contrast")
     }
+
+    /** The list of the Worlds screen ends with a gap above Restore and the id, so that a row cut by the scroll never touches them. */
+    @Test
+    fun theListStopsAboveTheBottomRow() {
+        for (s in listOf(smallest(), screen())) {
+            val l = s.layout!!
+            assertTrue(l.worldList.bottom + 4 <= l.restore.y, "the list ends at ${l.worldList.bottom}, Restore starts at ${l.restore.y}")
+            assertTrue(l.worldList.bottom + 4 <= l.supportId.y)
+        }
+    }
 }
