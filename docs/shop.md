@@ -76,16 +76,18 @@ All 15 items cost 87 obols together. In work per obol, the blessings are 504 (He
 
 ## How long it takes
 
-Simulation, assuming one knob turn per second while the player plays, and the average work for each obol. "Top reached" adds the final climb.
+Simulation, assuming one knob turn per second while the player plays, and the average work for each obol. "Top reached" adds the final climb. "Visions" tells how many times a god comes as a vision in the climb: the average, and in brackets the range of most climbs, because the count is random. The days count no obols from the visions.
 
-| Daily play | First item | All 15 | Longest wait between items | Top reached |
-|---|---|---|---|---|
-| 2 minutes | Day 2 | Day 56 | 6 days | Day 63 |
-| 5 minutes | Day 1 | Day 31 | 3 days | Day 34 |
-| 10 minutes | Day 1 | Day 18 | 2 days | Day 20 |
-| 30 minutes | Day 1 | Day 7 | 1 day | Day 8 |
+| Daily play | First item | All 15 | Longest wait between items | Top reached | Visions |
+|---|---|---|---|---|---|
+| 2 minutes | Day 2 | Day 56 | 6 days | Day 63 | 6 (5 to 7) |
+| 5 minutes | Day 1 | Day 31 | 3 days | Day 34 | 8 (7 to 9) |
+| 10 minutes | Day 1 | Day 18 | 2 days | Day 20 | 9 (8 to 10) |
+| 30 minutes | Day 1 | Day 7 | 1 day | Day 8 | 10 (9 to 11) |
 
-Non-stop play is allowed: at one turn a second, about three and a half hours of turning buys everything.
+Only the player's own turns bring a vision. So a player who plays less, and lets the gods push while the app is closed, sees fewer visions. Each right answer gives one obol: a player who answers every vision right buys everything about 4 days sooner at 5 minutes a day, on day 27, and reaches the top on day 30.
+
+Non-stop play is allowed: at one turn a second, about three and a half hours of turning buys everything, and about 10 visions come.
 
 Turning speed matters too: at 5 minutes a day, a slow turner (30 turns a minute) buys everything on day 49, a fast one (90 a minute) on day 23.
 
