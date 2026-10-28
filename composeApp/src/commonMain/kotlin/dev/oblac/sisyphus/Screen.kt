@@ -415,8 +415,8 @@ class Screen(
     private val canRestore get() = Place.entries.any { !worlds.owns(it) }
 
     /**
-     * The finger lifts: the knob coasts on, or a tap on the list asks to go to that world, or to buy it.
-     * After the top, everything starts from the beginning anyway, so the world he is in, or one already bought, begins at once.
+     * The finger lifts: the knob coasts on, or a tap on the list goes back to the world he is in, or asks to go to another world,
+     * or to buy it. After the top, everything starts from the beginning anyway, so a world already bought begins at once.
      * Tells what the lift did.
      */
     fun release(): Touch {
@@ -429,7 +429,6 @@ class Screen(
         val row = Place.entries.indices.firstOrNull { l.worldRow(it).near(d.x, d.y + worldsScroll, 0) } ?: return Touch.NONE
         val place = Place.entries[row]
         if (place == game.place) {
-            if (ending == null) return Touch.NONE
             worldsOpen = false
             return Touch.WORLDS
         }

@@ -817,12 +817,17 @@ class ScreenTest {
     }
 
     @Test
-    fun theWorldYouAreInIsNotOfferedAgain() {
-        val s = screen()
+    fun aTapOnTheWorldYouAreInGoesBackToTheClimb() {
+        val s = screen(MemoryStore(mapOf("effort" to 5000.0, "obols" to 7.0)))
         val l = s.layout!!
-        s.tap(l.dayLabel(s.game.day))
-        assertEquals(Touch.NONE, s.choose(l.worldRow(Place.CORINTH.ordinal)))
+        val day = s.game.day
+        s.tap(l.dayLabel(day))
+        assertEquals(Touch.WORLDS, s.choose(l.worldRow(Place.CORINTH.ordinal)))
         assertNull(s.moving)
+        assertFalse(s.worldsOpen)
+        assertEquals(Place.CORINTH, s.game.place)
+        assertEquals(day, s.game.day)
+        assertEquals(7.0, s.game.shop.obols)
     }
 
     @Test
@@ -1011,8 +1016,10 @@ class ScreenTest {
     fun aPlayerStaysInAWorldNotBought() {
         val s = worlds(FakeBilling(), Place.ETNA)
         assertEquals(Place.ETNA, s.game.place)
-        assertEquals(Touch.NONE, s.choose(s.layout!!.worldRow(Place.ETNA.ordinal)))
+        assertEquals(Touch.WORLDS, s.choose(s.layout!!.worldRow(Place.ETNA.ordinal)))
         assertNull(s.buying)
+        assertFalse(s.worldsOpen)
+        assertEquals(Place.ETNA, s.game.place)
     }
 
     @Test
