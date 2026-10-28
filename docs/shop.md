@@ -50,9 +50,9 @@ Each line is bought from left to right (I, then II, then III). A newer item repl
 | **Sidekicks**: help only while you push | Merope, his wife · 3 · 1.25× | Bellerophon, his grandson · 6 · 1.5× | Heracles · 10 · 2× |
 | **Gods**: push all the time, also with the app closed | Amalthea, the goat who nursed Zeus · 1 · 6 turns an hour | Pan · 4 · 12 turns an hour | Thanatos, who never sleeps · 8 · 24 turns an hour |
 | **Blessings**: more obols | Purse of Hermes · 2 · an obol per 7 days of work | Gift of Tyche · 6 · per 5 days | Wealth of Plutus · 10 · per 3 days |
-| **Beauty**: in the background, no effect on progress | Dolphins of Poseidon · 3 | Pegasus · 7 | The Pleiades · 11 |
+| **Beauty**: in the background, no effect on progress | Dolphins of Poseidon · 1 | Pegasus · 2 | The Pleiades · 3 |
 
-All 15 items cost 87 obols together. A blessing leaves a part of the work per obol of 720: 0.7 with Hermes (504), 0.5 with Tyche (360), and 0.3 with Plutus (216). So a new work per obol changes all of them.
+All 15 items cost 72 obols together. A blessing leaves a part of the work per obol of 720: 0.7 with Hermes (504), 0.5 with Tyche (360), and 0.3 with Plutus (216). So a new work per obol changes all of them.
 
 ## What the player sees
 
@@ -80,10 +80,10 @@ Simulation, assuming one knob turn per second while the player plays, and the av
 
 | Daily play | First item | All 15 | Longest wait between items | Top reached | Visions |
 |---|---|---|---|---|---|
-| 2 minutes | Day 2 | Day 56 | 6 days | Day 63 | 6 (5 to 7) |
+| 2 minutes | Day 2 | Day 55 | 5 days | Day 63 | 6 (5 to 7) |
 | 5 minutes | Day 1 | Day 31 | 3 days | Day 34 | 8 (7 to 9) |
-| 10 minutes | Day 1 | Day 18 | 2 days | Day 20 | 9 (8 to 10) |
-| 30 minutes | Day 1 | Day 7 | 1 day | Day 8 | 10 (9 to 11) |
+| 10 minutes | Day 1 | Day 18 | 2 days | Day 19 | 9 (8 to 10) |
+| 30 minutes | Day 1 | Day 7 | 1 day | Day 7 | 10 (9 to 11) |
 
 Only the player's own turns bring a vision. So a player who plays less, and lets the gods push while the app is closed, sees fewer visions. Each right answer gives one obol: a player who answers every vision right buys everything about 4 days sooner at 5 minutes a day, on day 27, and reaches the top on day 30.
 
@@ -91,7 +91,9 @@ Non-stop play is allowed: at one turn a second, about three and a half hours of 
 
 Turning speed matters too: at 5 minutes a day, a slow turner (30 turns a minute) buys everything on day 49, a fast one (90 a minute) on day 23.
 
-Order of purchases at 5 minutes a day, buying the cheapest affordable item: Goat, River stone, Hermes, Merope, Dolphins, Pan, Pumice, Bellerophon, Tyche, Pegasus, Thanatos, Sphere, Heracles, Plutus, Pleiades.
+Order of purchases at 5 minutes a day, buying the cheapest affordable item: Goat, Dolphins, River stone, Hermes, Pegasus, Merope, Pleiades, Pan, Pumice, Bellerophon, Tyche, Thanatos, Sphere, Heracles, Plutus.
+
+The order matters too. At 5 minutes a day, the fastest order reaches the top on day 27, and the slowest on day 68. The fastest buys the blessings early and Beauty last. The slowest buys Beauty first and the blessings last. A random order reaches the top on day 34, the middle of 300 random orders. A player who saves every obol and buys everything at the end reaches the top on day 169. Beauty is cheap, so that a player who buys it first loses only a week: the top on day 41.
 
 ## Left to the builder
 

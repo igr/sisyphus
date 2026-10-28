@@ -65,11 +65,11 @@ private val CORINTH_ITEMS = listOf(
         "Fortune smiles on you: one obol for every 5 days of pushing. It takes the place of the purse."),
     Item(Line.BLESSING, 3, "Wealth of Plutus", "obol per 3 days", 10, 0.3,
         "The god of wealth is on your side: one obol for every 3 days of pushing. It takes the place of Tyche's gift."),
-    Item(Line.BEAUTY, 1, "Dolphins", "leap in the sea", 3, 0.0,
+    Item(Line.BEAUTY, 1, "Dolphins", "leap in the sea", 1, 0.0,
         "Dolphins leap from the sea now and then. Beauty stays, whatever else you buy."),
-    Item(Line.BEAUTY, 2, "Pegasus", "flies by", 7, 0.0,
+    Item(Line.BEAUTY, 2, "Pegasus", "flies by", 2, 0.0,
         "The winged horse flies across the sky now and then."),
-    Item(Line.BEAUTY, 3, "The Pleiades", "seven stars at night", 11, 0.0,
+    Item(Line.BEAUTY, 3, "The Pleiades", "seven stars at night", 3, 0.0,
         "The seven sisters shine at night. The faintest one is Merope."),
 )
 

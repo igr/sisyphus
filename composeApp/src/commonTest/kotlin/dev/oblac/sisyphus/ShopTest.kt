@@ -24,7 +24,7 @@ class ShopTest {
     fun theShopHasFiveLinesOfThree() {
         assertEquals(15, corinth.size)
         for (line in Line.entries) assertEquals(listOf(1, 2, 3), corinth.filter { it.line == line }.map { it.tier })
-        assertEquals(87, corinth.sumOf { it.price })
+        assertEquals(72, corinth.sumOf { it.price })
     }
 
     @Test
@@ -34,7 +34,7 @@ class ShopTest {
         assertEquals(listOf(3 to 1.25, 6 to 1.5, 10 to 2.0), of(Line.SIDEKICKS))
         assertEquals(listOf(1 to 6.0, 4 to 12.0, 8 to 24.0), of(Line.GODS))
         assertEquals(listOf(2 to 0.7, 6 to 0.5, 10 to 0.3), of(Line.BLESSING))
-        assertEquals(listOf(3, 7, 11), corinth.filter { it.line == Line.BEAUTY }.map { it.price })
+        assertEquals(listOf(1, 2, 3), corinth.filter { it.line == Line.BEAUTY }.map { it.price })
     }
 
     @Test
