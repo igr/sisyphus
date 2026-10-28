@@ -37,6 +37,9 @@ The last two columns show what happens to each value when Sisyphus reaches the t
 | `visionSeed` | The number that sets the order of the visions. | Kept | Kept |
 | `visionsDrawn` | How many visions came so far. | Kept | Kept |
 | `rightAnswers` | How many questions of the visions the player answered right. | Kept | Kept |
+| `turnsPushed` | The player's own turns that pushed, in all climbs and worlds. The gods' pushes do not count. | Kept | Kept |
+| `daysBefore` | The days pushed through in all the climbs before this one. | Plus the days of the climb | Plus the days of the climb |
+| `laborsSeen` | How many labors were done when the Labors tab was last open. A dot stands by the day while more are done. | Kept | Kept |
 | `sound` | 1 when the sound is on, 0 when it is off. | Kept | Kept |
 | `savedAt` | The time of the last save, in seconds since 1970. | Saved again | Saved again |
 
@@ -68,7 +71,7 @@ The game saves all keys at these times:
 
 - Every second while something changes: the knob turns, an obol comes, or new wise words come.
 - When the app goes to the background, and when the desktop window closes.
-- After a purchase, after a dev screen button, at the top, and after a move to another world.
+- After a purchase, after a dev screen button, at the top, after a move to another world, and when the Labors tab opens.
 
 The sound setting saves only the `sound` key, at the moment that the player changes it.
 

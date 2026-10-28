@@ -1,14 +1,19 @@
 package dev.oblac.sisyphus.ui
 
 import dev.oblac.sisyphus.Billing
+import dev.oblac.sisyphus.game.Category
+import dev.oblac.sisyphus.game.Counts
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.Item
+import dev.oblac.sisyphus.game.LABORS
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.Shop
 import dev.oblac.sisyphus.game.QuoteBox
 import dev.oblac.sisyphus.game.Vision
+import dev.oblac.sisyphus.game.done
 import dev.oblac.sisyphus.game.items
+import dev.oblac.sisyphus.game.progress
 import dev.oblac.sisyphus.gfx.PixelFont
 import dev.oblac.sisyphus.gfx.TRANSPARENT
 import dev.oblac.sisyphus.gfx.Pixels
@@ -30,6 +35,8 @@ val BACKGROUND = rgb(0x17110D)
 
 /** Text and coins in the Agora that the obols cannot buy yet. */
 private val DISABLED = rgb(0x5A5048)
+/** A labor not done yet: gray, but still easy to read. */
+private val NOT_DONE = rgb(0x8A7E72)
 private val BACKGROUND_GRAIN = rgb(0x1D1611)
 private val OUTLINE = rgb(0x0A0705)
 private val TERRA = rgb(0xC8643C)
@@ -160,8 +167,20 @@ private val BLACK = rgb(0x000000)
 internal fun supportTag(id: String?, build: String?): String? =
     listOfNotNull(id?.let { "ID " + it.takeLast(4) }, build?.let { "[$it]" }).joinToString(" ").ifEmpty { null }
 
-/** The title of the Worlds screen. */
+/** The title of the Worlds screen, and of its tab for the labors. */
 internal const val WORLDS_TITLE = "Worlds"
+internal const val LABORS_TITLE = "Labors"
+
+/** The colors of each category of labors: its title and lines, and the band behind a labor that is done. */
+private val CATEGORY_COLORS = mapOf(
+    Category.HILLS to (rgb(0xF29A62) to rgb(0x4A2418)),
+    Category.TURNS to (rgb(0xD2A462) to rgb(0x3E2C14)),
+    Category.DAYS to (rgb(0xF2C14E) to rgb(0x3A3214)),
+    Category.ANSWERS to (rgb(0x8FA8E0) to rgb(0x1A2240)),
+)
+
+/** The note of the help that points at the day. */
+internal const val DAY_NOTE = "The sun moves only while you push. Tap the day for worlds and labors."
 
 /** The title of the Agora. */
 internal const val AGORA_TITLE = "Agora Market"
@@ -190,6 +209,7 @@ class UiRenderer {
     private val outlined = mutableMapOf<Item, Pixels>()
     private val previews = mutableMapOf<Pair<Place, Int>, Pixels>()
     private var worldSheet: Pixels? = null
+    private var laborSheet: Pixels? = null
 
     fun background(px: Pixels) {
         val g = grain?.takeIf { it.width == px.width && it.height == px.height } ?: Pixels(px.width, px.height).also {
@@ -347,7 +367,7 @@ class UiRenderer {
         }
         arrowUp(px, bar.x + bar.w / 2, bar.bottom + 1, barY - 3)
 
-        val dayNote = PixelFont.wrap("The sun moves only while you push. Tap the day for the worlds.", obolsArrow - 4 - (dayLabel.x + 1))
+        val dayNote = PixelFont.wrap(DAY_NOTE, obolsArrow - 4 - (dayLabel.x + 1))
         val dayY = barY + barNote.size * PixelFont.LINE_HEIGHT + 8
         note(px, dayNote, dayLabel.x + 1, dayY, right = false)
         arrowUp(px, dayLabel.x + 6, dayLabel.bottom + 1, dayY - 3)
@@ -441,9 +461,6 @@ class UiRenderer {
      * The list is drawn on a sheet of its own, so that it scrolls by [scroll] and its edges cut clean.
      */
     fun worlds(px: Pixels, layout: Layout, here: Place, scroll: Int, billing: Billing) {
-        val t = layout.agoraTitle
-        PixelFont.draw(px, WORLDS_TITLE, t.x, t.y, CREAM)
-        px.hline(t.x, t.right - 1, t.bottom + 2, TERRA_DARK)
         val list = layout.worldList
         val sheet = worldSheet?.takeIf { it.width == list.w && it.height == list.h } ?: Pixels(list.w, list.h).also { worldSheet = it }
         sheet.clear(TRANSPARENT)
@@ -463,14 +480,58 @@ class UiRenderer {
             }
         }
         px.draw(sheet, list.x, list.y)
-        val most = layout.worldScroll(Place.entries.size)
-        if (most > 0) {
-            val x = list.right + 3
-            val thumb = list.h * list.h / (list.h + most)
-            val top = list.y + (list.h - thumb) * scroll / most
-            px.vline(x, list.y, list.bottom - 1, TERRA_DARK)
-            px.vline(x, top, top + thumb - 1, TERRA_LIGHT)
+        scrollbar(px, list, scroll, layout.worldScroll(Place.entries.size))
+    }
+
+    /** The title row of the Worlds screen: the tab shown in cream, the other in gray, and the dot after "Labors" while a labor is [new]. */
+    fun tabs(px: Pixels, layout: Layout, labors: Boolean, new: Boolean) {
+        PixelFont.draw(px, WORLDS_TITLE, layout.worldsTab.x, layout.worldsTab.y, if (labors) DISABLED else CREAM)
+        PixelFont.draw(px, LABORS_TITLE, layout.laborsTab.x, layout.laborsTab.y, if (labors) CREAM else DISABLED)
+        if (new) px.fillRect(layout.laborsTab.x + PixelFont.width(LABORS_TITLE) + 2, layout.laborsTab.y + PixelFont.CAP_HEIGHT / 2 - 1, 2, 2, BRONZE[4])
+        val t = layout.agoraTitle
+        px.hline(t.x, t.right - 1, t.bottom + 2, TERRA_DARK)
+    }
+
+    /**
+     * The labors, under a header for each category: a labor that is done in cream on a band of its category's color,
+     * the others in gray with their progress. The list is drawn on a sheet of its own, so that it scrolls by [scroll].
+     */
+    fun labors(px: Pixels, layout: Layout, counts: Counts, scroll: Int) {
+        val list = layout.worldList
+        val sheet = laborSheet?.takeIf { it.width == list.w && it.height == list.h } ?: Pixels(list.w, list.h).also { laborSheet = it }
+        sheet.clear(TRANSPARENT)
+        for (category in Category.entries) {
+            val color = CATEGORY_COLORS.getValue(category).first
+            val h = layout.laborHeaders[category.ordinal].offset(-list.x, -list.y - scroll)
+            val labors = LABORS.filter { it.category == category }
+            val done = "${labors.count { it.done(counts) }}/${labors.size}"
+            PixelFont.draw(sheet, category.title, h.x, h.y, color)
+            PixelFont.draw(sheet, done, h.right - PixelFont.width(done), h.y, color)
         }
+        for ((i, labor) in LABORS.withIndex()) {
+            val r = layout.laborRows[i].offset(-list.x, -list.y - scroll)
+            val (color, band) = CATEGORY_COLORS.getValue(labor.category)
+            val done = labor.done(counts)
+            if (done) sheet.fillRect(r.x, r.y, r.w, r.h, band)
+            val x = r.x + Layout.LABOR_PAD
+            PixelFont.draw(sheet, labor.name, x, r.y + 2, if (done) CREAM else NOT_DONE)
+            if (!done) progress(counts.of(labor.category), labor.goal).let { PixelFont.draw(sheet, it, r.right - Layout.LABOR_PAD - PixelFont.width(it), r.y + 2, NOT_DONE) }
+            for ((j, line) in PixelFont.wrap(labor.line, layout.laborText).withIndex()) {
+                PixelFont.draw(sheet, line, x, r.y + 2 + (j + 1) * PixelFont.LINE_HEIGHT, if (done) color else NOT_DONE)
+            }
+        }
+        px.draw(sheet, list.x, list.y)
+        scrollbar(px, list, scroll, layout.laborScroll)
+    }
+
+    /** At the right of a [list] that can scroll by [most], the thumb shows where it is. */
+    private fun scrollbar(px: Pixels, list: Rect, scroll: Int, most: Int) {
+        if (most <= 0) return
+        val x = list.right + 3
+        val thumb = list.h * list.h / (list.h + most)
+        val top = list.y + (list.h - thumb) * scroll / most
+        px.vline(x, list.y, list.bottom - 1, TERRA_DARK)
+        px.vline(x, top, top + thumb - 1, TERRA_LIGHT)
     }
 
     /** Asks before going to another world, since everything starts from the beginning there. */
@@ -518,9 +579,10 @@ class UiRenderer {
         PixelFont.draw(px, "Worlds", worlds.x, worlds.y, TERRA)
         button(px, layout.devWorlds, if (openWorlds) "As bought" else "Open all")
         val voices = layout.agoraRow(4)
-        PixelFont.draw(px, "Voices", voices.x, voices.y, TERRA)
+        PixelFont.draw(px, "Voices and labors", voices.x, voices.y, TERRA)
         button(px, layout.devVision, "Now")
         button(px, layout.devNextVision, "Next turn")
+        button(px, layout.devNextLabor, "Labor")
     }
 
     private fun button(px: Pixels, r: Rect, label: String) {

@@ -7,6 +7,7 @@ Each day has its own weather. Wise words appear under the display as you push.
 Earn obols as you push, and spend them in the Agora Market: better rocks, helpers, blessings and beauty.
 When everything is bought, a final climb leads to the top. There the rock rolls down, and everything begins again.
 Tap the day to choose another world: Corinth, Mount Etna or The Underworld. There the climb starts over.
+The same screen lists the labors: honors for all your climbs, such as Tina Turner for 10,000 turns of the knob.
 Corinth is free. The other worlds are bought once, for $0.99.
 
 Website, support and privacy policy: https://igr.github.io/sisyphus/ (from the `gh-pages` branch).

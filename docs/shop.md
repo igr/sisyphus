@@ -129,15 +129,16 @@ Other ideas from the same talk, not planned: trials of the gods (a harder climb 
 - **The top** is a flat hill. It comes into view just before he gets there, and the knob stops moving him on it.
 - **The rock rolls down.** He holds it a moment. Then the rock slips back, and he stands up straight. When it rolls past him, he turns around and watches it go down the hill, faster and faster, until it is out of sight.
 - **The black screen.** The screen goes black for Camus: "The struggle itself toward the heights is enough to fill a man's heart. One must imagine Sisyphus happy." It also says how many times he reached the top. After a few seconds, a tap begins again.
-- **Everything starts from the beginning:** day 1, the shop, the obols. Only the number of climbs is kept, with the sound setting. After the first climb, a small peak and the count sit under the day.
+- **Everything starts from the beginning:** day 1, the shop, the obols. The number of climbs, the counts of the labors and the sound setting are kept. The Labors tab of the Worlds screen shows the climbs.
 - **To test it,** the dev screen has a Top button: it buys everything and takes him to two turns below the top.
 
 ## Worlds
 
 - **The Worlds screen** opens when you tap the day. It shows a picture of each world: Corinth (the hill by the sea), Mount Etna (the hill on the volcano) and The Underworld (the hill in Tartarus). The current world has a bright frame and a check. The help points to it.
+- **Two tabs** stand in the title row: Worlds and Labors. A tap on the other tab shows it, and a tap on the shown tab closes the screen. The Labors tab lists the labors of all climbs: see `docs/labors.md`.
 - **The list scrolls** when the worlds do not fit, with a thin scrollbar on the right. A drag scrolls it, and after a quick swipe it coasts and slows down. A tap chooses a world when the finger lifts. A tap that stops the coasting list chooses nothing.
 - **The pictures** are cut from the real scene of each world at noon.
-- **Moving** to another world is possible at any time, after a question, because the climb starts over there: day 1, no items, no obols. The climbs and the sound setting stay. A fanfare of trumpets plays as the new world begins.
+- **Moving** to another world is possible at any time, after a question, because the climb starts over there: day 1, no items, no obols. The climbs, the counts of the labors and the sound setting stay. A fanfare of trumpets plays as the new world begins.
 - **Buying a world.** Corinth is free. Each other world costs $0.99, once, and then it is the player's forever. A world that is not bought shows a lock and its price, in the money of the player's store. A tap on it asks first. Yes opens the store's payment sheet, and after the purchase the question about moving comes. A player who is in a world that is not bought stays there: the lock only stops a move into a world.
 - **Restore**, at the bottom of the Worlds screen, asks the store for the worlds bought before: on another phone, or after the game was installed again. It shows while a world is not bought. RevenueCat sells the worlds: see "Purchases" in `README.md`.
 - **The support ID**, across from Restore, is "ID" and the last characters of the player's anonymous id at RevenueCat, then the build of the game in brackets, such as "ID 3f9a [41]". A tap copies the whole id, for the player to send to support, and the screen says "Copied". The desktop game has no store, no id and no build.

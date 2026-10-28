@@ -27,7 +27,7 @@ import kotlin.math.sqrt
 import kotlin.random.Random
 
 /**
- * What a finger touched. [LIST] is a finger on the list of worlds: a drag scrolls it, and a tap chooses a world when the finger lifts.
+ * What a finger touched. [LIST] is a finger on the list of the Worlds screen: a drag scrolls it, and on the worlds a tap chooses one when the finger lifts.
  * [MOVE] is the Yes that goes to another world. [COPY] copies the player's id for support.
  */
 enum class Touch { NONE, KNOB, SOUND, SHOP, BUY, DEV, HELP, AGAIN, WORLDS, LIST, MOVE, COPY }
@@ -89,6 +89,9 @@ class Screen(
     /** The Worlds screen covers the whole screen while it is open; tapping the day opens it. */
     var worldsOpen = false
         private set
+    /** The Worlds screen shows the labors, not the worlds. It stays as it was shown last, until the app closes. */
+    var laborsShown = false
+        private set
     /** The world the player asked to go to, waiting for Yes or No: there the climb starts over. */
     var moving: Place? = null
         private set
@@ -104,7 +107,7 @@ class Screen(
     /** In dev builds, the dev screen opens every world without the store, until it is tapped again or the app restarts. */
     var openWorlds = false
         private set
-    /** How far the list of worlds is scrolled, in virtual pixels. */
+    /** How far the list of the shown tab of the Worlds screen is scrolled, in virtual pixels. */
     val worldsScroll get() = listScroll.roundToInt()
     private var listScroll = 0.0
     /** The speed of the list, in virtual pixels a second: it follows the finger, and coasts after a swipe. */
@@ -169,6 +172,7 @@ class Screen(
 
     fun update(dt: Double) {
         geo?.top = game.summit?.let { floor(it).toInt() }
+        game.covered = agoraOpen || worldsOpen || helpOpen || ending != null
         game.update(dt)
         gain = gain?.let { Gain(it.obols, it.age + dt) }?.takeIf { it.age < GAIN_TIME }
         copied = max(0.0, copied - dt)
@@ -187,6 +191,7 @@ class Screen(
             world.update(dt, game.moved, game.speed, floor(game.position).toInt(), game.weather, game.timeOfDay, stars, game.shop.tier(Line.BEAUTY), game.place)
         }
         if (worldsOpen) moveList(dt)
+        if (worldsOpen && laborsShown && game.newLabors) game.seeLabors()
         if (game.day > lastDay) banner = 3.0
         lastDay = game.day
         banner = max(0.0, banner - dt)
@@ -200,7 +205,8 @@ class Screen(
             ui.agora(pixels, l, game.shop, game.soundOn, devOpen, openWorlds)
             offer?.let { game.shop.next(it) }?.let { ui.offer(pixels, l, it) }
         } else if (worldsOpen) {
-            ui.worlds(pixels, l, game.place, worldsScroll, worlds)
+            ui.tabs(pixels, l, laborsShown, game.newLabors)
+            if (laborsShown) ui.labors(pixels, l, game.counts, worldsScroll) else ui.worlds(pixels, l, game.place, worldsScroll, worlds)
             if (canRestore) ui.restore(pixels, l.restore, restoring)
             supportTag(supportId, build)?.let { ui.supportId(pixels, l.supportId, it, copied > 0) }
             moving?.let { ui.confirm(pixels, l, it) }
@@ -295,6 +301,11 @@ class Screen(
                         devOpen = false
                         game.nearTheNextVision()
                     }
+                    l.devNextLabor.near(x, y, 0) -> {
+                        agoraOpen = false
+                        devOpen = false
+                        game.nearTheNextLabor()
+                    }
                     else -> return Touch.NONE
                 }
                 return Touch.DEV
@@ -309,6 +320,8 @@ class Screen(
         if (l.dayLabel(game.day).near(x, y, TOUCH_SLOP)) {
             cover()
             worldsOpen = true
+            if (game.newLabors) laborsShown = true
+            if (laborsShown) game.seeLabors()
             listScroll = 0.0
             listSpeed = 0.0
             lastListScroll = 0.0
@@ -327,7 +340,8 @@ class Screen(
     }
 
     /**
-     * On the Worlds screen: the title closes it, the list scrolls or chooses a world, and Yes goes there, or first buys it.
+     * On the Worlds screen: a tap near the other tab shows it, and any other tap on the title row closes the screen.
+     * The list scrolls or chooses a world, and Yes goes there, or first buys it.
      * Restore asks the store for the worlds bought before.
      */
     private fun pressWorlds(x: Float, y: Float, l: Layout): Touch {
@@ -359,6 +373,14 @@ class Screen(
             buying = null
             return Touch.WORLDS
         }
+        if ((if (laborsShown) l.worldsTab else l.laborsTab).near(x, y, TOUCH_SLOP)) {
+            laborsShown = !laborsShown
+            if (laborsShown) game.seeLabors()
+            listScroll = 0.0
+            listSpeed = 0.0
+            lastListScroll = 0.0
+            return Touch.WORLDS
+        }
         if (l.agoraTitle.near(x, y, 0)) {
             worldsOpen = false
             return Touch.WORLDS
@@ -384,7 +406,7 @@ class Screen(
         val y = (yPx - offsetY) / scale
         drag?.let {
             it.moved = max(it.moved, abs(y - it.y))
-            listScroll = (it.scroll - (y - it.y)).coerceIn(0.0, l.worldScroll(Place.entries.size).toDouble())
+            listScroll = (it.scroll - (y - it.y)).coerceIn(0.0, mostScroll(l).toDouble())
             return
         }
         game.knob.drag(touchAngle(x - (l.knobX + 0.5), y - (l.knobY + 0.5), l))
@@ -400,7 +422,7 @@ class Screen(
         val l = layout ?: return Touch.NONE
         if (d.moved > TAP_SLOP) return Touch.NONE
         listSpeed = 0.0
-        if (d.stopped) return Touch.NONE
+        if (d.stopped || laborsShown) return Touch.NONE
         val row = Place.entries.indices.firstOrNull { l.worldRow(it).near(d.x, d.y + worldsScroll, 0) } ?: return Touch.NONE
         val place = Place.entries[row]
         if (place == game.place) return Touch.NONE
@@ -410,7 +432,7 @@ class Screen(
 
     /** While a finger drags the list, its speed follows; after the finger lifts, the list coasts and slows down. */
     private fun moveList(dt: Double) {
-        val most = (layout?.worldScroll(Place.entries.size) ?: 0).toDouble()
+        val most = (layout?.let(::mostScroll) ?: 0).toDouble()
         if (drag != null) {
             if (dt > 0) listSpeed += ((listScroll - lastListScroll) / dt - listSpeed) * (1 - exp(-dt * 18))
         } else if (listSpeed != 0.0) {
@@ -421,7 +443,10 @@ class Screen(
         lastListScroll = listScroll
     }
 
-    /** A finger on the list of worlds, from where it landed. A finger that [stopped] the list from coasting chooses nothing. */
+    /** How far the list on the shown tab of the Worlds screen can scroll. */
+    private fun mostScroll(l: Layout) = if (laborsShown) l.laborScroll else l.worldScroll(Place.entries.size)
+
+    /** A finger on the list, from where it landed. A finger that [stopped] the list from coasting chooses nothing. */
     private class ListDrag(val x: Float, val y: Float, val scroll: Double, val stopped: Boolean) {
         var moved = 0f
     }

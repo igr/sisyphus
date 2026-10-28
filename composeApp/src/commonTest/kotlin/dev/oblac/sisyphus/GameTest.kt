@@ -10,9 +10,11 @@ import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.MILESTONE_TURNS
 import dev.oblac.sisyphus.game.OBOL_SPREAD
 import dev.oblac.sisyphus.game.PX_PER_TURN
+import dev.oblac.sisyphus.game.Quote
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.START_TIME
 import dev.oblac.sisyphus.game.SUN_CAP
+import dev.oblac.sisyphus.game.TUTORIAL
 import dev.oblac.sisyphus.game.Vision
 import dev.oblac.sisyphus.game.WORK_PER_OBOL
 import dev.oblac.sisyphus.game.Weather
@@ -741,5 +743,151 @@ class GameTest {
     fun anOldSaveMeetsTheVoicesSoon() {
         val game = Game(MemoryStore(mapOf("effort" to 5000.0)), seed = 1, wall = { 0.0 })
         assertTrue(game.voices.count in 300.0..600.0)
+    }
+
+    @Test
+    fun turnsPushedCountTheOwnTurns() {
+        val game = Game(MemoryStore(mapOf("nextVision" to 1000.0)), seed = 1, wall = { 0.0 })
+        game.turn(2 * PI)
+        assertEquals(6.2 / (2 * PI), game.turnsPushed, 1e-6)
+        var now = 0.0
+        val store = MemoryStore(mapOf("shop.alone" to 3.0))
+        Game(store, seed = 1, wall = { now }).save()
+        now += 24 * 3600.0
+        assertEquals(0.0, Game(store, seed = 1, wall = { now }).turnsPushed)
+        val held = asking()
+        val before = held.turnsPushed
+        held.turn(0.3)
+        assertEquals(before, held.turnsPushed, 1e-9)
+    }
+
+    @Test
+    fun daysAddUpOverTheClimbs() {
+        val game = Game(MemoryStore(mapOf("effort" to (4.5 - START_TIME) * DAY_LENGTH)), seed = 1, wall = { 0.0 })
+        assertEquals(5, game.day)
+        assertEquals(4, game.days)
+        game.startOver()
+        assertEquals(1, game.day)
+        assertEquals(4, game.daysBefore)
+        assertEquals(4, game.days)
+    }
+
+    @Test
+    fun aMoveOnTheFirstDayAddsNoDay() {
+        val game = Game(MemoryStore(), seed = 1, wall = { 0.0 })
+        game.moveTo(Place.ETNA)
+        game.moveTo(Place.CORINTH)
+        assertEquals(0, game.days)
+    }
+
+    @Test
+    fun theCountsStay() {
+        val store = MemoryStore(
+            mapOf("climbs" to 2.0, "rightAnswers" to 5.0, "turnsPushed" to 300.0, "daysBefore" to 7.0, "effort" to (2.5 - START_TIME) * DAY_LENGTH),
+        )
+        val game = Game(store, seed = 1, wall = { 0.0 })
+        assertEquals(9, game.days)
+        game.startOver()
+        game.moveTo(Place.ETNA)
+        game.resetClimb()
+        assertEquals(3, game.climbs)
+        assertEquals(300.0, game.turnsPushed)
+        assertEquals(9, game.days)
+        assertEquals(5, game.voices.rightAnswers)
+    }
+
+    @Test
+    fun theCountsAreSaved() {
+        val store = MemoryStore(mapOf("nextVision" to 1000.0, "effort" to (3.5 - START_TIME) * DAY_LENGTH))
+        val game = Game(store, seed = 1, wall = { 0.0 })
+        game.turn(2 * PI)
+        game.startOver()
+        game.seeLabors()
+        game.save()
+        val again = Game(store, seed = 1, wall = { 0.0 })
+        assertEquals(game.turnsPushed, again.turnsPushed, 1e-9)
+        assertEquals(3, again.daysBefore)
+        assertEquals(1, again.laborsSeen)
+    }
+
+    @Test
+    fun anOlderSaveShowsTheDot() {
+        val store = MemoryStore(mapOf("climbs" to 1.0))
+        val game = Game(store, seed = 1, wall = { 0.0 })
+        assertTrue(game.newLabors)
+        game.seeLabors()
+        assertFalse(game.newLabors)
+        assertFalse(Game(store, seed = 1, wall = { 0.0 }).newLabors)
+    }
+
+    /** Pushes on for about [seconds], and returns the wise words in the order they came. */
+    private fun Game.wiseWords(seconds: Double): List<Quote> {
+        val seen = mutableListOf(quotes.quote)
+        repeat((seconds * 2).toInt()) {
+            turn(PI)
+            if (quotes.quote !== seen.last()) seen += quotes.quote
+        }
+        return seen
+    }
+
+    private val turnOn = "A labor is done: Turn On."
+
+    @Test
+    fun aLaborBringsItsNewsOnce() {
+        val game = Game(MemoryStore(mapOf("turnsPushed" to 99.9, "nextVision" to 10_000.0, "effort" to DAY_LENGTH)), seed = 1, wall = { 0.0 })
+        val words = game.wiseWords(120.0)
+        assertEquals(turnOn, words[1].text)
+        assertEquals("Hermes", words[1].author)
+        assertEquals(1, words.count { it.text == turnOn })
+    }
+
+    @Test
+    fun laborsDoneAtTheStartBringNoNews() {
+        val game = Game(MemoryStore(mapOf("climbs" to 1.0, "rightAnswers" to 3.0, "nextVision" to 10_000.0, "effort" to DAY_LENGTH)), seed = 1, wall = { 0.0 })
+        val words = game.wiseWords(60.0)
+        assertTrue(words.size > 3)
+        assertTrue(words.none { it.text.startsWith("A labor") })
+    }
+
+    @Test
+    fun theNewsWaitsWhileThePanelIsCovered() {
+        val game = Game(MemoryStore(mapOf("turnsPushed" to 99.9, "nextVision" to 10_000.0, "effort" to DAY_LENGTH)), seed = 1, wall = { 0.0 })
+        game.covered = true
+        val covered = game.wiseWords(30.0)
+        assertTrue(covered.size > 1)
+        assertTrue(covered.none { it.text == turnOn })
+        game.covered = false
+        assertEquals(turnOn, game.wiseWords(30.0)[1].text)
+    }
+
+    @Test
+    fun theNewsWaitsForTheReply() {
+        val game = asking(MemoryStore(mapOf("nextVision" to 0.5, "effort" to DAY_LENGTH)))
+        val reply = game.vision!!.question.reply(right = true)
+        game.answer(right = true)
+        val words = game.wiseWords(60.0)
+        assertEquals(reply, words[0].text)
+        assertEquals("A labor is done: Lucky Guess.", words[1].text)
+    }
+
+    @Test
+    fun theNewsOfATopSurvivesTheNewClimb() {
+        val game = Game(MemoryStore(mapOf("nextVision" to 10_000.0, "effort" to DAY_LENGTH)), seed = 1, wall = { 0.0 })
+        game.startOver()
+        val words = game.wiseWords(60.0)
+        assertSame(TUTORIAL, words[0])
+        assertEquals("A labor is done: Top of the Morning.", words[1].text)
+    }
+
+    @Test
+    fun theDevScreenBringsALaborAtTheNextClick() {
+        val game = Game(MemoryStore(mapOf("turnsPushed" to 150.0, "nextVision" to 10_000.0, "effort" to DAY_LENGTH)), seed = 1, wall = { 0.0 })
+        game.nearTheNextLabor()
+        val done = game.laborsDone
+        repeat(60) { game.update(DT) }
+        assertEquals(done, game.laborsDone)
+        game.turn(0.5)
+        assertEquals(done + 1, game.laborsDone)
+        assertEquals("A labor is done: Spin Doctor.", game.wiseWords(30.0)[1].text)
     }
 }

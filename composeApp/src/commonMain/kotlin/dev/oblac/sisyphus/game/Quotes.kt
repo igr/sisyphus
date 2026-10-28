@@ -667,11 +667,11 @@ val QUOTES = listOf(
 
 /**
  * The wise words under the display. A quote is typed out, stays for a while,
- * and dissolves once Sisyphus has pushed far enough. Then the next one comes.
+ * and dissolves once Sisyphus has pushed far enough. Then the next one comes, or a [news], such as a labor done.
  * The order is a shuffle made from [seed], so [drawn] alone tells where we are:
  * a restarted game shows the same quote again.
  */
-class QuoteBox(private val seed: Int, drawn: Int, firstTime: Boolean) {
+class QuoteBox(private val seed: Int, drawn: Int, firstTime: Boolean, private val news: () -> Quote? = { null }) {
     enum class Phase { TYPING, SHOWING, FADING }
 
     /** How many quotes have come so far. */
@@ -733,7 +733,7 @@ class QuoteBox(private val seed: Int, drawn: Int, firstTime: Boolean) {
             Phase.FADING -> {
                 fade += (dt / FADE_TIME).toFloat()
                 if (fade >= 1f) {
-                    quote = next()
+                    quote = news() ?: next()
                     phase = Phase.TYPING
                     typed = 0.0
                     fade = 0f

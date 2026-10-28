@@ -47,6 +47,9 @@ private const val KEY_NEXT_VISION = "nextVision"
 private const val KEY_VISION_SEED = "visionSeed"
 private const val KEY_VISIONS_DRAWN = "visionsDrawn"
 private const val KEY_RIGHT_ANSWERS = "rightAnswers"
+private const val KEY_TURNS_PUSHED = "turnsPushed"
+private const val KEY_DAYS_BEFORE = "daysBefore"
+private const val KEY_LABORS_SEEN = "laborsSeen"
 private const val SAVE_EVERY = 1.0
 
 /** How many clicks of the knob the dev screen leaves before the next obol. */
@@ -204,6 +207,15 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     /** How many times Sisyphus reached the top. Starting over keeps it. */
     var climbs = store.load(KEY_CLIMBS)?.toInt() ?: 0
         private set
+    /** The player's own turns that pushed, in all climbs and worlds. */
+    var turnsPushed = store.load(KEY_TURNS_PUSHED) ?: 0.0
+        private set
+    /** The days pushed through in all the climbs before this one. */
+    var daysBefore = store.load(KEY_DAYS_BEFORE)?.toInt() ?: 0
+        private set
+    /** How many labors were done when the Labors tab was last open. */
+    var laborsSeen = store.load(KEY_LABORS_SEEN)?.toInt() ?: 0
+        private set
     /** How far the final climb has come: from 0 when it begins to 1 at the top; null before it begins. */
     val climbed: Double? get() = summit?.let { (1 - (it - position) / CLIMB).coerceIn(0.0, 1.0) }
 
@@ -216,7 +228,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     val atTop get() = summit?.let { position >= it } == true
 
     private val quoteSeed = store.load(KEY_QUOTE_SEED)?.toInt() ?: seed
-    var quotes = QuoteBox(quoteSeed, drawn = store.load(KEY_QUOTES_DRAWN)?.toInt() ?: 0, firstTime = effort == 0.0)
+    var quotes = QuoteBox(quoteSeed, drawn = store.load(KEY_QUOTES_DRAWN)?.toInt() ?: 0, firstTime = effort == 0.0, news = ::nextNews)
         private set
     var onTick: () -> Unit = {}
     /** New obols came, while the game runs or for the time away: it tells how many came together. */
@@ -229,6 +241,13 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         store.load(KEY_RIGHT_ANSWERS)?.toInt() ?: 0, random,
     )
     val vision: Vision? get() = voices.vision
+
+    /** A screen covers the panel of the wise words: the news of a labor waits. */
+    var covered = false
+    /** The labors done so far: those done when the game started bring no news. */
+    private val known = LABORS.filter { it.done(counts) }.toMutableSet()
+    /** The news of labors done while playing, waiting for the panel. */
+    private val news = ArrayDeque<Quote>()
     /** A vision came. */
     var onVision: () -> Unit = {}
     /** The touches of the knob when the answers showed, and of the touch whose turn picks an answer. */
@@ -250,6 +269,18 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
 
     val dayValue get() = START_TIME + effort / DAY_LENGTH
     val day get() = floor(dayValue).toInt() + 1
+
+    /** The days pushed through in all climbs: the first day of a climb has none. */
+    val days get() = daysBefore + day - 1
+    val counts get() = Counts(climbs, turnsPushed, days, voices.rightAnswers)
+    val laborsDone get() = LABORS.count { it.done(counts) }
+    /** A labor is done that the player has not seen on the Labors tab. */
+    val newLabors get() = laborsDone > laborsSeen
+
+    fun seeLabors() {
+        laborsSeen = laborsDone
+        save()
+    }
     val timeOfDay get() = dayValue - floor(dayValue)
     val weather get() = Weather.of(day)
 
@@ -258,6 +289,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         val turn = knob.update(dt)
         val held = vision?.let { it.phase != Vision.Phase.LEAVING } == true
         val turns = if (atTop || held) 0.0 else abs(turn) / (2 * PI)
+        turnsPushed += turns
         moved = turns * min(shop.bonus, SUN_CAP) * PX_PER_TURN
         summit?.let { if (position + moved >= it - 1e-6) moved = it - position }
         val from = position
@@ -275,6 +307,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         quotes.update(dt, moved, stillFor)
         if (quotes.drawn != drawn) dirty = true
         listen(turn, dt)
+        checkLabors()
         sinceSave += dt
         if (dirty && sinceSave > SAVE_EVERY) save()
     }
@@ -320,6 +353,18 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         }
     }
 
+    /** Labors that became done bring their news, one after the other. */
+    private fun checkLabors() {
+        val now = counts
+        for (labor in LABORS) if (labor !in known && labor.done(now)) {
+            known += labor
+            news.addLast(laborNews(labor))
+        }
+    }
+
+    /** The next news, in place of a wise word, unless a screen covers the panel or a vision shows. */
+    private fun nextNews(): Quote? = if (covered || vision != null) null else news.removeFirstOrNull()
+
     /** A vision comes: the knob stops, and the god asks in the panel of the wise words. */
     private fun come(v: Vision) {
         knob.stop()
@@ -351,6 +396,13 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     fun summonVision() {
         voices.end()
         come(voices.summon())
+    }
+
+    /** For dev builds: the next labor of the knob turns is done at the next click of the knob. */
+    fun nearTheNextLabor() {
+        val next = LABORS.firstOrNull { it.category == Category.TURNS && !it.done(counts) } ?: return
+        turnsPushed = next.goal - 1.0 / TICKS_PER_TURN
+        save()
     }
 
     /** For dev builds: a vision comes at the next click of the knob. */
@@ -455,12 +507,13 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     }
 
     private fun begin() {
+        daysBefore += day - 1
         endVision()
         position = 0.0
         effort = 0.0
         summit = null
         shop = Shop(place = place, random = random)
-        quotes = QuoteBox(quoteSeed, drawn = 0, firstTime = true)
+        quotes = QuoteBox(quoteSeed, drawn = 0, firstTime = true, news = ::nextNews)
         save()
     }
 
@@ -521,6 +574,9 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         store.save(KEY_VISION_SEED, visionSeed.toDouble())
         store.save(KEY_VISIONS_DRAWN, voices.drawn.toDouble())
         store.save(KEY_RIGHT_ANSWERS, voices.rightAnswers.toDouble())
+        store.save(KEY_TURNS_PUSHED, turnsPushed)
+        store.save(KEY_DAYS_BEFORE, daysBefore.toDouble())
+        store.save(KEY_LABORS_SEEN, laborsSeen.toDouble())
         for (line in Line.entries) store.save(shopKey(line), shop.tier(line).toDouble())
         dirty = false
         sinceSave = 0.0

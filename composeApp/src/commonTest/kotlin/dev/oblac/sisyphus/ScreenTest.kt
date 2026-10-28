@@ -16,8 +16,12 @@ import dev.oblac.sisyphus.game.SUN_CAP
 import dev.oblac.sisyphus.game.Vision
 import dev.oblac.sisyphus.game.Weather
 import dev.oblac.sisyphus.game.items
+import dev.oblac.sisyphus.game.LABORS
+import dev.oblac.sisyphus.game.progress
 import dev.oblac.sisyphus.gfx.PixelFont
 import dev.oblac.sisyphus.gfx.Pixels
+import dev.oblac.sisyphus.ui.BACKGROUND
+import dev.oblac.sisyphus.ui.DAY_NOTE
 import dev.oblac.sisyphus.gfx.TRANSPARENT
 import dev.oblac.sisyphus.gfx.luminance
 import dev.oblac.sisyphus.gfx.rgb
@@ -52,6 +56,7 @@ import dev.oblac.sisyphus.ui.supportTag
 import dev.oblac.sisyphus.ui.worldPreview
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.math.pow
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -638,17 +643,6 @@ class ScreenTest {
     }
 
     @Test
-    fun theClimbsShowUnderTheDay() {
-        fun underDay(climbs: Int): List<Int> {
-            val s = screen(MemoryStore(mapOf("climbs" to climbs.toDouble())))
-            val px = s.render()
-            val d = s.layout!!.dayLabel(s.game.day)
-            return (d.bottom until d.bottom + 10).flatMap { y -> (d.x until d.right).map { x -> px[x, y] } }
-        }
-        assertNotEquals(underDay(0), underDay(2))
-    }
-
-    @Test
     fun theDevScreenStartsTheClimbAgain() {
         val store = MemoryStore(mapOf("effort" to 5000.0, "position" to 900.0, "obols" to 7.5, "shop.rock" to 2.0, "climbs" to 2.0))
         val s = devScreen(store)
@@ -696,7 +690,7 @@ class ScreenTest {
         assertEquals(Touch.WORLDS, s.tap(l.dayLabel(s.game.day)))
         assertTrue(s.worldsOpen)
         assertFalse(s.agoraOpen)
-        assertEquals(Touch.WORLDS, s.tap(l.agoraTitle))
+        assertEquals(Touch.WORLDS, s.tap(l.worldsTab))
         assertFalse(s.worldsOpen)
     }
 
@@ -1293,5 +1287,177 @@ class ScreenTest {
         assertTrue(s.agoraOpen)
         repeat(180) { s.update(1 / 60.0) }
         assertNull(game.vision)
+    }
+
+    /** The Agora and the other screens cover the panel of the wise words, so that the news of a labor waits. */
+    @Test
+    fun aScreenCoversThePanel() {
+        val s = screen()
+        val l = s.layout!!
+        s.update(1 / 60.0)
+        assertFalse(s.game.covered)
+        s.tap(l.coinIcon)
+        s.update(1 / 60.0)
+        assertTrue(s.game.covered)
+        s.tap(l.coinIcon)
+        s.update(1 / 60.0)
+        assertFalse(s.game.covered)
+    }
+
+    @Test
+    fun noClimbsUnderTheDay() {
+        fun under(climbs: Double): List<Int> {
+            val s = Screen(Game(MemoryStore(mapOf("climbs" to climbs, "laborsSeen" to 20.0)), seed = 1), seed = 2).apply { resize(1179, 2556, 177, 102) }
+            val d = s.layout!!.dayLabel(s.game.day)
+            val px = s.render()
+            return (d.bottom until d.bottom + 12).flatMap { y -> (d.x until d.x + 24).map { px[it, y] } }
+        }
+        assertEquals(under(0.0), under(7.0))
+    }
+
+    @Test
+    fun aDotStandsAfterTheDayWhileALaborIsNew() {
+        val s = Screen(Game(MemoryStore(mapOf("climbs" to 1.0)), seed = 1), seed = 2).apply { resize(1179, 2556, 177, 102) }
+        val d = s.layout!!.dayLabel(s.game.day)
+        fun after() = s.render().let { px -> (d.y until d.bottom).flatMap { y -> (d.right until d.right + 6).map { px[it, y] } } }
+        val dot = after()
+        s.game.seeLabors()
+        assertNotEquals(dot, after())
+    }
+
+    @Test
+    fun theHelpFitsTheSmallestPhone() {
+        val s = Screen(Game(MemoryStore(mapOf("obols" to 9999.0)), seed = 1), seed = 2).apply { resize(1080, 2340, 144, 102) }
+        val l = s.layout!!
+        s.tap(l.helpIcon)
+        val px = s.render()
+        val cream = rgb(0xF1E4C8)
+        val below = (l.scene.bottom until l.quote.y).filter { y -> (0 until px.width).any { px[it, y] == cream } }
+        assertTrue(below.isEmpty(), "the notes of the help reach row ${below.firstOrNull()}, the scene ends at ${l.scene.bottom}")
+        assertTrue("labors" in DAY_NOTE)
+    }
+
+    @Test
+    fun theWorldsScreenHasTwoTabs() {
+        val s = screen()
+        val l = s.layout!!
+        s.tap(l.dayLabel(s.game.day))
+        assertTrue(s.worldsOpen)
+        assertFalse(s.laborsShown)
+        assertEquals(Touch.WORLDS, s.tap(l.laborsTab))
+        assertTrue(s.laborsShown)
+        assertTrue(s.worldsOpen)
+        assertEquals(Touch.WORLDS, s.tap(l.laborsTab))
+        assertFalse(s.worldsOpen)
+        s.tap(l.dayLabel(s.game.day))
+        assertTrue(s.laborsShown)
+        s.tap(l.worldsTab)
+        assertFalse(s.laborsShown)
+        assertTrue(s.worldsOpen)
+    }
+
+    @Test
+    fun theDayOpensTheLaborsWhenTheDotShows() {
+        val s = screen(MemoryStore(mapOf("climbs" to 1.0)))
+        assertTrue(s.game.newLabors)
+        s.tap(s.layout!!.dayLabel(s.game.day))
+        assertTrue(s.laborsShown)
+        assertFalse(s.game.newLabors)
+    }
+
+    @Test
+    fun theTabsFitTheSmallestPhone() {
+        val l = smallest().layout!!
+        assertTrue(l.worldsTab.right + 4 <= l.laborsTab.x)
+        assertTrue(l.laborsTab.right + 2 <= l.coinIcon.x, "the tabs end at ${l.laborsTab.right}, the obols start at ${l.coinIcon.x}")
+    }
+
+    @Test
+    fun everyLaborFitsTheSmallestPhone() {
+        val l = smallest().layout!!
+        assertEquals(LABORS.size, l.laborRows.size)
+        for (labor in LABORS) {
+            val name = PixelFont.width(labor.name) + 4 + PixelFont.width(progress(labor.goal - 1.0, labor.goal))
+            assertTrue(name <= l.laborText, "${labor.name}: $name > ${l.laborText}")
+            assertTrue(PixelFont.wrap(labor.line, l.laborText).size <= 2, labor.line)
+        }
+    }
+
+    @Test
+    fun theLaborListScrollsToTheLastLabor() {
+        val s = smallest()
+        val l = s.layout!!
+        s.tap(l.dayLabel(s.game.day))
+        s.tap(l.laborsTab)
+        assertTrue(l.laborScroll > 0)
+        val first = l.laborRows[0]
+        assertEquals(Touch.LIST, s.tap(first))
+        s.drag(first.x + 10f, first.y + 10f - 2000f)
+        assertEquals(Touch.NONE, s.release())
+        assertEquals(l.laborScroll, s.worldsScroll)
+        assertTrue(l.laborRows.last().bottom - l.laborScroll <= l.worldList.bottom)
+    }
+
+    @Test
+    fun restoreAndTheIdStayOnBothTabs() {
+        val s = Screen(Game(MemoryStore(), seed = 1), seed = 2, billing = FakeBilling(), build = "41").apply { resize(1179, 2556, 177, 102) }
+        val l = s.layout!!
+        s.tap(l.dayLabel(s.game.day))
+        fun bottom() = s.render().let { px -> (l.restore.y until l.restore.bottom).flatMap { y -> (0 until px.width).map { px[it, y] } } }
+        val worlds = bottom()
+        s.tap(l.laborsTab)
+        assertEquals(worlds, bottom())
+    }
+
+    @Test
+    fun theDevScreenBringsALaborOnTheNextClick() {
+        val s = devScreen()
+        s.openDev()
+        s.tap(s.layout!!.devNextLabor)
+        assertFalse(s.agoraOpen)
+        val done = s.game.laborsDone
+        s.turnALittle()
+        assertEquals(done + 1, s.game.laborsDone)
+    }
+
+    @Test
+    fun theLaborButtonFitsTheSmallestPhone() {
+        val l = smallest().layout!!
+        assertEquals(l.devVision.y, l.devNextLabor.y)
+        assertTrue(l.devNextLabor.x > l.devNextVision.right)
+        assertTrue(l.devNextLabor.right <= l.agoraRow(4).right, "the buttons end at ${l.devNextLabor.right}, the row at ${l.agoraRow(4).right}")
+    }
+
+    /** A tap a little under the tab that is not shown still shows it, as a tap near the day or the coin does. */
+    @Test
+    fun aTapJustUnderTheOtherTabStillSwitches() {
+        val s = smallest()
+        val l = s.layout!!
+        s.tap(l.dayLabel(s.game.day))
+        assertEquals(Touch.WORLDS, s.tap(l.laborsTab.x + l.laborsTab.w / 2f, l.laborsTab.bottom + 2f))
+        assertTrue(s.worldsOpen)
+        assertTrue(s.laborsShown)
+        s.tap(l.worldsTab.x + l.worldsTab.w / 2f, l.worldsTab.bottom + 2f)
+        assertTrue(s.worldsOpen)
+        assertFalse(s.laborsShown)
+    }
+
+    private fun relativeLuminance(c: Int): Double {
+        fun lin(v: Int) = (v / 255.0).let { if (it <= 0.03928) it / 12.92 else ((it + 0.055) / 1.055).pow(2.4) }
+        return 0.2126 * lin(c shr 16 and 0xFF) + 0.7152 * lin(c shr 8 and 0xFF) + 0.0722 * lin(c and 0xFF)
+    }
+
+    /** Most labors stay not done for months, so their gray text must still read well: 4.5 to 1 against the background. */
+    @Test
+    fun aLaborNotDoneIsEasyToRead() {
+        val s = smallest()
+        val l = s.layout!!
+        s.tap(l.dayLabel(s.game.day))
+        s.tap(l.laborsTab)
+        val row = l.laborRows[0]
+        val px = s.render()
+        val text = (row.y + 2 until row.y + 2 + PixelFont.CAP_HEIGHT).flatMap { y -> (row.x + Layout.LABOR_PAD until row.right).map { px[it, y] } }.maxBy(::relativeLuminance)
+        val contrast = (relativeLuminance(text) + 0.05) / (relativeLuminance(BACKGROUND) + 0.05)
+        assertTrue(contrast >= 4.5, "contrast $contrast")
     }
 }

@@ -1,5 +1,7 @@
 package dev.oblac.sisyphus.ui
 
+import dev.oblac.sisyphus.game.Category
+import dev.oblac.sisyphus.game.LABORS
 import dev.oblac.sisyphus.gfx.PixelFont
 import kotlin.math.max
 import kotlin.math.min
@@ -92,6 +94,9 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     /** In the dev screen, next to Now, the button that brings a vision at the next click of the knob. */
     val devNextVision = Rect(devVision.right + 2, devVision.y, PixelFont.width("Next turn") + 8, BUTTON_HEIGHT)
 
+    /** In the dev screen, after Next turn, the Labor button that does the next labor of the knob turns at the next click of the knob. */
+    val devNextLabor = Rect(devNextVision.right + 2, devVision.y, PixelFont.width("Labor") + 8, BUTTON_HEIGHT)
+
     private val offerHeight = 5 + OFFER_ICON + 5 + PixelFont.LINE_HEIGHT + 3 + OFFER_LINES * PixelFont.LINE_HEIGHT +
         4 + PixelFont.LINE_HEIGHT + 4 + BUTTON_HEIGHT + 5
 
@@ -121,6 +126,38 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
 
     /** The name and the note of a world, below its picture. */
     fun worldText(index: Int) = worldPreview(index).let { Rect(it.x, it.bottom + 3, it.w, 2 * PixelFont.LINE_HEIGHT) }
+
+    /** In the title row of the Worlds screen, its two tabs. "Labors" has room for the dot after it. */
+    val worldsTab = Rect(agoraTitle.x, agoraTitle.y, PixelFont.width(WORLDS_TITLE), PixelFont.CAP_HEIGHT)
+    val laborsTab = Rect(worldsTab.right + 8, agoraTitle.y, PixelFont.width(LABORS_TITLE) + 5, PixelFont.CAP_HEIGHT)
+
+    /** The width of the text in a row of the list of labors. */
+    val laborText = worldList.w - 2 * LABOR_PAD
+
+    /** In the list of labors, before it scrolls: the header of each category, and the row of each labor, in the order of [LABORS]. */
+    val laborHeaders: List<Rect>
+    val laborRows: List<Rect>
+
+    init {
+        val headers = mutableListOf<Rect>()
+        val rows = mutableListOf<Rect>()
+        var y = worldList.y
+        for (category in Category.entries) {
+            if (headers.isNotEmpty()) y += 6
+            headers += Rect(worldList.x, y, worldList.w, PixelFont.CAP_HEIGHT)
+            y += PixelFont.LINE_HEIGHT
+            for (labor in LABORS.filter { it.category == category }) {
+                val h = 3 + PixelFont.LINE_HEIGHT * (1 + PixelFont.wrap(labor.line, laborText).size)
+                rows += Rect(worldList.x, y, worldList.w, h)
+                y += h + 2
+            }
+        }
+        laborHeaders = headers
+        laborRows = rows
+    }
+
+    /** How far the list of labors can scroll. */
+    val laborScroll = max(0, laborRows.last().bottom - worldList.bottom)
 
     private val confirmHeight = 5 + PixelFont.LINE_HEIGHT + 4 + CONFIRM_LINES * PixelFont.LINE_HEIGHT + 4 + BUTTON_HEIGHT + 5
 
@@ -167,6 +204,7 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
         const val WORLD_ROW = WORLD_PREVIEW + 2 + 3 + 2 * PixelFont.LINE_HEIGHT
         const val OFFER_BUTTON = 30
         const val HELPER = 18
+        const val LABOR_PAD = 3
     }
 }
 

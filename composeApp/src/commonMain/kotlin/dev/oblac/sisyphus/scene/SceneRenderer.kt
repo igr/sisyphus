@@ -76,8 +76,8 @@ private val MOON_SHADE = rgb(0xC8C6B2)
 private val TEXT = rgb(0xF1E4C8)
 private val TEXT_SHADOW = rgb(0x1A120C)
 
-/** The top of the hill, with the number of climbs beside it under the day. */
-private val PEAK = sprite(mapOf('#' to TEXT), "...#...\n..###..\n.#####.\n#######").outlined(TEXT_SHADOW)
+/** After the day, while a labor is done that the player has not seen. */
+private val NEW_LABOR = sprite(mapOf('#' to rgb(0xD2A462)), "##\n##").outlined(TEXT_SHADOW)
 
 /** The Pleiades, the seven sisters. The last one is Merope, the faintest: she married a mortal. */
 internal val PLEIADES = listOf(0 to 0, 3 to -1, 5 to 1, 2 to 3, 6 to 4, 8 to 2, 4 to 6)
@@ -155,7 +155,7 @@ class SceneRenderer(private val geo: SceneGeometry) {
         drawHero(px, atm, game, p, rolled)
         drawParticles(px, world, atm)
         drawRain(px, world, atm, look.ash)
-        if (hud) drawDay(px, game.day, game.climbs, banner)
+        if (hud) drawDay(px, game.day, game.newLabors, banner)
     }
 
     private fun orb(p: Double): Orb? {
@@ -477,12 +477,9 @@ class SceneRenderer(private val geo: SceneGeometry) {
         }
     }
 
-    private fun drawDay(px: Pixels, day: Int, climbs: Int, banner: Double) {
+    private fun drawDay(px: Pixels, day: Int, dot: Boolean, banner: Double) {
         PixelFont.drawOutlined(px, "DAY $day", 4, 4, TEXT, TEXT_SHADOW)
-        if (climbs > 0) {
-            px.draw(PEAK, 3, 16)
-            PixelFont.drawOutlined(px, "$climbs", 4 + PEAK.width, 14, TEXT, TEXT_SHADOW)
-        }
+        if (dot) px.draw(NEW_LABOR, 4 + PixelFont.width("DAY $day") + 1, 4 + (PixelFont.CAP_HEIGHT - 2) / 2 - 1)
         if (banner <= 0) return
         val text = "Day $day"
         val fade = when {

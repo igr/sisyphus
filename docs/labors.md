@@ -67,7 +67,7 @@ At 5 minutes a day, a climb takes about a month of play: about 10,000 turns of t
 
 The bottom row of the Worlds screen, "Restore" and the support ID, stays on both tabs.
 
-The help says: "The sun moves only while you push. Tap the day for the worlds and the labors." The notes of the help must still fit the scene on the smallest phone.
+The help says: "The sun moves only while you push. Tap the day for worlds and labors." The text is this short so that the notes of the help fit the scene on the smallest phone.
 
 ## Saved data
 
@@ -79,7 +79,7 @@ The help says: "The sun moves only while you push. Tap the day for the worlds an
 
 ## To test it
 
-- The dev screen gets a button that takes the knob turns to one click before the next turns tier. So the next click of the knob does a labor, the way it really happens.
+- The dev screen gets a Labor button, in the row of the voices, that takes the knob turns to one click before the next turns tier. So the next click of the knob does a labor, the way it really happens.
 - Tests: each count reaches each tier and does its labor; each labor gets its news once; the news waits for a vision to end; the dot shows until the Labors tab opens; the counts stay at the top, at a move, and at the Reset of the dev screen; a move on DAY 1 adds no day; a tap on the shown tab closes the screen.
 - Every name, plain line, header, progress text and news uses only the letters of `PixelFont`, and fits the smallest phone.
 - Snapshots: the Labors tab on the smallest phone with no labor done, and with some done; the day with the dot.

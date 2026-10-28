@@ -82,4 +82,15 @@ class QuotesTest {
         assertEquals(QuoteBox.Phase.SHOWING, again.phase)
         assertEquals(again.length.toDouble(), again.typed)
     }
+
+    @Test
+    fun aNewsTakesThePlaceOfTheNextWiseWord() {
+        val news = Quote("A labor is done: Turn On.", "Hermes")
+        var waiting: Quote? = news
+        val box = QuoteBox(seed = 1, drawn = 3, firstTime = false, news = { waiting.also { waiting = null } })
+        val first = box.quote
+        repeat(1000) { if (box.quote === first) box.update(0.1, PX_PER_TURN.toDouble(), 0.0) }
+        assertSame(news, box.quote)
+        assertEquals(3, box.drawn)
+    }
 }

@@ -210,6 +210,27 @@ class SnapshotTest {
         }
     }
 
+    /** The Labors tab with none done on the narrowest phone, and with some done on a big one; and the dot after the day. */
+    @Test
+    fun labors() {
+        val some = mapOf("climbs" to 1.0, "turnsPushed" to 12_345.0, "rightAnswers" to 12.0, "daysBefore" to 150.0, "laborsSeen" to 20.0)
+        for ((name, size, values) in listOf(
+            Triple("12-labors-small", listOf(1080, 2340, 144, 102), emptyMap()),
+            Triple("12-labors", listOf(1179, 2556, 177, 102), some),
+        )) {
+            val s = Screen(Game(MemoryStore(values + ("effort" to effortAt(3, 0.4))), seed = 3), seed = 5)
+            s.resize(size[0], size[1], size[2], size[3])
+            val l = s.layout!!
+            fun tap(r: Rect) = s.press((r.x + r.w / 2f) * s.scale + s.offsetX, (r.y + r.h / 2f) * s.scale + s.offsetY)
+            tap(l.dayLabel(s.game.day))
+            tap(l.laborsTab)
+            write(s.render(), name, 3)
+        }
+        val s = Screen(Game(MemoryStore(mapOf("climbs" to 1.0, "effort" to effortAt(3, 0.4))), seed = 3), seed = 5)
+        s.resize(1179, 2556, 177, 102)
+        write(s.render(), "12-day-dot", 3)
+    }
+
     /** Before a world is bought: the locks, the prices and Restore, then the question before buying Mount Etna, on both phones. */
     @Test
     fun buyWorlds() {
