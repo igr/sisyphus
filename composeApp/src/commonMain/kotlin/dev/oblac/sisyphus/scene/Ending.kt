@@ -3,12 +3,16 @@ package dev.oblac.sisyphus.scene
 /**
  * The top. He holds the rock a moment, then it rolls back past him and down the hill until it is gone:
  * he stands up, and turns around to watch it go.
- * The screen goes black for Camus' words, and after a while a tap brings the first morning back.
+ * The screen goes black for Camus' words. After a while a tap opens the Worlds screen,
+ * and when it closes, the first morning comes back, in the world the player chose.
  */
 class Ending {
     var time = 0.0
         private set
     private var wokeAt: Double? = null
+    /** The Worlds screen is open over the black: the first morning waits for the player's choice. */
+    var choosing = false
+        private set
 
     fun update(dt: Double) {
         time += dt
@@ -26,11 +30,16 @@ class Ending {
     val words: Float
         get() = if (wokeAt != null) 0f else (time - BLACK_AT).coerceIn(0.0, 1.0).toFloat()
 
-    /** The words have had time to be read: a tap begins again. */
-    val waiting get() = wokeAt == null && time >= BLACK_AT + READ
+    /** The words have had time to be read: a tap opens the Worlds screen. */
+    val waiting get() = !choosing && time >= BLACK_AT + READ
 
+    fun choose() {
+        if (waiting) choosing = true
+    }
+
+    /** The Worlds screen closed: the first morning comes back. */
     fun wake() {
-        if (waiting) wokeAt = time
+        if (choosing && wokeAt == null) wokeAt = time
     }
 
     /** The first morning is back in full. */

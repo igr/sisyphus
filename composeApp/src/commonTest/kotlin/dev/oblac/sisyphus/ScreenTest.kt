@@ -644,7 +644,7 @@ class ScreenTest {
     }
 
     @Test
-    fun atTheTopTheRockRollsAwayTheScreenGoesBlackAndATapStartsOver() {
+    fun atTheTopTheRockRollsAwayTheScreenGoesBlackAndATapOffersTheWorlds() {
         val s = screen(MemoryStore(allBought + mapOf("position" to 100.0, "summit" to 100.0, "effort" to 50_000.0)))
         val l = s.layout!!
         val dt = 1 / 60.0
@@ -657,9 +657,49 @@ class ScreenTest {
         assertEquals(1, s.game.day)
         repeat((3.0 / dt).toInt()) { s.update(dt) }
         assertEquals(Touch.AGAIN, s.tap(l.knobX.toFloat(), l.knobY.toFloat()))
+        assertTrue(s.worldsOpen)
+        assertFalse(s.laborsShown)
+        repeat((2.0 / dt).toInt()) { s.update(dt) }
+        assertNotNull(s.ending, "the first morning waits for the choice")
+        assertTrue(s.back())
         repeat((2.0 / dt).toInt()) { s.update(dt) }
         assertNull(s.ending)
+        assertEquals(Place.CORINTH, s.game.place)
         assertEquals(Touch.KNOB, s.tap(l.knobX + l.knobR * 0.6f, l.knobY + 0.5f))
+    }
+
+    /** A screen at the top, after Camus' words have had time to be read. */
+    private fun afterTheWords(): Screen {
+        val s = screen(MemoryStore(allBought + mapOf("position" to 100.0, "summit" to 100.0, "effort" to 50_000.0)))
+        val dt = 1 / 60.0
+        repeat(((Ending.BLACK_AT + Ending.READ) / dt).toInt() + 2) { s.update(dt) }
+        assertTrue(s.ending!!.waiting)
+        return s
+    }
+
+    @Test
+    fun afterTheTopTheNextClimbCanBeginInANewWorld() {
+        val s = afterTheWords()
+        val l = s.layout!!
+        val dt = 1 / 60.0
+        s.tap(l.knobX.toFloat(), l.knobY.toFloat())
+        s.choose(l.worldRow(Place.ETNA.ordinal))
+        assertEquals(Touch.MOVE, s.tap(l.confirmYes))
+        assertEquals(Place.ETNA, s.game.place)
+        assertEquals(1, s.game.climbs)
+        repeat((2.0 / dt).toInt()) { s.update(dt) }
+        assertNull(s.ending)
+    }
+
+    @Test
+    fun theBlackOfTheTopDoesNotHideTheWorlds() {
+        val s = afterTheWords()
+        val l = s.layout!!
+        val black = s.render()[0, 0]
+        s.tap(l.knobX.toFloat(), l.knobY.toFloat())
+        val px = s.render()
+        val tab = l.worldsTab
+        assertTrue((tab.x until tab.right).any { x -> (tab.y until tab.bottom).any { y -> px[x, y] != black } })
     }
 
     @Test

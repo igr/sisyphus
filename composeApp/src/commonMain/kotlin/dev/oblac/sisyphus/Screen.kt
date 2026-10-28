@@ -115,7 +115,7 @@ class Screen(
     private var lastListScroll = 0.0
     private var drag: ListDrag? = null
 
-    /** The top: from the moment he reaches it until a tap brings the first morning back. */
+    /** The top: from the moment he reaches it until the first morning is back, after the Worlds screen. */
     var ending: Ending? = null
         private set
 
@@ -184,6 +184,7 @@ class Screen(
                 game.startOver()
                 geo?.let { world.reset(it, game.weather) }
             }
+            if (end.choosing && !worldsOpen) end.wake()
             if (end.over) ending = null
         }
         if (layout != null) {
@@ -230,7 +231,7 @@ class Screen(
         ui.coins(pixels, l.coinIcon, if (game.climbed != null) null else count)
         if (!agoraOpen && !worldsOpen && !helpOpen) gain?.let { ui.gain(pixels, l.coinIcon, it.obols, it.age, count) }
         if (helpOpen) ui.help(pixels, l, game.day, game.shop.obols, game.climbed)
-        ending?.let { ui.ending(pixels, l, it, game.climbs) }
+        if (!agoraOpen && !worldsOpen) ending?.let { ui.ending(pixels, l, it, game.climbs) }
         return pixels
     }
 
@@ -240,9 +241,10 @@ class Screen(
         if (paying) return Touch.NONE
         val x = (xPx - offsetX) / scale
         val y = (yPx - offsetY) / scale
-        ending?.let {
+        if (!worldsOpen && !agoraOpen) ending?.let {
             if (!it.waiting) return Touch.NONE
-            it.wake()
+            it.choose()
+            showWorlds(labors = false)
             return Touch.AGAIN
         }
         if (helpOpen) {
@@ -318,13 +320,7 @@ class Screen(
             return Touch.SHOP
         }
         if (l.dayLabel(game.day).near(x, y, TOUCH_SLOP)) {
-            cover()
-            worldsOpen = true
-            if (game.newLabors) laborsShown = true
-            if (laborsShown) game.seeLabors()
-            listScroll = 0.0
-            listSpeed = 0.0
-            lastListScroll = 0.0
+            showWorlds(labors = laborsShown || game.newLabors)
             return Touch.WORLDS
         }
         if (l.helpIcon.near(x, y, TOUCH_SLOP)) {
@@ -487,6 +483,17 @@ class Screen(
     private fun cover() {
         game.endVision()
         game.knob.stop()
+    }
+
+    /** Opens the Worlds screen at the top of its list, on the Labors tab if [labors]. */
+    private fun showWorlds(labors: Boolean) {
+        cover()
+        worldsOpen = true
+        laborsShown = labors
+        if (laborsShown) game.seeLabors()
+        listScroll = 0.0
+        listSpeed = 0.0
+        lastListScroll = 0.0
     }
 
     /** Near the center the direction of the finger is noise, so it does not count. */

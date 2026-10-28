@@ -192,6 +192,8 @@ class SnapshotTest {
         s.idle(Ending.BLACK_AT + Ending.READ - 3.0)
         write(s.render(), "10-black", 3)
         s.press(s.offsetX + 10f, s.offsetY + 10f)
+        write(s.render(), "10-worlds", 3)
+        s.back()
         s.idle(2.0)
         write(s.render(), "10-again", 3)
     }

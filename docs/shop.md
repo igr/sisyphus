@@ -128,13 +128,13 @@ Other ideas from the same talk, not planned: trials of the gods (a harder climb 
 - **Herms.** After every 100 turns of the climb, a herm stands by the path: the stone marker of Greek roads, a pillar with the head of Hermes. As Sisyphus passes it, Hermes says how far the top is, for example "600 turns to the top."
 - **The top** is a flat hill. It comes into view just before he gets there, and the knob stops moving him on it.
 - **The rock rolls down.** He holds it a moment. Then the rock slips back, and he stands up straight. When it rolls past him, he turns around and watches it go down the hill, faster and faster, until it is out of sight.
-- **The black screen.** The screen goes black for Camus: "The struggle itself toward the heights is enough to fill a man's heart. One must imagine Sisyphus happy." It also says how many times he reached the top. After a few seconds, a tap begins again.
+- **The black screen.** The screen goes black for Camus: "The struggle itself toward the heights is enough to fill a man's heart. One must imagine Sisyphus happy." It also says how many times he reached the top. After a few seconds, a tap opens the Worlds screen, so that the player can begin again in the same world or in a new one. When the Worlds screen closes, the first morning comes back in the world the player is in.
 - **Everything starts from the beginning:** day 1, the shop, the obols. The number of climbs, the counts of the labors and the sound setting are kept. The Labors tab of the Worlds screen shows the climbs.
 - **To test it,** the dev screen has a Top button: it buys everything and takes him to two turns below the top.
 
 ## Worlds
 
-- **The Worlds screen** opens when you tap the day. It shows a picture of each world: Corinth (the hill by the sea), Mount Etna (the hill on the volcano) and The Underworld (the hill in Tartarus). The current world has a bright frame and a check. The help points to it.
+- **The Worlds screen** opens when you tap the day, and after the black screen at the top. It shows a picture of each world: Corinth (the hill by the sea), Mount Etna (the hill on the volcano) and The Underworld (the hill in Tartarus). The current world has a bright frame and a check. The help points to it.
 - **Two tabs** stand in the title row: Worlds and Labors. A tap on the other tab shows it, and a tap on the shown tab closes the screen. The Labors tab lists the labors of all climbs: see `docs/labors.md`.
 - **The list scrolls** when the worlds do not fit, with a thin scrollbar on the right. A drag scrolls it, and after a quick swipe it coasts and slows down. A tap chooses a world when the finger lifts. A tap that stops the coasting list chooses nothing.
 - **The pictures** are cut from the real scene of each world at noon.
