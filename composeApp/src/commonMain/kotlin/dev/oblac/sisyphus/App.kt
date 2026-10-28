@@ -53,11 +53,13 @@ fun SisyphusApp(
         screen.onCoin = { sound.obol(game.soundOn) }
         game.onVision = { sound.vision(game.soundOn) }
         screen.onTop = { sound.top(game.soundOn) }
+        screen.onMove = { sound.play(Touch.MOVE, game.soundOn) }
         onDispose {
             game.onTick = {}
             screen.onCoin = {}
             game.onVision = {}
             screen.onTop = {}
+            screen.onMove = {}
         }
     }
 

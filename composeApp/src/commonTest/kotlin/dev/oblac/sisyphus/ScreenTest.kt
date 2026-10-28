@@ -677,27 +677,61 @@ class ScreenTest {
         assertEquals(1, tops)
     }
 
-    /** A screen at the top, after Camus' words have had time to be read. */
-    private fun afterTheWords(): Screen {
-        val s = screen(MemoryStore(allBought + mapOf("position" to 100.0, "summit" to 100.0, "effort" to 50_000.0)))
+    /** A screen at the top, after Camus' words have had time to be read, with [billing] as the store. */
+    private fun afterTheWords(billing: Billing = NoBilling): Screen {
+        val store = MemoryStore(allBought + mapOf("position" to 100.0, "summit" to 100.0, "effort" to 50_000.0))
+        val s = Screen(Game(store, seed = 1), seed = 2, billing = billing).apply { resize(1179, 2556, 177, 102) }
         val dt = 1 / 60.0
         repeat(((Ending.BLACK_AT + Ending.READ) / dt).toInt() + 2) { s.update(dt) }
         assertTrue(s.ending!!.waiting)
         return s
     }
 
+    /** Everything starts from the beginning after the top anyway, so a tap on a world goes there without a question. */
     @Test
     fun afterTheTopTheNextClimbCanBeginInANewWorld() {
         val s = afterTheWords()
         val l = s.layout!!
         val dt = 1 / 60.0
         s.tap(l.knobX.toFloat(), l.knobY.toFloat())
-        s.choose(l.worldRow(Place.ETNA.ordinal))
-        assertEquals(Touch.MOVE, s.tap(l.confirmYes))
+        assertEquals(Touch.MOVE, s.choose(l.worldRow(Place.ETNA.ordinal)))
+        assertNull(s.moving)
+        assertFalse(s.worldsOpen)
         assertEquals(Place.ETNA, s.game.place)
         assertEquals(1, s.game.climbs)
         repeat((2.0 / dt).toInt()) { s.update(dt) }
         assertNull(s.ending)
+    }
+
+    @Test
+    fun afterTheTopATapOnTheSameWorldBeginsTheClimbThere() {
+        val s = afterTheWords()
+        val l = s.layout!!
+        val dt = 1 / 60.0
+        s.tap(l.knobX.toFloat(), l.knobY.toFloat())
+        assertEquals(Touch.WORLDS, s.choose(l.worldRow(Place.CORINTH.ordinal)))
+        assertFalse(s.worldsOpen)
+        assertEquals(Place.CORINTH, s.game.place)
+        repeat((2.0 / dt).toInt()) { s.update(dt) }
+        assertNull(s.ending)
+    }
+
+    @Test
+    fun afterTheTopAWorldJustBoughtBeginsWithItsFanfare() {
+        val billing = FakeBilling()
+        val s = afterTheWords(billing)
+        val l = s.layout!!
+        var fanfares = 0
+        s.onMove = { fanfares++ }
+        s.tap(l.knobX.toFloat(), l.knobY.toFloat())
+        s.choose(l.worldRow(Place.ETNA.ordinal))
+        assertEquals(Place.ETNA, s.buying)
+        s.tap(l.confirmYes)
+        billing.pending!!(true)
+        assertNull(s.moving)
+        assertFalse(s.worldsOpen)
+        assertEquals(Place.ETNA, s.game.place)
+        assertEquals(1, fanfares)
     }
 
     @Test

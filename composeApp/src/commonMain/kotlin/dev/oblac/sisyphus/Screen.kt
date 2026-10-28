@@ -131,6 +131,8 @@ class Screen(
     var onCoin: () -> Unit = {}
     /** Called when he reaches the top. */
     var onTop: () -> Unit = {}
+    /** Called when the store's answer, not a touch, begins the climb in a new world: after the top, a world just bought. */
+    var onMove: () -> Unit = {}
 
     init {
         game.onObol = { obols ->
@@ -345,13 +347,7 @@ class Screen(
     private fun pressWorlds(x: Float, y: Float, l: Layout): Touch {
         val to = moving
         if (to != null) {
-            if (l.confirmYes.near(x, y, 0)) {
-                game.moveTo(to)
-                geo?.let { world.reset(it, game.weather) }
-                moving = null
-                worldsOpen = false
-                return Touch.MOVE
-            }
+            if (l.confirmYes.near(x, y, 0)) return goTo(to)
             if (l.confirm.near(x, y, 0) && !l.confirmNo.near(x, y, 0)) return Touch.NONE
             moving = null
             return Touch.WORLDS
@@ -363,7 +359,12 @@ class Screen(
                 billing.buy(wanted) { bought ->
                     paying = false
                     buying = null
-                    if (bought) moving = wanted
+                    if (bought && ending != null) {
+                        goTo(wanted)
+                        onMove()
+                    } else if (bought) {
+                        moving = wanted
+                    }
                 }
                 return Touch.WORLDS
             }
@@ -413,7 +414,11 @@ class Screen(
     /** While a world is not bought, the Worlds screen can ask the store for the worlds bought before. */
     private val canRestore get() = Place.entries.any { !worlds.owns(it) }
 
-    /** The finger lifts: the knob coasts on, or a tap on the list asks to go to that world, or to buy it. Tells what the lift did. */
+    /**
+     * The finger lifts: the knob coasts on, or a tap on the list asks to go to that world, or to buy it.
+     * After the top, everything starts from the beginning anyway, so the world he is in, or one already bought, begins at once.
+     * Tells what the lift did.
+     */
     fun release(): Touch {
         val d = drag ?: return Touch.NONE.also { game.knob.release() }
         drag = null
@@ -423,9 +428,26 @@ class Screen(
         if (d.stopped || laborsShown) return Touch.NONE
         val row = Place.entries.indices.firstOrNull { l.worldRow(it).near(d.x, d.y + worldsScroll, 0) } ?: return Touch.NONE
         val place = Place.entries[row]
-        if (place == game.place) return Touch.NONE
-        if (worlds.owns(place)) moving = place else buying = place
+        if (place == game.place) {
+            if (ending == null) return Touch.NONE
+            worldsOpen = false
+            return Touch.WORLDS
+        }
+        when {
+            !worlds.owns(place) -> buying = place
+            ending != null -> return goTo(place)
+            else -> moving = place
+        }
         return Touch.WORLDS
+    }
+
+    /** The climb starts over in [place], and the Worlds screen closes. */
+    private fun goTo(place: Place): Touch {
+        game.moveTo(place)
+        geo?.let { world.reset(it, game.weather) }
+        moving = null
+        worldsOpen = false
+        return Touch.MOVE
     }
 
     /** While a finger drags the list, its speed follows; after the finger lifts, the list coasts and slows down. */
