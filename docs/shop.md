@@ -83,13 +83,13 @@ Simulation, assuming one knob turn per second while the player plays, and the av
 | Daily play | First item | All 15 | Longest wait between items | Top reached | Visions |
 |---|---|---|---|---|---|
 | 2 minutes | Day 1 | Day 13 | 2 days | Day 15 | 4 (3 to 4) |
-| 5 minutes | Day 1 | Day 7 | 1 day | Day 8 | 5 (4 to 6) |
-| 10 minutes | Day 1 | Day 4 | 1 day | Day 5 | 6 (5 to 6) |
-| 30 minutes | Day 1 | Day 2 | 1 day | Day 2 | 6 (5 to 7) |
+| 5 minutes | Day 1 | Day 7 | 1 day | Day 8 | 5 (5 to 6) |
+| 10 minutes | Day 1 | Day 4 | 1 day | Day 5 | 6 (5 to 7) |
+| 30 minutes | Day 1 | Day 2 | 1 day | Day 2 | 6 (6 to 7) |
 
 Only the player's own turns bring a vision. So a player who plays less, and lets the gods push while the app is closed, sees fewer visions. Each right answer gives one obol: a player who answers every vision right buys everything a day sooner at 5 minutes a day, on day 6, and reaches the top on day 7.
 
-Non-stop play is allowed: at one turn a second, about 40 minutes of turning buys everything, and about 6 visions come.
+Non-stop play is allowed: at one turn a second, about 40 minutes of turning buys everything, and about 7 visions come.
 
 Turning speed matters too: at 5 minutes a day, a slow turner (30 turns a minute) buys everything on day 11, a fast one (90 a minute) on day 5.
 

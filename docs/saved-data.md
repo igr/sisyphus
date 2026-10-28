@@ -48,7 +48,7 @@ When a key is not there, the game uses a start value:
 - `sound`: on.
 - `summit`: no final climb.
 - `quoteSeed`: a random number.
-- `nextVision`: from 150 to 300 turns, at random, in a new game and in a game saved before the visions. A count saved with other numbers is never more than the longest wait between visions now: 600 turns.
+- `nextVision`: from 70 to 100 turns, at random, in a new game, at the start of each climb, and in a game saved before the visions. A count saved with other numbers is never more than the longest wait between visions now: 600 turns.
 - `visionSeed`: a random number.
 - `savedAt`: no time away.
 - `nextObol`: 36 in a new game. A game saved before there was this key counts the obols of its climb, the spent ones too: each of the first four needs 36, made smaller by a blessing. After them, an obol needs the work per obol of the blessing. An obol saved with other numbers needs no more work than an obol can need now, and what was earned of it is kept.

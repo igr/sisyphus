@@ -42,8 +42,11 @@ object Config {
     /** A herm, the stone marker of Greek roads, stands by the path after every this many turns of the final climb. */
     const val HERM_TURNS = 100
 
-    /** The player's own turns before the first vision of a game: a random number between these two. */
-    val FIRST_VISION = 150.0..300.0
+    /**
+     * The player's own turns before the first vision of a climb: a random number between these two, so that it comes on day 2.
+     * Day 2 begins after 53 turns. Day 3 begins after 107 turns at the soonest, when the rock is bought as soon as it can be.
+     */
+    val FIRST_VISION = 70.0..100.0
 
     /** The player's own turns from one vision to the next: a random number between these two. */
     val NEXT_VISION = 200.0..600.0

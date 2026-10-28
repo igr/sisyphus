@@ -392,6 +392,11 @@ class Voices(private val seed: Int, drawn: Int, count: Double?, rightAnswers: In
         return v
     }
 
+    /** A new climb begins: its first vision comes on day 2. */
+    fun newClimb() {
+        count = random.nextDouble(Config.FIRST_VISION.start, Config.FIRST_VISION.endInclusive)
+    }
+
     /** For dev builds: the next vision comes after only [turns] of the player. */
     fun soon(turns: Double) {
         count = turns

@@ -30,10 +30,10 @@ A climb needs moments that the player does not expect, not only a new item now a
 
 - Only the player's own turns of the knob count, in turns, as the knob measures them. The bonus of the rock and the sidekicks does not count, so that the visions come at the same pace all through a climb.
 - After each vision, the game sets the turns until the next one at random: from 200 to 600 turns, 400 on average. That is about 7 minutes of turning at a turn a second. At 5 minutes a day, a vision comes in most sessions, and about 5 come in a climb. The table in `docs/shop.md` has the count for each daily play.
-- The first vision of a new game comes sooner, after 150 to 300 turns, so that a new player meets the voices in the first session.
+- The first vision of each climb comes sooner, after 70 to 100 turns: on day 2, also when the rock moves the sun as fast as it can. So a new player meets the voices in the first session.
 - These numbers are in `game/Config.kt`.
-- In the final climb, the count stops. It goes on in the next climb.
-- The count is saved, so a restart does not change it. It stays at the top and in another world.
+- In the final climb, the count stops. A new climb, after the top or in another world, starts it again, for its first vision on day 2.
+- The count is saved, so a restart does not change it. The visions that came and the right answers stay at the top and in another world.
 
 ## What the player sees
 

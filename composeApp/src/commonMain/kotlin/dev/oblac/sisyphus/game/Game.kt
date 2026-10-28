@@ -507,6 +507,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         effort = 0.0
         summit = null
         shop = Shop(place = place, random = random)
+        voices.newClimb()
         quotes = QuoteBox(quoteSeed, drawn = 0, firstTime = true, news = ::nextNews)
         save()
     }

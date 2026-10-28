@@ -716,17 +716,18 @@ class GameTest {
         assertNull(again.vision)
     }
 
+    /** The visions go on where they were, but each climb waits for its first one only until day 2. */
     @Test
-    fun theCountStaysAtTheTopAndInAnotherWorld() {
+    fun theVisionsGoOnAtTheTopAndInAnotherWorld() {
         val game = asking()
         game.answer(right = true)
         repeat(180) { game.update(DT) }
         assertNull(game.vision)
-        val count = game.voices.count
         val drawn = game.voices.drawn
         game.startOver()
+        assertTrue(game.voices.count in Config.FIRST_VISION)
         game.moveTo(Place.ETNA)
-        assertEquals(count, game.voices.count, 1e-9)
+        assertTrue(game.voices.count in Config.FIRST_VISION)
         assertEquals(drawn, game.voices.drawn)
         assertEquals(1, game.voices.rightAnswers)
     }
@@ -751,6 +752,27 @@ class GameTest {
         repeat(600) { if (game.vision?.phase == Vision.Phase.COMING) game.update(DT) }
         assertEquals(Vision.Phase.ASKING, game.vision?.phase)
         assertEquals(game.vision!!.question.text, game.quotes.quote.text)
+    }
+
+    /** The first vision of each climb comes on day 2, also when the rock makes the sun move as fast as it can. */
+    @Test
+    fun theFirstVisionOfEachClimbComesOnDay2() {
+        for (seed in 1..10) {
+            val game = Game(MemoryStore(), seed = seed, wall = { 0.0 })
+            repeat(2) { climb ->
+                var quarters = 0
+                while (game.vision == null && quarters++ < 4000) {
+                    game.turn(PI / 2)
+                    game.buy(Line.ROCK)
+                }
+                assertNotNull(game.vision, "seed $seed, climb $climb")
+                assertEquals(2, game.day, "seed $seed, climb $climb")
+                game.endVision()
+                repeat(600) { game.update(DT) }
+                assertNull(game.vision)
+                game.startOver()
+            }
+        }
     }
 
     @Test
