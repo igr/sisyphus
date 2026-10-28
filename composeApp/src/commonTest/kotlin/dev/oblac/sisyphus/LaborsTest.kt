@@ -19,7 +19,7 @@ class LaborsTest {
     @Test
     fun twentyLaborsInFourCategories() {
         assertEquals(20, LABORS.size)
-        assertEquals(listOf<Long>(1, 10, 50, 100, 1000), of(Category.HILLS).map { it.goal })
+        assertEquals(listOf<Long>(1, 10, 25, 50, 100), of(Category.HILLS).map { it.goal })
         assertEquals(listOf<Long>(100, 1_000, 10_000, 100_000, 1_000_000), of(Category.TURNS).map { it.goal })
         assertEquals(listOf<Long>(10, 100, 1_000, 10_000, 100_000), of(Category.DAYS).map { it.goal })
         assertEquals(listOf<Long>(1, 10, 50, 100, 500), of(Category.ANSWERS).map { it.goal })

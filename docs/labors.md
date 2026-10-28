@@ -32,19 +32,19 @@ The rock always rolls back down, and nothing makes the next climb shorter. So th
 
 | Category | Color | Counts | Tiers and names |
 |---|---|---|---|
-| Hills climbed | terra, the rock | Tops reached (`climbs`) | 1 Top of the Morning · 10 Rolling Stone · 50 King of the Hill · 100 Over the Hill · 1000 Imagine Him Happy |
+| Hills climbed | terra, the rock | Tops reached (`climbs`) | 1 Top of the Morning · 10 Rolling Stone · 25 King of the Hill · 50 Over the Hill · 100 Imagine Him Happy |
 | Knob turns | bronze, the knob | The player's own turns | 100 Turn On · 1,000 Spin Doctor · 10,000 Tina Turner · 100,000 Revolutionary · 1,000,000 Perpetual Motion |
 | Days | dawn gold, the sun | The game days pushed through in all climbs | 10 Carpe Diem · 100 The Hundred Days · 1,000 Days of Our Lives · 10,000 Groundhog Day · 100,000 Eternal Sunshine |
 | Right answers | night blue, the visions | Right answers to the visions (`rightAnswers`) | 1 Lucky Guess · 10 Teacher's Pet · 50 The Oracle · 100 Know-It-All · 500 Know Thyself |
 
 Each labor has a plain line under its name:
 
-- Hills climbed: "Reach the top once." and "Reach the top 10 times.", up to 1000.
+- Hills climbed: "Reach the top once." and "Reach the top 10 times.", up to 100.
 - Knob turns: "Turn the knob 100 times.", up to 1,000,000.
 - Days: "Push through 10 days.", up to 100,000.
 - Right answers: "Answer a vision right." and "Answer 10 visions right.", up to 500.
 
-At 5 minutes a day, a climb takes about a month of play: about 10,000 turns of the player, about 330 game days, and about 5 right answers when 3 answers in 4 are right. So the first tier of each category comes in the first days or with the first top. The last tier of each category takes a lifetime, and "Imagine Him Happy" (1000 tops, about 85 years) is out of reach, as the myth wants.
+At 5 minutes a day, a climb takes about a month of play: about 10,000 turns of the player, about 330 game days, and about 5 right answers when 3 answers in 4 are right. So the first tier of each category comes in the first days or with the first top. The last tier of each category takes years. "Imagine Him Happy" needs 100 tops: about 9 years at 5 minutes a day, or about 2 years at 30 minutes a day.
 
 ## What counts
 

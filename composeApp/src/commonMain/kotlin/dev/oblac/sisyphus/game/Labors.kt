@@ -28,7 +28,7 @@ fun Labor.done(counts: Counts) = counts.of(category) >= goal
 /** The 20 labors, 5 in each category, from the first tier to the last. */
 val LABORS: List<Labor> = listOf(
     Category.HILLS to listOf(
-        1L to "Top of the Morning", 10L to "Rolling Stone", 50L to "King of the Hill", 100L to "Over the Hill", 1000L to "Imagine Him Happy",
+        1L to "Top of the Morning", 10L to "Rolling Stone", 25L to "King of the Hill", 50L to "Over the Hill", 100L to "Imagine Him Happy",
     ),
     Category.TURNS to listOf(
         100L to "Turn On", 1_000L to "Spin Doctor", 10_000L to "Tina Turner", 100_000L to "Revolutionary", 1_000_000L to "Perpetual Motion",
