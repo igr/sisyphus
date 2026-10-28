@@ -23,13 +23,13 @@ private class ViewHaptics(private val view: View) : Haptics {
 /**
  * The activity holds one of these; it pauses the game when the app leaves the foreground, and resumes it on return.
  * Debug and beta builds pass [dev], which adds the dev screen to the Agora. Debug builds pass [testStore]: they buy worlds for free.
- * The Worlds screen shows [version].
+ * The Worlds screen shows [build].
  */
-class SisyphusController(private val context: Context, view: View, dev: Boolean, testStore: Boolean, version: String) {
+class SisyphusController(private val context: Context, view: View, dev: Boolean, testStore: Boolean, build: String) {
     private val game = Game(PrefsStore(context))
     private val haptics = ViewHaptics(view)
     private val sound = TrackSound()
-    private val screen = Screen(game, dev = dev, billing = RevenueCatBilling(testStore), version = version)
+    private val screen = Screen(game, dev = dev, billing = RevenueCatBilling(testStore), build = build)
 
     @Composable
     fun Content() = SisyphusApp(game, haptics, sound, screen, copy = ::copy)

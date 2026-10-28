@@ -23,7 +23,7 @@ class MainActivity : ComponentActivity() {
         volumeControlStream = AudioManager.STREAM_MUSIC
         sisyphus = SisyphusController(
             this, window.decorView, dev = BuildConfig.DEBUG || BuildConfig.BETA, testStore = BuildConfig.DEBUG,
-            version = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
+            build = BuildConfig.VERSION_CODE.toString(),
         )
         setContent { sisyphus.Content() }
         onBackPressedDispatcher.addCallback(this) {

@@ -14,6 +14,7 @@ import dev.oblac.sisyphus.scene.drawVision
 import dev.oblac.sisyphus.ui.DEV_STEPS
 import dev.oblac.sisyphus.ui.GAIN_TIME
 import dev.oblac.sisyphus.ui.Layout
+import dev.oblac.sisyphus.ui.supportTag
 import dev.oblac.sisyphus.ui.Rect
 import dev.oblac.sisyphus.ui.UiRenderer
 import kotlin.math.abs
@@ -54,14 +55,14 @@ private const val STOP_SPEED = 20.0
 
 /**
  * Owns the framebuffer and maps real screen pixels to virtual ones.
- * Platform code only forwards touches and shows [pixels]. The Worlds screen shows [version], the version and the build of the app.
+ * Platform code only forwards touches and shows [pixels]. The Worlds screen shows [build], the build number of the app, after the player's id.
  */
 class Screen(
     val game: Game,
     seed: Int = Random.nextInt(),
     private val dev: Boolean = false,
     private val billing: Billing = NoBilling,
-    private val version: String? = null,
+    private val build: String? = null,
 ) {
     var scale = 1
         private set
@@ -199,9 +200,9 @@ class Screen(
             ui.agora(pixels, l, game.shop, game.soundOn, devOpen, openWorlds)
             offer?.let { game.shop.next(it) }?.let { ui.offer(pixels, l, it) }
         } else if (worldsOpen) {
-            ui.worlds(pixels, l, game.place, worldsScroll, worlds, version)
+            ui.worlds(pixels, l, game.place, worldsScroll, worlds)
             if (canRestore) ui.restore(pixels, l.restore, restoring)
-            supportId?.let { ui.supportId(pixels, l.supportId, it, copied > 0) }
+            supportTag(supportId, build)?.let { ui.supportId(pixels, l.supportId, it, copied > 0) }
             moving?.let { ui.confirm(pixels, l, it) }
             buying?.let { ui.buy(pixels, l, it, billing.price(it), paying) }
         } else {

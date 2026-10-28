@@ -221,7 +221,7 @@ class SnapshotTest {
             override fun restore(done: () -> Unit) {}
         }
         for ((name, size) in listOf("11-locked" to listOf(1179, 2556, 177, 102), "11-locked-small" to listOf(1080, 2340, 144, 102))) {
-            val s = Screen(Game(MemoryStore(mapOf("effort" to effortAt(3, 0.4))), seed = 3), seed = 5, billing = notBought, version = "1.2 (41)")
+            val s = Screen(Game(MemoryStore(mapOf("effort" to effortAt(3, 0.4))), seed = 3), seed = 5, billing = notBought, build = "41")
             s.resize(size[0], size[1], size[2], size[3])
             val l = s.layout!!
             fun tap(r: Rect) = s.press((r.x + r.w / 2f) * s.scale + s.offsetX, (r.y + r.h / 2f) * s.scale + s.offsetY)

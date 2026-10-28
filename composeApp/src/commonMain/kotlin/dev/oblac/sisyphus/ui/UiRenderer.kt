@@ -153,8 +153,12 @@ private fun dim(c: Int) = rgb((c shr 16 and 0xFF) / 3, (c shr 8 and 0xFF) / 3, (
 private val BLACK = rgb(0x000000)
 
 /** The question before buying a world, and what the world costs: once, and the store's price when it has answered. */
-/** The player's id for support, as the Worlds screen shows it: "ID" and its last characters. A tap copies all of it. */
-internal fun supportTag(id: String) = "ID " + id.takeLast(4)
+/**
+ * The bottom-right corner of the Worlds screen: "ID" and the last characters of the player's id for support, then the build
+ * of the game, such as "ID cdef [41]". A tap copies the whole id.
+ */
+internal fun supportTag(id: String?, build: String?): String? =
+    listOfNotNull(id?.let { "ID " + it.takeLast(4) }, build?.let { "[$it]" }).joinToString(" ").ifEmpty { null }
 
 /** The title of the Worlds screen. */
 internal const val WORLDS_TITLE = "Worlds"
@@ -170,7 +174,7 @@ internal fun buyTitle(place: Place) = "Buy ${place.title}?"
 internal fun buyText(price: String?) = "You pay ${if (price == null) "" else "$price "}once, and the world is yours forever."
 
 /** The button on the Worlds screen that asks the store for the worlds bought before. */
-internal const val RESTORE = "Restore purchases"
+internal const val RESTORE = "Restore"
 
 /** What going to another world costs, in its question. */
 internal const val MOVE_WARNING = "The climb starts over there: day 1, no items and no obols. Your climbs stay."
@@ -309,9 +313,9 @@ class UiRenderer {
     /** A helper bought in the Agora, with a dark outline, so it shows on any ground. */
     fun helper(px: Pixels, r: Rect, item: Item) = px.draw(outlined.getOrPut(item) { itemIcon(item).outlined(SHADOW) }, r.x, r.y)
 
-    /** The player's id for support, at the right of [r], or "Copied" just after a tap copied it. */
-    fun supportId(px: Pixels, r: Rect, id: String, copied: Boolean) {
-        val text = if (copied) "Copied" else supportTag(id)
+    /** The [tag] of the player's id and the build, at the right of [r], or "Copied" just after a tap copied the id. */
+    fun supportId(px: Pixels, r: Rect, tag: String, copied: Boolean) {
+        val text = if (copied) "Copied" else tag
         PixelFont.draw(px, text, r.right - PixelFont.width(text), r.y, if (copied) TERRA_LIGHT else DISABLED)
     }
 
@@ -436,10 +440,9 @@ class UiRenderer {
      * and the worlds not bought yet locked, with their price.
      * The list is drawn on a sheet of its own, so that it scrolls by [scroll] and its edges cut clean.
      */
-    fun worlds(px: Pixels, layout: Layout, here: Place, scroll: Int, billing: Billing, version: String? = null) {
+    fun worlds(px: Pixels, layout: Layout, here: Place, scroll: Int, billing: Billing) {
         val t = layout.agoraTitle
         PixelFont.draw(px, WORLDS_TITLE, t.x, t.y, CREAM)
-        version?.let { PixelFont.draw(px, "v$it", layout.version.x, layout.version.y, DISABLED) }
         px.hline(t.x, t.right - 1, t.bottom + 2, TERRA_DARK)
         val list = layout.worldList
         val sheet = worldSheet?.takeIf { it.width == list.w && it.height == list.h } ?: Pixels(list.w, list.h).also { worldSheet = it }

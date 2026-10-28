@@ -22,11 +22,8 @@ private class IosHaptics : Haptics {
     override fun tick() = generator.selectionChanged()
 }
 
-/** The version and the build of the app, such as "1.2 (41)", from its Info.plist. */
-private fun bundleVersion(): String? {
-    val info = NSBundle.mainBundle.infoDictionary ?: return null
-    return "${info["CFBundleShortVersionString"]} (${info["CFBundleVersion"]})"
-}
+/** The build of the app, such as "41", from its Info.plist. */
+private fun bundleBuild(): String? = NSBundle.mainBundle.infoDictionary?.get("CFBundleVersion") as? String
 
 /**
  * The Swift app holds one of these; it pauses the game when the app leaves the foreground, and resumes it on return.
@@ -36,7 +33,7 @@ class SisyphusController(dev: Boolean, testStore: Boolean) {
     private val game = Game(DefaultsStore())
     private val haptics = IosHaptics()
     private val sound = EngineSound()
-    private val screen = Screen(game, dev = dev, billing = RevenueCatBilling(testStore), version = bundleVersion())
+    private val screen = Screen(game, dev = dev, billing = RevenueCatBilling(testStore), build = bundleBuild())
 
     fun viewController(): UIViewController = ComposeUIViewController {
         SisyphusApp(game, haptics, sound, screen, copy = { UIPasteboard.generalPasteboard.string = it })
