@@ -22,6 +22,7 @@ import dev.oblac.sisyphus.gfx.PixelFont
 import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.ui.AGORA_NOTE
 import dev.oblac.sisyphus.ui.BACKGROUND
+import dev.oblac.sisyphus.ui.NOTE_HERO
 import dev.oblac.sisyphus.ui.DAY_NOTE
 import dev.oblac.sisyphus.gfx.TRANSPARENT
 import dev.oblac.sisyphus.gfx.luminance
@@ -1489,8 +1490,9 @@ class ScreenTest {
     @Test
     fun theAgoraNoteFitsTheSmallestPhone() {
         val l = smallest().layout!!
-        assertTrue(PixelFont.width(AGORA_NOTE) <= l.agoraNote.w)
-        assertTrue(l.agoraNote.right + 4 <= l.agoraSound.x)
+        assertTrue(NOTE_HERO.width + 3 + PixelFont.width(AGORA_NOTE) <= l.agoraNote.w)
+        assertTrue(NOTE_HERO.height <= l.agoraNote.h)
+        assertTrue(l.agoraNote.right + 2 <= l.agoraSound.x)
         assertTrue(AGORA_NOTE.all(PixelFont::hasGlyph))
     }
 }

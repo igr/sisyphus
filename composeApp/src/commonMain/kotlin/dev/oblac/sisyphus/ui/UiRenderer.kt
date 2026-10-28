@@ -20,6 +20,7 @@ import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.gfx.bayer
 import dev.oblac.sisyphus.gfx.hash01
 import dev.oblac.sisyphus.gfx.rgb
+import dev.oblac.sisyphus.gfx.sprite
 import dev.oblac.sisyphus.scene.Ending
 import kotlin.math.PI
 import kotlin.math.atan2
@@ -181,6 +182,20 @@ private val CATEGORY_COLORS = mapOf(
 
 /** At the bottom of the Agora, until everything is bought. */
 internal const val AGORA_NOTE = "Buy all 15 for the top."
+
+/** Before the note of the Agora, Sisyphus pushes his rock, as small as the letters. */
+internal val NOTE_HERO = sprite(
+    mapOf('k' to rgb(0xE0A070), 't' to rgb(0xF4ECDA), 'o' to rgb(0x9A948C), 's' to rgb(0x6E6A64)),
+    """
+    .....ooo.
+    .kk.ooooo
+    .tkkoooos
+    .tt.oooos
+    .kk..sss.
+    k..k.....
+    k...k....
+    """.trimIndent(),
+)
 
 /** The note of the help that points at the day. */
 internal const val DAY_NOTE = "The sun moves only while you push. Tap the day for worlds and labors."
@@ -414,7 +429,10 @@ class UiRenderer {
         if (!dev) PixelFont.draw(px, itemsBought(shop), layout.agoraCount.x, layout.agoraCount.y, TERRA)
         px.hline(t.x, t.right - 1, t.bottom + 2, TERRA_DARK)
         if (dev) devScreen(px, layout, openWorlds) else for (line in Line.entries) row(px, layout.agoraRow(line.ordinal), line, shop)
-        if (!dev && !shop.allBought) PixelFont.draw(px, AGORA_NOTE, layout.agoraNote.x, layout.agoraNote.y, NOT_DONE)
+        if (!dev && !shop.allBought) {
+            px.draw(NOTE_HERO, layout.agoraNote.x, layout.agoraNote.y)
+            PixelFont.draw(px, AGORA_NOTE, layout.agoraNote.x + NOTE_HERO.width + 3, layout.agoraNote.y, NOT_DONE)
+        }
         speaker(px, layout.agoraSound, soundOn)
     }
 

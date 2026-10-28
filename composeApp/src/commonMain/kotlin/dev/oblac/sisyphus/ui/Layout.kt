@@ -59,8 +59,8 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     /** In the Agora, the speaker in the bottom-right corner turns the sound on and off. */
     val agoraSound = Rect(coinIcon.right - SPEAKER_WIDTH, bottom - SPEAKER_HEIGHT - 1, SPEAKER_WIDTH, SPEAKER_HEIGHT)
 
-    /** At the bottom of the Agora, across from the speaker, the note that all 15 items lead to the top. */
-    val agoraNote = Rect(agoraTitle.x, agoraSound.y, agoraSound.x - 4 - agoraTitle.x, PixelFont.CAP_HEIGHT)
+    /** At the bottom of the Agora, across from the speaker, a small Sisyphus and the note that all 15 items lead to the top. */
+    val agoraNote = Rect(agoraTitle.x, agoraSound.y, agoraSound.x - 2 - agoraTitle.x, PixelFont.CAP_HEIGHT)
 
     /** One of the five lines of the Agora, from the top. */
     fun agoraRow(index: Int): Rect {
