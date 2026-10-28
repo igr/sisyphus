@@ -54,7 +54,7 @@ private val MOSS = rgb(0x7E8A58)
 
 /**
  * One look of the rock: its [colors] from dark to light, and the [mark] painted on it, which can ask for the [accent] color.
- * A [polished] rock has a shine and no marks.
+ * A [polished] rock has a shine.
  */
 internal class Rock(val colors: IntArray, val mark: (Double, Double) -> Int = { _, _ -> 0 }, val polished: Boolean = false, val accent: Int = MOSS)
 
@@ -121,6 +121,7 @@ class SceneRenderer(private val geo: SceneGeometry) {
         drawSky(px, atm, sun, world.overcast, look.sun)
         drawStars(px, atm, game.clock, world)
         if (game.place == Place.CORINTH && beauty >= 3) drawPleiades(px, atm, game.clock)
+        if (game.place == Place.CAIRO && beauty >= 3) drawMilkyWay(px, geo, atm)
         moon?.let { drawMoon(px, it, game.day, atm, world.overcast) }
         sun?.let { drawSun(px, it, game.clock, atm, world.overcast, look.sun) }
         drawClouds(px, atm, world)
@@ -145,6 +146,12 @@ class SceneRenderer(private val geo: SceneGeometry) {
                 drawStyx(px, geo, atm, p, game.clock)
                 drawFerry(px, world, atm)
             }
+            Place.CAIRO -> {
+                drawPyramids(px, geo, atm)
+                drawFlyer(px, world, game.clock, atm, PHOENIX_UP, PHOENIX_DOWN)
+                drawNile(px, geo, atm, p, game.clock)
+                drawHippo(px, world, atm)
+            }
         }
         drawGround(px, atm, p, look)
         drawProps(px, atm, p, look.props)
@@ -154,7 +161,7 @@ class SceneRenderer(private val geo: SceneGeometry) {
         drawRock(px, atm, game.position, look.rocks[game.shop.tier(Line.ROCK)], rolled)
         drawHero(px, atm, game, p, rolled)
         drawParticles(px, world, atm)
-        drawRain(px, world, atm, look.ash)
+        drawRain(px, world, atm, look.fall)
         if (hud) drawDay(px, game.day, game.newLabors, banner)
     }
 
@@ -342,7 +349,8 @@ class SceneRenderer(private val geo: SceneGeometry) {
         for (x in 0 until px.width) {
             val s = geo.surfaceY(x, p)
             val wx = geo.worldX(x, p)
-            for (y in max(0, s) until px.height) px.data[y * px.width + x] = ground[groundIndex(wx, y - s)]
+            val h = geo.groundHeight(wx)
+            for (y in max(0, s) until px.height) px.data[y * px.width + x] = ground[look.layers(wx, h - (y - s), y - s)]
             val hb = hash01(wx, 5, 31)
             val blade = when {
                 hb < 0.04f * look.grass -> 3
@@ -352,31 +360,11 @@ class SceneRenderer(private val geo: SceneGeometry) {
             }
             for (k in 1..blade) px[x, s - k] = blades[if (k == blade) 0 else 1]
             val hf = hash(wx, 9, 31)
-            if ((hf and 0xFF) < 7) {
+            if (look.grass > 0f && (hf and 0xFF) < 7) {
                 px[x, s - 1] = blades[1]
                 px[x, s - 2] = shade(look.flowers[(hf shr 8) and 3], atm.light)
             }
         }
-    }
-
-    private fun groundIndex(wx: Int, d: Int): Int {
-        if (d == 0) return if (hash01(wx, 1, 41) < 0.35f) GRASS_LIGHT else GRASS
-        if (d == 1) return if (hash01(wx, 2, 41) < 0.3f) GRASS_DARK else GRASS
-        if (d == 2) return if (bayer(wx, d) < 0.55f) GRASS_DARK else SOIL
-        val cx = wx.floorDiv(6)
-        val cy = (d - 3).floorDiv(5)
-        val h = hash(cx, cy, 51)
-        if ((h and 0xFF) < 100) {
-            val sx = cx * 6 + ((h shr 8) and 3)
-            val sy = 3 + cy * 5 + ((h shr 10) and 1)
-            val sw = 2 + ((h shr 12) and 1)
-            if (wx >= sx && wx < sx + sw) {
-                if (d == sy) return STONE_LIGHT
-                if (d == sy + 1) return STONE_DARK
-            }
-        }
-        val band = ((d - 3) + bayer(wx, d) * 4f).toInt() / 7
-        return SOIL + band.coerceAtMost(2)
     }
 
     private fun drawProps(px: Pixels, atm: Atmosphere, p: Int, props: List<Prop>) {
@@ -452,11 +440,28 @@ class SceneRenderer(private val geo: SceneGeometry) {
         }
     }
 
-    /** Rain, or flakes of ash where [ash] is true. */
-    private fun drawRain(px: Pixels, world: World, atm: Atmosphere, ash: Boolean) {
+    /** Rain, flakes of ash, or grains of sand, as [fall] says. */
+    private fun drawRain(px: Pixels, world: World, atm: Atmosphere, fall: Fall) {
         val n = (world.drops.size * world.rain).toInt()
         if (n == 0) return
-        if (ash) {
+        if (fall == Fall.SAND) {
+            val haze = lerpColor(atm.skyHorizon, rgb(0xD8B878), 0.6f)
+            for (y in 0 until px.height) for (x in 0 until px.width) {
+                if (bayer(x, y) < 0.4 * world.rain) px[x, y] = lerpColor(px[x, y], haze, 0.4f)
+            }
+            val grain = lerpColor(atm.skyHorizon, rgb(0xB08850), 0.75f)
+            val trail = lerpColor(atm.skyHorizon, rgb(0xE0C490), 0.45f)
+            for (i in 0 until n) {
+                val d = world.drops[i]
+                val x = floor(d.x).toInt()
+                val y = floor(d.y).toInt()
+                px[x, y] = grain
+                px[x + 1, y] = trail
+                px[x + 2, y] = trail
+            }
+            return
+        }
+        if (fall == Fall.ASH) {
             val light = lerpColor(atm.skyHorizon, rgb(0xFFFFFF), 0.3f)
             val dark = lerpColor(atm.skyHorizon, rgb(0x2A2624), 0.55f)
             for (i in 0 until n) {
@@ -496,6 +501,27 @@ class SceneRenderer(private val geo: SceneGeometry) {
         px[floor(x).toInt(), floor(y).toInt()] = c
     }
 
+}
+
+/** Grass on soil with stones: the ground color of column [wx] of the hill at depth [d] under the surface. */
+internal fun soil(wx: Int, d: Int): Int {
+    if (d == 0) return if (hash01(wx, 1, 41) < 0.35f) GRASS_LIGHT else GRASS
+    if (d == 1) return if (hash01(wx, 2, 41) < 0.3f) GRASS_DARK else GRASS
+    if (d == 2) return if (bayer(wx, d) < 0.55f) GRASS_DARK else SOIL
+    val cx = wx.floorDiv(6)
+    val cy = (d - 3).floorDiv(5)
+    val h = hash(cx, cy, 51)
+    if ((h and 0xFF) < 100) {
+        val sx = cx * 6 + ((h shr 8) and 3)
+        val sy = 3 + cy * 5 + ((h shr 10) and 1)
+        val sw = 2 + ((h shr 12) and 1)
+        if (wx >= sx && wx < sx + sw) {
+            if (d == sy) return STONE_LIGHT
+            if (d == sy + 1) return STONE_DARK
+        }
+    }
+    val band = ((d - 3) + bayer(wx, d) * 4f).toInt() / 7
+    return SOIL + band.coerceAtMost(2)
 }
 
 /** What a mark returns where the rock takes its accent color. */

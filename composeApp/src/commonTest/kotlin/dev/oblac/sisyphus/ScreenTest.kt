@@ -806,7 +806,7 @@ class ScreenTest {
         assertNull(s.moving)
         val last = l.worldRow(Place.entries.size - 1)
         assertEquals(Touch.WORLDS, s.choose(Rect(last.x, last.y - most, last.w, last.h)))
-        assertEquals(Place.UNDERWORLD, s.moving)
+        assertEquals(Place.entries.last(), s.moving)
     }
 
     /** On a short screen, opens the worlds and swipes the list up quickly; the finger lifts at the end. */
@@ -854,9 +854,15 @@ class ScreenTest {
 
     @Test
     fun theWorldsFitTheSmallestPhone() {
-        val l = smallest().layout!!
-        assertTrue(l.worldRow(0).y > l.agoraTitle.bottom)
-        assertTrue(l.worldRow(Place.entries.size - 1).bottom <= l.agoraSound.y)
+        val s = smallest()
+        val l = s.layout!!
+        assertTrue(l.worldRow(0).y > l.agoraTitle.bottom && l.worldList.bottom <= l.agoraSound.y)
+        s.tap(l.dayLabel(s.game.day))
+        val first = l.worldRow(0)
+        s.tap(first)
+        s.drag(first.x + 10f, first.y + 10f - 1000f)
+        s.release()
+        assertTrue(l.worldRow(Place.entries.size - 1).bottom - s.worldsScroll <= l.worldList.bottom)
     }
 
     @Test
@@ -996,7 +1002,7 @@ class ScreenTest {
 
     @Test
     fun withEveryWorldBoughtThereIsNothingToRestore() {
-        val billing = FakeBilling(Place.ETNA, Place.UNDERWORLD)
+        val billing = FakeBilling(*Place.entries.toTypedArray())
         val s = worlds(billing)
         assertEquals(Touch.NONE, s.tap(s.layout!!.restore))
         assertEquals(0, billing.restores)
@@ -1214,9 +1220,20 @@ class ScreenTest {
     }
 
     @Test
+    fun cairoHasIconsOfItsOwn() {
+        for (item in items(Place.CAIRO)) {
+            for (other in listOf(Place.CORINTH, Place.ETNA, Place.UNDERWORLD)) {
+                val twin = items(other).first { it.line == item.line && it.tier == item.tier }
+                assertFalse(itemIcon(item).data.contentEquals(itemIcon(twin).data), item.name)
+            }
+        }
+    }
+
+    @Test
     fun everyWorldIsDrawnNow() {
         assertEquals("the hill on the volcano", Place.ETNA.note)
         assertEquals("the hill in Tartarus", Place.UNDERWORLD.note)
+        assertEquals("the pyramid by the Nile", Place.CAIRO.note)
     }
 
     private val allItems = Place.entries.flatMap { items(it) }

@@ -40,6 +40,18 @@ class RockLookTest {
     }
 
     @Test
+    fun eachRockTierLooksDifferentInCairo() {
+        assertEquals(4, (0..3).map { rockPixels(it, Place.CAIRO) }.toSet().size)
+    }
+
+    @Test
+    fun cairoHasRocksOfItsOwnAfterTheFirst() {
+        fun icon(place: Place, tier: Int) = rockIcon(place, tier).data.toList()
+        assertEquals(icon(Place.CORINTH, 0), icon(Place.CAIRO, 0))
+        for (tier in 1..3) for (other in listOf(Place.CORINTH, Place.ETNA, Place.UNDERWORLD)) assertNotEquals(icon(other, tier), icon(Place.CAIRO, tier))
+    }
+
+    @Test
     fun theUnderworldHasRocksOfItsOwnAfterTheFirst() {
         fun icon(place: Place, tier: Int) = rockIcon(place, tier).data.toList()
         assertEquals(icon(Place.CORINTH, 0), icon(Place.UNDERWORLD, 0))

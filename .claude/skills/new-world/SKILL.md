@@ -5,7 +5,7 @@ description: Use when the user asks for a new world in the Sisyphus game, or ask
 
 # New world
 
-A world is a new look and new names on the same game. The rules, the economy and the saved keys stay the same. Corinth, Mount Etna and The Underworld are the models. Each world has a `when (place)` branch in the code, so a new entry in `Place` makes the compiler show each place to fill.
+A world is a new look and new names on the same game. The rules, the economy and the saved keys stay the same. Corinth, Mount Etna, The Underworld and Cairo are the models. Each world has a `when (place)` branch in the code, so a new entry in `Place` makes the compiler show each place to fill.
 
 ## The parts of a world
 
@@ -18,11 +18,11 @@ A world is a new look and new names on the same game. The rules, the economy and
 | Myth | Sisyphus was the king of Corinth. The gods punish him on a hill by the sea. | Only for the names and the look |
 | Sky over the day | Blue day, orange dusk, deep blue night | `KEYS`, `ETNA_KEYS`, `UNDERWORLD_KEYS` in `scene/Atmosphere.kt`; `Look.sky` |
 | Sun, moon, stars | The sun, the moon with its phases, stars, shooting stars | `Look.sun`, with the glow around the sun; the `stars` value of the sky keys |
-| Far view and landmark | The sea, with islands on the horizon | `drawSea`, `drawIslands`; `drawSummit`, `drawFields` in `scene/Etna.kt`; `drawRoof`, `drawFarShore`, `drawStyx` in `scene/Underworld.kt` |
-| Ground | Grass on brown soil with stones, and flowers | `Look.ground`, `blades`, `grass`, `flowers` |
+| Far view and landmark | The sea, with islands on the horizon | `drawSea`, `drawIslands`; `drawSummit`, `drawFields` in `scene/Etna.kt`; `drawRoof`, `drawFarShore`, `drawStyx` in `scene/Underworld.kt`; `drawPyramids`, `drawNile` in `scene/Cairo.kt` |
+| Ground | Grass on brown soil with stones, and flowers | `Look.ground`, `blades`, `grass`, `flowers`; `Look.layers` for another ground, such as the courses of the pyramid in Cairo |
 | Props by the path | Olive, young olive, cypress, stone pine, poplar, almond, lemon, dead tree, column, bush | `Look.props`: `PROPS` in `scene/Props.kt`, `ETNA_PROPS`, `UNDERWORLD_PROPS` |
 | Life | Birds by day | `Look.birdUp`, `Look.birdFlat` |
-| Weather | Clear, fair, cloudy, windy, rain | `Weather.of`, the same days in every world; `Look.ash` turns rain into ash |
+| Weather | Clear, fair, cloudy, windy, rain | `Weather.of`, the same days in every world; `Look.fall` turns rain into ash or sand |
 | Small things | Dust at his feet, sweat, splashes of rain | `Look.dust`; `SWEAT`, `SPLASH` in `scene/World.kt` |
 | Rocks | River stone, Pumice, Sphere of Daedalus | `items` in `game/Shop.kt`, prices and effects in `game/Config.kt`; `Look.rocks`: `ROCKS` in `SceneRenderer.kt`, `ETNA_ROCKS`, `UNDERWORLD_ROCKS` |
 | Sidekicks | Merope, Bellerophon, Heracles | `items`; `ICONS` in `ui/Icons.kt`, `ETNA_ICONS`, `UNDERWORLD_ICONS` in `ui/<World>Icons.kt` |
@@ -32,7 +32,7 @@ A world is a new look and new names on the same game. The rules, the economy and
 | Voices | The Sphinx and Hecate ask the riddles in the visions | `God` and `godsOf` in `game/Voices.kt`; sprites in `scene/Visions.kt` |
 | Picture | The scene at noon, from the top of the rock down to the far view | `worldPreview` in `ui/Previews.kt` |
 
-These are the same in every world: the price of $0.99, Sisyphus, the first rock, the knob, the day length, the final climb and its end, the prices and the effects of the 15 items, the line titles, the notes of the first four lines ("turns count 1.5x"), the wise words, the riddles, Hermes and his "Who said this?" in the visions, the sounds and the screens.
+These are the same in every world: the price of USD 0.99, Sisyphus, the first rock, the knob, the day length, the final climb and its end, the prices and the effects of the 15 items, the line titles, the notes of the first four lines ("turns count 1.5x"), the wise words, the riddles, Hermes and his "Who said this?" in the visions, the sounds and the screens.
 
 ## Steps
 
@@ -50,18 +50,18 @@ These are the same in every world: the price of $0.99, Sisyphus, the first rock,
 7. Make the three beauty sights, one for each tier of the Beauty line. A sight uses the timer of the Corinth sight of the same tier (`nextLeap`, `nextFlight`). Code that all worlds run must not take more random numbers, because then the other worlds change.
 8. Choose the two gods who ask the riddles of the world in the visions, from its myths. Add them to `God` with the world as their place, each with a farewell that it says when nobody answers, and draw their sprites (25 x 15) in `scene/Visions.kt`. The riddles stay the same in every world, so no riddle names or describes the god who asks it.
 9. Look at the picture on the Worlds screen: `worldPreview` cuts it from the real scene at noon. The landmark must show in it.
-10. Update the tests. Each test that has The Underworld in it gets the new world too:
+10. Update the tests. Each test that has Cairo in it gets the new world too:
    - `GameTest`: add the new id to the ids that never change, and the product to the products that never change. A save with the new id loads its items.
    - `ShopTest`, `BeautyTest`, `PropsTest`, `RockLookTest` and `LookTest`.
    - `VoicesTest.eachWorldHasHermesAndTwoGodsOfItsOwn`: the gods of the new world. The fit, letter and picture tests already cover every god.
    - `ScreenTest`: its own icons. The fit and letter tests already cover every world.
-   - With four worlds or more, they do not fit the smallest phone. `theWorldsFitTheSmallestPhone` must make sure that the list scrolls to the last world. In `theWorldsScrollWhenTheyDoNotFit`, use `Place.entries.last()`.
-   - `SnapshotTest`: add the world to `moments`, `beauty`, `iconSheet`, `propSheet` and `rockSheet`. Where a test has a number of worlds in it, such as `worldScroll(3)`, use `Place.entries.size`.
+   - The worlds do not fit the smallest phone. `theWorldsFitTheSmallestPhone` and `theWorldsScrollWhenTheyDoNotFit` already scroll to the last world.
+   - `SnapshotTest`: add the world to `moments`, `beauty`, `iconSheet`, `propSheet` and `rockSheet`. Where a test counts the worlds, use `Place.entries.size`.
 11. Update the docs: the ids in `docs/saved-data.md` (the `place` key and "Ids that never change"), the Worlds section in `docs/shop.md`, the gods of each world in `docs/voices.md`, and `README.md` where it tells about the worlds or the scene.
 12. Do the checks:
     - Run `./gradlew :composeApp:jvmTest :composeApp:testAndroidHostTest`. Look at each new image in `composeApp/build/snapshots`, also at the images of the smallest phone.
     - Run `./gradlew :androidApp:assembleDebug :composeApp:compileKotlinIosSimulatorArm64`.
-    - Show the world on the simulator: a debug build shows its lock and its price, and buys it in the Test Store. It starts at day 1, with no obols, in the new scene, and it stays there after a restart. The Top button of the dev screen starts the final climb there. Do not use `just run` for this: the desktop game has a real save, and the move deletes its progress.
+    - Show the world on the simulator: a debug build shows its lock and its price, and buys it in the Test Store. It starts at day 1, with no obols, in the new scene, and it stays there after a restart. The Top button of the dev screen starts the final climb there. Look at the ground of the flat top: no snapshot shows it. Do not use `just run` for this: the desktop game has a real save, and the move deletes its progress.
 
 ## Rules for names and texts
 

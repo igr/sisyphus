@@ -23,11 +23,11 @@ class SceneGeometry(val width: Int, val height: Int) {
     /** Where the hill ends and the flat top begins, in pixels walked; null while the hill goes on. */
     var top: Int? = null
 
+    /** How high the ground is at ground coordinate [wx]: one pixel for every two, up to the flat top. */
+    fun groundHeight(wx: Int): Int = (top?.let { min(wx, it) } ?: wx).floorDiv(2)
+
     /** First ground row of column [x] when the hero has walked [p] pixels. */
-    fun surfaceY(x: Int, p: Int): Int {
-        val wx = x - heroX + p
-        return baseY - ((top?.let { min(wx, it) } ?: wx).floorDiv(2) - p.floorDiv(2))
-    }
+    fun surfaceY(x: Int, p: Int): Int = baseY - (groundHeight(x - heroX + p) - p.floorDiv(2))
 
     /** Ground coordinate of column [x], fixed to the hill rather than the screen. */
     fun worldX(x: Int, p: Int): Int = x - heroX + p

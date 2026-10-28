@@ -16,6 +16,7 @@ fun itemIcon(item: Item): Pixels {
         Place.CORINTH -> ICONS
         Place.ETNA -> ETNA_ICONS
         Place.UNDERWORLD -> UNDERWORLD_ICONS
+        Place.CAIRO -> CAIRO_ICONS
     }
     return icons.getValue(item.line)[item.tier - 1]
 }

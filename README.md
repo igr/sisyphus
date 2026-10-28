@@ -6,7 +6,7 @@ The sun moves only while he works.
 Each day has its own weather. Wise words appear under the display as you push.
 Earn obols as you push, and spend them in the Agora Market: better rocks, helpers, blessings and beauty.
 When everything is bought, a final climb leads to the top. There the rock rolls down, and everything begins again, in the same world or in a new one.
-Tap the day to choose another world: Corinth, Mount Etna or The Underworld. There the climb starts over.
+Tap the day to choose another world: Corinth, Mount Etna, The Underworld or Cairo. There the climb starts over.
 The same screen lists the labors: honors for all your climbs, such as Tina Turner for 10,000 turns of the knob.
 Corinth is free. The other worlds are bought once, for $0.99.
 
@@ -63,7 +63,7 @@ The knob click, the click of every other tap, the sound of buying, the fanfare o
 - `gfx` — framebuffer, dithering, pixel font
 - `game` — knob physics, days and weather, quotes
 - `scene` — the display: sky, far view, slope, rock, Sisyphus, clouds, birds, rain. `Look.kt` holds what differs
-  from world to world. `Etna.kt` and `Underworld.kt` draw those worlds. To add a world, follow `.claude/skills/new-world/SKILL.md`.
+  from world to world. `Etna.kt`, `Underworld.kt` and `Cairo.kt` draw those worlds. To add a world, follow `.claude/skills/new-world/SKILL.md`.
 - `ui` — layout, frame, Greek key band, quote panel, knob
 - `Screen.kt` maps touches to virtual pixels; `App.kt` shows the framebuffer in Compose
 - `mobileMain` — the purchases of worlds, through RevenueCat, for both phones. The desktop has every world.

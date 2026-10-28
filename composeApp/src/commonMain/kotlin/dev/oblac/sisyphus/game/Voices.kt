@@ -20,6 +20,8 @@ enum class God(val title: String, val farewell: String, val place: Place?) {
     EMPEDOCLES("Empedocles", "Silence is an answer too. Farewell.", Place.ETNA),
     CHARON("Charon", "No answer. The river waits for everyone.", Place.UNDERWORLD),
     PERSEPHONE("Persephone", "Spring is calling me. I will ask again.", Place.UNDERWORLD),
+    THOTH("Thoth", "No answer? I will write that down.", Place.CAIRO),
+    ANUBIS("Anubis", "The scales can wait. So can I.", Place.CAIRO),
 }
 
 /** The three gods of [place]: Hermes, and the two who ask its riddles. */

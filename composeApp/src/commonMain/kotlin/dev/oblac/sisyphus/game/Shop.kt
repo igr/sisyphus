@@ -134,6 +134,41 @@ private val UNDERWORLD_ITEMS = with(Place.UNDERWORLD) {
     )
 }
 
+private val CAIRO_ITEMS = with(Place.CAIRO) {
+    listOf(
+        item(Line.ROCK, 1, "Desert stone",
+            "Worn round by the wind and the sand of the desert. Every turn of the knob counts {x} times, so obols come faster."),
+        item(Line.ROCK, 2, "Egg of the Phoenix",
+            "An egg of myrrh, light enough for the Phoenix to carry as it flies. Every turn counts {x} times. It takes the place of the desert stone."),
+        item(Line.ROCK, 3, "Alabaster sphere",
+            "White alabaster of Egypt, polished perfectly round. Every turn counts {x} times. It takes the place of the egg."),
+        item(Line.SIDEKICKS, 1, "Io",
+            "Hera's gadfly chased her all the way to the Nile. She pushes beside him. Each turn counts {x} times more, on top of the rock."),
+        item(Line.SIDEKICKS, 2, "Epaphus",
+            "Her son by Zeus, born by the Nile, who founded Memphis, pushes beside him. Each turn counts {x} times more. He takes Io's place."),
+        item(Line.SIDEKICKS, 3, "Memnon",
+            "The son of the Dawn, whose giant statue sings at sunrise, pushes beside him. Each turn counts {x} times more. He takes Epaphus' place."),
+        item(Line.GODS, 1, "Scarab",
+            "The beetle that rolls the sun across the sky has a cousin named Sisyphus. It pushes the rock {x} times an hour, even when the app is closed."),
+        item(Line.GODS, 2, "Isis",
+            "The great goddess of magic, who brought Osiris back to life, pushes {x} times an hour, even when the app is closed. She takes the scarab's place."),
+        item(Line.GODS, 3, "Osiris",
+            "The king of the dead, who came back from death as Sisyphus once did, pushes {x} times an hour, day and night. He takes Isis' place."),
+        item(Line.BLESSING, 1, "Bread and onions",
+            "The builders of the pyramid were paid in bread and onions. Now you are paid too: one obol for every {days} of pushing, not {base}."),
+        item(Line.BLESSING, 2, "Gift of the Nile",
+            "Egypt is the gift of the river, Herodotus says: one obol for every {days} of pushing. It takes the place of the bread."),
+        item(Line.BLESSING, 3, "Gold of Cheops",
+            "The gold of the king who built this pyramid: one obol for every {days} of pushing. It takes the place of the gift of the Nile."),
+        item(Line.BEAUTY, 1, "Hippopotamus",
+            "Now and then a hippopotamus, the horse of the river, rises from the Nile. Beauty stays, whatever else you buy.", "rises from the Nile"),
+        item(Line.BEAUTY, 2, "Phoenix",
+            "The Phoenix flies by now and then, in red and gold, on its way to the temple of the sun.", "red and gold wings"),
+        item(Line.BEAUTY, 3, "The Milky Way",
+            "At night the Milky Way shines over the desert, like a second Nile in the sky.", "the Nile of the sky"),
+    )
+}
+
 /**
  * An item of this world: a name and details of its own, with the price and the effect from [Config.ITEMS].
  * In the details, {x} stands for the effect, {days} for the days of pushing for an obol with this blessing, and {base} for those without one.
@@ -174,6 +209,7 @@ fun items(place: Place): List<Item> = when (place) {
     Place.CORINTH -> CORINTH_ITEMS
     Place.ETNA -> ETNA_ITEMS
     Place.UNDERWORLD -> UNDERWORLD_ITEMS
+    Place.CAIRO -> CAIRO_ITEMS
 }
 
 /**

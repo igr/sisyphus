@@ -16,6 +16,7 @@ import dev.oblac.sisyphus.audio.SAMPLE_RATE
 import dev.oblac.sisyphus.audio.loadClick
 import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.gfx.rgb
+import dev.oblac.sisyphus.scene.CAIRO_PROPS
 import dev.oblac.sisyphus.scene.ETNA_PROPS
 import dev.oblac.sisyphus.scene.Ending
 import dev.oblac.sisyphus.scene.PROPS
@@ -75,10 +76,10 @@ class SnapshotTest {
         ImageIO.write(img, "png", File(out, "$name.png"))
     }
 
-    /** Six moments of the day and the weather in each world. The images of Etna and The Underworld start with their names. */
+    /** Six moments of the day and the weather in each world. The images of the worlds after Corinth start with their names. */
     @Test
     fun moments() {
-        for ((place, prefix) in listOf(Place.CORINTH to "", Place.ETNA to "etna-", Place.UNDERWORLD to "underworld-")) listOf(
+        for ((place, prefix) in listOf(Place.CORINTH to "", Place.ETNA to "etna-", Place.UNDERWORLD to "underworld-", Place.CAIRO to "cairo-")) listOf(
             Triple("1-morning", 1, 0.30),
             Triple("2-noon-clear", dayWith(Weather.CLEAR), 0.5),
             Triple("3-sunset-windy", dayWith(Weather.WINDY), 0.745),
@@ -267,7 +268,7 @@ class SnapshotTest {
         at(day.x + 2f, day.y + 2f).let { (x, y) -> s.press(x, y) }
         val row = l.worldRow(0)
         at(row.x + 10f, row.y + 30f).let { (x, y) -> s.press(x, y) }
-        at(row.x + 10f, row.y + 30f - l.worldScroll(3) / 2f).let { (x, y) -> s.move(x, y) }
+        at(row.x + 10f, row.y + 30f - l.worldScroll(Place.entries.size) / 2f).let { (x, y) -> s.move(x, y) }
         s.release()
         write(s.render(), "11-worlds-scrolled", 3)
     }
@@ -275,7 +276,7 @@ class SnapshotTest {
     /** The pictures of the 15 items of each world, a line per row, at the size the offer shows them. */
     @Test
     fun iconSheet() {
-        for ((place, name) in listOf(Place.CORINTH to "icons", Place.ETNA to "icons-etna", Place.UNDERWORLD to "icons-underworld")) {
+        for ((place, name) in listOf(Place.CORINTH to "icons", Place.ETNA to "icons-etna", Place.UNDERWORLD to "icons-underworld", Place.CAIRO to "icons-cairo")) {
             val sheet = Pixels(3 * 36 + 2, 5 * 36 + 2)
             sheet.clear(rgb(0x17110D))
             for (item in items(place)) sheet.drawScaled(itemIcon(item), 2 + (item.tier - 1) * 36, 2 + item.line.ordinal * 36, 2)
@@ -325,6 +326,7 @@ class SnapshotTest {
             Triple(PROPS, "props", rgb(0x9CC8EE) to rgb(0x82A048)),
             Triple(ETNA_PROPS, "props-etna", rgb(0xC4D0DC) to rgb(0x4A4440)),
             Triple(UNDERWORLD_PROPS, "props-underworld", rgb(0x46606A) to rgb(0x524E5A)),
+            Triple(CAIRO_PROPS, "props-cairo", rgb(0xB8D4EC) to rgb(0xC8A878)),
         )) {
             val gap = 4
             val width = props.sumOf { it.sprite.width + gap } + gap
@@ -362,7 +364,7 @@ class SnapshotTest {
         write(px, "feature-graphic", 5, width = 1024)
     }
 
-    /** The beauty items of the shop: a dolphin mid-leap, Pegasus flying by, the Pleiades at night. */
+    /** The beauty items of the shop in each world: in Corinth, a dolphin mid-leap, Pegasus flying by, the Pleiades at night. */
     @Test
     fun beauty() {
         fun shot(time: Double, name: String, place: Place = Place.CORINTH, ready: (Screen) -> Boolean) {
@@ -381,13 +383,16 @@ class SnapshotTest {
         shot(0.5, "underworld-9-boat", Place.UNDERWORLD) { s -> s.world.ferry?.let { it.x in 15.0..30.0 } == true }
         shot(0.5, "underworld-9-psyche", Place.UNDERWORLD) { s -> s.world.flyer?.let { it.x in 40.0..90.0 } == true }
         shot(0.95, "underworld-9-lights", Place.UNDERWORLD) { s -> s.game.clock > 2.0 }
+        shot(0.32, "cairo-9-hippo", Place.CAIRO) { s -> s.world.hippo?.let { it.t in 1.2..1.6 } == true }
+        shot(0.5, "cairo-9-phoenix", Place.CAIRO) { s -> s.world.flyer?.let { it.x in 40.0..90.0 } == true }
+        shot(0.95, "cairo-9-milky-way", Place.CAIRO) { s -> s.game.clock > 2.0 }
     }
 
     /** The four rocks of the shop, side by side, in each world. */
     @Test
     fun rockSheet() {
         val geo = SceneGeometry(64, 64)
-        for ((place, name) in listOf(Place.CORINTH to "rocks", Place.ETNA to "rocks-etna", Place.UNDERWORLD to "rocks-underworld")) {
+        for ((place, name) in listOf(Place.CORINTH to "rocks", Place.ETNA to "rocks-etna", Place.UNDERWORLD to "rocks-underworld", Place.CAIRO to "rocks-cairo")) {
             val sheet = Pixels(64 * 4, 64)
             for (tier in 0..3) {
                 val store = MemoryStore(mapOf("effort" to effortAt(1, 0.45), "position" to 962.0, "shop.rock" to tier.toDouble(), "place" to place.id.toDouble()))

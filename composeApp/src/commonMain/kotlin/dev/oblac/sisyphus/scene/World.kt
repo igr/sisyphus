@@ -30,7 +30,7 @@ class Particle(
 
 class Drop(var x: Double, var y: Double, val speed: Double)
 
-/** A dolphin's leap out of the sea, starting at [x], going [dir]. */
+/** A dolphin's leap out of the sea, starting at [x], going [dir]; in Cairo, a hippopotamus that rises from the Nile at [x], facing [dir]. */
 class Leap(val x: Double, val dir: Double) {
     var t = 0.0
 }
@@ -50,6 +50,13 @@ const val LEAP_TIME = 1.2
 
 /** Ash falls this much slower than rain. */
 private const val ASH_FALL = 0.16
+
+/** Sand falls this much slower than rain, and the wind blows it this many times faster sideways than down. */
+private const val SAND_FALL = 0.1
+private const val SAND_WIND = 12.0
+
+/** Seconds a hippopotamus is out of the water. */
+const val HIPPO_TIME = 4.0
 
 /** Seconds the crater throws fire. */
 private const val BURST_TIME = 1.6
@@ -72,6 +79,9 @@ class World(seed: Int) {
     /** In The Underworld, Charon's boat crossing the Styx. */
     var ferry: Flyer? = null
         private set
+    /** In Cairo, a hippopotamus out of the Nile. */
+    var hippo: Leap? = null
+        private set
     var flyer: Flyer? = null
         private set
     var shootingStar: ShootingStar? = null
@@ -83,7 +93,7 @@ class World(seed: Int) {
         private set
 
     private var dust = 0.0
-    /** Seconds to the next sight of the first beauty item: a dolphin's leap, fire from the crater, or Charon's boat. */
+    /** Seconds to the next sight of the first beauty item: a dolphin's leap, fire from the crater, Charon's boat, or a hippopotamus. */
     private var nextLeap = 0.0
     private var nextFlight = 0.0
     private var burst = 0.0
@@ -106,6 +116,7 @@ class World(seed: Int) {
         sparks.clear()
         burst = 0.0
         ferry = null
+        hippo = null
         flyer = null
         nextLeap = random.nextDouble(5.0, 20.0)
         nextFlight = random.nextDouble(10.0, 45.0)
@@ -121,13 +132,14 @@ class World(seed: Int) {
         overcast += ((weather.overcast - overcast) * ease).toFloat()
         updateClouds(dt, moved, weather)
         updateBirds(dt, moved, weather, timeOfDay)
-        updateRain(dt, moved, p, look.ash)
+        updateRain(dt, moved, p, look.fall)
         updateParticles(dt, moved, speed, look.dust)
         updateShootingStar(dt, stars)
         when (place) {
             Place.CORINTH -> updateDolphins(dt, beauty)
             Place.ETNA -> updateFountain(dt, beauty)
             Place.UNDERWORLD -> updateFerry(dt, moved, beauty)
+            Place.CAIRO -> updateHippo(dt, beauty)
         }
         updateFlyer(dt, moved, beauty)
     }
@@ -209,21 +221,26 @@ class World(seed: Int) {
         }
     }
 
-    /** Rain, or slow ash where [ash] is true: ash makes no splashes. */
-    private fun updateRain(dt: Double, moved: Double, p: Int, ash: Boolean) {
+    /** Rain, slow ash, or sand that the wind blows by, as [fall] says. Only rain splashes. */
+    private fun updateRain(dt: Double, moved: Double, p: Int, fall: Fall) {
         val active = (drops.size * rain).toInt()
         val span = geo.width + 8.0
-        val fall = if (ash) ASH_FALL else 1.0
+        val down = when (fall) {
+            Fall.RAIN -> 1.0
+            Fall.ASH -> ASH_FALL
+            Fall.SAND -> SAND_FALL
+        }
+        val side = if (fall == Fall.SAND) SAND_WIND else 0.3
         for (i in drops.indices) {
             val d = drops[i]
-            d.y += d.speed * fall * dt
-            d.x -= d.speed * fall * 0.3 * dt + moved * 0.5
+            d.y += d.speed * down * dt
+            d.x -= d.speed * down * side * dt + moved * 0.5
             if (d.x < -4) d.x += span
             if (d.x > geo.width + 4) d.x -= span
             val xi = floor(d.x).toInt()
             val ground = if (xi in 0 until geo.width) min(geo.surfaceY(xi, p), geo.height) else geo.height
             if (d.y >= ground) {
-                if (!ash && i < active && ground < geo.height && random.nextDouble() < 0.6) splash(xi, ground - 1)
+                if (fall == Fall.RAIN && i < active && ground < geo.height && random.nextDouble() < 0.6) splash(xi, ground - 1)
                 d.y -= geo.height + random.nextDouble(0.0, 30.0)
             }
         }
@@ -334,7 +351,27 @@ class World(seed: Int) {
         ferry = Flyer(-8.0, geo.horizon + 3.0, random.nextDouble(4.0, 6.0), 0.0)
     }
 
-    /** Bought with the second beauty item: Pegasus, the eagle of Zeus or Psyche crosses the sky every minute or two, day and night. */
+    /** Bought with the first beauty item in Cairo: now and then a hippopotamus rises from the Nile, yawns, and sinks back. */
+    private fun updateHippo(dt: Double, beauty: Int) {
+        hippo?.let { h ->
+            h.t += dt
+            if (h.t >= HIPPO_TIME) {
+                splash(h.x.toInt(), geo.horizon + NILE_WATER)
+                hippo = null
+            }
+        }
+        if (beauty < 1 || hippo != null) return
+        nextLeap -= dt
+        if (nextLeap > 0) return
+        nextLeap = random.nextDouble(15.0, 40.0)
+        val far = geo.heroX - 30.0
+        if (far < 10) return
+        val h = Leap(random.nextDouble(5.0, far), if (random.nextBoolean()) 1.0 else -1.0)
+        hippo = h
+        splash(h.x.toInt(), geo.horizon + NILE_WATER)
+    }
+
+    /** Bought with the second beauty item: Pegasus, the eagle of Zeus, Psyche or the Phoenix crosses the sky every minute or two, day and night. */
     private fun updateFlyer(dt: Double, moved: Double, beauty: Int) {
         flyer?.let { f ->
             f.x += f.vx * dt - moved * 0.2

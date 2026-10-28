@@ -262,6 +262,7 @@ class ShopTest {
         assertEquals("Empedocles", Shop(place = Place.ETNA).next(Line.SIDEKICKS)?.name)
         assertEquals("Odysseus", Shop(mapOf(Line.SIDEKICKS to 2), place = Place.ETNA).owned(Line.SIDEKICKS)?.name)
         assertEquals("Orpheus", Shop(place = Place.UNDERWORLD).next(Line.SIDEKICKS)?.name)
+        assertEquals("Io", Shop(place = Place.CAIRO).next(Line.SIDEKICKS)?.name)
     }
 
     @Test
@@ -272,6 +273,17 @@ class ShopTest {
                 "Obol for the ferry", "Golden bough", "Riches of Plouton", "Boat of Charon", "Psyche", "Lights of Elysium",
             ),
             items(Place.UNDERWORLD).map { it.name },
+        )
+    }
+
+    @Test
+    fun cairoHasNamesOfItsOwn() {
+        assertEquals(
+            listOf(
+                "Desert stone", "Egg of the Phoenix", "Alabaster sphere", "Io", "Epaphus", "Memnon", "Scarab", "Isis", "Osiris",
+                "Bread and onions", "Gift of the Nile", "Gold of Cheops", "Hippopotamus", "Phoenix", "The Milky Way",
+            ),
+            items(Place.CAIRO).map { it.name },
         )
     }
 }

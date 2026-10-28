@@ -55,6 +55,7 @@ In each world, three gods come in turn, in an order that the game shuffles. Herm
 | Corinth | The Sphinx, and Hecate of the crossroads |
 | Mount Etna | Hephaestus, the smith of the gods, whose forge is under the volcano, and Empedocles, the philosopher who leapt into its crater |
 | The Underworld | Charon, the ferryman of the dead, and Persephone, their queen |
+| Cairo | Thoth, the scribe of the gods, with the head of an ibis, and Anubis, the jackal who weighs the hearts of the dead |
 
 There are two kinds of questions:
 
@@ -84,7 +85,7 @@ Each new world names the two gods who ask its riddles, draws their sprites, and 
 
 ## The art
 
-- Seven large sprites, one for each god, about 50 by 30 pixels, drawn in code like the rest of the game: the Sphinx (a woman's head, a lion's body and wings), Hermes (the winged hat and the caduceus), Hecate (a torch in each hand), Hephaestus (a bearded smith with his hammer), Empedocles (a philosopher with the bronze sandal that the volcano threw back), Charon (a hooded ferryman with his pole), and Persephone (a crown, and a pomegranate in her hand).
+- Nine large sprites, one for each god, about 50 by 30 pixels, drawn in code like the rest of the game: the Sphinx (a woman's head, a lion's body and wings), Hermes (the winged hat and the caduceus), Hecate (a torch in each hand), Hephaestus (a bearded smith with his hammer), Empedocles (a philosopher with the bronze sandal that the volcano threw back), Charon (a hooded ferryman with his pole), Persephone (a crown, and a pomegranate in her hand), Thoth (the head of an ibis, the moon over it, and a scribe's palette), and Anubis (the head of a jackal, and the scales).
 - The vision: the scene darkens toward deep blue by about 60%. A soft, dithered light surrounds the god, a cream line traces its edge, and the figure shows at about 80% over the dark scene.
 - In every world, the vision appears in the same place, high in the scene. In The Underworld, it appears under the rock roof.
 

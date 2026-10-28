@@ -74,6 +74,7 @@ class VoicesTest {
         assertEquals(setOf(God.SPHINX, God.HERMES, God.HECATE), godsOf(Place.CORINTH).toSet())
         assertEquals(setOf(God.HEPHAESTUS, God.HERMES, God.EMPEDOCLES), godsOf(Place.ETNA).toSet())
         assertEquals(setOf(God.CHARON, God.HERMES, God.PERSEPHONE), godsOf(Place.UNDERWORLD).toSet())
+        assertEquals(setOf(God.THOTH, God.HERMES, God.ANUBIS), godsOf(Place.CAIRO).toSet())
         for (place in Place.entries) assertEquals(3, godsOf(place).size)
     }
 
