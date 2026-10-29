@@ -40,6 +40,8 @@ The last two columns show what happens to each value when Sisyphus reaches the t
 | `turnsPushed` | The player's own turns that pushed, in all climbs and worlds. The gods' pushes do not count. | Kept | Kept |
 | `daysBefore` | The days pushed through in all the climbs before this one. | Plus the days of the climb | Plus the days of the climb |
 | `laborsSeen` | How many labors were done when the Labors tab was last open. A dot stands by the day while more are done. | Kept | Kept |
+| `stelesTold` | How many parts of the tale the stones told in this climb. | Back to 0 | Back to 0 |
+| `nextStele` | Where the next stone of the tale stands, in pixels walked. -1 means that no stone stands ahead. | Back to -1 | Back to -1 |
 | `sound` | 1 when the sound is on, 0 when it is off. | Kept | Kept |
 | `savedAt` | The time of the last save, in seconds since 1970. | Saved again | Saved again |
 
@@ -53,6 +55,8 @@ When a key is not there, the game uses a start value:
 - `savedAt`: no time away.
 - `nextObol`: 36 in a new game. A game saved before there was this key counts the obols of its climb, the spent ones too: each of the first four needs 36, made smaller by a blessing. After them, an obol needs the work per obol of the blessing. An obol saved with other numbers needs no more work than an obol can need now, and what was earned of it is kept.
 - `summit`: a top saved with other numbers is no farther than the final climb is now.
+- `stelesTold`: in a climb saved before the stones, the items bought in it, so that no stone tells an old part.
+- `nextStele`: -1, no stone ahead.
 - All other keys: 0.
 
 ## Ids that never change

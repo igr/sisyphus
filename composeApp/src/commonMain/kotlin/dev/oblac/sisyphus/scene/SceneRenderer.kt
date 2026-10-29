@@ -156,6 +156,7 @@ class SceneRenderer(private val geo: SceneGeometry) {
         drawGround(px, atm, p, look)
         drawProps(px, atm, p, look.props)
         drawHerms(px, atm, game, p)
+        drawSteles(px, atm, game, p)
         drawBirds(px, world, game.clock, look)
         if (game.place == Place.UNDERWORLD && beauty >= 3) drawLights(px, geo, atm, p, game.clock)
         drawRock(px, atm, game.position, look.rocks[game.shop.tier(Line.ROCK)], rolled)
@@ -387,6 +388,17 @@ class SceneRenderer(private val geo: SceneGeometry) {
             val x = floor(herm).toInt() - p + geo.heroX - HERM.width / 2
             if (x < -HERM.width || x > px.width) continue
             px.draw(HERM, x, geo.surfaceY(x, p) - (HERM.height - 1), light = atm.light)
+        }
+    }
+
+    /** The stones of the tale by the path, each with the relief of its part, set into the slope as a herm is. */
+    private fun drawSteles(px: Pixels, atm: Atmosphere, game: Game, p: Int) {
+        for (stele in game.steles) {
+            val x = floor(stele.at).toInt() - p + geo.heroX - TALE_STONE.width / 2
+            if (x < -TALE_STONE.width || x > px.width) continue
+            val top = geo.surfaceY(x, p) - (TALE_STONE.height - 1)
+            px.draw(TALE_STONE, x, top, light = atm.light)
+            px.draw(RELIEFS[stele.part], x + 1, top + 1, light = atm.light)
         }
     }
 

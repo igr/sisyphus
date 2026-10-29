@@ -54,6 +54,9 @@ object Config {
     /** Obols for a right answer to a vision. */
     const val VISION_OBOLS = 1
 
+    /** A stone of the tale stands this many turns of walking ahead of him. */
+    const val STELE_TURNS = 30
+
     /**
      * The price of each world after Corinth, in US dollars. The stores set the price that the game shows, in the money of
      * each player, so a change here must be made in RevenueCat, App Store Connect and Play Console too.

@@ -43,6 +43,8 @@ private const val KEY_RIGHT_ANSWERS = "rightAnswers"
 private const val KEY_TURNS_PUSHED = "turnsPushed"
 private const val KEY_DAYS_BEFORE = "daysBefore"
 private const val KEY_LABORS_SEEN = "laborsSeen"
+private const val KEY_STELES_TOLD = "stelesTold"
+private const val KEY_NEXT_STELE = "nextStele"
 private const val SAVE_EVERY = 1.0
 
 /** How many clicks of the knob the dev screen leaves before the next obol. */
@@ -218,6 +220,19 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         get() = summit?.let { top -> (1 until Config.CLIMB_TURNS / Config.HERM_TURNS).map { top - CLIMB + it * Config.HERM_TURNS * Config.SUN_CAP * PX_PER_TURN } }
             ?: emptyList()
 
+    /** The tale that the stones of this world tell, one part for each item bought; null for a world with no tale. */
+    private var tale = taleOf(place)
+    /** The parts of the tale told in this climb. An old save counts its items as told. */
+    var stelesTold = store.load(KEY_STELES_TOLD)?.toInt() ?: min(shop.bought, tale?.size ?: 0)
+        private set
+    /** Where the next stone stands, in pixels walked; null when no stone stands ahead. */
+    var nextStele = store.load(KEY_NEXT_STELE)?.takeIf { it >= 0 }
+        private set
+    /** The stones he walked past in this run of the app. */
+    private val passed = mutableListOf<Stele>()
+    /** The stones by the path: those he walked past, then the next one. */
+    val steles: List<Stele> get() = passed + listOfNotNull(nextStele?.let { Stele(it, stelesTold) })
+
     /** He stands on the top: the knob moves him no more. */
     val atTop get() = summit?.let { position >= it } == true
 
@@ -289,6 +304,8 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         val from = position
         position += moved
         passHerm(from)
+        passStele()
+        placeStele()
         effort += moved
         val helped = if (pausedAt == null) shop.helpersPerHour * dt / 3600 else 0.0
         effort += helped * PX_PER_TURN
@@ -299,6 +316,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         tick(dt)
         val drawn = quotes.drawn
         quotes.update(dt, moved, stillFor)
+        countTold()
         if (quotes.drawn != drawn) dirty = true
         listen(turn, dt)
         checkLabors()
@@ -320,7 +338,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         v.update(dt)
         when (v.phase) {
             Vision.Phase.COMING -> when {
-                quotes.quote.text != v.question.text -> quotes.announce(Quote(v.question.text, v.god.title))
+                quotes.quote.text != v.question.text -> say(Quote(v.question.text, v.god.title))
                 v.light >= 1.0 && quotes.phase == QuoteBox.Phase.SHOWING -> {
                     v.ask()
                     askedGrabs = knob.grabs
@@ -338,7 +356,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
                     answerTurn >= Voices.ANSWER_TURN -> pick(v, left = false)
                     answerTurn <= -Voices.ANSWER_TURN -> pick(v, left = true)
                     v.asked >= Voices.ASK_TIME -> {
-                        quotes.announce(Quote(v.god.farewell, v.god.title))
+                        say(Quote(v.god.farewell, v.god.title))
                         v.leave()
                     }
                 }
@@ -362,7 +380,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     /** A vision comes: the knob stops, and the god asks in the panel of the wise words. */
     private fun come(v: Vision) {
         knob.stop()
-        quotes.announce(Quote(v.question.text, v.god.title))
+        say(Quote(v.question.text, v.god.title))
         onVision()
         save()
     }
@@ -375,14 +393,14 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
             onObol(Config.VISION_OBOLS)
         }
         voices.answer(right)
-        quotes.announce(Quote(v.question.reply(right), v.god.title))
+        say(Quote(v.question.reply(right), v.god.title))
         save()
     }
 
     /** A vision that comes or asks ends without an answer, and its god says farewell. */
     fun endVision() {
         val v = vision ?: return
-        if (v.phase != Vision.Phase.LEAVING) quotes.announce(Quote(v.god.farewell, v.god.title))
+        if (v.phase != Vision.Phase.LEAVING) say(Quote(v.god.farewell, v.god.title))
         voices.end()
     }
 
@@ -424,7 +442,56 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         val top = summit ?: return
         val herm = herms.firstOrNull { it > from && it <= position } ?: return
         val left = ((top - herm) / (Config.SUN_CAP * PX_PER_TURN)).roundToInt()
-        quotes.announce(Quote("$left turns to the top.", "Hermes"))
+        say(Quote("$left turns to the top.", "Hermes"))
+    }
+
+    private val part get() = tale?.getOrNull(stelesTold)
+
+    /** Shows [quote] in the panel now. A text of the tale that it cuts comes again after it. */
+    private fun say(quote: Quote) {
+        val part = part
+        if (part != null && quotes.quote in part.quotes && quotes.phase != QuoteBox.Phase.FADING) news.addFirst(quotes.quote)
+        quotes.announce(quote)
+    }
+
+    /** The tale of the world starts again: no part told, no stone ahead, and no part of the old tale waiting. */
+    private fun restartTale() {
+        news.removeAll { quote -> tale?.any { quote in it.quotes } == true }
+        tale = taleOf(place)
+        stelesTold = 0
+        nextStele = null
+        passed.clear()
+    }
+
+    /** He walked past the next stone, also in a jump of the dev screen: its part goes first in the news, and a wise word makes room for it. */
+    private fun passStele() {
+        val at = nextStele ?: return
+        val part = part ?: return
+        if (position < at) return
+        nextStele = null
+        passed += Stele(at, stelesTold)
+        part.quotes.asReversed().forEach { news.addFirst(it) }
+        if (vision == null) quotes.hurry()
+        dirty = true
+    }
+
+    /** A part is told when its last text fades. */
+    private fun countTold() {
+        val part = part ?: return
+        if (quotes.quote === part.quotes.last() && quotes.phase == QuoteBox.Phase.FADING) {
+            stelesTold++
+            dirty = true
+        }
+    }
+
+    /** The next stone stands ahead when an item is bought for a part not yet told, once the part before it is told. */
+    private fun placeStele() {
+        val tale = tale ?: return
+        val part = part ?: return
+        if (nextStele != null || atTop || stelesTold >= min(shop.bought, tale.size)) return
+        if (quotes.quote in part.quotes || news.any { it in part.quotes }) return
+        nextStele = position + Config.STELE_TURNS * PX_PER_TURN
+        dirty = true
     }
 
     private fun tick(dt: Double) {
@@ -468,13 +535,14 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
             else -> "Hermes · $gained obols"
         }
         val times = turns.toInt().let { if (it == 1) "once" else "$it times" }
-        quotes.announce(Quote("${helper.name} pushed $times while you were away.", author))
+        say(Quote("${helper.name} pushed $times while you were away.", author))
     }
 
     fun buy(line: Line): Boolean {
         if (!shop.buy(line)) return false
-        if (shop.bought == 1) quotes.announce(GOAL)
+        if (shop.bought == 1) say(GOAL)
         beginClimb()
+        placeStele()
         save()
         return true
     }
@@ -484,7 +552,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         if (summit != null || !shop.allBought) return
         endVision()
         summit = position + CLIMB
-        quotes.announce(Quote("The top is in sight. Push on.", "Hermes"))
+        say(Quote("The top is in sight. Push on.", "Hermes"))
         dirty = true
     }
 
@@ -508,6 +576,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         summit = null
         shop = Shop(place = place, random = random)
         voices.newClimb()
+        restartTale()
         quotes = QuoteBox(quoteSeed, drawn = 0, firstTime = true, news = ::nextNews)
         save()
     }
@@ -522,6 +591,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     fun resetShop() {
         shop.reset()
         summit = null
+        restartTale()
         save()
     }
 
@@ -572,6 +642,8 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         store.save(KEY_TURNS_PUSHED, turnsPushed)
         store.save(KEY_DAYS_BEFORE, daysBefore.toDouble())
         store.save(KEY_LABORS_SEEN, laborsSeen.toDouble())
+        store.save(KEY_STELES_TOLD, stelesTold.toDouble())
+        store.save(KEY_NEXT_STELE, nextStele ?: -1.0)
         for (line in Line.entries) store.save(shopKey(line), shop.tier(line).toDouble())
         dirty = false
         sinceSave = 0.0

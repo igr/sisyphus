@@ -2,6 +2,7 @@ package dev.oblac.sisyphus
 
 import dev.oblac.sisyphus.game.DAY_LENGTH
 import dev.oblac.sisyphus.game.Game
+import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.START_TIME
 import dev.oblac.sisyphus.game.Weather
@@ -39,6 +40,19 @@ class LookTest {
     @Test
     fun cairoLooksLikeItself() {
         for (other in listOf(Place.CORINTH, Place.ETNA, Place.UNDERWORLD)) assertFalse(noon(Place.CAIRO).contentEquals(noon(other)))
+    }
+
+    /** A stone of the tale stands by the path ahead. */
+    @Test
+    fun theStoneAheadIsDrawn() {
+        fun noon(stone: Boolean): IntArray {
+            val keys = mutableMapOf("effort" to (0.5 - START_TIME) * DAY_LENGTH, "shop.alone" to 1.0, "stelesTold" to 0.0)
+            if (stone) keys["nextStele"] = 2 * PX_PER_TURN
+            val px = Pixels(geo.width, geo.height)
+            SceneRenderer(geo).render(px, Game(MemoryStore(keys), seed = 3), World(4).also { it.reset(geo, Weather.CLEAR) }, banner = 0.0, hud = false)
+            return px.data.copyOf()
+        }
+        assertFalse(noon(stone = true).contentEquals(noon(stone = false)))
     }
 
     /** On the flat top, a joint between two courses runs straight across, under the sand. */

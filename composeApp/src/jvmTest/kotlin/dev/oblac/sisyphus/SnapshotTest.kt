@@ -20,6 +20,8 @@ import dev.oblac.sisyphus.scene.CAIRO_PROPS
 import dev.oblac.sisyphus.scene.ETNA_PROPS
 import dev.oblac.sisyphus.scene.Ending
 import dev.oblac.sisyphus.scene.PROPS
+import dev.oblac.sisyphus.scene.RELIEFS
+import dev.oblac.sisyphus.scene.TALE_STONE
 import dev.oblac.sisyphus.scene.SceneGeometry
 import dev.oblac.sisyphus.scene.SceneRenderer
 import dev.oblac.sisyphus.scene.UNDERWORLD_PROPS
@@ -121,6 +123,29 @@ class SnapshotTest {
         write(s.render(), "8-agora", 3)
         s.press((l.agoraTitle.x + 2f) * s.scale + s.offsetX, (l.agoraTitle.y + 2f) * s.scale + s.offsetY)
         write(s.render(), "8-dev", 3)
+    }
+
+    /** The stone of Peirene's spring behind him and its part in the panel, on both phones; and the 15 stones with their reliefs. */
+    @Test
+    fun steles() {
+        for ((name, size) in listOf("12-stele" to listOf(1179, 2556, 177, 102), "12-stele-small" to listOf(1080, 2340, 144, 102))) {
+            val store = MemoryStore(
+                mapOf(
+                    "effort" to effortAt(3, 0.5), "position" to 1000.0, "shop.alone" to 3.0, "shop.rock" to 3.0, "shop.beside" to 3.0,
+                    "stelesTold" to 8.0, "nextStele" to 1004.0, "nextVision" to 600.0,
+                ),
+            )
+            val s = Screen(Game(store, seed = 3), seed = 5).apply { resize(size[0], size[1], size[2], size[3]) }
+            s.push(60)
+            s.idle(4.0)
+            write(s.render(), name, 3)
+        }
+        val sheet = Pixels(15 * 12, 18).apply { clear(rgb(0x8AA65A)) }
+        for (k in 0 until 15) {
+            sheet.draw(TALE_STONE, k * 12 + 1, 1)
+            sheet.draw(RELIEFS[k], k * 12 + 2, 2)
+        }
+        write(sheet, "steles-corinth", 6)
     }
 
     /** A herm of the final climb by the path ahead, in each world, at noon. */

@@ -38,6 +38,7 @@ The middle of a climb has few new things. At 5 minutes a day, a session is about
 - **The stones stay.** A stone that he walked past stays by the path behind him, like the props. A climb has at most 15 stones.
 - **A new climb.** At the top, at a move to another world, and at the Reset of the dev screen, the tale starts again: no part is told, and no stone stands ahead. A world with no tale has no stones.
 - **Old saved games.** A climb saved before the stations counts the items already bought as parts told. Its next item brings the next part.
+- **A known limit.** The next stone stands only after the part before it is told. When 5 or more parts still wait as the final climb begins, a player who turns fast can reach the top before all of them are told, and the parts not told are lost for that climb. This needs many items bought in one visit at the end of a climb. Normal buying spreads the parts over the climb.
 
 ## The tale of Sisyphus
 
