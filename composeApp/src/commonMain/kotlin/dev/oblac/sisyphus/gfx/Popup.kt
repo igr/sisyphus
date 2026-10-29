@@ -21,21 +21,28 @@ private const val TAIL = 5
 /** Room between the last line and the note. */
 private const val NOTE_GAP = 5
 
+/** The rows of a popup in a picture [width] pixels wide: [text] wrapped, and an empty row when the [note] does not fit after the last line. */
+internal fun popupRows(width: Int, text: String, note: String?): List<String> {
+    val room = width - 2 * MARGIN - 2 - 2 * PAD_X
+    val lines = PixelFont.wrap(text, room).ifEmpty { listOf("") }
+    return if (note != null && PixelFont.width(lines.last()) + NOTE_GAP + PixelFont.width(note) > room) lines + "" else lines
+}
+
 /**
- * A comic popup: [text] in a bubble of paper with a dark outline, and a tail that points down at ([x], [y]).
+ * A comic popup: [text] in a bubble of paper with a dark outline, and a tail that points down at ([x], [tipY]).
  * The bubble stands above that point, as wide as its lines, and moves in from the edges so that all of it shows.
  * A [note], such as "1/15", stands at the right of the last line, or under it when the line is full.
+ * The bubble stays at or under the row [ceiling]: when it would rise above it, the bubble and the tip of its tail move down.
  */
-fun drawPopup(px: Pixels, text: String, x: Int, y: Int, note: String? = null) {
-    val room = px.width - 2 * MARGIN - 2 - 2 * PAD_X
-    val lines = PixelFont.wrap(text, room).ifEmpty { listOf("") }.toMutableList()
+fun drawPopup(px: Pixels, text: String, x: Int, tipY: Int, note: String? = null, ceiling: Int = Int.MIN_VALUE) {
+    val lines = popupRows(px.width, text, note)
     val noteWidth = note?.let { PixelFont.width(it) } ?: 0
-    if (note != null && PixelFont.width(lines.last()) + NOTE_GAP + noteWidth > room) lines += ""
     val inner = maxOf(4, lines.maxOf { PixelFont.width(it) }, if (note == null) 0 else PixelFont.width(lines.last()) + NOTE_GAP + noteWidth)
     val w = inner + 2 * PAD_X + 2
     val h = (lines.size - 1) * PixelFont.LINE_HEIGHT + PixelFont.CAP_HEIGHT + 2 + 2 * PAD_Y + 2
     val left = max(MARGIN, min(x - w / 2, px.width - MARGIN - w))
     val right = left + w - 1
+    val y = max(tipY, ceiling + h - 1 + TAIL)
     val bottom = y - TAIL
     val top = bottom - h + 1
 

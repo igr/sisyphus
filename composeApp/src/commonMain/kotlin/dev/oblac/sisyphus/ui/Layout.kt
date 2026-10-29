@@ -1,6 +1,7 @@
 package dev.oblac.sisyphus.ui
 
 import dev.oblac.sisyphus.game.Category
+import dev.oblac.sisyphus.game.JOKERS
 import dev.oblac.sisyphus.game.LABORS
 import dev.oblac.sisyphus.gfx.PixelFont
 import kotlin.math.max
@@ -94,6 +95,9 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     /** In the dev screen, the button that opens every world without the store, and gives the store's answer back. */
     val devWorlds = agoraRow(3).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("As bought") + 8, BUTTON_HEIGHT) }
 
+    /** In the dev screen, after the worlds, the button that brings the next joker, a turn into his bubble. */
+    val devJoker = Rect(devWorlds.right + 2, devWorlds.y, PixelFont.width("Joker") + 8, BUTTON_HEIGHT)
+
     /** In the dev screen, under the voices, the button that brings a vision at once. */
     val devVision = agoraRow(4).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("Now") + 8, BUTTON_HEIGHT) }
 
@@ -133,9 +137,30 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     /** The name and the note of a world, below its picture. */
     fun worldText(index: Int) = worldPreview(index).let { Rect(it.x, it.bottom + 3, it.w, 2 * PixelFont.LINE_HEIGHT) }
 
-    /** In the title row of the Worlds screen, its two tabs. "Labors" has room for the dot after it. */
+    /**
+     * In the title row of the Worlds screen, its three tabs: "Worlds", "Labors", and a small card for the jokers, as a third word
+     * does not fit the smallest phone. "Labors" and the card have room for the dot after them.
+     */
     val worldsTab = Rect(agoraTitle.x, agoraTitle.y, PixelFont.width(WORLDS_TITLE), PixelFont.CAP_HEIGHT)
     val laborsTab = Rect(worldsTab.right + 8, agoraTitle.y, PixelFont.width(LABORS_TITLE) + 5, PixelFont.CAP_HEIGHT)
+    val jokersTab = Rect(laborsTab.right + 4, agoraTitle.y, CARD_TAB + 5, PixelFont.CAP_HEIGHT)
+
+    /** On the Jokers tab, under the title row: "Jokers met", and how many of them the player has met, such as "3/10". */
+    val jokersMet = Rect(worldList.x, worldList.y, worldList.w, PixelFont.CAP_HEIGHT)
+
+    /** The cards of the jokers, by id: two rows of five, like a hand of playing cards. */
+    val jokerCards: List<Rect> = ((worldList.w - 4 * CARD_GAP) / 5).let { w ->
+        List(JOKERS.size) { i -> Rect(worldList.x + i % 5 * (w + CARD_GAP), jokersMet.bottom + 6 + i / 5 * (CARD_HEIGHT + 4), w, CARD_HEIGHT) }
+    }
+
+    /** An open card, over the cards: the joker at twice his size, his name, his chance, who he is, and how often the player met him. */
+    val openCard = Rect(
+        worldList.x, jokerCards[0].y, worldList.w,
+        6 + OPEN_SPRITE + 5 + 2 * PixelFont.LINE_HEIGHT + 3 + ABOUT_LINES * PixelFont.LINE_HEIGHT + 3 + PixelFont.LINE_HEIGHT + 4,
+    )
+
+    /** In the open card, the room for who he is, under his chance. */
+    val openCardText = Rect(openCard.x + 6, openCard.y + 6 + OPEN_SPRITE + 5 + 2 * PixelFont.LINE_HEIGHT + 3, openCard.w - 12, ABOUT_LINES * PixelFont.LINE_HEIGHT)
 
     /** The width of the text in a row of the list of labors. */
     val laborText = worldList.w - 2 * LABOR_PAD
@@ -214,8 +239,20 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
         const val LABOR_DOTS = 19
         const val LABOR_TIERS = 26
         const val LABOR_DONE = 36
+        /** The width of the card in the tabs of the Worlds screen. */
+        const val CARD_TAB = 5
+        const val CARD_GAP = 2
+        /** A card of a joker: his rank above [CARD_FACE], and the outlined joker under it, standing on its bottom. */
+        const val CARD_HEIGHT = 36
+        const val CARD_FACE = 10
+        /** In the open card, the room for the outlined joker at twice his size, and for the lines of who he is. */
+        const val OPEN_SPRITE = 52
+        const val ABOUT_LINES = 5
     }
 }
+
+/** The tabs of the Worlds screen. */
+enum class Tab { WORLDS, LABORS, JOKERS }
 
 /** The obols each button of the dev screen adds or takes away, from the left. */
 val DEV_STEPS = listOf(-10, -1, 1, 10, 100)

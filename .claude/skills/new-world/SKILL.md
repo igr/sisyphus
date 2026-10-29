@@ -33,7 +33,7 @@ A world is a new look and new names on the same game. The rules, the economy and
 | Stones | Pale limestone by the path, from day 3. Their relief is of the tale, and a popup over each stone tells its part | `Look.stone`: `LIMESTONE` and the other stones in `scene/Steles.kt`; the tales in `game/Tales.kt`; `docs/stations.md` |
 | Picture | The scene at noon, from the top of the rock down to the far view | `worldPreview` in `ui/Previews.kt` |
 
-These are the same in every world: the price, `Config.WORLD_PRICE` in US dollars, Sisyphus, the first rock, the knob, the day length, the final climb and its end, the prices and the effects of the 15 items, the line titles, the notes of the first four lines ("turns count 1.5x"), the wise words, Hermes, the questions of the visions, the tales of the stones, the rules of the stones and their popup, the sounds and the screens.
+These are the same in every world: the price, `Config.WORLD_PRICE` in US dollars, Sisyphus, the first rock, the knob, the day length, the final climb and its end, the prices and the effects of the 15 items, the line titles, the notes of the first four lines ("turns count 1.5x"), the wise words, Hermes, the questions of the visions, the tales of the stones, the rules of the stones and their popup, the jokers and their bubbles, the sounds and the screens.
 
 ## Steps
 

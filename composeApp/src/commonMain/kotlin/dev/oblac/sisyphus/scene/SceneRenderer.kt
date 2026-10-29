@@ -32,6 +32,9 @@ private const val ISLAND_PERIOD = 220
 /** At their highest, the sun and the moon stand this far below the top of the display: a little under the obol bar. */
 private const val ZENITH = 24
 
+/** The day and the obols take this many rows at the top of the display. A bubble of a joker stays under them. */
+private const val HUD_ROWS = 13
+
 internal val GROUND = intArrayOf(
     rgb(0xB4C46A), rgb(0x82A048), rgb(0x5A7E38),
     rgb(0xB08A56), rgb(0x94704A), rgb(0x765840),
@@ -158,14 +161,16 @@ class SceneRenderer(private val geo: SceneGeometry) {
         drawProps(px, atm, p, look.props)
         drawHerms(px, atm, game, p)
         drawSteles(px, atm, game, p, look.stone)
+        drawJokers(px, atm, game, p)
         drawBirds(px, world, game.clock, look)
         if (game.place == Place.UNDERWORLD && beauty >= 3) drawLights(px, geo, atm, p, game.clock)
         drawRock(px, atm, game.position, look.rocks[game.shop.tier(Line.ROCK)], rolled)
         drawHero(px, atm, game, p, rolled)
         drawParticles(px, world, atm)
         drawRain(px, world, atm, look.fall)
-        if (hud) drawDay(px, game.day, game.newLabors, banner)
+        if (hud) drawDay(px, game.day, game.newLabors || game.newJokers, banner)
         drawTelling(px, game, p)
+        drawJesting(px, game, p)
     }
 
     private fun orb(p: Double): Orb? {
@@ -420,6 +425,38 @@ class SceneRenderer(private val geo: SceneGeometry) {
 
     /** The left column of a stone [at] pixels walked, when he has walked [p]: at [at], the front of the rock reaches it. All stones have the same shape. */
     internal fun steleLeft(at: Double, p: Int) = floor(at).toInt() - p + geo.heroX + (geo.rockDx + geo.rockR).toInt() - LIMESTONE.slab.width / 2
+
+    /**
+     * The jokers by the path: the one met last, and the next one. Each faces down the hill, to him, until the rock has passed him;
+     * then he turns to watch him go. His feet stand on the slope under his middle.
+     */
+    private fun drawJokers(px: Pixels, atm: Atmosphere, game: Game, p: Int) {
+        for ((at, joker) in listOfNotNull(game.metJoker, game.nextJoker?.let { it to game.joker })) {
+            val sprite = JOKER_SPRITES[joker.id]
+            val x = jokerMiddle(at, p) - sprite.width / 2
+            if (x < -sprite.width || x > px.width) continue
+            px.draw(sprite, x, jokerTop(at, p, sprite), flipX = at < p, light = atm.light)
+        }
+    }
+
+    /**
+     * The bubble over the joker that he is near, with what the joker says and his name as its note. Its tail points down at the
+     * joker, from above his head and the rock, and stays inside the picture. The bubble stays under the day and the obols.
+     * A vision hides it.
+     */
+    private fun drawJesting(px: Pixels, game: Game, p: Int) {
+        val text = game.jesting ?: return
+        val at = game.nextJoker ?: return
+        if (game.vision != null) return
+        val x = jokerMiddle(at, p).coerceIn(3, px.width - 4)
+        val y = min(floor(geo.baseY + geo.rockDy - geo.rockR).toInt(), jokerTop(at, p, JOKER_SPRITES[game.joker.id])) - 3
+        drawPopup(px, text, x, y, game.joker.name, ceiling = HUD_ROWS)
+    }
+
+    /** The middle column of a joker [at] pixels walked, when he has walked [p]: at [at], the front of the rock reaches it. */
+    private fun jokerMiddle(at: Double, p: Int) = floor(at).toInt() - p + geo.heroX + (geo.rockDx + geo.rockR).toInt()
+
+    private fun jokerTop(at: Double, p: Int, sprite: Pixels) = geo.surfaceY(jokerMiddle(at, p), p) - (sprite.height - 1)
 
     private fun drawBirds(px: Pixels, world: World, clock: Double, look: Look) {
         for (b in world.birds) {

@@ -44,6 +44,10 @@ The last two columns show what happens to each value when Sisyphus reaches the t
 | `nextStele` | Where the next stone of the tale stands, in pixels walked, until its part is told. -1 means that no stone stands ahead. | Back to -1 | Back to -1 |
 | `tale` | The id of the tale that the stones of this climb tell. | The next tale | The next tale |
 | `talesTold` | The tales told, one bit for each id: 1 for Sisyphus, 2 for Typhon, 4 for Orpheus, 8 for Isis and Osiris. | Kept | Kept |
+| `nextJoker` | Where the next joker stands by the path, in pixels walked. -1 means that none stands ahead yet. | A new joker ahead | A new joker ahead |
+| `joker` | The id of the next joker. | The new joker | The new joker |
+| `met.0` to `met.9` | How many times the player met each joker, by the id of the joker. A joker met once or more has the card face up, and the count tells which line comes next. | Kept | Kept |
+| `jokersSeen` | The cards seen face up on the Jokers tab, one bit for each id: 1 for Diogenes, 2 for Humpty Dumpty, up to 512 for Cthulhu. | Kept | Kept |
 | `sound` | 1 when the sound is on, 0 when it is off. | Kept | Kept |
 | `savedAt` | The time of the last save, in seconds since 1970. | Saved again | Saved again |
 
@@ -60,6 +64,8 @@ When a key is not there, the game uses a start value:
 - `stelesTold`: in a climb saved before the stones, the items bought in it, so that no stone tells an old part.
 - `nextStele`: -1, no stone ahead.
 - `tale`: 0, the tale of Sisyphus. An id that the pool does not have also tells the tale of Sisyphus.
+- `nextJoker`: -1, so a joker is put by the path at once, 72 to 144 turns ahead.
+- `joker`: 0, Diogenes. An id that the game does not have is Diogenes too.
 - All other keys: 0.
 
 ## Ids that never change
@@ -69,6 +75,7 @@ Saved games know each line and each world by an id, not by a name in the game or
 - The lines have the ids `rock`, `beside`, `alone`, `blessing` and `beauty`. The Sidekicks and the Gods keep `beside` and `alone`, which they had before they got their names.
 - The worlds have the ids 0 (Corinth), 1 (Mount Etna), 2 (The Underworld) and 3 (Cairo).
 - The tales have the ids 0 (Sisyphus), 1 (Typhon), 2 (Orpheus) and 3 (Isis and Osiris).
+- The jokers have the ids 0 (Diogenes), 1 (Humpty Dumpty), 2 (Red Riding Hood), 3 (Don Quixote), 4 (Pinocchio), 5 (Cleopatra), 6 (Sherlock Holmes), 7 (Hamlet), 8 (Count Dracula) and 9 (Cthulhu).
 - The game never saves the name of an item. The world and the tier of a line tell which item it is.
 - The worlds that cost money are the entitlements `world_etna`, `world_underworld` and `world_cairo` in RevenueCat. A changed entitlement locks the worlds that players bought. The store products have the same names, except on Google Play, where The Underworld is `world_underworld2`.
 
@@ -80,7 +87,7 @@ The game saves all keys at these times:
 
 - Every second while something changes: the knob turns, an obol comes, or new wise words come.
 - When the app goes to the background, and when the desktop window closes.
-- After a purchase, after a dev screen button, at the top, after a move to another world, and when the Labors tab opens.
+- After a purchase, after a dev screen button, at the top, after a move to another world, and when the Labors tab or the Jokers tab opens.
 
 The sound setting saves only the `sound` key, at the moment that the player changes it.
 

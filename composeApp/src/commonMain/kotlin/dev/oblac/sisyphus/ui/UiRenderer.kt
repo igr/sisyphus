@@ -5,11 +5,14 @@ import dev.oblac.sisyphus.game.Category
 import dev.oblac.sisyphus.game.Counts
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.Item
+import dev.oblac.sisyphus.game.JOKERS
+import dev.oblac.sisyphus.game.Joker
 import dev.oblac.sisyphus.game.LABORS
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.Shop
 import dev.oblac.sisyphus.game.QuoteBox
+import dev.oblac.sisyphus.game.chance
 import dev.oblac.sisyphus.game.Vision
 import dev.oblac.sisyphus.game.done
 import dev.oblac.sisyphus.game.items
@@ -23,6 +26,7 @@ import dev.oblac.sisyphus.gfx.hash01
 import dev.oblac.sisyphus.gfx.rgb
 import dev.oblac.sisyphus.gfx.sprite
 import dev.oblac.sisyphus.scene.Ending
+import dev.oblac.sisyphus.scene.JOKER_SPRITES
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -181,6 +185,10 @@ internal fun supportTag(id: String?, build: String?): String? =
 /** The title of the Worlds screen, and of its tab for the labors. */
 internal const val WORLDS_TITLE = "Worlds"
 internal const val LABORS_TITLE = "Labors"
+internal const val JOKERS_MET = "Jokers met"
+
+/** The tab of the jokers: a small playing card with a diamond. */
+private val CARD_TAB = listOf(".###.", "#####", "##.##", "#...#", "##.##", "#####", ".###.")
 
 /** The colors of each category of labors: its title and lines, and the band behind a labor that is done. */
 private val CATEGORY_COLORS = mapOf(
@@ -515,13 +523,69 @@ class UiRenderer {
         scrollbar(px, list, scroll, layout.worldScroll(Place.entries.size))
     }
 
-    /** The title row of the Worlds screen: the tab shown in cream, the other in gray, and the dot after "Labors" while a labor is [new]. */
-    fun tabs(px: Pixels, layout: Layout, labors: Boolean, new: Boolean) {
-        PixelFont.draw(px, WORLDS_TITLE, layout.worldsTab.x, layout.worldsTab.y, if (labors) DISABLED else CREAM)
-        PixelFont.draw(px, LABORS_TITLE, layout.laborsTab.x, layout.laborsTab.y, if (labors) CREAM else DISABLED)
-        if (new) px.fillRect(layout.laborsTab.x + PixelFont.width(LABORS_TITLE) + 2, layout.laborsTab.y + PixelFont.CAP_HEIGHT / 2 - 1, 2, 2, BRONZE[4])
+    /**
+     * The title row of the Worlds screen: the [shown] tab in cream, the others in gray, a dot after "Labors" while a labor is new,
+     * and a dot after the card of the jokers while a card is new.
+     */
+    fun tabs(px: Pixels, layout: Layout, shown: Tab, newLabors: Boolean, newJokers: Boolean) {
+        fun color(tab: Tab) = if (tab == shown) CREAM else DISABLED
+        PixelFont.draw(px, WORLDS_TITLE, layout.worldsTab.x, layout.worldsTab.y, color(Tab.WORLDS))
+        PixelFont.draw(px, LABORS_TITLE, layout.laborsTab.x, layout.laborsTab.y, color(Tab.LABORS))
+        val j = layout.jokersTab
+        for ((dy, row) in CARD_TAB.withIndex()) for ((dx, ch) in row.withIndex()) if (ch == '#') px[j.x + dx, j.y + dy] = color(Tab.JOKERS)
+        if (newLabors) px.fillRect(layout.laborsTab.x + PixelFont.width(LABORS_TITLE) + 2, layout.laborsTab.y + PixelFont.CAP_HEIGHT / 2 - 1, 2, 2, BRONZE[4])
+        if (newJokers) px.fillRect(j.x + Layout.CARD_TAB + 2, j.y + PixelFont.CAP_HEIGHT / 2 - 1, 2, 2, BRONZE[4])
         val t = layout.agoraTitle
         px.hline(t.x, t.right - 1, t.bottom + 2, TERRA_DARK)
+    }
+
+    /** The Jokers tab: how many of the jokers the player has met, and their cards, face up once [met]. */
+    fun jokers(px: Pixels, layout: Layout, met: (Joker) -> Int) {
+        val r = layout.jokersMet
+        val count = "${JOKERS.count { met(it) > 0 }}/${JOKERS.size}"
+        PixelFont.draw(px, JOKERS_MET, r.x, r.y, TERRA)
+        PixelFont.draw(px, count, r.right - PixelFont.width(count), r.y, TERRA)
+        for (joker in JOKERS) {
+            val c = layout.jokerCards[joker.id]
+            if (met(joker) == 0) {
+                card(px, c, TERRA_DARK, TERRA)
+                for (y in c.y + 2 until c.bottom - 2) for (x in c.x + 2 until c.right - 2) if ((x + y) % 4 == 0 || (x - y) % 4 == 0) px[x, y] = TERRA
+                continue
+            }
+            card(px, c, CREAM, NOT_DONE)
+            PixelFont.draw(px, joker.rank, c.x + 2, c.y + 2, TERRA)
+            val sprite = cardSprites[joker.id]
+            px.draw(sprite, c.x + (c.w - sprite.width) / 2, c.bottom - 2 - sprite.height)
+        }
+    }
+
+    /** A card of a joker, open over the Jokers tab: the joker at twice his size, his name, his chance, who he is, and how often the player [met] him. */
+    fun openCard(px: Pixels, layout: Layout, joker: Joker, met: Int) {
+        for (y in 0 until px.height) for (x in 0 until px.width) px[x, y] = dim(px[x, y])
+        val r = layout.openCard
+        card(px, r, CREAM, TERRA)
+        PixelFont.draw(px, joker.rank, r.x + 4, r.y + 4, TERRA)
+        val sprite = cardSprites[joker.id]
+        px.drawScaled(sprite, r.x + (r.w - 2 * sprite.width) / 2, r.y + 6 + Layout.OPEN_SPRITE - 2 * sprite.height, 2)
+        fun centered(text: String, y: Int, color: Int) = PixelFont.draw(px, text, r.x + (r.w - PixelFont.width(text)) / 2, y, color)
+        val name = r.y + 6 + Layout.OPEN_SPRITE + 5
+        centered(joker.name, name, GROOVE)
+        centered("1 in ${joker.chance}", name + PixelFont.LINE_HEIGHT, TERRA)
+        val text = layout.openCardText
+        for ((i, line) in PixelFont.wrap(joker.about, text.w).withIndex()) PixelFont.draw(px, line, text.x, text.y + i * PixelFont.LINE_HEIGHT, GROOVE)
+        centered(if (met == 1) "Met once" else "Met $met times", text.bottom + 3, TERRA_DARK)
+    }
+
+    /** The jokers on their cards, outlined, so that white and cream show on the paper. */
+    private val cardSprites = JOKER_SPRITES.map { it.outlined(GROOVE) }
+
+    /** A card with round corners: [fill] inside a line of [edge]. */
+    private fun card(px: Pixels, r: Rect, fill: Int, edge: Int) {
+        px.fillRect(r.x + 1, r.y + 1, r.w - 2, r.h - 2, fill)
+        px.hline(r.x + 1, r.right - 2, r.y, edge)
+        px.hline(r.x + 1, r.right - 2, r.bottom - 1, edge)
+        px.vline(r.x, r.y + 1, r.bottom - 2, edge)
+        px.vline(r.right - 1, r.y + 1, r.bottom - 2, edge)
     }
 
     /**
@@ -626,8 +690,9 @@ class UiRenderer {
         button(px, layout.devTop, "Top")
         button(px, layout.devStone, "Stone")
         val worlds = layout.agoraRow(3)
-        PixelFont.draw(px, "Worlds", worlds.x, worlds.y, TERRA)
+        PixelFont.draw(px, "Worlds and jokers", worlds.x, worlds.y, TERRA)
         button(px, layout.devWorlds, if (openWorlds) "As bought" else "Open all")
+        button(px, layout.devJoker, "Joker")
         val voices = layout.agoraRow(4)
         PixelFont.draw(px, "Voices and labors", voices.x, voices.y, TERRA)
         button(px, layout.devVision, "Now")

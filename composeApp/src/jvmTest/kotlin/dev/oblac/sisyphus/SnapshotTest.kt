@@ -10,6 +10,7 @@ import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.game.CLIMB
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.items
+import dev.oblac.sisyphus.game.JOKERS
 import dev.oblac.sisyphus.game.START_TIME
 import dev.oblac.sisyphus.game.TALES
 import dev.oblac.sisyphus.game.Weather
@@ -17,9 +18,12 @@ import dev.oblac.sisyphus.audio.SAMPLE_RATE
 import dev.oblac.sisyphus.audio.loadClick
 import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.gfx.rgb
+import dev.oblac.sisyphus.gfx.WHITE
 import dev.oblac.sisyphus.scene.CAIRO_PROPS
 import dev.oblac.sisyphus.scene.ETNA_PROPS
 import dev.oblac.sisyphus.scene.Ending
+import dev.oblac.sisyphus.scene.JOKER_SPRITES
+import dev.oblac.sisyphus.scene.atmosphere
 import dev.oblac.sisyphus.scene.PROPS
 import dev.oblac.sisyphus.scene.SceneGeometry
 import dev.oblac.sisyphus.scene.SceneRenderer
@@ -157,6 +161,37 @@ class SnapshotTest {
         write(sheet, "steles", 6)
     }
 
+    /**
+     * Diogenes ahead of the rock, with the first text of his first line in a bubble over him, on both phones; then behind him,
+     * with the second text. Then the 10 jokers in a row, as they are and in the light of the night.
+     */
+    @Test
+    fun jokers() {
+        val big = listOf(1179, 2556, 177, 102)
+        val shots = listOf(
+            Triple("13-joker", big, 1080.0), Triple("13-joker-small", listOf(1080, 2340, 144, 102), 1080.0), Triple("13-joker-behind", big, 990.0),
+        )
+        for ((name, size, at) in shots) {
+            val store = MemoryStore(
+                mapOf(
+                    "effort" to effortAt(1, 0.5), "position" to 1000.0, "shop.alone" to 3.0, "shop.rock" to 3.0, "shop.beside" to 3.0,
+                    "nextJoker" to at, "joker" to 0.0, "nextVision" to 600.0,
+                ),
+            )
+            val s = Screen(Game(store, seed = 3), seed = 5).apply { resize(size[0], size[1], size[2], size[3]) }
+            s.push(144)
+            s.idle(4.0)
+            write(s.render(), name, 3)
+        }
+        val night = atmosphere(0.0, 0f).light
+        val sheet = Pixels(JOKERS.size * 18, 2 * 28).apply { clear(rgb(0x8AA65A)) }
+        for ((row, light) in listOf(WHITE, night).withIndex()) for (joker in JOKERS) {
+            val sprite = JOKER_SPRITES[joker.id]
+            sheet.draw(sprite, joker.id * 18 + (18 - sprite.width) / 2, row * 28 + 26 - sprite.height, light = light)
+        }
+        write(sheet, "jokers", 6)
+    }
+
     /** A herm of the final climb by the path ahead, in each world, at noon. */
     @Test
     fun herms() {
@@ -267,6 +302,25 @@ class SnapshotTest {
         val s = Screen(Game(MemoryStore(mapOf("climbs" to 1.0, "effort" to effortAt(3, 0.4))), seed = 3), seed = 5)
         s.resize(1179, 2556, 177, 102)
         write(s.render(), "12-day-dot", 3)
+    }
+
+    /** The Jokers tab with four jokers met, one of them new, on both phones; then the open card of Sherlock Holmes. */
+    @Test
+    fun jokerCards() {
+        val met = mapOf("met.0" to 12.0, "met.1" to 5.0, "met.3" to 1.0, "met.6" to 2.0, "jokersSeen" to 11.0, "effort" to effortAt(3, 0.4))
+        for ((name, size) in listOf("14-jokers-small" to listOf(1080, 2340, 144, 102), "14-jokers" to listOf(1179, 2556, 177, 102))) {
+            val s = Screen(Game(MemoryStore(met), seed = 3), seed = 5)
+            s.resize(size[0], size[1], size[2], size[3])
+            val l = s.layout!!
+            fun tap(r: Rect) = s.press((r.x + r.w / 2f) * s.scale + s.offsetX, (r.y + r.h / 2f) * s.scale + s.offsetY)
+            write(s.render(), "$name-dot", 3)
+            tap(l.dayLabel(s.game.day))
+            write(s.render(), name, 3)
+            if (name == "14-jokers") {
+                tap(l.jokerCards[6])
+                write(s.render(), "14-card", 3)
+            }
+        }
     }
 
     /** Before a world is bought: the locks, the prices and Restore, then the question before buying Mount Etna, on both phones. */

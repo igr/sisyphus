@@ -3,15 +3,20 @@ package dev.oblac.sisyphus
 import dev.oblac.sisyphus.game.Config
 import dev.oblac.sisyphus.game.DAY_LENGTH
 import dev.oblac.sisyphus.game.Game
+import dev.oblac.sisyphus.game.JOKERS
+import dev.oblac.sisyphus.game.Joker
 import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.START_TIME
 import dev.oblac.sisyphus.game.TALES
 import dev.oblac.sisyphus.game.Weather
 import dev.oblac.sisyphus.gfx.Pixels
+import dev.oblac.sisyphus.gfx.popupRows
+import dev.oblac.sisyphus.gfx.rgb
 import dev.oblac.sisyphus.scene.SceneGeometry
 import dev.oblac.sisyphus.scene.SceneRenderer
 import dev.oblac.sisyphus.scene.BLACK_STONE
+import dev.oblac.sisyphus.scene.JOKER_SPRITES
 import dev.oblac.sisyphus.scene.LAVA_STONE
 import dev.oblac.sisyphus.scene.LIMESTONE
 import dev.oblac.sisyphus.scene.SANDSTONE
@@ -19,6 +24,7 @@ import dev.oblac.sisyphus.scene.lookOf
 import dev.oblac.sisyphus.scene.World
 import dev.oblac.sisyphus.ui.Layout
 import kotlin.math.abs
+import kotlin.math.floor
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -127,6 +133,76 @@ class LookTest {
             assertFalse(near.copyOfRange(hud, sky).contentEquals(far.copyOfRange(hud, sky)), "tale ${tale.id}, part ${part + 1} shows no popup")
         }
         assertTrue(scene(0, 0, 0, near = true, vision = true).copyOfRange(0, sky).contentEquals(scene(0, 0, 0, near = false).copyOfRange(0, sky)))
+    }
+
+    /** Each joker has a sprite of his own, a little shorter than Sisyphus. */
+    @Test
+    fun everyJokerHasASprite() {
+        assertEquals(JOKERS.size, JOKER_SPRITES.size)
+        assertTrue(JOKER_SPRITES.all { it.width <= 15 && it.height <= 24 })
+        assertEquals(JOKERS.size, JOKER_SPRITES.map { it.data.toList() }.toSet().size)
+    }
+
+    /** A joker stands by the path ahead, in every world: 3.5 turns ahead, before his bubble opens. */
+    @Test
+    fun theJokerAheadIsDrawn() {
+        fun noon(place: Place, joker: Boolean): IntArray {
+            val keys = mapOf(
+                "effort" to (0.5 - START_TIME) * DAY_LENGTH, "place" to place.id.toDouble(),
+                "nextJoker" to if (joker) 3.5 * PX_PER_TURN else 5000.0,
+            )
+            val px = Pixels(geo.width, geo.height)
+            SceneRenderer(geo).render(px, Game(MemoryStore(keys), seed = 3), World(4).also { it.reset(geo, Weather.CLEAR) }, banner = 0.0, hud = false)
+            return px.data.copyOf()
+        }
+        for (place in Place.entries) assertFalse(noon(place, joker = true).contentEquals(noon(place, joker = false)), place.title)
+    }
+
+    /**
+     * Over a joker that he is near, a bubble tells his joke. On the smallest phone, every text of every joker, with his name as
+     * its note, fits under the day and the obols. A vision hides the bubble.
+     */
+    @Test
+    fun theBubbleOfAJokerFitsTheSmallestPhone() {
+        val small = Layout(135, 292, 18, 13, 0, 0).scene.let { SceneGeometry(it.w, it.h) }
+        val at = 400.0
+        val read = Config.READ_TURNS * PX_PER_TURN
+        fun scene(joker: Joker, line: Int, page: Int, near: Boolean, vision: Boolean = false): IntArray {
+            val keys = mapOf(
+                "effort" to (0.5 - START_TIME) * DAY_LENGTH, "joker" to joker.id.toDouble(), "met.${joker.id}" to line.toDouble(),
+                "position" to at - Config.NEAR_TURNS * PX_PER_TURN + page * read + 1, "nextJoker" to if (near) at else at + 1000,
+            )
+            val game = Game(MemoryStore(keys), seed = 3)
+            if (vision) game.summonVision()
+            val px = Pixels(small.width, small.height)
+            SceneRenderer(small).render(px, game, World(4).also { it.reset(small, Weather.CLEAR) }, banner = 0.0, hud = false)
+            return px.data.copyOf()
+        }
+        val hud = 13 * small.width
+        val rock = floor(small.baseY + small.rockDy - small.rockR).toInt() * small.width
+        val paper = rgb(0xF1E4C8)
+        /** The pixels of paper between the day and the top of the rock: the bubble. */
+        fun bubble(px: IntArray) = (hud until rock).count { px[it] == paper }
+        for (joker in JOKERS) for ((line, joke) in joker.jokes.withIndex()) for (page in joke.texts.indices) {
+            val near = scene(joker, line, page, near = true)
+            val far = scene(joker, line, page, near = false)
+            assertTrue(near.copyOfRange(0, hud).contentEquals(far.copyOfRange(0, hud)), "${joker.name}, line ${line + 1} covers the day")
+            assertTrue(bubble(near) > bubble(far) + 100, "${joker.name}, line ${line + 1} shows no bubble")
+        }
+        assertEquals(bubble(scene(JOKERS[0], 0, 0, near = false)), bubble(scene(JOKERS[0], 0, 0, near = true, vision = true)))
+    }
+
+    /**
+     * On the smallest phone, every text of a joker, with his name as its note, takes at most 4 rows of the bubble, and the first
+     * text of a line at most 3. A first text shows while the joker stands ahead, higher on the slope: a shorter bubble stays above his head.
+     */
+    @Test
+    fun theTextsOfTheJokersFitTheirRows() {
+        val small = Layout(135, 292, 18, 13, 0, 0).scene.w
+        for (joker in JOKERS) for ((line, joke) in joker.jokes.withIndex()) for ((page, text) in joke.texts.withIndex()) {
+            val rows = popupRows(small, text, joker.name).size
+            assertTrue(rows <= if (page == 0) 3 else 4, "${joker.name}, line ${line + 1}, text ${page + 1}: $rows rows")
+        }
     }
 
     /** On the flat top, a joint between two courses runs straight across, under the sand. */

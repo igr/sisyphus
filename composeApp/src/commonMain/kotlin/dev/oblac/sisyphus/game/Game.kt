@@ -50,12 +50,16 @@ private const val KEY_STELES_TOLD = "stelesTold"
 private const val KEY_NEXT_STELE = "nextStele"
 private const val KEY_TALE = "tale"
 private const val KEY_TALES_TOLD = "talesTold"
+private const val KEY_NEXT_JOKER = "nextJoker"
+private const val KEY_JOKER = "joker"
+private const val KEY_JOKERS_SEEN = "jokersSeen"
 private const val SAVE_EVERY = 1.0
 
 /** How many clicks of the knob the dev screen leaves before the next obol. */
 private const val CLICKS_TO_OBOL = 3
 
 private fun shopKey(line: Line) = "shop." + line.id
+private fun metKey(joker: Joker) = "met." + joker.id
 
 fun wrapAngle(a: Double): Double {
     var x = a
@@ -244,6 +248,25 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     /** The stones by the path: those whose parts were told, then the next one. */
     val steles: List<Stele> get() = passed + listOfNotNull(nextStele?.let { Stele(it, stelesTold) })
 
+    /** The jokers take their own random numbers, so that the visions, the sights and the tales stay the same. */
+    private val jokerRandom = Random(seed + 2)
+    /** The next joker by the path. An id that the game does not have is Diogenes. */
+    var joker = store.load(KEY_JOKER)?.let { JOKERS.getOrNull(it.toInt()) } ?: JOKERS.first()
+        private set
+    /** Where the next joker stands, in pixels walked, until he has talked; null when none stands ahead yet. */
+    var nextJoker = store.load(KEY_NEXT_JOKER)?.takeIf { it >= 0 }
+        private set
+    /** How many times the player met each joker, by id, in all climbs and worlds. */
+    private val met = IntArray(JOKERS.size) { id -> store.load(metKey(JOKERS[id]))?.toInt() ?: 0 }
+    /** The cards seen face up on the Jokers tab, one bit for each id. */
+    var jokersSeen = store.load(KEY_JOKERS_SEEN)?.toInt() ?: 0
+        private set
+    /** The joker met last in this climb and this run of the app, and where he stands: he stays by the path behind him. */
+    var metJoker: Pair<Double, Joker>? = null
+        private set
+    /** The jokers that the dev screen brought, in the order of the cards. */
+    private var devJokers = 0
+
     /** He stands on the top: the knob moves him no more. */
     val atTop get() = summit?.let { position >= it } == true
 
@@ -285,6 +308,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     init {
         store.load(KEY_SAVED_AT)?.let { away(wall() - it) }
         beginClimb()
+        placeJoker()
     }
 
     val dayValue get() = START_TIME + effort / DAY_LENGTH
@@ -299,6 +323,17 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
 
     fun seeLabors() {
         laborsSeen = laborsDone
+        save()
+    }
+
+    /** How many times the player met [joker]. Once met, his card is face up. */
+    fun met(joker: Joker) = met[joker.id]
+
+    /** A joker is met whose card the player has not seen on the Jokers tab. */
+    val newJokers get() = JOKERS.any { met[it.id] > 0 && jokersSeen and (1 shl it.id) == 0 }
+
+    fun seeJokers() {
+        jokersSeen = JOKERS.filter { met[it.id] > 0 }.fold(0) { bits, joker -> bits or (1 shl joker.id) }
         save()
     }
     val timeOfDay get() = dayValue - floor(dayValue)
@@ -317,6 +352,8 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         passHerm(from)
         passStele()
         placeStele()
+        passJoker()
+        placeJoker()
         effort += moved
         val helped = if (pausedAt == null) shop.helpersPerHour * dt / 3600 else 0.0
         effort += helped * PX_PER_TURN
@@ -511,7 +548,45 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     private fun placeStele() {
         if (part == null || nextStele != null || atTop || stelesTold >= partsDue) return
         nextStele = position + Config.STELE_TURNS * PX_PER_TURN
+        keepRoom()
         dirty = true
+    }
+
+    private val joke get() = joker.jokes[met[joker.id] % joker.jokes.size]
+
+    /** How far he walked into the bubble of the next joker, in pixels: it opens as the popup of a stone does. Null before it opens, and at the top. */
+    private val nearJoker: Double?
+        get() = nextJoker?.let { position - (it - Config.NEAR_TURNS * PX_PER_TURN) }?.takeIf { it >= 0 && !atTop }
+
+    /** The text that the next joker tells in a bubble over him while he is near: the texts of his joke one after the other, each for [Config.READ_TURNS]. */
+    val jesting: String? get() = nearJoker?.let { joke.texts.getOrNull((it / READ).toInt()) }
+
+    /** He walked through the bubble of the next joker, also in a jump of the dev screen: the joker is met once more, and stays behind him. */
+    private fun passJoker() {
+        val at = nextJoker ?: return
+        if ((nearJoker ?: return) < joke.texts.size * READ) return
+        met[joker.id]++
+        metJoker = at to joker
+        nextJoker = null
+        dirty = true
+    }
+
+    /** With no joker ahead, the next one stands one to two days of walking ahead, at random, clear of the next stone. */
+    private fun placeJoker() {
+        if (nextJoker != null) return
+        val turns = Config.JOKER_TURNS.let { it.start + jokerRandom.nextDouble() * (it.endInclusive - it.start) }
+        joker = pickJoker(jokerRandom)
+        nextJoker = position + turns * PX_PER_TURN
+        keepRoom()
+        dirty = true
+    }
+
+    /** A joker stands at least [Config.JOKER_ROOM] turns from the next stone: when he would stand nearer, he stands that far past it. */
+    private fun keepRoom() {
+        val stone = nextStele ?: return
+        val at = nextJoker ?: return
+        val room = Config.JOKER_ROOM * PX_PER_TURN
+        if (abs(at - stone) < room) nextJoker = stone + room
     }
 
     private fun tick(dt: Double) {
@@ -601,6 +676,9 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         shop = Shop(place = place, random = random)
         voices.newClimb()
         restartTale()
+        nextJoker = null
+        metJoker = null
+        placeJoker()
         quotes = QuoteBox(quoteSeed, drawn = 0, firstTime = true, news = ::nextNews)
         save()
     }
@@ -638,6 +716,20 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     fun nearTheNextStone() {
         if (part == null) return
         nextStele = position + (Config.NEAR_TURNS - 1) * PX_PER_TURN
+        keepRoom()
+        save()
+    }
+
+    /**
+     * For dev builds: the next joker in the order of the cards stands a turn into his bubble, so that he talks at once.
+     * A stone too near him stands [Config.JOKER_ROOM] turns past him.
+     */
+    fun nearTheNextJoker() {
+        joker = JOKERS[devJokers++ % JOKERS.size]
+        val at = position + (Config.NEAR_TURNS - 1) * PX_PER_TURN
+        nextJoker = at
+        val room = Config.JOKER_ROOM * PX_PER_TURN
+        nextStele?.let { if (abs(it - at) < room) nextStele = at + room }
         save()
     }
 
@@ -677,6 +769,10 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         store.save(KEY_NEXT_STELE, nextStele ?: -1.0)
         store.save(KEY_TALE, tale.id.toDouble())
         store.save(KEY_TALES_TOLD, talesTold.toDouble())
+        store.save(KEY_NEXT_JOKER, nextJoker ?: -1.0)
+        store.save(KEY_JOKER, joker.id.toDouble())
+        store.save(KEY_JOKERS_SEEN, jokersSeen.toDouble())
+        for (joker in JOKERS) store.save(metKey(joker), met[joker.id].toDouble())
         for (line in Line.entries) store.save(shopKey(line), shop.tier(line).toDouble())
         dirty = false
         sinceSave = 0.0

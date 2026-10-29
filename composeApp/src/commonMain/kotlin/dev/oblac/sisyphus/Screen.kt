@@ -1,6 +1,8 @@
 package dev.oblac.sisyphus
 
 import dev.oblac.sisyphus.game.Game
+import dev.oblac.sisyphus.game.JOKERS
+import dev.oblac.sisyphus.game.Joker
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.Vision
@@ -16,6 +18,7 @@ import dev.oblac.sisyphus.ui.GAIN_TIME
 import dev.oblac.sisyphus.ui.Layout
 import dev.oblac.sisyphus.ui.supportTag
 import dev.oblac.sisyphus.ui.Rect
+import dev.oblac.sisyphus.ui.Tab
 import dev.oblac.sisyphus.ui.UiRenderer
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -89,8 +92,13 @@ class Screen(
     /** The Worlds screen covers the whole screen while it is open; tapping the day opens it. */
     var worldsOpen = false
         private set
-    /** The Worlds screen shows the labors, not the worlds. It stays as it was shown last, until the app closes. */
-    var laborsShown = false
+    /** The tab that the Worlds screen shows. It stays as it was shown last, until the app closes. */
+    var tab = Tab.WORLDS
+        private set
+    val laborsShown get() = tab == Tab.LABORS
+    val jokersShown get() = tab == Tab.JOKERS
+    /** The card of a joker open over the Jokers tab. Any tap closes it. */
+    var openCard: Joker? = null
         private set
     /** The world the player asked to go to, waiting for Yes or No: there the climb starts over. */
     var moving: Place? = null
@@ -197,6 +205,7 @@ class Screen(
         }
         if (worldsOpen) moveList(dt)
         if (worldsOpen && laborsShown && game.newLabors) game.seeLabors()
+        if (worldsOpen && jokersShown && game.newJokers) game.seeJokers()
         if (game.day > lastDay) banner = 3.0
         lastDay = game.day
         banner = max(0.0, banner - dt)
@@ -210,10 +219,15 @@ class Screen(
             ui.agora(pixels, l, game.shop, game.soundOn, devOpen, openWorlds)
             offer?.let { game.shop.next(it) }?.let { ui.offer(pixels, l, it) }
         } else if (worldsOpen) {
-            ui.tabs(pixels, l, laborsShown, game.newLabors)
-            if (laborsShown) ui.labors(pixels, l, game.counts, worldsScroll) else ui.worlds(pixels, l, game.place, worldsScroll, worlds)
+            ui.tabs(pixels, l, tab, game.newLabors, game.newJokers)
+            when (tab) {
+                Tab.WORLDS -> ui.worlds(pixels, l, game.place, worldsScroll, worlds)
+                Tab.LABORS -> ui.labors(pixels, l, game.counts, worldsScroll)
+                Tab.JOKERS -> ui.jokers(pixels, l, game::met)
+            }
             if (canRestore) ui.restore(pixels, l.restore, restoring)
             supportTag(supportId, build)?.let { ui.supportId(pixels, l.supportId, it, copied > 0) }
+            openCard?.let { ui.openCard(pixels, l, it, game.met(it)) }
             moving?.let { ui.confirm(pixels, l, it) }
             buying?.let { ui.buy(pixels, l, it, billing.price(it), paying) }
         } else {
@@ -248,7 +262,7 @@ class Screen(
         if (!worldsOpen && !agoraOpen) ending?.let {
             if (!it.waiting) return Touch.NONE
             it.choose()
-            showWorlds(labors = false)
+            showWorlds(Tab.WORLDS)
             return Touch.AGAIN
         }
         if (helpOpen) {
@@ -263,6 +277,7 @@ class Screen(
             worldsOpen = false
             moving = null
             buying = null
+            openCard = null
             return Touch.SHOP
         }
         if (worldsOpen) return pressWorlds(x, y, l)
@@ -302,6 +317,11 @@ class Screen(
                         game.nearTheNextStone()
                     }
                     l.devWorlds.near(x, y, 0) -> openWorlds = !openWorlds
+                    l.devJoker.near(x, y, 0) -> {
+                        agoraOpen = false
+                        devOpen = false
+                        game.nearTheNextJoker()
+                    }
                     l.devVision.near(x, y, 0) -> {
                         agoraOpen = false
                         devOpen = false
@@ -329,7 +349,13 @@ class Screen(
             return Touch.SHOP
         }
         if (l.dayLabel(game.day).near(x, y, TOUCH_SLOP)) {
-            showWorlds(labors = laborsShown || game.newLabors)
+            showWorlds(
+                when {
+                    game.newLabors -> Tab.LABORS
+                    game.newJokers -> Tab.JOKERS
+                    else -> tab
+                },
+            )
             return Touch.WORLDS
         }
         if (l.helpIcon.near(x, y, TOUCH_SLOP)) {
@@ -345,9 +371,10 @@ class Screen(
     }
 
     /**
-     * On the Worlds screen: a tap near the other tab shows it, and any other tap on the title row closes the screen.
-     * The list scrolls or chooses a world, and Yes goes there, or first buys it.
-     * Restore asks the store for the worlds bought before.
+     * On the Worlds screen: a tap on a tab, or else near one, goes to the nearest tab. One that is not shown shows; a tap on the
+     * shown tab, or anywhere else on the title row, closes the screen.
+     * The list scrolls or chooses a world, and Yes goes there, or first buys it. A tap on a face-up card opens it, and any tap
+     * closes it. Restore asks the store for the worlds bought before.
      */
     private fun pressWorlds(x: Float, y: Float, l: Layout): Touch {
         val to = moving
@@ -377,12 +404,15 @@ class Screen(
             buying = null
             return Touch.WORLDS
         }
-        if ((if (laborsShown) l.worldsTab else l.laborsTab).near(x, y, TOUCH_SLOP)) {
-            laborsShown = !laborsShown
-            if (laborsShown) game.seeLabors()
-            listScroll = 0.0
-            listSpeed = 0.0
-            lastListScroll = 0.0
+        if (openCard != null) {
+            openCard = null
+            return Touch.WORLDS
+        }
+        val tabs = listOf(Tab.WORLDS to l.worldsTab, Tab.LABORS to l.laborsTab, Tab.JOKERS to l.jokersTab)
+        val touched = tabs.firstOrNull { (_, r) -> r.near(x, y, 0) }
+            ?: tabs.filter { (_, r) -> r.near(x, y, TOUCH_SLOP) }.minByOrNull { (_, r) -> r.gap(x, y) }
+        if (touched != null && touched.first != tab) {
+            show(touched.first)
             return Touch.WORLDS
         }
         if (l.agoraTitle.near(x, y, 0)) {
@@ -397,6 +427,11 @@ class Screen(
         if (supportId != null && l.supportId.near(x, y, TOUCH_SLOP)) {
             copied = COPIED_FOR
             return Touch.COPY
+        }
+        if (jokersShown) {
+            val joker = JOKERS.firstOrNull { l.jokerCards[it.id].near(x, y, 0) && game.met(it) > 0 } ?: return Touch.NONE
+            openCard = joker
+            return Touch.WORLDS
         }
         if (!l.worldList.near(x, y, 0)) return Touch.NONE
         drag = ListDrag(x, y, listScroll, stopped = abs(listSpeed) > STOP_SPEED)
@@ -430,7 +465,7 @@ class Screen(
         val l = layout ?: return Touch.NONE
         if (d.moved > TAP_SLOP) return Touch.NONE
         listSpeed = 0.0
-        if (d.stopped || laborsShown) return Touch.NONE
+        if (d.stopped || tab != Tab.WORLDS) return Touch.NONE
         val row = Place.entries.indices.firstOrNull { l.worldRow(it).near(d.x, d.y + worldsScroll, 0) } ?: return Touch.NONE
         val place = Place.entries[row]
         if (place == game.place) {
@@ -468,7 +503,11 @@ class Screen(
     }
 
     /** How far the list on the shown tab of the Worlds screen can scroll. */
-    private fun mostScroll(l: Layout) = if (laborsShown) l.laborScroll else l.worldScroll(Place.entries.size)
+    private fun mostScroll(l: Layout) = when (tab) {
+        Tab.WORLDS -> l.worldScroll(Place.entries.size)
+        Tab.LABORS -> l.laborScroll
+        Tab.JOKERS -> 0
+    }
 
     /** A finger on the list, from where it landed. A finger that [stopped] the list from coasting chooses nothing. */
     private class ListDrag(val x: Float, val y: Float, val scroll: Double, val stopped: Boolean) {
@@ -476,7 +515,7 @@ class Screen(
     }
 
     /**
-     * Back closes the help, the offer, a question, the Worlds screen or the Agora. Tells whether there was something to close.
+     * Back closes the help, the offer, a question, an open card, the Worlds screen or the Agora. Tells whether there was something to close.
      * While the store's payment sheet is open, back waits for it.
      */
     fun back(): Boolean {
@@ -497,6 +536,10 @@ class Screen(
             buying = null
             return true
         }
+        if (openCard != null) {
+            openCard = null
+            return true
+        }
         if (worldsOpen) {
             worldsOpen = false
             return true
@@ -513,12 +556,19 @@ class Screen(
         game.knob.stop()
     }
 
-    /** Opens the Worlds screen at the top of its list, on the Labors tab if [labors]. */
-    private fun showWorlds(labors: Boolean) {
+    /** Opens the Worlds screen on [tab]. */
+    private fun showWorlds(tab: Tab) {
         cover()
         worldsOpen = true
-        laborsShown = labors
+        show(tab)
+    }
+
+    /** Shows [tab] at the top of its list, with no card open. A tab with news has been seen. */
+    private fun show(tab: Tab) {
+        this.tab = tab
+        openCard = null
         if (laborsShown) game.seeLabors()
+        if (jokersShown) game.seeJokers()
         listScroll = 0.0
         listSpeed = 0.0
         lastListScroll = 0.0
@@ -532,4 +582,7 @@ class Screen(
 
     private fun Rect.near(x: Float, y: Float, slop: Int) =
         x >= this.x - slop && x < right + slop && y >= this.y - slop && y < bottom + slop
+
+    /** How far ([x], [y]) is from the rectangle, across and down: 0 inside it. */
+    private fun Rect.gap(x: Float, y: Float) = max(max(this.x - x, x - right), 0f) + max(max(this.y - y, y - bottom), 0f)
 }

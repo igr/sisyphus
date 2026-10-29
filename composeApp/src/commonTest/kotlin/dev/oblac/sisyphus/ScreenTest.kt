@@ -5,6 +5,7 @@ import dev.oblac.sisyphus.game.Config
 import dev.oblac.sisyphus.game.DAY_LENGTH
 import dev.oblac.sisyphus.game.FIRST_OBOL
 import dev.oblac.sisyphus.game.Game
+import dev.oblac.sisyphus.game.JOKERS
 import dev.oblac.sisyphus.game.God
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.PX_PER_TURN
@@ -34,6 +35,7 @@ import dev.oblac.sisyphus.gfx.rgb
 import dev.oblac.sisyphus.scene.ANSWER
 import dev.oblac.sisyphus.scene.Ending
 import dev.oblac.sisyphus.scene.HERM
+import dev.oblac.sisyphus.scene.JOKER_SPRITES
 import dev.oblac.sisyphus.scene.SceneGeometry
 import dev.oblac.sisyphus.scene.SceneRenderer
 import dev.oblac.sisyphus.scene.World
@@ -69,6 +71,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class ScreenTest {
@@ -1478,23 +1481,174 @@ class ScreenTest {
         assertTrue("labors" in DAY_NOTE)
     }
 
+    /** A tap on a tab that is not shown shows it; a tap on the shown tab closes the screen, which opens again on it. */
     @Test
-    fun theWorldsScreenHasTwoTabs() {
+    fun theWorldsScreenHasThreeTabs() {
         val s = screen()
         val l = s.layout!!
         s.tap(l.dayLabel(s.game.day))
         assertTrue(s.worldsOpen)
         assertFalse(s.laborsShown)
+        assertFalse(s.jokersShown)
         assertEquals(Touch.WORLDS, s.tap(l.laborsTab))
         assertTrue(s.laborsShown)
         assertTrue(s.worldsOpen)
+        assertEquals(Touch.WORLDS, s.tap(l.jokersTab))
+        assertTrue(s.jokersShown)
+        assertFalse(s.laborsShown)
+        assertEquals(Touch.WORLDS, s.tap(l.jokersTab))
+        assertFalse(s.worldsOpen)
+        s.tap(l.dayLabel(s.game.day))
+        assertTrue(s.jokersShown)
+        s.tap(l.laborsTab)
         assertEquals(Touch.WORLDS, s.tap(l.laborsTab))
         assertFalse(s.worldsOpen)
         s.tap(l.dayLabel(s.game.day))
         assertTrue(s.laborsShown)
         s.tap(l.worldsTab)
         assertFalse(s.laborsShown)
+        assertFalse(s.jokersShown)
         assertTrue(s.worldsOpen)
+    }
+
+    /** Each column of the small card shows the Jokers tab from the Worlds tab, and the room of the dot of Labors stays with Labors. */
+    @Test
+    fun theWholeCardTabTakesItsTaps() {
+        for (dx in 0 until Layout.CARD_TAB) {
+            val s = smallest()
+            val l = s.layout!!
+            s.tap(l.dayLabel(s.game.day))
+            s.tap(l.jokersTab.x + dx + 0.5f, l.jokersTab.y + l.jokersTab.h / 2f)
+            assertTrue(s.jokersShown, "column $dx of the card")
+        }
+        val s = smallest()
+        val l = s.layout!!
+        s.tap(l.dayLabel(s.game.day))
+        s.tap(l.laborsTab)
+        s.tap(l.laborsTab.right - 2f, l.laborsTab.y + l.laborsTab.h / 2f)
+        assertFalse(s.jokersShown)
+    }
+
+    /** A tap on the obols over an open card goes to the Agora, and the card closes: one back then closes the Agora. */
+    @Test
+    fun theObolsCloseAnOpenCard() {
+        val s = screen(MemoryStore(mapOf("met.0" to 1.0, "jokersSeen" to 1.0)))
+        val l = s.layout!!
+        s.tap(l.dayLabel(s.game.day))
+        s.tap(l.jokersTab)
+        s.tap(l.jokerCards[0])
+        assertNotNull(s.openCard)
+        s.tap(l.coinIcon)
+        assertTrue(s.agoraOpen)
+        assertNull(s.openCard)
+        assertTrue(s.back())
+        assertFalse(s.agoraOpen)
+    }
+
+    /** The cards of the jokers met are face up, and a tap opens one; the others are face down, and a tap does nothing. */
+    @Test
+    fun aCardOpensOnceItsJokerIsMet() {
+        val s = screen(MemoryStore(mapOf("met.2" to 1.0, "jokersSeen" to 4.0)))
+        val l = s.layout!!
+        s.tap(l.dayLabel(s.game.day))
+        s.tap(l.jokersTab)
+        assertEquals(Touch.NONE, s.tap(l.jokerCards[0]))
+        assertNull(s.openCard)
+        assertEquals(Touch.WORLDS, s.tap(l.jokerCards[2]))
+        assertSame(JOKERS[2], s.openCard)
+        assertEquals(Touch.WORLDS, s.tap(l.jokerCards[0]))
+        assertNull(s.openCard)
+        assertTrue(s.worldsOpen)
+        s.tap(l.jokerCards[2])
+        assertTrue(s.back())
+        assertNull(s.openCard)
+        assertTrue(s.worldsOpen)
+        s.tap(l.jokerCards[2])
+        s.tap(l.laborsTab)
+        assertNull(s.openCard)
+    }
+
+    /** The cards show which jokers the player met, and the open card shows how many times. */
+    @Test
+    fun theCardsShowTheJokersMet() {
+        fun tab(vararg keys: Pair<String, Double>): IntArray {
+            val s = screen(MemoryStore(mapOf("jokersSeen" to 1023.0, *keys)))
+            s.tap(s.layout!!.dayLabel(s.game.day))
+            s.tap(s.layout!!.jokersTab)
+            return s.render().data.copyOf()
+        }
+        fun open(met: Double): IntArray {
+            val s = screen(MemoryStore(mapOf("jokersSeen" to 1023.0, "met.9" to met)))
+            s.tap(s.layout!!.dayLabel(s.game.day))
+            s.tap(s.layout!!.jokersTab)
+            s.tap(s.layout!!.jokerCards[9])
+            return s.render().data.copyOf()
+        }
+        assertFalse(tab().contentEquals(tab("met.9" to 1.0)))
+        assertTrue(tab("met.9" to 1.0).contentEquals(tab("met.9" to 2.0)))
+        assertFalse(open(1.0).contentEquals(open(2.0)))
+    }
+
+    /** A joker met whose card was not seen yet: a dot by the day, and the day opens the Jokers tab, which takes the dot away. */
+    @Test
+    fun aNewCardShowsTheDotUntilTheJokersTabShows() {
+        fun scene(seen: Double) = screen(MemoryStore(mapOf("met.0" to 1.0, "jokersSeen" to seen))).render().data.copyOf()
+        assertFalse(scene(0.0).contentEquals(scene(1.0)))
+        val s = screen(MemoryStore(mapOf("met.0" to 1.0)))
+        assertTrue(s.game.newJokers)
+        s.tap(s.layout!!.dayLabel(s.game.day))
+        assertTrue(s.jokersShown)
+        assertFalse(s.game.newJokers)
+    }
+
+    /** A new labor comes first: the day opens the Labors tab, and the next time the Jokers tab. */
+    @Test
+    fun aNewLaborComesBeforeANewCard() {
+        val s = screen(MemoryStore(mapOf("climbs" to 1.0, "met.0" to 1.0)))
+        val l = s.layout!!
+        s.tap(l.dayLabel(s.game.day))
+        assertTrue(s.laborsShown)
+        s.back()
+        s.tap(l.dayLabel(s.game.day))
+        assertTrue(s.jokersShown)
+    }
+
+    @Test
+    fun theCardsFitTheSmallestPhone() {
+        val l = smallest().layout!!
+        assertEquals(JOKERS.size, l.jokerCards.size)
+        val cards = l.jokerCards
+        for ((i, card) in cards.withIndex()) {
+            assertTrue(card.x >= l.worldList.x && card.right <= l.worldList.right && card.y >= l.jokersMet.bottom && card.bottom <= l.worldList.bottom, "card $i")
+            for (other in cards.drop(i + 1)) assertTrue(card.right <= other.x || other.right <= card.x || card.bottom <= other.y || other.bottom <= card.y)
+        }
+        for ((joker, sprite) in JOKERS.zip(JOKER_SPRITES.map { it.outlined(rgb(0x2A1A0C)) })) {
+            assertTrue(sprite.width + 4 <= cards[0].w, joker.name)
+            assertTrue(Layout.CARD_FACE + sprite.height + 2 <= cards[0].h, joker.name)
+            assertTrue(PixelFont.width(joker.rank) + 4 <= cards[0].w, "the rank of ${joker.name}")
+            assertTrue(PixelFont.width(joker.name) <= l.openCardText.w, joker.name)
+            assertTrue(PixelFont.wrap(joker.about, l.openCardText.w).size <= Layout.ABOUT_LINES, joker.name)
+            assertTrue(2 * sprite.height <= Layout.OPEN_SPRITE, joker.name)
+        }
+        assertTrue(l.openCard.y >= l.worldList.y && l.openCard.bottom <= l.worldList.bottom)
+    }
+
+    @Test
+    fun theDevScreenBringsAJokerAtOnce() {
+        val s = devScreen()
+        s.openDev()
+        s.tap(s.layout!!.devJoker)
+        assertFalse(s.agoraOpen)
+        assertSame(JOKERS[0], s.game.joker)
+        assertNotNull(s.game.jesting)
+    }
+
+    @Test
+    fun theJokerButtonFitsTheSmallestPhone() {
+        val l = smallest().layout!!
+        assertEquals(l.devWorlds.y, l.devJoker.y)
+        assertTrue(l.devJoker.x > l.devWorlds.right)
+        assertTrue(l.devJoker.right <= l.agoraRow(3).right, "the buttons end at ${l.devJoker.right}, the row at ${l.agoraRow(3).right}")
     }
 
     @Test
@@ -1510,7 +1664,8 @@ class ScreenTest {
     fun theTabsFitTheSmallestPhone() {
         val l = smallest().layout!!
         assertTrue(l.worldsTab.right + 4 <= l.laborsTab.x)
-        assertTrue(l.laborsTab.right + 2 <= l.coinIcon.x, "the tabs end at ${l.laborsTab.right}, the obols start at ${l.coinIcon.x}")
+        assertTrue(l.laborsTab.right + 4 <= l.jokersTab.x)
+        assertTrue(l.jokersTab.right + 2 <= l.coinIcon.x, "the tabs end at ${l.jokersTab.right}, the obols start at ${l.coinIcon.x}")
     }
 
     @Test

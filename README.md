@@ -64,10 +64,10 @@ The knob click, the click of every other tap, the sound of buying, the fanfare o
 
 - `audio` — reads the game's sounds from their WAV files
 - `gfx` — framebuffer, dithering, pixel font
-- `game` — knob physics, days and weather, quotes, the tales of the stones. To add a tale, follow `.claude/skills/new-tale/SKILL.md`.
-- `scene` — the display: sky, far view, slope, rock, Sisyphus, clouds, birds, rain. `Look.kt` holds what differs
+- `game` — knob physics, days and weather, quotes, the tales of the stones, the jokers by the path. To add a tale, follow `.claude/skills/new-tale/SKILL.md`.
+- `scene` — the display: sky, far view, slope, rock, Sisyphus, clouds, birds, rain, the jokers and their bubbles. `Look.kt` holds what differs
   from world to world. `Etna.kt`, `Underworld.kt` and `Cairo.kt` draw those worlds. To add a world, follow `.claude/skills/new-world/SKILL.md`.
-- `ui` — layout, frame, Greek key band, quote panel, knob
+- `ui` — layout, frame, Greek key band, quote panel, knob, the cards of the jokers
 - `Screen.kt` maps touches to virtual pixels; `App.kt` shows the framebuffer in Compose
 - `mobileMain` — the purchases of worlds, through RevenueCat, for both phones. The desktop has every world.
 - `iosMain`, `androidMain`, `jvmMain` — saving, sound and haptics for each platform; `androidApp` is the Android app

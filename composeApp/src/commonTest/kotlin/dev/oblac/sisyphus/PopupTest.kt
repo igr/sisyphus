@@ -40,6 +40,17 @@ class PopupTest {
         }
     }
 
+    /** A bubble that would rise above its ceiling moves down, with its tip, so that the rows above the ceiling stay as they were. */
+    @Test
+    fun aPopupStaysUnderItsCeiling() {
+        val px = Pixels(121, 122).apply {
+            clear(sky)
+            drawPopup(this, text, 60, 30, ceiling = 13)
+        }
+        for (y in 0 until 13) for (x in 0 until px.width) assertEquals(sky, px[x, y], "($x, $y)")
+        assertTrue((0 until px.width).any { px[it, 13] != sky })
+    }
+
     @Test
     fun aPopupShowsItsNote() {
         assertFalse(popup(60, 70, note = "3/15").data.contentEquals(popup(60, 70).data))
