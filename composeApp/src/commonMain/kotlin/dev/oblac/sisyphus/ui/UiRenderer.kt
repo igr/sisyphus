@@ -13,6 +13,7 @@ import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.Shop
 import dev.oblac.sisyphus.game.QuoteBox
 import dev.oblac.sisyphus.game.chance
+import dev.oblac.sisyphus.game.rare
 import dev.oblac.sisyphus.game.Vision
 import dev.oblac.sisyphus.game.done
 import dev.oblac.sisyphus.game.items
@@ -547,11 +548,12 @@ class UiRenderer {
             if (met(joker) == 0) {
                 card(px, c, TERRA_DARK, TERRA)
                 for (y in c.y + 2 until c.bottom - 2) for (x in c.x + 2 until c.right - 2) if ((x + y) % 4 == 0 || (x - y) % 4 == 0) px[x, y] = TERRA
-                continue
+            } else {
+                card(px, c, CREAM, NOT_DONE)
+                val sprite = cardSprites[joker.id]
+                px.draw(sprite, c.x + (c.w - sprite.width) / 2, c.bottom - 2 - sprite.height)
             }
-            card(px, c, CREAM, NOT_DONE)
-            val sprite = cardSprites[joker.id]
-            px.draw(sprite, c.x + (c.w - sprite.width) / 2, c.bottom - 2 - sprite.height)
+            if (joker.rare) banner(px, c, 5, 9)
         }
     }
 
@@ -560,12 +562,13 @@ class UiRenderer {
         for (y in 0 until px.height) for (x in 0 until px.width) px[x, y] = dim(px[x, y])
         val r = layout.openCard
         card(px, r, CREAM, TERRA)
+        if (joker.rare) banner(px, r, 12, 20)
         val sprite = cardSprites[joker.id]
         px.drawScaled(sprite, r.x + (r.w - 2 * sprite.width) / 2, r.y + 6 + Layout.OPEN_SPRITE - 2 * sprite.height, 2)
         fun centered(text: String, y: Int, color: Int) = PixelFont.draw(px, text, r.x + (r.w - PixelFont.width(text)) / 2, y, color)
         val name = r.y + 6 + Layout.OPEN_SPRITE + 5
         centered(joker.name, name, GROOVE)
-        centered("1 in ${joker.chance}", name + PixelFont.LINE_HEIGHT, TERRA)
+        centered(if (joker.rare) "1 in ${joker.chance} · rare" else "1 in ${joker.chance}", name + PixelFont.LINE_HEIGHT, TERRA)
         val text = layout.openCardText
         for ((i, line) in PixelFont.wrap(joker.about, text.w).withIndex()) PixelFont.draw(px, line, text.x, text.y + i * PixelFont.LINE_HEIGHT, GROOVE)
         centered(if (met == 1) "Met once" else "Met $met times", text.bottom + 3, TERRA_DARK)
@@ -573,6 +576,22 @@ class UiRenderer {
 
     /** The jokers on their cards, outlined, so that white and cream show on the paper. */
     private val cardSprites = JOKER_SPRITES.map { it.outlined(GROOVE) }
+
+    /**
+     * The banner of a rare card: a gold band across the top-right corner of [r], from [from] to [to] pixels in along the diagonal,
+     * with dark edges and a light middle. It stays inside the edge of the card.
+     */
+    private fun banner(px: Pixels, r: Rect, from: Int, to: Int) {
+        for (dy in 1 until r.h - 1) for (dx in 1 until r.w - 1) {
+            val d = (r.w - 1 - dx) + dy
+            if (d < from || d > to) continue
+            px[r.x + dx, r.y + dy] = when (d) {
+                from, to -> BRONZE[2]
+                (from + to) / 2 -> BRONZE[5]
+                else -> BRONZE[4]
+            }
+        }
+    }
 
     /** A card with round corners: [fill] inside a line of [edge]. */
     private fun card(px: Pixels, r: Rect, fill: Int, edge: Int) {

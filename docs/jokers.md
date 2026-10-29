@@ -51,7 +51,7 @@ The id is the order of the cards, and it never changes. The first ten go from th
 | Id | Joker | Weight | Chance | Look | Who (on the card) |
 |---|---|---|---|---|---|
 | 0 | Diogenes | 227 | 1 in 2 | An old man with a white beard, a brown cloak and bare feet. He holds a lit lamp. | The Cynic of Corinth. He lived in a jar, and with a lamp by day he looked for an honest man. |
-| 1 | Humpty Dumpty | 124 | 1 in 4 | A big egg with a face, a cravat and thin legs. | An egg from an old riddle, who talks to Alice in Through the Looking-Glass by Lewis Carroll, 1871. |
+| 1 | Alice | 124 | 1 in 4 | A girl with long pale hair, a blue band, a yellow dress with a white pinafore, and white stockings. | A girl who fell down a rabbit hole into Wonderland, and stepped through a mirror. Lewis Carroll, 1865. |
 | 2 | Red Riding Hood | 62 | 1 in 8 | A girl in a red cape with a hood, with a basket. | A girl who met a wolf on the way to her grandmother, in the tale of Charles Perrault, 1697. |
 | 3 | Don Quixote | 31 | 1 in 16 | A tall, thin knight with a beard, a basin for a helmet, and a long lance. | A knight who fought windmills as giants, in the book of Miguel de Cervantes, 1605. |
 | 4 | Pinocchio | 15 | 1 in 33 | A wooden boy with a long nose and a pointed paper cap. | A wooden puppet whose nose grows when he lies, in the book of Carlo Collodi, 1883. |
@@ -63,7 +63,7 @@ The id is the order of the cards, and it never changes. The first ten go from th
 | 10 | Isaac Newton | 15 | 1 in 33 | An old scholar in a grey curly wig, a dark coat and a white cravat, with a red apple in his hand. | An English scholar who found the law of gravity: why an apple falls, and why the moon goes around the Earth. 1687. |
 | 11 | Scheherazade | 8 | 1 in 63 | A woman with a teal veil, black hair and a purple dress with gold, with a book in her hands. | Each night she told the king a tale, and stopped at dawn, so that he let her live one more day. The Arabian Nights. |
 
-The jokers come from works that are in the public domain everywhere. Their looks follow the old books and pictures, not later films: Humpty Dumpty as John Tenniel drew him, Pinocchio with the paper cap of the book, Dracula with no look of a film.
+The jokers come from works that are in the public domain everywhere. Their looks follow the old books and pictures, not later films: Alice in the colors that John Tenniel gave her in The Nursery Alice (1890), Pinocchio with the paper cap of the book, Dracula with no look of a film.
 
 At about 1.5 days of walking for each joker, a player meets Diogenes about every 3 days, and Cthulhu about once in 750 days: about 54,000 turns.
 
@@ -86,18 +86,18 @@ A `|` is the change from the first text to the second. On the smallest phone, ev
 | 9 | Where am I from? I am a citizen of the world. \| Most of the world is flat. Your part of it is not. |
 | 10 | They call me the Dog, because I bark at fools. \| Do not worry. At you, I wag. |
 
-### Humpty Dumpty
+### Alice
 
 | # | Line |
 |---|---|
-| 1 | My words mean just what I choose them to mean. \| Today, rock means feather. There. Lighter already? |
-| 2 | Riddle: what must be broken before you can use it? \| An egg. Please do not look at me like that. |
-| 3 | Riddle: what can you break without touching it? \| A promise. Eggs need touching. Do not touch me. |
-| 4 | Riddle: the more you take, the more you leave behind. \| Footsteps. You leave a great many. |
-| 5 | Riddle: what goes up and never comes down? \| Your age. Not your rock. That one always comes down. |
-| 6 | Today is my unbirthday. You have one most days too. \| Happy unbirthday. My present: I will not sit on your rock. |
-| 7 | I sit on walls. You push rocks. \| We must both take care not to fall. Shake hands? Gently. |
-| 8 | Riddle: what has a head and a tail, but no body? \| A coin. Not an egg. An egg is all body. Ahem. |
+| 1 | Curiouser and curiouser! A man who pushes a rock up a hill. \| In Wonderland, that would be quite normal. |
+| 2 | The Hatter asked me: why is a raven like a writing-desk? \| He had no answer. Do you? No? Then push on. |
+| 3 | The White Queen believed six impossible things before breakfast. \| A rock that you push forever is only one. You are doing well. |
+| 4 | I fell down a rabbit hole for a very long time. \| Then I had to climb out. I know how you feel. |
+| 5 | Riddle: what gets bigger the more you take away from it? \| A hole. Mine was a rabbit hole. |
+| 6 | The Cheshire Cat told me that we are all mad. \| He meant you too, I think. In the nicest way. |
+| 7 | In the race of the Dodo, everybody won, and all had prizes. \| Your prize is the top. Then the race starts again. |
+| 8 | Riddle: what has a mouth but never eats, and runs but never walks? \| A river. It runs downhill, which is the easy way. |
 
 ### Red Riding Hood
 
@@ -187,7 +187,7 @@ A `|` is the change from the first text to the second. On the smallest phone, ev
 ## Sources
 
 - Diogenes Laertius, Lives of the Eminent Philosophers 6.20–81: Diogenes, his lamp, his jar, the plucked chicken, the statues, the cup, the wine, when to eat, and the citizen of the world. Plutarch, Life of Alexander 14: "Stand out of my sun."
-- Lewis Carroll, Through the Looking-Glass (1871), chapter 6: Humpty Dumpty, his words and his unbirthday.
+- Lewis Carroll, Alice's Adventures in Wonderland (1865): the rabbit hole (chapter 1), "Curiouser and curiouser!" (2), the race of the Dodo (3), the Cheshire Cat (6) and the riddle of the Hatter (7). Through the Looking-Glass (1871), chapter 5: the six impossible things of the White Queen.
 - Charles Perrault, Le Petit Chaperon rouge (1697), and the Brothers Grimm (1812): the cake and the wine, the path, and the big ears.
 - Miguel de Cervantes, Don Quixote (1605), part 1, chapters 8 and 21: the windmills, and the helmet of Mambrino.
 - Carlo Collodi, The Adventures of Pinocchio (1883): the nose.
@@ -204,14 +204,14 @@ A `|` is the change from the first text to the second. On the smallest phone, ev
 
 - **A joker:** a sprite of at most 15 by 22 pixels, so that it fits the card with its outline, a little shorter than Sisyphus, standing on the slope like the props, with the feet on the ground under the middle of the sprite. A joker faces down the hill, to Sisyphus, and turns to watch Sisyphus go once the rock has passed. A joker stands where the front of the rock reaches the middle of the sprite, as a stone does, and is drawn behind the rock and Sisyphus.
 - **The bubble:** `drawPopup`, as for a stone. Its tail points at the middle of the joker; when the joker has left the picture, it points at the edge of the picture. The tip of the tail stands 3 pixels above the head of the joker, or above the rock when the rock is higher. The bubble stays under the day and the obols: when it would rise into them, it moves down.
-- **A card:** like a small playing card, about as tall for its width, with round corners, 4 to a row. It has no rank: the chance shows on the open card. Face down, it shows the back of the deck: dark terra, with a pattern of crossed lines. Face up, it is paper, with the joker, outlined in dark, standing on its bottom. The outline lets the white and the cream of a joker show on the paper.
-- **The open card:** a big card over the cards: the joker at twice the size, the name, the chance, such as "1 in 8", who the joker is, and how many times the player met the joker, such as "Met 3 times".
+- **A card:** like a small playing card, about as tall for its width, with round corners, 4 to a row. It has no rank: the chance shows on the open card. Face down, it shows the back of the deck: dark terra, with a pattern of crossed lines. Face up, it is paper, with the joker, outlined in dark, standing on its bottom. The outline lets the white and the cream of a joker show on the paper. A rare card, of a joker who comes 1 in 100 or less often (`RARE_CHANCE`), has a gold banner across its top-right corner, face up and face down: today Sherlock Holmes, Hamlet, Count Dracula and Cthulhu.
+- **The open card:** a big card over the cards: the joker at twice the size, the name, the chance, such as "1 in 8", who the joker is, and how many times the player met the joker, such as "Met 3 times". The open card of a rare joker has the banner too, and says "rare" after the chance, such as "1 in 125 · rare".
 
 ## The Jokers tab
 
 - The tabs of the Worlds screen become Worlds, Labors and Jokers. The Worlds screen shows no obols, so the three words fit the smallest phone. The obols open the Agora from the main screen.
 - Under the title row, "Jokers met" and how many of the 12 the player has met, such as "3/12". Then the 12 cards in three rows of 4, in the order of the ids.
-- A tap on a face-up card opens it. A tap anywhere closes it. The back button closes it too.
+- A tap on a face-up card opens it. A tap anywhere closes it. The back button closes it too. The banners show which rare cards the player still has to find.
 - While a card is face up that the player has not seen on the tab, a dot stands after "Jokers", and the dot by the day shows, as for a new labor. The Worlds screen then opens on the tab with the news: Labors first, then Jokers.
 
 ## Saved data
@@ -219,7 +219,7 @@ A `|` is the change from the first text to the second. On the smallest phone, ev
 - `nextJoker`: where the next joker stands, in pixels walked, or -1 when none stands ahead yet. Old saved games: -1, so a joker is put by the path at once.
 - `joker`: the id of the next joker. Old saved games: 0. An id that the game does not have is Diogenes.
 - `met.0` to `met.11`: how many times the player met each joker, by id, in all climbs and worlds. A joker met once or more has the card face up, and the count tells which line comes next. Kept at the top and in another world.
-- `jokersSeen`: the cards seen face up on the Jokers tab, one bit for each id: 1 for Diogenes, 2 for Humpty Dumpty, up to 2048 for Scheherazade. Kept.
+- `jokersSeen`: the cards seen face up on the Jokers tab, one bit for each id: 1 for Diogenes, 2 for Alice, up to 2048 for Scheherazade. Kept.
 - `docs/saved-data.md` lists the new keys.
 
 ## To test it
@@ -227,7 +227,7 @@ A `|` is the change from the first text to the second. On the smallest phone, ev
 - The jokers: 12, with the ids 0 to 11 in order; the weights add up to 500; each has a line, each line one or two texts; every text has only the letters of the font; every text fits the bubble with its note on the smallest phone.
 - The choice: over many choices, each joker comes about as often as its weight says; the choice takes no number from the random numbers of the game, so the visions and the tales stay the same.
 - On the path: the first joker of a climb stands 20 to 40 turns ahead and talks on day 1, and after each joker the next stands 72 to 144 turns ahead; the bubble opens 3 turns before the rock reaches the joker, and each text shows for 6 turns; after it, the joker is met once more, and the next joker stands ahead; the lines of a joker come in turn; a joker stands at least 15 turns from the next stone, also when the stone comes after him; a vision hides the bubble, and it waits; the gods' pushes do not reach a joker; no bubble at the top; a new climb puts a new joker ahead; the joker ahead, his id and the jokers met survive a restart.
-- The tab: the tabs fit the smallest phone; a face-down card does not open; a face-up card opens, and a tap closes it; the dot shows for a new card, and goes when the tab opens; the Worlds screen opens on the tab with the news.
+- The tab: the tabs fit the smallest phone; a face-down card does not open; a face-up card opens, and a tap closes it; the dot shows for a new card, and goes when the tab opens; the Worlds screen opens on the tab with the news; the cards of the rare jokers, and only they, have a banner, face up and face down, and so has the open card.
 - The dev screen: Joker brings the next joker at once, and its row fits the smallest phone.
 - Snapshots: Diogenes with his bubble, ahead of the rock and behind Sisyphus, also on the smallest phone; all the jokers in a row, as they are and in the light of the night; the Jokers tab with some cards face up, and the dot by the day; an open card.
 

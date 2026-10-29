@@ -36,27 +36,30 @@ private val DIOGENES = sprite(
     """,
 )
 
-/** Humpty Dumpty, an egg with a face, a cravat and thin legs. */
-private val HUMPTY_DUMPTY = sprite(
-    SKIN + mapOf('g' to rgb(0xF2E6C8), 'G' to rgb(0xCDBB94), 'm' to rgb(0x8A3A2A), 'r' to rgb(0xC0392B), 'R' to rgb(0x8E2A20), 'l' to rgb(0x5A6AA8), 'k' to rgb(0x2A1A0C)),
+/** Alice, with long pale hair and a blue band, in a yellow dress with a white pinafore. */
+private val ALICE = sprite(
+    SKIN + mapOf('h' to rgb(0xF2DFA0), 'H' to rgb(0xC8AA68), 'b' to rgb(0x3A6AB0), 'y' to rgb(0xD89A20), 'Y' to rgb(0xA87418), 'w' to rgb(0xF0ECE0), 'W' to rgb(0xC8C2B0), 'k' to rgb(0x2A1A0C)),
     """
-    ....gggg.....
-    ...gggggGG...
-    ..ggggggGGG..
-    ..gegegggGG..
-    .gggggggggGG.
-    .gmmmmgggGGG.
-    .ggmmgggggGG.
-    grrrRrrrrRGGg
-    g.gggggggGG.g
-    ..ggggggggG..
-    ..gggggggGG..
-    ...gggggGG...
-    ....gggGG....
-    ....l..l.....
-    ....l..l.....
-    ....l..l.....
-    ...kk.kk.....
+    ...hhhhh....
+    ..bbbbbbbH..
+    ..hsssshhH..
+    ..esssshhH..
+    .sssSshhhH..
+    ..sssshhhH..
+    ...ssyhhhH..
+    ..yyyyyyhH..
+    ..ywwwwyyY..
+    .sywwwwyyYY.
+    .sywwwwyyYY.
+    ..ywwwwyyY..
+    ..ywwwwwyY..
+    .yywwwwwyYY.
+    .yywwwwwyYY.
+    yyyyyyyyyYYY
+    ....ss.ss...
+    ....ww.ww...
+    ....ww.ww...
+    ...kk.kk....
     """,
 )
 
@@ -325,4 +328,4 @@ private val SCHEHERAZADE = sprite(
     """,
 )
 /** The sprite of each joker, by his id. Each faces down the hill, to Sisyphus; flipped, he watches him go. */
-internal val JOKER_SPRITES: List<Pixels> = listOf(DIOGENES, HUMPTY_DUMPTY, RED_RIDING_HOOD, DON_QUIXOTE, PINOCCHIO, CLEOPATRA, SHERLOCK_HOLMES, HAMLET, COUNT_DRACULA, CTHULHU, ISAAC_NEWTON, SCHEHERAZADE)
+internal val JOKER_SPRITES: List<Pixels> = listOf(DIOGENES, ALICE, RED_RIDING_HOOD, DON_QUIXOTE, PINOCCHIO, CLEOPATRA, SHERLOCK_HOLMES, HAMLET, COUNT_DRACULA, CTHULHU, ISAAC_NEWTON, SCHEHERAZADE)

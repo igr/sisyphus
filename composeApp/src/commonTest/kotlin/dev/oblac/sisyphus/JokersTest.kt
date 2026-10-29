@@ -3,6 +3,7 @@ package dev.oblac.sisyphus
 import dev.oblac.sisyphus.game.JOKERS
 import dev.oblac.sisyphus.game.chance
 import dev.oblac.sisyphus.game.pickJoker
+import dev.oblac.sisyphus.game.rare
 import dev.oblac.sisyphus.gfx.PixelFont
 import kotlin.math.abs
 import kotlin.random.Random
@@ -16,7 +17,7 @@ class JokersTest {
         assertEquals((0..11).toList(), JOKERS.map { it.id })
         assertEquals(
             listOf(
-                "Diogenes", "Humpty Dumpty", "Red Riding Hood", "Don Quixote", "Pinocchio",
+                "Diogenes", "Alice", "Red Riding Hood", "Don Quixote", "Pinocchio",
                 "Cleopatra", "Sherlock Holmes", "Hamlet", "Count Dracula", "Cthulhu",
                 "Isaac Newton", "Scheherazade",
             ),
@@ -30,6 +31,12 @@ class JokersTest {
         assertEquals(listOf(227, 124, 62, 31, 15, 8, 4, 3, 2, 1, 15, 8), JOKERS.map { it.weight })
         assertEquals(500, JOKERS.sumOf { it.weight })
         assertEquals(listOf(2, 4, 8, 16, 33, 63, 125, 167, 250, 500, 33, 63), JOKERS.map { it.chance })
+    }
+
+    /** A joker who comes 1 in 100 or rarer is rare: his card has a banner. */
+    @Test
+    fun theRarestJokersAreRare() {
+        assertEquals(listOf("Sherlock Holmes", "Hamlet", "Count Dracula", "Cthulhu"), JOKERS.filter { it.rare }.map { it.name })
     }
 
     @Test

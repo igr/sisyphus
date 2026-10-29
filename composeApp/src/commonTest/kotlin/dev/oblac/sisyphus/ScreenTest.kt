@@ -6,6 +6,7 @@ import dev.oblac.sisyphus.game.DAY_LENGTH
 import dev.oblac.sisyphus.game.FIRST_OBOL
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.JOKERS
+import dev.oblac.sisyphus.game.rare
 import dev.oblac.sisyphus.game.God
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.PX_PER_TURN
@@ -1643,6 +1644,31 @@ class ScreenTest {
         s.back()
         s.tap(l.dayLabel(s.game.day))
         assertTrue(s.jokersShown)
+    }
+
+    /**
+     * The card of a rare joker has a gold banner across its top-right corner, face up and face down, and so has his open card.
+     * The other cards have none.
+     */
+    @Test
+    fun rareCardsHaveACornerBanner() {
+        val gold = rgb(0xD2A462)
+        fun corner(px: Pixels, r: Rect, size: Int) = (r.y until r.y + size).flatMap { y -> (r.right - size until r.right).map { px[it, y] } }
+        for (met in listOf(true, false)) {
+            val keys = if (met) JOKERS.associate { "met.${it.id}" to 1.0 } + ("jokersSeen" to ((1 shl JOKERS.size) - 1).toDouble()) else emptyMap()
+            val s = screen(MemoryStore(keys))
+            val l = s.layout!!
+            s.tap(l.dayLabel(s.game.day))
+            s.tap(l.jokersTab)
+            val px = s.render()
+            for (joker in JOKERS) assertEquals(joker.rare, gold in corner(px, l.jokerCards[joker.id], 12), "${joker.name}, met: $met")
+            if (!met) continue
+            for (joker in listOf(JOKERS[0], JOKERS[9])) {
+                s.tap(l.jokerCards[joker.id])
+                assertEquals(joker.rare, gold in corner(s.render(), l.openCard, 24), joker.name)
+                s.tap(l.jokerCards[joker.id])
+            }
+        }
     }
 
     /** The cards lie in rows of four, as a hand of three rows. */

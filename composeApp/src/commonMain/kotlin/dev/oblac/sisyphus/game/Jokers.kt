@@ -32,17 +32,17 @@ val JOKERS = listOf(
         ),
     ),
     Joker(
-        1, "Humpty Dumpty", 124,
-        "An egg from an old riddle, who talks to Alice in Through the Looking-Glass by Lewis Carroll, 1871.",
+        1, "Alice", 124,
+        "A girl who fell down a rabbit hole into Wonderland, and stepped through a mirror. Lewis Carroll, 1865.",
         listOf(
-            Joke("My words mean just what I choose them to mean.", "Today, rock means feather. There. Lighter already?"),
-            Joke("Riddle: what must be broken before you can use it?", "An egg. Please do not look at me like that."),
-            Joke("Riddle: what can you break without touching it?", "A promise. Eggs need touching. Do not touch me."),
-            Joke("Riddle: the more you take, the more you leave behind.", "Footsteps. You leave a great many."),
-            Joke("Riddle: what goes up and never comes down?", "Your age. Not your rock. That one always comes down."),
-            Joke("Today is my unbirthday. You have one most days too.", "Happy unbirthday. My present: I will not sit on your rock."),
-            Joke("I sit on walls. You push rocks.", "We must both take care not to fall. Shake hands? Gently."),
-            Joke("Riddle: what has a head and a tail, but no body?", "A coin. Not an egg. An egg is all body. Ahem."),
+            Joke("Curiouser and curiouser! A man who pushes a rock up a hill.", "In Wonderland, that would be quite normal."),
+            Joke("The Hatter asked me: why is a raven like a writing-desk?", "He had no answer. Do you? No? Then push on."),
+            Joke("The White Queen believed six impossible things before breakfast.", "A rock that you push forever is only one. You are doing well."),
+            Joke("I fell down a rabbit hole for a very long time.", "Then I had to climb out. I know how you feel."),
+            Joke("Riddle: what gets bigger the more you take away from it?", "A hole. Mine was a rabbit hole."),
+            Joke("The Cheshire Cat told me that we are all mad.", "He meant you too, I think. In the nicest way."),
+            Joke("In the race of the Dodo, everybody won, and all had prizes.", "Your prize is the top. Then the race starts again."),
+            Joke("Riddle: what has a mouth but never eats, and runs but never walks?", "A river. It runs downhill, which is the easy way."),
         ),
     ),
     Joker(
@@ -147,6 +147,12 @@ const val JOKER_WEIGHTS = 500
 
 /** A joker comes once in about this many jokers, such as 8 for 1 in 8. */
 val Joker.chance get() = (JOKER_WEIGHTS.toDouble() / weight).roundToInt()
+
+/** A joker who comes once in this many jokers, or less often, is rare. */
+const val RARE_CHANCE = 100
+
+/** A rare joker: his card has a banner across a corner. */
+val Joker.rare get() = chance >= RARE_CHANCE
 
 /** A joker at random, each as often as his weight says. */
 fun pickJoker(random: Random): Joker {

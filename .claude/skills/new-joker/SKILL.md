@@ -1,6 +1,6 @@
 ---
 name: new-joker
-description: Use when the user asks for a new joker in the Sisyphus game, or asks to add, write, draw or change a joker, a figure who stands by the path and tells a joke or a riddle in a bubble, such as Diogenes, Humpty Dumpty or Sherlock Holmes.
+description: Use when the user asks for a new joker in the Sisyphus game, or asks to add, write, draw or change a joker, a figure who stands by the path and tells a joke or a riddle in a bubble, such as Diogenes, Alice or Sherlock Holmes.
 ---
 
 # New joker
@@ -13,7 +13,7 @@ A joker is a figure from the public domain who stands by the path and tells a jo
 |---|---|
 | The joker | `Joker(<id>, "<name>", <weight>, "<who>", listOf(Joke(...), ...))`, last in `JOKERS` in `game/Jokers.kt`. "Who" is the text of the open card: who the joker is, the work and its year. |
 | Id | The size of `JOKERS` before the new joker. The id is the position in `JOKERS` and in `JOKER_SPRITES`, and the place of the card on the tab. The saved keys `joker` and `met.<id>` hold it. So a joker is never removed, moved or given a new id, and a new joker is always the last card. `jokersSeen` keeps one bit for each id in an `Int`, so the last id is 30. |
-| Weight | Out of `JOKER_WEIGHTS`, 500: the weights always add up to 500. Choose a chance between those of the other jokers; two jokers can have the same chance. Take the weight from Diogenes, the most common, and keep him at 201 or more, so that his card still says "1 in 2". When he is at 201, take it from the next most common joker, and keep the chance that its card shows. The open card shows the chance, `500 / weight` rounded: weight 15 is "1 in 33". |
+| Weight | Out of `JOKER_WEIGHTS`, 500: the weights always add up to 500. Choose a chance between those of the other jokers; two jokers can have the same chance. Take the weight from Diogenes, the most common, and keep him at 201 or more, so that his card still says "1 in 2". When he is at 201, take it from the next most common joker, and keep the chance that its card shows. The open card shows the chance, `500 / weight` rounded: weight 15 is "1 in 33". A chance of 1 in 100 or rarer, a weight of 5 or less, makes the joker rare: his card gets a gold banner, and `JokersTest.theRarestJokersAreRare` lists him. |
 | Sprite | A new last entry of `JOKER_SPRITES` in `scene/Jokers.kt`, with a one-line KDoc, as the others have. Use `SKIN`, or give `s` and `S` of its own for another skin, as Cleopatra does. |
 | Test | `JokersTest`: the new id and name in `theJokersAreInTheOrderOfTheirIds`, the weights in `theWeightsAddUpToFiveHundred` with the chances, and the number of lines in `everyJokerHasLinesOfOneOrTwoTexts`. |
 | Spec | `docs/jokers.md` and `docs/saved-data.md`. |
