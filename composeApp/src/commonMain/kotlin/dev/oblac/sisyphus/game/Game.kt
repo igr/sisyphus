@@ -582,14 +582,17 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         begin()
     }
 
-    /** Another world means another climb: everything starts from the beginning there. */
+    /**
+     * Another world means another climb: everything starts from the beginning there. A climb that has not begun, as right
+     * after the top, takes its tale with it, so that the tale of the climb before does not come again.
+     */
     fun moveTo(place: Place) {
         this.place = place
-        begin()
+        begin(newTale = position > 0)
     }
 
-    private fun begin() {
-        tale = nextTale()
+    private fun begin(newTale: Boolean = true) {
+        if (newTale) tale = nextTale()
         daysBefore += day - 1
         endVision()
         position = 0.0

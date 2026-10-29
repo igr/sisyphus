@@ -393,15 +393,15 @@ class SceneRenderer(private val geo: SceneGeometry) {
         }
     }
 
-    /** The stones of the tale by the path, each with the relief of its part, set into the slope as a herm is. */
+    /** The stones of the tale by the path, each with the relief of the tale, set into the slope as a herm is. */
     private fun drawSteles(px: Pixels, atm: Atmosphere, game: Game, p: Int, stone: Stone) {
-        val reliefs = stone.reliefs[game.tale.id]
+        val relief = stone.reliefs[game.tale.id]
         for (stele in game.steles) {
             val x = steleLeft(stele.at, p)
             if (x < -stone.slab.width || x > px.width) continue
             val top = geo.surfaceY(x, p) - (stone.slab.height - 1)
             px.draw(stone.slab, x, top, light = atm.light)
-            px.draw(reliefs[stele.part], x + 1, top + 1, light = atm.light)
+            px.draw(relief, x + 1, top + 1, light = atm.light)
         }
     }
 

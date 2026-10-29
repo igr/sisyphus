@@ -49,6 +49,9 @@ class StationsTest {
     /** How far he walks while one text of a part shows. */
     private val read = Config.READ_TURNS * PX_PER_TURN
 
+    /** All the tales told: one bit for each tale. */
+    private val allTold = (1 shl TALES.size) - 1
+
     /** 14 items bought: all but the last of Beauty. */
     private val fourteen = arrayOf("shop.rock" to 3.0, "shop.beside" to 3.0, "shop.alone" to 3.0, "shop.blessing" to 3.0, "shop.beauty" to 2.0)
 
@@ -330,7 +333,7 @@ class StationsTest {
 
     @Test
     fun aNewClimbTakesATaleNotToldYet() {
-        for (told in listOf(1, 3, 5, 9, 7, 11, 13)) for (seed in 1..5) {
+        for (told in (1 until allTold).filter { it and 1 == 1 }) for (seed in 1..5) {
             val g = Game(store("talesTold" to told.toDouble()), seed = seed, wall = { 0.0 })
             g.startOver()
             assertEquals(0, told and (1 shl g.tale.id), "told $told, then ${g.tale.id}")
@@ -340,10 +343,35 @@ class StationsTest {
     @Test
     fun whenAllAreToldTheTaleBeforeDoesNotComeAtOnce() {
         for (before in TALES) for (seed in 1..5) {
-            val g = Game(store("talesTold" to 15.0, "tale" to before.id.toDouble()), seed = seed, wall = { 0.0 })
+            val g = Game(store("talesTold" to allTold.toDouble(), "tale" to before.id.toDouble()), seed = seed, wall = { 0.0 })
             g.startOver()
             assertNotEquals(before.id, g.tale.id)
         }
+    }
+
+    /** At the top, the ending can take him to another world before the new climb begins: the move keeps the tale that the top drew. */
+    @Test
+    fun aMoveRightAfterTheTopKeepsItsNewTale() {
+        for (before in TALES) for (seed in 1..10) {
+            val g = Game(store("talesTold" to allTold.toDouble(), "tale" to before.id.toDouble()), seed = seed, wall = { 0.0 })
+            g.startOver()
+            val drawn = g.tale
+            g.moveTo(Place.ETNA)
+            assertSame(drawn, g.tale)
+            assertNotEquals(before.id, g.tale.id)
+        }
+    }
+
+    /** A move or the Reset of the climb in the middle of a climb takes a new tale: here the only one not told. */
+    @Test
+    fun aMoveInAClimbTakesANewTale() {
+        val told = (allTold and (1 shl ISIS_AND_OSIRIS.id).inv()).toDouble()
+        val moved = game(store("talesTold" to told, "tale" to 2.0, "position" to 500.0))
+        moved.moveTo(Place.ETNA)
+        assertSame(ISIS_AND_OSIRIS, moved.tale)
+        val reset = game(store("talesTold" to told, "tale" to 2.0, "position" to 500.0))
+        reset.resetClimb()
+        assertSame(ISIS_AND_OSIRIS, reset.tale)
     }
 
     /** All 15 items, the final climb, and the 15th stone near: its part tells the whole tale. Also with a jump of the dev screen. */

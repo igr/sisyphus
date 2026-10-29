@@ -64,7 +64,7 @@ The knob click, the click of every other tap, the sound of buying, the fanfare o
 
 - `audio` — reads the game's sounds from their WAV files
 - `gfx` — framebuffer, dithering, pixel font
-- `game` — knob physics, days and weather, quotes
+- `game` — knob physics, days and weather, quotes, the tales of the stones. To add a tale, follow `.claude/skills/new-tale/SKILL.md`.
 - `scene` — the display: sky, far view, slope, rock, Sisyphus, clouds, birds, rain. `Look.kt` holds what differs
   from world to world. `Etna.kt`, `Underworld.kt` and `Cairo.kt` draw those worlds. To add a world, follow `.claude/skills/new-world/SKILL.md`.
 - `ui` — layout, frame, Greek key band, quote panel, knob

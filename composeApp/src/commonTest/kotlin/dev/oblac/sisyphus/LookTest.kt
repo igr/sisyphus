@@ -63,14 +63,26 @@ class LookTest {
         for (place in Place.entries) assertFalse(noon(place, stone = true).contentEquals(noon(place, stone = false)), place.title)
     }
 
-    /** Each stone, in the colors of its world, has a slab of 9 by 15, and a relief of 7 by 7 for each part of each tale. */
+    /** Each stone, in the colors of its world, has a slab of 9 by 15, and a relief of 7 by 7 for each tale. */
     @Test
-    fun everyStoneHasTheReliefsOfEveryTale() {
+    fun everyStoneHasTheReliefOfEveryTale() {
         for (stone in listOf(LIMESTONE, LAVA_STONE, BLACK_STONE, SANDSTONE)) {
             assertEquals(9 to 15, stone.slab.width to stone.slab.height)
-            assertEquals(TALES.map { it.parts.size }, stone.reliefs.map { it.size })
-            assertTrue(stone.reliefs.flatten().all { it.width == 7 && it.height == 7 })
+            assertEquals(TALES.size, stone.reliefs.size)
+            assertTrue(stone.reliefs.all { it.width == 7 && it.height == 7 })
         }
+    }
+
+    /** The stones of a tale all show its relief: the stone of the 1st part looks as the stone of the 10th. */
+    @Test
+    fun theStonesOfATaleShareItsRelief() {
+        fun stoneAhead(part: Int): IntArray {
+            val keys = mapOf("effort" to (2.5 - START_TIME) * DAY_LENGTH, "stelesTold" to part.toDouble(), "nextStele" to 40.0)
+            val px = Pixels(geo.width, geo.height)
+            SceneRenderer(geo).render(px, Game(MemoryStore(keys), seed = 3), World(4).also { it.reset(geo, Weather.CLEAR) }, banner = 0.0, hud = false)
+            return px.data.copyOf()
+        }
+        assertTrue(stoneAhead(0).contentEquals(stoneAhead(9)))
     }
 
     @Test

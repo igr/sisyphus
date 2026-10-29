@@ -25,12 +25,59 @@ private val SLAB =
     """
 
 /**
+ * The relief of each tale, by its id, 7 by 7, carved on all of its stones: `k` is carved deep, `c` less deep.
+ * A new tale needs only its texts and one relief here.
+ */
+private val RELIEF_ART = listOf(
+    // Sisyphus: a rock
+    """
+    .......
+    ..kkk..
+    .kcckk.
+    .kcckk.
+    ..kkk..
+    ....kkk
+    ..kkkkk
+    """,
+    // Typhon: a volcano
+    """
+    .k...k.
+    ..k.k..
+    ...k...
+    ..kck..
+    .kkckk.
+    kkkkkkk
+    kkkkkkk
+    """,
+    // Orpheus: a lyre
+    """
+    k.....k
+    k.....k
+    .k...k.
+    .kkkkk.
+    .k.k.k.
+    .k.k.k.
+    .kkkkk.
+    """,
+    // Isis and Osiris: the eye of Horus
+    """
+    .kkkkk.
+    .......
+    .kkkkk.
+    kk.k.kk
+    .kkkkk.
+    ...k..k
+    ..kk...
+    """,
+)
+
+/**
  * A stone of the tales in the colors of one world: `w W D p C` for the slab, and `c k` for the relief carved in it.
- * Its [reliefs] are by the id of the tale, then in the order of its parts.
+ * Its [reliefs] are by the id of the tale.
  */
 internal class Stone(colors: Map<Char, Int>) {
     val slab: Pixels = sprite(colors, SLAB)
-    val reliefs: List<List<Pixels>> = RELIEF_ART.map { tale -> tale.map { sprite(colors, it) } }
+    val reliefs: List<Pixels> = RELIEF_ART.map { sprite(colors, it) }
 }
 
 /** Pale limestone, in Corinth. */

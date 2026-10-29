@@ -30,7 +30,7 @@ A world is a new look and new names on the same game. The rules, the economy and
 | Blessings | Purse of Hermes, Gift of Tyche, Wealth of Plutus | `items`; icons |
 | Beauty | Dolphins leap in the sea, Pegasus flies by, the Pleiades shine at night | `items`; icons; `World.update` and `SceneRenderer.render` |
 | Voices | The Sphinx and Hecate come in the visions, as Hermes does, and ask the questions | `God` and `godsOf` in `game/Voices.kt`; sprites in `scene/Visions.kt` |
-| Stones | Pale limestone by the path, from day 3. Their reliefs are of the tale, and a popup over each stone tells its part | `Look.stone`: `LIMESTONE` and the other stones in `scene/Steles.kt`; the reliefs in `scene/Reliefs.kt`; the tales in `game/Tales.kt`; `docs/stations.md` |
+| Stones | Pale limestone by the path, from day 3. Their relief is of the tale, and a popup over each stone tells its part | `Look.stone`: `LIMESTONE` and the other stones in `scene/Steles.kt`; the tales in `game/Tales.kt`; `docs/stations.md` |
 | Picture | The scene at noon, from the top of the rock down to the far view | `worldPreview` in `ui/Previews.kt` |
 
 These are the same in every world: the price, `Config.WORLD_PRICE` in US dollars, Sisyphus, the first rock, the knob, the day length, the final climb and its end, the prices and the effects of the 15 items, the line titles, the notes of the first four lines ("turns count 1.5x"), the wise words, Hermes, the questions of the visions, the tales of the stones, the rules of the stones and their popup, the sounds and the screens.
@@ -50,14 +50,14 @@ These are the same in every world: the price, `Config.WORLD_PRICE` in US dollars
 6. Write the 15 items, and draw 12 icons (16 x 16) and 3 rocks. The details first tell what the item is, then what it does, with the effect words of Corinth. Each details text ends as the Corinth item of the same line and tier ends, for example "He takes Merope's place."
 7. Make the three beauty sights, one for each tier of the Beauty line. A sight uses the timer of the Corinth sight of the same tier (`nextLeap`, `nextFlight`). Code that all worlds run must not take more random numbers, because then the other worlds change.
 8. Choose the two gods of the world who come in the visions, from its myths. Add them to `God` with the world as their place, each with a farewell that it says when nobody answers, and draw their sprites (25 x 15) in `scene/Visions.kt`.
-9. Give the world its stone: a `Stone` in `scene/Steles.kt` with the colors of the world, `w W D p C` for the slab and `c k` for the relief, and set it as `Look.stone`. The relief must show on the panel, and the stone on the ground of the world: look at `steles-<world>` and `12-stele-<world>` in the snapshots. The tales are the same in every world.
+9. Give the world its stone: a `Stone` in `scene/Steles.kt` with the colors of the world, `w W D p C` for the slab and `c k` for the relief, and set it as `Look.stone`. The relief must show on the panel, and the stone on the ground of the world: look at `steles` and `12-stele-<world>` in the snapshots. The tales are the same in every world.
 10. Look at the picture on the Worlds screen: `worldPreview` cuts it from the real scene at noon. The landmark must show in it.
 11. Update the tests. Each test that has Cairo in it gets the new world too:
    - `GameTest`: add the new id to the ids that never change, and the product to the products that never change. A save with the new id loads its items.
    - `ShopTest`, `BeautyTest`, `PropsTest`, `RockLookTest` and `LookTest`.
    - `VoicesTest.eachWorldHasHermesAndTwoGodsOfItsOwn`: the gods of the new world. The fit, letter and picture tests already cover every god.
    - `ScreenTest`: its own icons. The fit and letter tests already cover every world.
-   - `LookTest.everyStoneHasTheReliefsOfEveryTale`: the stone of the new world.
+   - `LookTest.everyStoneHasTheReliefOfEveryTale`: the stone of the new world.
    - The worlds do not fit the smallest phone. `theWorldsFitTheSmallestPhone` and `theWorldsScrollWhenTheyDoNotFit` already scroll to the last world.
    - `SnapshotTest`: add the world to `moments`, `beauty`, `iconSheet`, `propSheet`, `rockSheet` and the shots of `steles`. Where a test counts the worlds, use `Place.entries.size`.
 12. Update the docs: the ids in `docs/saved-data.md` (the `place` key and "Ids that never change"), the Worlds section in `docs/shop.md`, the gods of each world in `docs/voices.md`, the stone of the world in `docs/stations.md`, and `README.md` where it tells about the worlds or the scene.

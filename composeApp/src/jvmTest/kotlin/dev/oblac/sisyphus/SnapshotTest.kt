@@ -127,7 +127,7 @@ class SnapshotTest {
 
     /**
      * The 9th stone ahead of the rock, with its part in a popup over it: in Corinth on both phones, and in each other world with
-     * another tale. Then the stones of each world, with the reliefs of every tale.
+     * another tale. Then the stone of each world, in a row, with the relief of each tale.
      */
     @Test
     fun steles() {
@@ -148,15 +148,13 @@ class SnapshotTest {
             s.idle(4.0)
             write(s.render(), name, 3)
         }
-        for (place in Place.entries) {
+        val sheet = Pixels(TALES.size * 12, Place.entries.size * 18).apply { clear(rgb(0x8AA65A)) }
+        for (place in Place.entries) for (tale in TALES) {
             val stone = lookOf(place).stone
-            val sheet = Pixels(15 * 12, TALES.size * 18).apply { clear(rgb(0x8AA65A)) }
-            for (tale in TALES) for (k in tale.parts.indices) {
-                sheet.draw(stone.slab, k * 12 + 1, tale.id * 18 + 1)
-                sheet.draw(stone.reliefs[tale.id][k], k * 12 + 2, tale.id * 18 + 2)
-            }
-            write(sheet, "steles-${place.name.lowercase()}", 6)
+            sheet.draw(stone.slab, tale.id * 12 + 1, place.ordinal * 18 + 1)
+            sheet.draw(stone.reliefs[tale.id], tale.id * 12 + 2, place.ordinal * 18 + 2)
         }
+        write(sheet, "steles", 6)
     }
 
     /** A herm of the final climb by the path ahead, in each world, at noon. */

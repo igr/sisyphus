@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 
 class TalesTest {
     @Test
-    fun thePoolHasFourTalesOfFifteenParts() {
+    fun thePoolHasTalesOfFifteenParts() {
         assertEquals(listOf(0, 1, 2, 3), TALES.map { it.id })
         assertEquals(listOf(SISYPHUS, TYPHON, ORPHEUS, ISIS_AND_OSIRIS), TALES)
         assertTrue(TALES.all { it.parts.size == 15 })
