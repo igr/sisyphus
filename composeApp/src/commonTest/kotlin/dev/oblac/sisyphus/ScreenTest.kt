@@ -19,7 +19,8 @@ import dev.oblac.sisyphus.game.LABORS
 import dev.oblac.sisyphus.game.shortCount
 import dev.oblac.sisyphus.game.Category
 import dev.oblac.sisyphus.game.progress
-import dev.oblac.sisyphus.game.RIDDLES
+import dev.oblac.sisyphus.game.SAYINGS
+import dev.oblac.sisyphus.game.whoSaid
 import dev.oblac.sisyphus.gfx.PixelFont
 import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.ui.AGORA_NOTE
@@ -1647,7 +1648,7 @@ class ScreenTest {
     @Test
     fun eachGodHasItsOwnPicture() {
         val pictures = God.entries.map { god ->
-            val v = Vision(RIDDLES[0], god, rightOnLeft = true).apply { update(1.0) }
+            val v = Vision(whoSaid(SAYINGS[0], "Seneca"), god, rightOnLeft = true).apply { update(1.0) }
             Pixels(120, 120).apply { clear(rgb(0x404040)); drawVision(this, v) }.data.toList()
         }
         assertEquals(God.entries.size, pictures.toSet().size)

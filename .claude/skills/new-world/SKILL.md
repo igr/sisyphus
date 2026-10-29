@@ -29,10 +29,10 @@ A world is a new look and new names on the same game. The rules, the economy and
 | Gods | Amalthea, Pan, Thanatos | `items`; icons |
 | Blessings | Purse of Hermes, Gift of Tyche, Wealth of Plutus | `items`; icons |
 | Beauty | Dolphins leap in the sea, Pegasus flies by, the Pleiades shine at night | `items`; icons; `World.update` and `SceneRenderer.render` |
-| Voices | The Sphinx and Hecate ask the riddles in the visions | `God` and `godsOf` in `game/Voices.kt`; sprites in `scene/Visions.kt` |
+| Voices | The Sphinx and Hecate come in the visions, as Hermes does, and ask "Who said this?" | `God` and `godsOf` in `game/Voices.kt`; sprites in `scene/Visions.kt` |
 | Picture | The scene at noon, from the top of the rock down to the far view | `worldPreview` in `ui/Previews.kt` |
 
-These are the same in every world: the price of USD 0.99, Sisyphus, the first rock, the knob, the day length, the final climb and its end, the prices and the effects of the 15 items, the line titles, the notes of the first four lines ("turns count 1.5x"), the wise words, the riddles, Hermes and his "Who said this?" in the visions, the sounds and the screens.
+These are the same in every world: the price of USD 0.99, Sisyphus, the first rock, the knob, the day length, the final climb and its end, the prices and the effects of the 15 items, the line titles, the notes of the first four lines ("turns count 1.5x"), the wise words, Hermes, the "Who said this?" of the visions, the sounds and the screens.
 
 ## Steps
 
@@ -48,7 +48,7 @@ These are the same in every world: the price of USD 0.99, Sisyphus, the first ro
 5. Draw the scene: all of the parts from "Sky over the day" to "Small things". The help says that the sun moves only while you push, so each world has a sun that crosses its sky. The landmark shows at the start of a climb and in the picture.
 6. Write the 15 items, and draw 12 icons (16 x 16) and 3 rocks. The details first tell what the item is, then what it does, with the effect words of Corinth. Each details text ends as the Corinth item of the same line and tier ends, for example "He takes Merope's place."
 7. Make the three beauty sights, one for each tier of the Beauty line. A sight uses the timer of the Corinth sight of the same tier (`nextLeap`, `nextFlight`). Code that all worlds run must not take more random numbers, because then the other worlds change.
-8. Choose the two gods who ask the riddles of the world in the visions, from its myths. Add them to `God` with the world as their place, each with a farewell that it says when nobody answers, and draw their sprites (25 x 15) in `scene/Visions.kt`. The riddles stay the same in every world, so no riddle names or describes the god who asks it.
+8. Choose the two gods of the world who come in the visions, from its myths. Add them to `God` with the world as their place, each with a farewell that it says when nobody answers, and draw their sprites (25 x 15) in `scene/Visions.kt`.
 9. Look at the picture on the Worlds screen: `worldPreview` cuts it from the real scene at noon. The landmark must show in it.
 10. Update the tests. Each test that has Cairo in it gets the new world too:
    - `GameTest`: add the new id to the ids that never change, and the product to the products that never change. A save with the new id loads its items.

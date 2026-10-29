@@ -15,7 +15,7 @@ A climb needs moments that the player does not expect, not only a new item now a
 
 ## Not in this project
 
-- Questions of each world's own. All worlds share the same riddles and the same wise words; only the gods who ask them change.
+- Questions of each world's own. All worlds share the same wise words; only the gods who ask about them change.
 - The gods change their minds over the climbs. See "Later".
 - The legendary tasks. This project only counts the right answers for them.
 
@@ -48,7 +48,7 @@ With no answer in 20 seconds, the god says a farewell line, and the vision fades
 
 ## The voices
 
-In each world, three gods come in turn, in an order that the game shuffles. Hermes comes in every world. The two other gods belong to the world:
+In each world, one of three gods comes, chosen at random. Hermes comes in every world. The two other gods belong to the world:
 
 | World | The two gods of the world |
 |---|---|
@@ -57,26 +57,18 @@ In each world, three gods come in turn, in an order that the game shuffles. Herm
 | The Underworld | Charon, the ferryman of the dead, and Persephone, their queen |
 | Cairo | Thoth, the scribe of the gods, with the head of an ibis, and Anubis, the jackal who weighs the hearts of the dead |
 
-There are two kinds of questions:
+Every god asks "Who said this?": one of the wise words, its author, and the author of another one. The first voices also asked riddles, but they were easy to guess, so they are gone.
 
-| Kind | Who asks | Example |
-|---|---|---|
-| A riddle | The two gods of the world | "What walks on four feet at dawn, on two at noon, and on three at dusk?" A man, or a horse. |
-| "Who said this?" | Hermes | One of the wise words, its author, and the author of another one. |
-
-- All worlds share one pool of 60 riddles: the 20 riddles of the Sphinx, the 20 questions of Hecate's crossroads, and 20 new ones. Some of the new ones ask about the myths, such as "Who carries the sky on his shoulders?" The two gods of the world take the riddles from the pool in turn.
-- Any god can ask any riddle, so no question and no reply names or describes the god who asks it.
-- Each riddle has a question, a right answer, a wrong answer, a reply for a right answer, and a reply for a wrong answer. The game puts "Correct." or "Wrong." before the reply, so a reply does not start with "Yes" or "No". Only one answer is right, and the wrong one is clearly wrong.
-- The riddles and the replies may be written for the game. They do not need an old source, but they keep the calm and warm mood of the wise words.
 - Each god has a farewell of its own, which it says when nobody answers.
-- Hermes makes his questions from the wise words, so they never run out. He uses only sayings of real people, not the lines of Sisyphus and his world, and the other author is never the same person under another name.
+- The gods make their questions from the wise words, so they never run out. They use only sayings of real people, not the lines of Sisyphus and his world, and the other author is never the same person under another name.
+- No god names itself as an answer: Empedocles of Mount Etna wrote wise words too.
 - The right answer stands on the left or on the right at random.
-- A riddle does not come again until all 60 riddles have come, in all worlds together. A saying of Hermes does not come again until all his sayings have come.
-- Every text uses only the letters of `PixelFont`, and fits on the smallest phone: a question or a reply in 3 lines of the panel, and an answer in 2 lines of its half of the scene, 46 pixels wide. Today, 5 names of authors do not fit: Antisthenes, Empedocles, La Rochefoucauld, Schopenhauer and Xenophanes. Hermes leaves them out. A test checks every text, as `QuotesTest` does for the wise words.
+- A saying does not come again until all the sayings have come, in all worlds together.
+- Every text uses only the letters of `PixelFont`, and fits on the smallest phone: a question or a reply in 3 lines of the panel, and an answer in 2 lines of its half of the scene, 46 pixels wide. Today, 5 names of authors do not fit: Antisthenes, Empedocles, La Rochefoucauld, Schopenhauer and Xenophanes. The gods leave them out. A test checks every text, as `QuotesTest` does for the wise words.
 
 ## A new world
 
-Each new world names the two gods who ask its riddles, draws their sprites, and writes their farewells. The `new-world` skill lists them among the parts of a world.
+Each new world names its two gods, draws their sprites, and writes their farewells. The `new-world` skill lists them among the parts of a world.
 
 ## The reward
 
@@ -91,7 +83,7 @@ Each new world names the two gods who ask its riddles, draws their sprites, and 
 
 ## Saved data
 
-- `nextVision`: the turns of the player that are left until the next vision. Kept at the top and in another world.
+- `nextVision`: the turns of the player that are left until the next vision. Each new climb sets it again, for its first vision on day 2.
 - The order of the gods and of their questions, so that a restart does not repeat a question: a seed and a count, as `quoteSeed` and `quotesDrawn` do for the wise words.
 - `rightAnswers`: how many questions the player answered right, for the legendary tasks later.
 - `docs/saved-data.md` lists the new keys, with their start values for old saved games.
@@ -100,7 +92,7 @@ Each new world names the two gods who ask its riddles, draws their sprites, and 
 
 - The dev screen gets a row for the voices. Now brings a vision at once, and Next turn brings one at the next click of the knob, the way a vision really comes.
 - Tests: a vision comes when the count of the player's turns runs out, and the work of the gods does not move the count; no vision in the final climb; a right answer adds one obol, and a wrong answer or no answer adds nothing; every text fits.
-- Snapshots: a vision of each of the seven gods, and the answers under the vision on the smallest phone.
+- Snapshots: a vision of each god, and the answers under the vision on the smallest phone.
 
 ## Later
 
