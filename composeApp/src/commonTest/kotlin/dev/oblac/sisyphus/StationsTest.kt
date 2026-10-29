@@ -2,12 +2,14 @@ package dev.oblac.sisyphus
 
 import dev.oblac.sisyphus.game.CORINTH_TALE
 import dev.oblac.sisyphus.game.Config
+import dev.oblac.sisyphus.game.DAY_LENGTH
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.game.Quote
 import dev.oblac.sisyphus.game.QuoteBox
+import dev.oblac.sisyphus.game.START_TIME
 import dev.oblac.sisyphus.game.Vision
 import kotlin.math.PI
 import kotlin.test.Test
@@ -16,7 +18,12 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class StationsTest {
-    private fun store(vararg keys: Pair<String, Double>) = MemoryStore(mapOf("obols" to 10.0, "nextVision" to 600.0, *keys))
+    /** The effort of [day] at [time] of it. */
+    private fun effortAt(day: Int, time: Double = 0.5) = ((day - 1) + time - START_TIME) * DAY_LENGTH
+
+    /** A Corinth game on day 3, when the tale has begun. */
+    private fun store(vararg keys: Pair<String, Double>) =
+        MemoryStore(mapOf("obols" to 10.0, "nextVision" to 600.0, "effort" to effortAt(3), *keys))
 
     private fun game(store: MemoryStore = store()) = Game(store, seed = 1, wall = { 0.0 })
 
@@ -48,6 +55,28 @@ class StationsTest {
     private fun Game.answer(right: Boolean) {
         val toLeft = vision!!.rightOnLeft == right
         turn(if (toLeft) -PI / 2 else PI / 2)
+    }
+
+    @Test
+    fun theTaleBeginsOnDayThreeWithoutAPurchase() {
+        val g = game()
+        g.update(DT)
+        assertEquals(g.position + 360.0, g.nextStele!!, 1e-9)
+        assertEquals(0, g.steles.single().part)
+        assertTrue(g.turnUntil { g.quotes.quote === CORINTH_TALE[0].quotes[0] })
+    }
+
+    /** Before day 3, no stone stands. The parts of the items bought then come from day 3, one after the other. */
+    @Test
+    fun noStoneBeforeDayThree() {
+        val g = game(store("effort" to effortAt(2, 0.9)))
+        assertTrue(g.buy(Line.GODS))
+        assertTrue(g.buy(Line.BEAUTY))
+        g.update(DT)
+        assertNull(g.nextStele)
+        assertTrue(g.turnUntil { g.day == 3 && g.nextStele != null })
+        assertEquals(0, g.steles.last().part)
+        assertTrue(g.turnUntil(300.0) { g.stelesTold == 3 })
     }
 
     @Test
@@ -184,7 +213,8 @@ class StationsTest {
         })
         assertTrue(replyFaded)
         assertTrue(g.turnUntil { g.stelesTold == 1 })
-        assertTrue(!g.turnUntil(20.0) { g.stelesTold > 1 })
+        assertTrue(g.turnUntil { g.quotes.quote !== CORINTH_TALE[0].quotes[0] })
+        assertTrue(!g.turnUntil(20.0) { g.quotes.quote === CORINTH_TALE[0].quotes[0] })
     }
 
     @Test

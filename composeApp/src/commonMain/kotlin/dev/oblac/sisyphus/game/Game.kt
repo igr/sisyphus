@@ -484,11 +484,24 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         }
     }
 
-    /** The next stone stands ahead when an item is bought for a part not yet told, once the part before it is told. */
+    /**
+     * The parts of the tale due in this climb: none before [Config.TALE_DAY]. Then the first part, and one more for each item
+     * bought, up to the last but one. The last part, the rock, comes with the final climb.
+     */
+    private val partsDue: Int
+        get() {
+            val tale = tale ?: return 0
+            return when {
+                summit != null -> tale.size
+                day < Config.TALE_DAY -> 0
+                else -> min(1 + shop.bought, tale.size - 1)
+            }
+        }
+
+    /** The next stone stands ahead for a part that is due and not yet told, once the part before it is told. */
     private fun placeStele() {
-        val tale = tale ?: return
         val part = part ?: return
-        if (nextStele != null || atTop || stelesTold >= min(shop.bought, tale.size)) return
+        if (nextStele != null || atTop || stelesTold >= partsDue) return
         if (quotes.quote in part.quotes || news.any { it in part.quotes }) return
         nextStele = position + Config.STELE_TURNS * PX_PER_TURN
         dirty = true

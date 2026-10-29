@@ -1,6 +1,6 @@
 # Stations
 
-Design for the stations: carved stones by the path that tell a tale, one part for each item bought. In Corinth, they tell the tale of Sisyphus himself.
+Design for the stations: carved stones by the path that tell a tale, from day 3 of each climb, and one more part for each item bought. In Corinth, they tell the tale of Sisyphus himself.
 
 ## Why
 
@@ -8,8 +8,8 @@ The middle of a climb has few new things. At 5 minutes a day, a session is about
 
 ## Goals
 
-- When the player buys an item, a stele, a carved stone, stands by the path ahead. When Sisyphus walks past it, the next part of the tale types out in the panel of the wise words.
-- A tale has 15 parts, one for each item. The 15th part, the rock, comes at the start of the final climb. Thus every player hears the whole tale before the top, at any pace.
+- From day 3 of each climb, steles, carved stones, stand by the path ahead, one at a time: the first with no purchase, and one more for each item bought. When Sisyphus walks past a stone, the next part of the tale types out in the panel of the wise words.
+- A tale has 15 parts: the first on day 3, then one for each item bought, up to the 14th. The 15th part, the rock, comes at the start of the final climb. Thus every player hears the whole tale before the top, at any pace.
 - At 5 minutes a day, a session brings about 2 parts. At 30 minutes a day, it brings about 7.
 - Corinth tells the tale of Sisyphus. Some parts name what the player buys in the Agora: Merope, Death (Thanatos), Hermes and the dolphin.
 
@@ -30,7 +30,7 @@ The middle of a climb has few new things. At 5 minutes a day, a session is about
 
 ## How it works
 
-- **A stone for each item.** When the player buys an item, a stone stands by the path 30 turns of walking ahead: 360 pixels, as one turn walks 12 pixels without a rock. With a rock, he walks faster, so he reaches it in 20 to 30 turns.
+- **The stones.** On day 3 of a climb, `Config.TALE_DAY`, the first stone stands by the path 30 turns of walking ahead: 360 pixels, as one turn walks 12 pixels without a rock. Each item bought brings one more part, up to the 14th, and its stone stands 30 turns ahead once the part before it is told. Before day 3, no stone stands: the parts of the items bought then come from day 3, one after the other. With a rock, he walks faster, so he reaches a stone in 20 to 30 turns.
 - **The part.** When Sisyphus walks past the stone, its text types out in the panel, as the wise words do. The place stands under it, as the author stands under the wise words, for example "— Peirene's spring". The wise words wait, and they go on after the reading time of the text. A part with two texts shows them one after the other.
 - **One at a time.** When the player buys two or more items together, their stones stand one after another, 30 turns apart.
 - **The visions.** A text does not come while a vision shows: Sisyphus walks past the stone, and its text comes after the vision. When a vision comes while a text shows, the text stops, and it comes again after the vision.
@@ -93,7 +93,7 @@ At the top, Camus ends the tale: "One must imagine Sisyphus happy."
 
 ## To test it
 
-- Tests: a stone stands 30 turns ahead after an item is bought; walking past it tells the next part; the parts come in order, once each; two items bought together give two stones, 30 turns apart; the gods' pushes do not reach a stone; a text waits for a vision; the 15th part comes before the first herm; the stones and the parts told survive a restart; a new climb starts the tale again; a world with no tale has no stones; every text fits.
+- Tests: the first stone stands 30 turns ahead on day 3, with no item bought; no stone stands before day 3; a stone stands 30 turns ahead after an item is bought; walking past it tells the next part; the parts come in order, once each; two items bought together give two stones, 30 turns apart; the gods' pushes do not reach a stone; a text waits for a vision; the 15th part comes before the first herm; the stones and the parts told survive a restart; a new climb starts the tale again; a world with no tale has no stones; every text fits.
 - Snapshots: a stone by the path, and its part in the panel, also on the smallest phone.
 
 ## Later
