@@ -9,10 +9,10 @@ The climb is long, and the same every day. A joker is a small surprise: who stan
 ## Goals
 
 - On day 1 of each climb, and then about once a game day or two of walking, a joker stands by the path ahead. When the rock comes near, a bubble over the joker tells a joke or a riddle, with the name of the joker as its note.
-- 10 jokers, all from the public domain: figures of old books, of folk tales and of history. Each has its own chance: from 1 in 2 for the most common, Diogenes, to 1 in 500 for the rarest, Cthulhu.
+- 12 jokers, all from the public domain: figures of old books, of folk tales and of history. Each has a chance: from 1 in 2 for the most common, Diogenes, to 1 in 500 for the rarest, Cthulhu.
 - A joker only talks: no obols, and no change to the climb.
 - The bubble of a joker never shows with the popup of a stone, or during a vision.
-- A third tab of the Worlds screen, Jokers, shows the 10 cards of the jokers. The card of a joker that the player has met is face up, and a tap on it shows who the joker is. The other cards are face down, and a tap does nothing.
+- A third tab of the Worlds screen, Jokers, shows the 12 cards of the jokers. The card of a joker that the player has met is face up, and a tap on it shows who the joker is. The other cards are face down, and a tap does nothing.
 - The jokers are the same in every world.
 
 ## Not in this project
@@ -33,7 +33,7 @@ The climb is long, and the same every day. A joker is a small surprise: who stan
 ## How it works
 
 - **Where a joker stands.** At the start of each climb, the first joker stands by the path 20 to 40 turns of walking ahead, at random, `Config.FIRST_JOKER`: day 2 begins after 53 turns, so he talks on day 1. After each joker, the next stands 72 to 144 turns of walking ahead, at random: one to two days at the pace of a new climb, `Config.JOKER_TURNS`. With a rock, he walks faster, and the days go faster too, so it stays one to two days.
-- **Which joker.** The game takes the joker when it puts one by the path, at random, by the weights below. Each weight is out of 500, so the chance of Diogenes is 250 in 500: 1 in 2.
+- **Which joker.** The game takes the joker when it puts one by the path, at random, by the weights below. Each weight is out of 500, so the chance of Diogenes is 227 in 500: about 1 in 2.
 - **The bubble.** It works as the popup of a stone does. It opens when the rock is 3 turns of walking from the joker, `Config.NEAR_TURNS`. Each text shows for 6 turns of walking, `Config.READ_TURNS`. A riddle and most jokes have two texts: the question, then the answer. Its tail points down at the joker, from above his head or the rock, and its note is the name of the joker. It opens with a pop, `popup.wav` at half its volume, as the popup of a stone does, unless the sound is off. The pop plays once for each bubble: not again for its second text, after a vision, or after a restart.
 - **Which line.** Each joker has a set of lines, and the most common jokers have the most. The game counts how many times the player met each joker, in all climbs and worlds. A joker tells the lines in turn: the first line the first time, the second line the next time, and after the last line the first again.
 - **After the bubble.** The joker is met: the card turns face up, and stays face up. The joker turns to watch Sisyphus go, and stays by the path behind him, out of the picture. Then the next joker stands ahead.
@@ -42,15 +42,15 @@ The climb is long, and the same every day. A joker is a small surprise: who stan
 - **The top.** No bubble shows at the top. A new climb, a move to another world and the Reset of the climb put a new joker by the path, 20 to 40 turns into the new climb.
 - **The light.** The light of the time of day falls on the jokers, as on the props. It does not fall on the bubble.
 - **Old saved games.** A game saved before the jokers has met none. Its first joker stands 20 to 40 turns ahead.
-- **The dev screen.** In dev builds, Joker in the row of the worlds, now "Worlds and jokers", brings the next joker in the order of the cards, a turn into the bubble. So a few taps show all 10. A stone too near that joker stands 15 turns past the joker.
+- **The dev screen.** In dev builds, Joker in the row of the worlds, now "Worlds and jokers", brings the next joker in the order of the cards, a turn into the bubble. So a few taps show all 12. A stone too near that joker stands 15 turns past the joker.
 
 ## The jokers
 
-The id is the order of the cards, from the most common to the rarest. It never changes.
+The id is the order of the cards, and it never changes. The first ten go from the most common to the rarest; a new joker takes the next id, so its card comes last.
 
 | Id | Joker | Weight | Chance | Look | Who (on the card) |
 |---|---|---|---|---|---|
-| 0 | Diogenes | 250 | 1 in 2 | An old man with a white beard, a brown cloak and bare feet. He holds a lit lamp. | The Cynic of Corinth. He lived in a jar, and with a lamp by day he looked for an honest man. |
+| 0 | Diogenes | 227 | 1 in 2 | An old man with a white beard, a brown cloak and bare feet. He holds a lit lamp. | The Cynic of Corinth. He lived in a jar, and with a lamp by day he looked for an honest man. |
 | 1 | Humpty Dumpty | 124 | 1 in 4 | A big egg with a face, a cravat and thin legs. | An egg from an old riddle, who talks to Alice in Through the Looking-Glass by Lewis Carroll, 1871. |
 | 2 | Red Riding Hood | 62 | 1 in 8 | A girl in a red cape with a hood, with a basket. | A girl who met a wolf on the way to her grandmother, in the tale of Charles Perrault, 1697. |
 | 3 | Don Quixote | 31 | 1 in 16 | A tall, thin knight with a beard, a basin for a helmet, and a long lance. | A knight who fought windmills as giants, in the book of Miguel de Cervantes, 1605. |
@@ -60,6 +60,8 @@ The id is the order of the cards, from the most common to the rarest. It never c
 | 7 | Hamlet | 3 | 1 in 167 | A pale prince in black, who holds up a skull. | The prince of Denmark, with the skull of the jester Yorick. William Shakespeare, about 1600. |
 | 8 | Count Dracula | 2 | 1 in 250 | A pale man with black hair and a black cape with a red lining and a high collar. | A count of Transylvania who sleeps by day and drinks blood by night. Bram Stoker, 1897. |
 | 9 | Cthulhu | 1 | 1 in 500 | A small green figure with a head like an octopus, small wings and claws. | A great old one who sleeps, dreaming, in his sunken city of R'lyeh. H. P. Lovecraft, 1928. |
+| 10 | Isaac Newton | 15 | 1 in 33 | An old scholar in a grey curly wig, a dark coat and a white cravat, with a red apple in his hand. | An English scholar who found the law of gravity: why an apple falls, and why the moon goes around the Earth. 1687. |
+| 11 | Scheherazade | 8 | 1 in 63 | A woman with a teal veil, black hair and a purple dress with gold, with a book in her hands. | Each night she told the king a tale, and stopped at dawn, so that he let her live one more day. The Arabian Nights. |
 
 The jokers come from works that are in the public domain everywhere. Their looks follow the old books and pictures, not later films: Humpty Dumpty as John Tenniel drew him, Pinocchio with the paper cap of the book, Dracula with no look of a film.
 
@@ -165,6 +167,23 @@ A `|` is the change from the first text to the second. On the smallest phone, ev
 | 1 | Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn. \| It means: nice rock. Roughly. |
 | 2 | I sleep for ages. Then I wake. Then I sleep again. \| You push, it rolls down, you push again. We should talk. |
 
+### Isaac Newton
+
+| # | Line |
+|---|---|
+| 1 | What goes up must come down. \| You knew that long before I wrote it down. |
+| 2 | A body at rest stays at rest, unless a force moves it. \| You are the force. Your rock is the body. Push on. |
+| 3 | I stood on the shoulders of giants. \| You stand on a hill. That works too. |
+| 4 | Riddle: what weighs more, a pound of rock or of feathers? \| Neither. But the feathers are kinder to push uphill. |
+
+### Scheherazade
+
+| # | Line |
+|---|---|
+| 1 | Each night I tell a tale, and I stop at the best part. \| You do the same with your rock. Tomorrow we go on. |
+| 2 | Shall I tell you the tale of a man who pushes a rock? \| Ah, you know it. It is the one that never ends. |
+| 3 | Riddle: the better you tell it, the shorter the night. \| A story. Yours is very long. |
+
 ## Sources
 
 - Diogenes Laertius, Lives of the Eminent Philosophers 6.20–81: Diogenes, his lamp, his jar, the plucked chicken, the statues, the cup, the wine, when to eat, and the citizen of the world. Plutarch, Life of Alexander 14: "Stand out of my sun."
@@ -177,19 +196,21 @@ A `|` is the change from the first text to the second. On the smallest phone, ev
 - William Shakespeare, Hamlet (about 1600), act 5, scene 1: Yorick, and the riddle of the gravedigger.
 - Bram Stoker, Dracula (1897).
 - H. P. Lovecraft, The Call of Cthulhu (1928): the words of the cult.
+- Isaac Newton, Principia (1687): the first law of motion. His letter to Robert Hooke (1675): "If I have seen further, it is by standing on the shoulders of giants." William Stukeley, Memoirs of Sir Isaac Newton's Life (1752): the apple. "What goes up must come down" is an old saying.
+- The Thousand and One Nights, the frame story: Scheherazade tells the king a tale each night, and stops at dawn.
 - The other riddles are old folk riddles.
 
 ## The art
 
 - **A joker:** a sprite of at most 15 by 22 pixels, so that it fits the card with its outline, a little shorter than Sisyphus, standing on the slope like the props, with the feet on the ground under the middle of the sprite. A joker faces down the hill, to Sisyphus, and turns to watch Sisyphus go once the rock has passed. A joker stands where the front of the rock reaches the middle of the sprite, as a stone does, and is drawn behind the rock and Sisyphus.
 - **The bubble:** `drawPopup`, as for a stone. Its tail points at the middle of the joker; when the joker has left the picture, it points at the edge of the picture. The tip of the tail stands 3 pixels above the head of the joker, or above the rock when the rock is higher. The bubble stays under the day and the obols: when it would rise into them, it moves down.
-- **A card:** like a small playing card, about as tall for its width, with round corners, 5 to a row. It has no rank: the chance shows on the open card. Face down, it shows the back of the deck: dark terra, with a pattern of crossed lines. Face up, it is paper, with the joker, outlined in dark, standing on its bottom. The outline lets the white and the cream of a joker show on the paper.
+- **A card:** like a small playing card, about as tall for its width, with round corners, 4 to a row. It has no rank: the chance shows on the open card. Face down, it shows the back of the deck: dark terra, with a pattern of crossed lines. Face up, it is paper, with the joker, outlined in dark, standing on its bottom. The outline lets the white and the cream of a joker show on the paper.
 - **The open card:** a big card over the cards: the joker at twice the size, the name, the chance, such as "1 in 8", who the joker is, and how many times the player met the joker, such as "Met 3 times".
 
 ## The Jokers tab
 
 - The tabs of the Worlds screen become Worlds, Labors and Jokers. The Worlds screen shows no obols, so the three words fit the smallest phone. The obols open the Agora from the main screen.
-- Under the title row, "Jokers met" and how many of the 10 the player has met, such as "3/10". Then the 10 cards in two rows of 5, in the order of the ids.
+- Under the title row, "Jokers met" and how many of the 12 the player has met, such as "3/12". Then the 12 cards in three rows of 4, in the order of the ids.
 - A tap on a face-up card opens it. A tap anywhere closes it. The back button closes it too.
 - While a card is face up that the player has not seen on the tab, a dot stands after "Jokers", and the dot by the day shows, as for a new labor. The Worlds screen then opens on the tab with the news: Labors first, then Jokers.
 
@@ -197,18 +218,18 @@ A `|` is the change from the first text to the second. On the smallest phone, ev
 
 - `nextJoker`: where the next joker stands, in pixels walked, or -1 when none stands ahead yet. Old saved games: -1, so a joker is put by the path at once.
 - `joker`: the id of the next joker. Old saved games: 0. An id that the game does not have is Diogenes.
-- `met.0` to `met.9`: how many times the player met each joker, by id, in all climbs and worlds. A joker met once or more has the card face up, and the count tells which line comes next. Kept at the top and in another world.
-- `jokersSeen`: the cards seen face up on the Jokers tab, one bit for each id: 1 for Diogenes, 2 for Humpty Dumpty, up to 512 for Cthulhu. Kept.
+- `met.0` to `met.11`: how many times the player met each joker, by id, in all climbs and worlds. A joker met once or more has the card face up, and the count tells which line comes next. Kept at the top and in another world.
+- `jokersSeen`: the cards seen face up on the Jokers tab, one bit for each id: 1 for Diogenes, 2 for Humpty Dumpty, up to 2048 for Scheherazade. Kept.
 - `docs/saved-data.md` lists the new keys.
 
 ## To test it
 
-- The jokers: 10, with the ids 0 to 9 in order; the weights add up to 500, from 250 down to 1; each has a line, each line one or two texts; every text has only the letters of the font; every text fits the bubble with its note on the smallest phone.
+- The jokers: 12, with the ids 0 to 11 in order; the weights add up to 500; each has a line, each line one or two texts; every text has only the letters of the font; every text fits the bubble with its note on the smallest phone.
 - The choice: over many choices, each joker comes about as often as its weight says; the choice takes no number from the random numbers of the game, so the visions and the tales stay the same.
 - On the path: the first joker of a climb stands 20 to 40 turns ahead and talks on day 1, and after each joker the next stands 72 to 144 turns ahead; the bubble opens 3 turns before the rock reaches the joker, and each text shows for 6 turns; after it, the joker is met once more, and the next joker stands ahead; the lines of a joker come in turn; a joker stands at least 15 turns from the next stone, also when the stone comes after him; a vision hides the bubble, and it waits; the gods' pushes do not reach a joker; no bubble at the top; a new climb puts a new joker ahead; the joker ahead, his id and the jokers met survive a restart.
 - The tab: the tabs fit the smallest phone; a face-down card does not open; a face-up card opens, and a tap closes it; the dot shows for a new card, and goes when the tab opens; the Worlds screen opens on the tab with the news.
 - The dev screen: Joker brings the next joker at once, and its row fits the smallest phone.
-- Snapshots: Diogenes with his bubble, ahead of the rock and behind Sisyphus, also on the smallest phone; all 10 jokers in a row, as they are and in the light of the night; the Jokers tab with some cards face up, and the dot by the day; an open card.
+- Snapshots: Diogenes with his bubble, ahead of the rock and behind Sisyphus, also on the smallest phone; all the jokers in a row, as they are and in the light of the night; the Jokers tab with some cards face up, and the dot by the day; an open card.
 
 ## Later
 

@@ -1587,7 +1587,7 @@ class ScreenTest {
     /** A card face shows only its joker, on paper: no rank in a corner, and none on the open card. */
     @Test
     fun theCardsShowNoRank() {
-        val s = screen(MemoryStore(JOKERS.associate { "met.${it.id}" to 1.0 } + ("jokersSeen" to 1023.0)))
+        val s = screen(MemoryStore(JOKERS.associate { "met.${it.id}" to 1.0 } + ("jokersSeen" to ((1 shl JOKERS.size) - 1).toDouble())))
         val l = s.layout!!
         s.tap(l.dayLabel(s.game.day))
         s.tap(l.jokersTab)
@@ -1604,13 +1604,13 @@ class ScreenTest {
     @Test
     fun theCardsShowTheJokersMet() {
         fun tab(vararg keys: Pair<String, Double>): IntArray {
-            val s = screen(MemoryStore(mapOf("jokersSeen" to 1023.0, *keys)))
+            val s = screen(MemoryStore(mapOf("jokersSeen" to ((1 shl JOKERS.size) - 1).toDouble(), *keys)))
             s.tap(s.layout!!.dayLabel(s.game.day))
             s.tap(s.layout!!.jokersTab)
             return s.render().data.copyOf()
         }
         fun open(met: Double): IntArray {
-            val s = screen(MemoryStore(mapOf("jokersSeen" to 1023.0, "met.9" to met)))
+            val s = screen(MemoryStore(mapOf("jokersSeen" to ((1 shl JOKERS.size) - 1).toDouble(), "met.9" to met)))
             s.tap(s.layout!!.dayLabel(s.game.day))
             s.tap(s.layout!!.jokersTab)
             s.tap(s.layout!!.jokerCards[9])
@@ -1643,6 +1643,17 @@ class ScreenTest {
         s.back()
         s.tap(l.dayLabel(s.game.day))
         assertTrue(s.jokersShown)
+    }
+
+    /** The cards lie in rows of four, as a hand of three rows. */
+    @Test
+    fun theCardsLieInRowsOfFour() {
+        val cards = screen().layout!!.jokerCards
+        for ((i, card) in cards.withIndex()) {
+            assertEquals(cards[i % 4].x, card.x, "card $i")
+            assertEquals(cards[i / 4 * 4].y, card.y, "card $i")
+        }
+        assertTrue(cards[4].y > cards[0].bottom)
     }
 
     @Test

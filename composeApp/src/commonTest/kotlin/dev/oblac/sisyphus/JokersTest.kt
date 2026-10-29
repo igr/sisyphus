@@ -13,11 +13,12 @@ import kotlin.test.assertTrue
 class JokersTest {
     @Test
     fun theJokersAreInTheOrderOfTheirIds() {
-        assertEquals((0..9).toList(), JOKERS.map { it.id })
+        assertEquals((0..11).toList(), JOKERS.map { it.id })
         assertEquals(
             listOf(
                 "Diogenes", "Humpty Dumpty", "Red Riding Hood", "Don Quixote", "Pinocchio",
                 "Cleopatra", "Sherlock Holmes", "Hamlet", "Count Dracula", "Cthulhu",
+                "Isaac Newton", "Scheherazade",
             ),
             JOKERS.map { it.name },
         )
@@ -26,14 +27,14 @@ class JokersTest {
     /** Each weight is out of 500: Diogenes comes 1 time in 2, Cthulhu 1 time in 500. */
     @Test
     fun theWeightsAddUpToFiveHundred() {
-        assertEquals(listOf(250, 124, 62, 31, 15, 8, 4, 3, 2, 1), JOKERS.map { it.weight })
+        assertEquals(listOf(227, 124, 62, 31, 15, 8, 4, 3, 2, 1, 15, 8), JOKERS.map { it.weight })
         assertEquals(500, JOKERS.sumOf { it.weight })
-        assertEquals(listOf(2, 4, 8, 16, 33, 63, 125, 167, 250, 500), JOKERS.map { it.chance })
+        assertEquals(listOf(2, 4, 8, 16, 33, 63, 125, 167, 250, 500, 33, 63), JOKERS.map { it.chance })
     }
 
     @Test
     fun everyJokerHasLinesOfOneOrTwoTexts() {
-        assertEquals(listOf(10, 8, 6, 5, 4, 3, 3, 3, 2, 2), JOKERS.map { it.jokes.size })
+        assertEquals(listOf(10, 8, 6, 5, 4, 3, 3, 3, 2, 2, 4, 3), JOKERS.map { it.jokes.size })
         assertTrue(JOKERS.all { joker -> joker.jokes.all { it.texts.size in 1..2 } })
         fun ends(i: Int) = JOKERS[i].jokes.let { it.first().texts.first() to it.last().texts.last() }
         assertEquals("I carry a lamp at noon. I am looking for an honest man." to "Do not worry. At you, I wag.", ends(0))

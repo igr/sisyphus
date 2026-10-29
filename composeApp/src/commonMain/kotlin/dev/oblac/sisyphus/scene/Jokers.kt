@@ -269,5 +269,60 @@ private val CTHULHU = sprite(
     """,
 )
 
+/** Isaac Newton in a grey curly wig and a dark coat, with an apple. */
+private val ISAAC_NEWTON = sprite(
+    SKIN + mapOf('w' to rgb(0xDCD4C4), 'W' to rgb(0xA89C88), 'k' to rgb(0xF0ECE0), 'b' to rgb(0x2E2A3A), 'B' to rgb(0x4A4458), 'a' to rgb(0xC0392B), 'A' to rgb(0x8E2A20), 'g' to rgb(0x5E8A4A), 'l' to rgb(0x6A5A48), 'd' to rgb(0x1E1A16)),
+    """
+    ....wwww.....
+    ...wwwwwwW...
+    ..wwsssswwW..
+    ..wesssswwW..
+    .wsssSsswwWW.
+    .wwssssswwWW.
+    .wwwskswwwWW.
+    .wwwkkkwwWWW.
+    .g..bbbbbbB..
+    aab.bbbbbbBB.
+    aAssbbbbbbBB.
+    ....bbbbbbBB.
+    ....bbbbbbB..
+    ....bbbbbbB..
+    ....bbbbbbB..
+    ....bbbbbbB..
+    ....bbbbbbB..
+    ....ll..ll...
+    ....ll..ll...
+    ....ll..ll...
+    ...dd..dd....
+    """,
+)
+
+/** Scheherazade in a teal veil and a purple dress, with a book. */
+private val SCHEHERAZADE = sprite(
+    SKIN + mapOf('s' to rgb(0xC8925E), 'S' to rgb(0x9A6A40), 'h' to rgb(0x1A1A24), 'v' to rgb(0x2A8A8A), 'V' to rgb(0x1E6464), 'd' to rgb(0x7A3E8E), 'D' to rgb(0x52286A), 'g' to rgb(0xE0B030), 'b' to rgb(0xA8783E)),
+    """
+    ....vvvv....
+    ...vvvvvV...
+    ..vvhhhhvV..
+    ..vhsssshV..
+    ..vesssshhV.
+    ..sssSshhhV.
+    ...ssshhhhV.
+    ....shhhhhV.
+    ...ddgddhhV.
+    ..ddddgdDDV.
+    .sbbdddddDD.
+    .sbbgddddDD.
+    ..dddddddDD.
+    ..ddgddddDD.
+    ..dddddddDD.
+    ..ddgddddDD.
+    ..dddddddDD.
+    ..ddddddddD.
+    ..ddddddddD.
+    ....s...s...
+    ...ss..ss...
+    """,
+)
 /** The sprite of each joker, by his id. Each faces down the hill, to Sisyphus; flipped, he watches him go. */
-internal val JOKER_SPRITES: List<Pixels> = listOf(DIOGENES, HUMPTY_DUMPTY, RED_RIDING_HOOD, DON_QUIXOTE, PINOCCHIO, CLEOPATRA, SHERLOCK_HOLMES, HAMLET, COUNT_DRACULA, CTHULHU)
+internal val JOKER_SPRITES: List<Pixels> = listOf(DIOGENES, HUMPTY_DUMPTY, RED_RIDING_HOOD, DON_QUIXOTE, PINOCCHIO, CLEOPATRA, SHERLOCK_HOLMES, HAMLET, COUNT_DRACULA, CTHULHU, ISAAC_NEWTON, SCHEHERAZADE)

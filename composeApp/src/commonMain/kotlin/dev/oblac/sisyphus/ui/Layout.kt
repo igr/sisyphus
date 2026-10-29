@@ -148,9 +148,11 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     /** On the Jokers tab, under the title row: "Jokers met", and how many of them the player has met, such as "3/10". */
     val jokersMet = Rect(worldList.x, worldList.y, worldList.w, PixelFont.CAP_HEIGHT)
 
-    /** The cards of the jokers, by id: two rows of five, like a hand of playing cards. */
-    val jokerCards: List<Rect> = ((worldList.w - 4 * CARD_GAP) / 5).let { w ->
-        List(JOKERS.size) { i -> Rect(worldList.x + i % 5 * (w + CARD_GAP), jokersMet.bottom + 6 + i / 5 * (CARD_HEIGHT + 4), w, CARD_HEIGHT) }
+    /** The cards of the jokers, by id: rows of [CARDS_IN_A_ROW], like a hand of playing cards. */
+    val jokerCards: List<Rect> = ((worldList.w - (CARDS_IN_A_ROW - 1) * CARD_GAP) / CARDS_IN_A_ROW).let { w ->
+        List(JOKERS.size) { i ->
+            Rect(worldList.x + i % CARDS_IN_A_ROW * (w + CARD_GAP), jokersMet.bottom + 6 + i / CARDS_IN_A_ROW * (CARD_HEIGHT + 4), w, CARD_HEIGHT)
+        }
     }
 
     /** An open card, over the cards: the joker at twice his size, his name, his chance, who he is, and how often the player met him. */
@@ -240,8 +242,9 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
         const val LABOR_TIERS = 26
         const val LABOR_DONE = 36
         const val CARD_GAP = 2
-        /** A card of a joker, about as tall for its width as a playing card: the outlined joker stands on its bottom. */
-        const val CARD_HEIGHT = 30
+        const val CARDS_IN_A_ROW = 4
+        /** A card of a joker, about as tall for its width as a playing card on the smallest phone: the outlined joker stands on its bottom. */
+        const val CARD_HEIGHT = 39
         /** In the open card, the room for the outlined joker at twice his size, and for the lines of who he is. */
         const val OPEN_SPRITE = 52
         const val ABOUT_LINES = 5

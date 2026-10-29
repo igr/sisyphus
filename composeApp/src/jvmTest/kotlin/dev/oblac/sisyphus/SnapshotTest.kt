@@ -163,7 +163,7 @@ class SnapshotTest {
 
     /**
      * Diogenes ahead of the rock, with the first text of his first line in a bubble over him, on both phones; then behind him,
-     * with the second text. Then the 10 jokers in a row, as they are and in the light of the night.
+     * with the second text. Then all the jokers in a row, as they are and in the light of the night.
      */
     @Test
     fun jokers() {
@@ -304,10 +304,10 @@ class SnapshotTest {
         write(s.render(), "12-day-dot", 3)
     }
 
-    /** The Jokers tab with four jokers met, one of them new, on both phones; then the open card of Sherlock Holmes. */
+    /** The Jokers tab with six jokers met, three of them new, on both phones; then the open card of Sherlock Holmes. */
     @Test
     fun jokerCards() {
-        val met = mapOf("met.0" to 12.0, "met.1" to 5.0, "met.3" to 1.0, "met.6" to 2.0, "jokersSeen" to 11.0, "effort" to effortAt(3, 0.4))
+        val met = mapOf("met.0" to 12.0, "met.1" to 5.0, "met.3" to 1.0, "met.6" to 2.0, "met.10" to 1.0, "met.11" to 1.0, "jokersSeen" to 11.0, "effort" to effortAt(3, 0.4))
         for ((name, size) in listOf("14-jokers-small" to listOf(1080, 2340, 144, 102), "14-jokers" to listOf(1179, 2556, 177, 102))) {
             val s = Screen(Game(MemoryStore(met), seed = 3), seed = 5)
             s.resize(size[0], size[1], size[2], size[3])

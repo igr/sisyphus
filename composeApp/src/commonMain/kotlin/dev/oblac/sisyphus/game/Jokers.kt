@@ -13,10 +13,10 @@ class Joke(vararg val texts: String)
  */
 class Joker(val id: Int, val name: String, val weight: Int, val about: String, val jokes: List<Joke>)
 
-/** The jokers, in the order of their ids: from the most common to the rarest. */
+/** The jokers, in the order of their ids, which is the order of their cards. A new joker comes last. */
 val JOKERS = listOf(
     Joker(
-        0, "Diogenes", 250,
+        0, "Diogenes", 227,
         "The Cynic of Corinth. He lived in a jar, and with a lamp by day he looked for an honest man.",
         listOf(
             Joke("I carry a lamp at noon. I am looking for an honest man.", "You push a rock, and you say that it is a rock. You may be the one."),
@@ -119,6 +119,25 @@ val JOKERS = listOf(
         listOf(
             Joke("Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn.", "It means: nice rock. Roughly."),
             Joke("I sleep for ages. Then I wake. Then I sleep again.", "You push, it rolls down, you push again. We should talk."),
+        ),
+    ),
+    Joker(
+        10, "Isaac Newton", 15,
+        "An English scholar who found the law of gravity: why an apple falls, and why the moon goes around the Earth. 1687.",
+        listOf(
+            Joke("What goes up must come down.", "You knew that long before I wrote it down."),
+            Joke("A body at rest stays at rest, unless a force moves it.", "You are the force. Your rock is the body. Push on."),
+            Joke("I stood on the shoulders of giants.", "You stand on a hill. That works too."),
+            Joke("Riddle: what weighs more, a pound of rock or of feathers?", "Neither. But the feathers are kinder to push uphill."),
+        ),
+    ),
+    Joker(
+        11, "Scheherazade", 8,
+        "Each night she told the king a tale, and stopped at dawn, so that he let her live one more day. The Arabian Nights.",
+        listOf(
+            Joke("Each night I tell a tale, and I stop at the best part.", "You do the same with your rock. Tomorrow we go on."),
+            Joke("Shall I tell you the tale of a man who pushes a rock?", "Ah, you know it. It is the one that never ends."),
+            Joke("Riddle: the better you tell it, the shorter the night.", "A story. Yours is very long."),
         ),
     ),
 )
