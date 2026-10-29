@@ -1,6 +1,7 @@
 package dev.oblac.sisyphus
 
 import dev.oblac.sisyphus.game.CLIMB
+import dev.oblac.sisyphus.game.CORINTH_TALE
 import dev.oblac.sisyphus.game.Config
 import dev.oblac.sisyphus.game.DAY_LENGTH
 import dev.oblac.sisyphus.game.FIRST_OBOL
@@ -315,8 +316,9 @@ class ScreenTest {
         assertTrue(l.devStep(4).right <= l.agoraRow(0).right)
         assertTrue(l.devStep(0).bottom <= l.agoraRow(0).bottom)
         assertTrue(l.devResetShop.bottom <= l.agoraRow(1).bottom)
-        assertTrue(l.devResetClimb.right < l.devNextObol.x && l.devNextObol.right < l.devTop.x && l.devTop.right <= l.agoraRow(2).right)
-        assertTrue(l.devTop.bottom <= l.agoraRow(2).bottom)
+        assertTrue(l.devResetClimb.right < l.devNextObol.x && l.devNextObol.right < l.devTop.x && l.devTop.right < l.devStone.x)
+        assertTrue(l.devStone.right <= l.agoraRow(2).right, "the buttons end at ${l.devStone.right}, the row at ${l.agoraRow(2).right}")
+        assertTrue(l.devStone.bottom <= l.agoraRow(2).bottom)
         assertTrue(l.devWorlds.bottom <= l.agoraRow(3).bottom)
     }
 
@@ -1329,6 +1331,17 @@ class ScreenTest {
         assertNotNull(s.game.vision)
         assertFalse(s.agoraOpen)
         assertFalse(s.devOpen)
+    }
+
+    /** Stone sets the next stone of the tale just ahead and closes the Agora: its popup shows at once. */
+    @Test
+    fun theDevScreenSetsAStoneJustAhead() {
+        val s = devScreen()
+        s.openDev()
+        s.tap(s.layout!!.devStone)
+        assertFalse(s.agoraOpen)
+        assertFalse(s.devOpen)
+        assertEquals(CORINTH_TALE[0].texts[0], s.game.telling)
     }
 
     @Test

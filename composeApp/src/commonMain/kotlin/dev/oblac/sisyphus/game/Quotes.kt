@@ -693,8 +693,6 @@ class QuoteBox(private val seed: Int, drawn: Int, firstTime: Boolean, private va
     private var delay = 0.8
     private var shown = 0.0
     private var budget = 0.0
-    /** The quote is a wise word that the box drew itself, or the tutorial: not a news, and not announced. */
-    private var plain = true
 
     init {
         val resume = !firstTime && drawn > 0
@@ -735,9 +733,7 @@ class QuoteBox(private val seed: Int, drawn: Int, firstTime: Boolean, private va
             Phase.FADING -> {
                 fade += (dt / FADE_TIME).toFloat()
                 if (fade >= 1f) {
-                    val waiting = news()
-                    quote = waiting ?: next()
-                    plain = waiting == null
+                    quote = news() ?: next()
                     phase = Phase.TYPING
                     typed = 0.0
                     fade = 0f
@@ -750,16 +746,10 @@ class QuoteBox(private val seed: Int, drawn: Int, firstTime: Boolean, private va
     /** Shows [quote] at once, typed from the start. It does not count as drawn, so the round goes on after it. */
     fun announce(quote: Quote) {
         this.quote = quote
-        plain = false
         phase = Phase.TYPING
         typed = 0.0
         fade = 0f
         delay = 0.4
-    }
-
-    /** A wise word that types or shows starts to fade, so that a news waiting after it comes now. A news or an announced quote stays. */
-    fun hurry() {
-        if (plain) phase = Phase.FADING
     }
 
     private fun next(): Quote = quoteAt(drawn++)

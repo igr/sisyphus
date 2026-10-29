@@ -1,14 +1,12 @@
 package dev.oblac.sisyphus.game
 
-/** A part of a tale, carved on a stone at [place]: its texts show one after the other, with the place under each. */
-class Part(val place: String, vararg texts: String) {
-    val quotes: List<Quote> = texts.map { Quote(it, place) }
-}
+/** A part of a tale, carved on a stone at [place]: its [texts] show one after the other, in a popup over the stone. */
+class Part(val place: String, vararg val texts: String)
 
-/** A stone of the tale by the path, [at] pixels walked, carved with the [part] of the tale that it tells. */
+/** A stone of the tale by the path, carved with the [part] of the tale that it tells. The rock reaches it when he has walked [at] pixels. */
 class Stele(val at: Double, val part: Int)
 
-/** The tale of Sisyphus, told by the stones of Corinth: one part for each item bought. See `docs/stations.md`. */
+/** The tale of Sisyphus, told by the stones of Corinth from day 3 of a climb. See `docs/stations.md`. */
 val CORINTH_TALE = listOf(
     Part("the old walls", "Long ago, this city was Ephyra. Sisyphus built it, and he became its king."),
     Part("the two harbors", "His ships sailed on two seas, and his city grew rich. Later, men called it Corinth."),

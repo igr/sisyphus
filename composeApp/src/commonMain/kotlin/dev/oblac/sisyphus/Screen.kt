@@ -296,6 +296,11 @@ class Screen(
                     }
                     l.devNextObol.near(x, y, 0) -> game.nearTheNextObol()
                     l.devTop.near(x, y, 0) -> game.nearTheTop()
+                    l.devStone.near(x, y, 0) -> {
+                        agoraOpen = false
+                        devOpen = false
+                        game.nearTheNextStone()
+                    }
                     l.devWorlds.near(x, y, 0) -> openWorlds = !openWorlds
                     l.devVision.near(x, y, 0) -> {
                         agoraOpen = false

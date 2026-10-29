@@ -60,6 +60,12 @@ object Config {
     /** The tale of the stones begins on this day of each climb, also before an item is bought. */
     const val TALE_DAY = 3
 
+    /** The popup over a stone opens when the rock is this many turns of walking from it. */
+    const val NEAR_TURNS = 3
+
+    /** Turns of walking that each text of a part shows in the popup over its stone. */
+    const val READ_TURNS = 6
+
     /**
      * The price of each world after Corinth, in US dollars. The stores set the price that the game shows, in the money of
      * each player, so a change here must be made in RevenueCat, App Store Connect and Play Console too.

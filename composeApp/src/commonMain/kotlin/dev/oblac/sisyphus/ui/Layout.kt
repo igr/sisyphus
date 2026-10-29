@@ -83,10 +83,13 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     val devResetClimb = agoraRow(2).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("Reset") + 8, BUTTON_HEIGHT) }
 
     /** In the dev screen, the button that takes him to a few clicks of the knob before the next obol. */
-    val devNextObol = Rect(devResetClimb.right + 2, devResetClimb.y, PixelFont.width("Next obol") + 8, BUTTON_HEIGHT)
+    val devNextObol = Rect(devResetClimb.right + 2, devResetClimb.y, PixelFont.width("Obol") + 8, BUTTON_HEIGHT)
 
     /** In the dev screen, the button that buys everything and takes him to two turns below the top. */
     val devTop = Rect(devNextObol.right + 2, devResetClimb.y, PixelFont.width("Top") + 8, BUTTON_HEIGHT)
+
+    /** In the dev screen, after Top, the button that sets the next stone of the tale just ahead, so that its popup shows. */
+    val devStone = Rect(devTop.right + 2, devResetClimb.y, PixelFont.width("Stone") + 8, BUTTON_HEIGHT)
 
     /** In the dev screen, the button that opens every world without the store, and gives the store's answer back. */
     val devWorlds = agoraRow(3).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("As bought") + 8, BUTTON_HEIGHT) }

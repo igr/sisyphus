@@ -610,7 +610,7 @@ class UiRenderer {
 
     /**
      * In dev builds only: buttons that add or take away obols, reset the shop, start the climb again,
-     * take him near the next obol or near the top, and open every world.
+     * take him near the next obol or near the top, set the next stone of the tale just ahead, and open every world.
      */
     private fun devScreen(px: Pixels, layout: Layout, openWorlds: Boolean) {
         val obols = layout.agoraRow(0)
@@ -622,8 +622,9 @@ class UiRenderer {
         val climb = layout.agoraRow(2)
         PixelFont.draw(px, "Climb", climb.x, climb.y, TERRA)
         button(px, layout.devResetClimb, "Reset")
-        button(px, layout.devNextObol, "Next obol")
+        button(px, layout.devNextObol, "Obol")
         button(px, layout.devTop, "Top")
+        button(px, layout.devStone, "Stone")
         val worlds = layout.agoraRow(3)
         PixelFont.draw(px, "Worlds", worlds.x, worlds.y, TERRA)
         button(px, layout.devWorlds, if (openWorlds) "As bought" else "Open all")

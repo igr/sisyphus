@@ -6,6 +6,7 @@ import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.gfx.PixelFont
 import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.gfx.bayer
+import dev.oblac.sisyphus.gfx.drawPopup
 import dev.oblac.sisyphus.gfx.hash
 import dev.oblac.sisyphus.gfx.hash01
 import dev.oblac.sisyphus.gfx.lerpColor
@@ -164,6 +165,7 @@ class SceneRenderer(private val geo: SceneGeometry) {
         drawParticles(px, world, atm)
         drawRain(px, world, atm, look.fall)
         if (hud) drawDay(px, game.day, game.newLabors, banner)
+        drawTelling(px, game, p)
     }
 
     private fun orb(p: Double): Orb? {
@@ -394,13 +396,30 @@ class SceneRenderer(private val geo: SceneGeometry) {
     /** The stones of the tale by the path, each with the relief of its part, set into the slope as a herm is. */
     private fun drawSteles(px: Pixels, atm: Atmosphere, game: Game, p: Int) {
         for (stele in game.steles) {
-            val x = floor(stele.at).toInt() - p + geo.heroX - TALE_STONE.width / 2
+            val x = steleLeft(stele.at, p)
             if (x < -TALE_STONE.width || x > px.width) continue
             val top = geo.surfaceY(x, p) - (TALE_STONE.height - 1)
             px.draw(TALE_STONE, x, top, light = atm.light)
             px.draw(RELIEFS[stele.part], x + 1, top + 1, light = atm.light)
         }
     }
+
+    /**
+     * The popup over the stone that he is near, with the text that it tells and how far the tale has come, such as "9/15".
+     * Its tail points down at the stone from above the rock, so that it covers neither him nor the rock. A vision hides it.
+     */
+    private fun drawTelling(px: Pixels, game: Game, p: Int) {
+        val text = game.telling ?: return
+        val at = game.nextStele ?: return
+        val tale = game.tale ?: return
+        if (game.vision != null) return
+        val x = steleLeft(at, p) + TALE_STONE.width / 2
+        val y = floor(geo.baseY + geo.rockDy - geo.rockR).toInt() - 3
+        drawPopup(px, text, x, y, "${game.stelesTold + 1}/${tale.size}")
+    }
+
+    /** The left column of a stone [at] pixels walked, when he has walked [p]: at [at], the front of the rock reaches it. */
+    internal fun steleLeft(at: Double, p: Int) = floor(at).toInt() - p + geo.heroX + (geo.rockDx + geo.rockR).toInt() - TALE_STONE.width / 2
 
     private fun drawBirds(px: Pixels, world: World, clock: Double, look: Look) {
         for (b in world.birds) {

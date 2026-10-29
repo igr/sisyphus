@@ -41,7 +41,7 @@ The last two columns show what happens to each value when Sisyphus reaches the t
 | `daysBefore` | The days pushed through in all the climbs before this one. | Plus the days of the climb | Plus the days of the climb |
 | `laborsSeen` | How many labors were done when the Labors tab was last open. A dot stands by the day while more are done. | Kept | Kept |
 | `stelesTold` | How many parts of the tale the stones told in this climb. | Back to 0 | Back to 0 |
-| `nextStele` | Where the next stone of the tale stands, in pixels walked. -1 means that no stone stands ahead. | Back to -1 | Back to -1 |
+| `nextStele` | Where the next stone of the tale stands, in pixels walked, until its part is told. -1 means that no stone stands ahead. | Back to -1 | Back to -1 |
 | `sound` | 1 when the sound is on, 0 when it is off. | Kept | Kept |
 | `savedAt` | The time of the last save, in seconds since 1970. | Saved again | Saved again |
 

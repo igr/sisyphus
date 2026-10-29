@@ -17,28 +17,6 @@ class QuotesTest {
     private val all = QUOTES + TUTORIAL
 
     @Test
-    fun hurryFadesAWiseWordButNotANews() {
-        val wise = QuoteBox(seed = 1, drawn = 3, firstTime = false)
-        assertEquals(QuoteBox.Phase.SHOWING, wise.phase)
-        wise.hurry()
-        assertEquals(QuoteBox.Phase.FADING, wise.phase)
-
-        val told = QuoteBox(seed = 1, drawn = 3, firstTime = false)
-        told.announce(Quote("The top is in sight. Push on.", "Hermes"))
-        told.hurry()
-        assertEquals(QuoteBox.Phase.TYPING, told.phase)
-
-        var waiting: Quote? = Quote("A labor is done: Turn On.", "Hermes")
-        val box = QuoteBox(seed = 1, drawn = 3, firstTime = false, news = { waiting.also { waiting = null } })
-        box.hurry()
-        repeat(60) { box.update(1 / 60.0, 0.0, 0.0) }
-        assertEquals("A labor is done: Turn On.", box.quote.text)
-        val phase = box.phase
-        box.hurry()
-        assertEquals(phase, box.phase)
-    }
-
-    @Test
     fun everyCharacterHasAGlyph() {
         for (q in all) for (ch in q.text + q.author) assertTrue(PixelFont.hasGlyph(ch), "missing '$ch' in \"${q.text}\"")
     }

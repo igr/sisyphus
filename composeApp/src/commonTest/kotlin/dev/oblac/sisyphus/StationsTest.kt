@@ -7,8 +7,6 @@ import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.PX_PER_TURN
-import dev.oblac.sisyphus.game.Quote
-import dev.oblac.sisyphus.game.QuoteBox
 import dev.oblac.sisyphus.game.START_TIME
 import dev.oblac.sisyphus.game.Vision
 import kotlin.math.PI
@@ -40,7 +38,11 @@ class StationsTest {
         return done()
     }
 
-    private fun Game.showsTale() = CORINTH_TALE.any { quotes.quote in it.quotes }
+    /** Where the popup of a stone at [at] opens: [Config.NEAR_TURNS] of walking before the rock reaches it. */
+    private fun opens(at: Double) = at - Config.NEAR_TURNS * PX_PER_TURN
+
+    /** How far he walks while one text of a part shows. */
+    private val read = Config.READ_TURNS * PX_PER_TURN
 
     /** 14 items bought: all but the last of Beauty. */
     private val fourteen = arrayOf("shop.rock" to 3.0, "shop.beside" to 3.0, "shop.alone" to 3.0, "shop.blessing" to 3.0, "shop.beauty" to 2.0)
@@ -63,7 +65,7 @@ class StationsTest {
         g.update(DT)
         assertEquals(g.position + 360.0, g.nextStele!!, 1e-9)
         assertEquals(0, g.steles.single().part)
-        assertTrue(g.turnUntil { g.quotes.quote === CORINTH_TALE[0].quotes[0] })
+        assertTrue(g.turnUntil { g.telling == CORINTH_TALE[0].texts[0] })
     }
 
     /** Before day 3, no stone stands. The parts of the items bought then come from day 3, one after the other. */
@@ -87,30 +89,45 @@ class StationsTest {
         assertEquals(0, g.steles.single().part)
     }
 
+    /** A popup over the stone tells its part while he is near it: from 3 turns before the rock reaches it, for 6 turns. Then the part is told. */
     @Test
-    fun walkingPastTheStoneTellsThePart() {
+    fun theStoneTellsItsPartWhileHeIsNearIt() {
         val g = game()
         g.buy(Line.GODS)
-        assertTrue(g.turnUntil { g.nextStele == null })
-        repeat(60) { g.update(DT) }
-        assertTrue(g.quotes.quote === CORINTH_TALE[0].quotes[0])
+        val at = g.nextStele!!
+        assertTrue(g.turnUntil { g.telling != null })
+        assertTrue(g.position - opens(at) in 0.0..1.0, "opened at ${g.position}")
+        assertEquals(CORINTH_TALE[0].texts[0], g.telling)
         assertEquals(0, g.stelesTold)
         assertTrue(g.turnUntil { g.stelesTold == 1 })
+        assertTrue(g.position - (opens(at) + read) in 0.0..1.0, "told at ${g.position}")
+        assertNull(g.telling)
+        assertEquals(at, g.steles.first().at)
+    }
+
+    @Test
+    fun thePanelTellsNoPartOfTheTale() {
+        val g = game()
+        g.buy(Line.GODS)
+        assertTrue(g.turnUntil {
+            assertTrue(CORINTH_TALE.none { g.quotes.quote.text in it.texts }, g.quotes.quote.text)
+            g.stelesTold == 1
+        })
     }
 
     @Test
     fun thePartsComeInOrderOnceEach() {
         val g = game()
         for (line in listOf(Line.GODS, Line.BEAUTY, Line.ROCK)) assertTrue(g.buy(line))
-        val shown = mutableListOf<Quote>()
+        val shown = mutableListOf<String>()
         val stones = mutableListOf<Double>()
         assertTrue(g.turnUntil(400.0) {
             assertTrue(g.steles.count { it.at > g.position } <= 1)
-            g.nextStele?.let { if (stones.lastOrNull() != it) stones += it }
-            if (g.showsTale() && shown.lastOrNull() !== g.quotes.quote) shown += g.quotes.quote
+            if (g.stelesTold < 3) g.nextStele?.let { if (stones.lastOrNull() != it) stones += it }
+            g.telling?.let { if (shown.lastOrNull() != it) shown += it }
             g.stelesTold == 3
         })
-        assertEquals((0..2).map { CORINTH_TALE[it].quotes[0] }, shown)
+        assertEquals((0..2).map { CORINTH_TALE[it].texts[0] }, shown)
         assertEquals(3, stones.size)
         assertTrue(stones.zipWithNext().all { (a, b) -> b - a >= 360.0 }, "$stones")
     }
@@ -145,17 +162,16 @@ class StationsTest {
     }
 
     @Test
-    fun aPartNotToldBeforeARestartComesWithANewStone() {
+    fun aRestartKeepsTheStoneAndItsPopup() {
         val store = store()
         val g = game(store)
         g.buy(Line.GODS)
-        assertTrue(g.turnUntil { g.nextStele == null })
+        assertTrue(g.turnUntil { g.telling != null })
         g.save()
         val again = game(store)
-        again.update(DT)
-        assertEquals(0, again.stelesTold)
-        assertEquals(again.position + 360.0, again.nextStele!!, 1e-9)
-        assertTrue(again.turnUntil { again.quotes.quote === CORINTH_TALE[0].quotes[0] })
+        assertEquals(g.nextStele, again.nextStele)
+        assertEquals(CORINTH_TALE[0].texts[0], again.telling)
+        assertTrue(again.turnUntil { again.stelesTold == 1 })
     }
 
     @Test
@@ -170,12 +186,13 @@ class StationsTest {
     }
 
     @Test
-    fun aMoveDropsTheWaitingPart() {
+    fun aMoveDropsTheStoneAndItsPopup() {
         val g = game()
         g.buy(Line.GODS)
-        assertTrue(g.turnUntil { g.nextStele == null })
+        assertTrue(g.turnUntil { g.telling != null })
         g.moveTo(Place.ETNA)
-        assertTrue(!g.turnUntil(60.0) { g.showsTale() })
+        assertNull(g.telling)
+        assertNull(g.nextStele)
         g.addObols(10)
         assertTrue(g.buy(Line.GODS))
         g.update(DT)
@@ -199,72 +216,56 @@ class StationsTest {
         assertTrue(g.turnUntil(30.0) { g.atTop })
     }
 
+    /** A vision stops him, and the popup waits with him: the part is not told while the god is there. */
     @Test
-    fun aPartWaitsForAVision() {
-        val g = game(store("shop.alone" to 1.0, "stelesTold" to 0.0, "nextStele" to 10.0, "nextVision" to 0.5))
-        g.turn(2 * PI)
-        g.untilAsked()
-        val god = g.vision!!.god.title
-        g.answer(right = true)
-        var replyFaded = false
-        assertTrue(g.turnUntil {
-            if (g.quotes.quote.author == god && g.quotes.phase == QuoteBox.Phase.FADING) replyFaded = true
-            g.showsTale()
-        })
-        assertTrue(replyFaded)
-        assertTrue(g.turnUntil { g.stelesTold == 1 })
-        assertTrue(g.turnUntil { g.quotes.quote !== CORINTH_TALE[0].quotes[0] })
-        assertTrue(!g.turnUntil(20.0) { g.quotes.quote === CORINTH_TALE[0].quotes[0] })
-    }
-
-    @Test
-    fun aPartCutByAnotherTextComesAgain() {
-        val g = game(store("shop.alone" to 1.0, "stelesTold" to 0.0, "nextStele" to 6.0))
-        val first = CORINTH_TALE[0].quotes[0]
-        assertTrue(g.turnUntil { g.quotes.quote === first && g.quotes.phase == QuoteBox.Phase.SHOWING })
+    fun aPopupWaitsForAVision() {
+        val g = game(store("shop.alone" to 1.0, "stelesTold" to 0.0, "nextStele" to 40.0))
+        assertTrue(g.turnUntil { g.telling != null })
         g.summonVision()
+        val position = g.position
         g.untilAsked()
-        g.answer(right = false)
-        assertTrue(g.turnUntil { g.quotes.quote === first })
-        assertEquals(1, g.steles.size, "it came again without a new stone")
+        g.turn(-PI / 8)
+        assertEquals(position, g.position)
+        assertEquals(CORINTH_TALE[0].texts[0], g.telling)
+        g.answer(right = true)
+        assertEquals(0, g.stelesTold)
         assertTrue(g.turnUntil { g.stelesTold == 1 })
-
-        val top = game(store(*fourteen, "stelesTold" to 13.0, "nextStele" to 6.0))
-        val gate = CORINTH_TALE[13].quotes
-        assertTrue(top.turnUntil { top.quotes.quote === gate[0] && top.quotes.phase == QuoteBox.Phase.SHOWING })
-        assertTrue(top.buy(Line.BEAUTY))
-        assertEquals("The top is in sight. Push on.", top.quotes.quote.text)
-        val shown = mutableListOf<Quote>()
-        assertTrue(top.turnUntil {
-            if (top.showsTale() && shown.lastOrNull() !== top.quotes.quote) shown += top.quotes.quote
-            top.stelesTold == 14
-        })
-        assertEquals(gate, shown)
-        assertTrue(top.turnUntil { top.nextStele != null })
-        assertEquals(14, top.steles.last().part)
     }
 
+    /** The 15th item begins the final climb while the 14th part shows: Hermes speaks in the panel, and the popup goes on. */
     @Test
-    fun thePartComesBeforeTheNewsOfALabor() {
-        val g = game(store("shop.alone" to 1.0, "stelesTold" to 0.0, "nextStele" to 8.0, "turnsPushed" to 99.5))
-        val order = mutableListOf<String>()
-        assertTrue(g.turnUntil {
-            val text = g.quotes.quote.text
-            if ((g.showsTale() || text.startsWith("A labor is done")) && order.lastOrNull() != text) order += text
-            order.size >= 2
-        })
-        assertEquals(listOf(CORINTH_TALE[0].quotes[0].text, "A labor is done: Turn On."), order)
+    fun theFinalClimbDoesNotCutAPart() {
+        val g = game(store(*fourteen, "stelesTold" to 13.0, "nextStele" to 40.0))
+        val gate = CORINTH_TALE[13].texts
+        assertTrue(g.turnUntil { g.telling == gate[0] })
+        assertTrue(g.buy(Line.BEAUTY))
+        assertEquals("The top is in sight. Push on.", g.quotes.quote.text)
+        assertEquals(gate[0], g.telling)
+        assertTrue(g.turnUntil { g.stelesTold == 14 })
+        assertTrue(g.turnUntil { g.nextStele != null })
+        assertEquals(14, g.steles.last().part)
     }
 
+    /** A part with two texts shows them one after the other, each for 6 turns. */
     @Test
-    fun aPartWithTwoTextsShowsBoth() {
-        val g = game(store(*fourteen, "stelesTold" to 13.0, "nextStele" to 6.0))
-        val gate = CORINTH_TALE[13].quotes
-        assertTrue(g.turnUntil { g.quotes.quote === gate[0] })
-        assertTrue(g.turnUntil { g.quotes.quote === gate[1] })
+    fun aPartWithTwoTextsShowsThemOneAfterTheOther() {
+        val g = game(store(*fourteen, "stelesTold" to 13.0, "nextStele" to 40.0))
+        val gate = CORINTH_TALE[13].texts
+        assertTrue(g.turnUntil { g.telling == gate[0] })
+        assertTrue(g.turnUntil { g.telling == gate[1] })
+        assertTrue(g.position - (opens(40.0) + read) in 0.0..1.0, "the second at ${g.position}")
         assertEquals(13, g.stelesTold)
         assertTrue(g.turnUntil { g.stelesTold == 14 })
-        assertTrue(g.quotes.quote === gate[1])
+        assertTrue(g.position - (opens(40.0) + 2 * read) in 0.0..1.0, "told at ${g.position}")
+    }
+
+    /** A stone whose popup would still show at the top tells nothing there: the end of the climb has the scene to itself. */
+    @Test
+    fun noPopupAtTheTop() {
+        val g = game(store(*fourteen, "shop.beauty" to 3.0, "summit" to 60.0, "stelesTold" to 14.0, "nextStele" to 70.0))
+        assertTrue(g.turnUntil { g.telling != null })
+        assertTrue(g.turnUntil { g.atTop })
+        assertNull(g.telling)
     }
 
     @Test
@@ -278,25 +279,35 @@ class StationsTest {
         assertTrue(g.position < herm, "told at ${g.position}, the herm at $herm")
     }
 
-    /** A text cut on the very frame it starts to fade has been read: its part is counted, and no second stone tells it again. */
+    /** The dev screen's jumps carry him past a stone and its popup: its part is counted, and the tale goes on. */
     @Test
-    fun aPartThatStartsToFadeIsCountedAtOnce() {
-        val g = game(store("shop.alone" to 1.0, "stelesTold" to 0.0, "nextStele" to 6.0))
-        val first = CORINTH_TALE[0].quotes[0]
-        assertTrue(g.turnUntil { g.quotes.quote === first && g.quotes.phase == QuoteBox.Phase.FADING })
-        g.summonVision()
-        assertEquals(1, g.stelesTold)
-    }
-
-    /** The dev screen's jumps carry him past a stone: its part is still told. */
-    @Test
-    fun aJumpPastTheStoneStillTellsItsPart() {
+    fun aJumpPastTheStoneCountsItsPart() {
         val g = game()
         g.buy(Line.GODS)
+        val at = g.nextStele!!
         g.nearTheNextObol()
+        assertTrue(g.position > opens(at) + read, "the jump ends at ${g.position}")
         g.update(DT)
-        assertNull(g.nextStele)
-        assertTrue(g.turnUntil { g.quotes.quote === CORINTH_TALE[0].quotes[0] })
+        assertEquals(1, g.stelesTold)
+        assertTrue(g.nextStele!! > g.position)
+    }
+
+    /** The dev screen's Stone sets the next stone a turn into its popup, also before it is due, so that its part shows at once. */
+    @Test
+    fun theDevStoneShowsTheNextPartAtOnce() {
+        val g = game(store("effort" to effortAt(1), "stelesTold" to 4.0))
+        g.nearTheNextStone()
+        assertEquals(CORINTH_TALE[4].texts[0], g.telling)
+        assertTrue(g.nextStele!! > g.position)
+        assertTrue(g.turnUntil { g.stelesTold == 5 })
+
+        val told = game(store("stelesTold" to 15.0))
+        told.nearTheNextStone()
+        assertNull(told.nextStele)
+
+        val etna = game(store("place" to Place.ETNA.id.toDouble()))
+        etna.nearTheNextStone()
+        assertNull(etna.nextStele)
     }
 
     /** The dev screen's Reset of the shop starts the tale again with it. */
