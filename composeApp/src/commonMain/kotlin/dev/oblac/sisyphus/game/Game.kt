@@ -48,6 +48,8 @@ private const val KEY_DAYS_BEFORE = "daysBefore"
 private const val KEY_LABORS_SEEN = "laborsSeen"
 private const val KEY_STELES_TOLD = "stelesTold"
 private const val KEY_NEXT_STELE = "nextStele"
+private const val KEY_TALE = "tale"
+private const val KEY_TALES_TOLD = "talesTold"
 private const val SAVE_EVERY = 1.0
 
 /** How many clicks of the knob the dev screen leaves before the next obol. */
@@ -223,11 +225,16 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         get() = summit?.let { top -> (1 until Config.CLIMB_TURNS / Config.HERM_TURNS).map { top - CLIMB + it * Config.HERM_TURNS * Config.SUN_CAP * PX_PER_TURN } }
             ?: emptyList()
 
-    /** The tale that the stones of this world tell, one part for each item bought; null for a world with no tale. */
-    var tale = taleOf(place)
+    /** The tale that the stones of this climb tell, one part for each item bought. An old save tells the tale of Sisyphus. */
+    var tale = store.load(KEY_TALE)?.let { TALES.getOrNull(it.toInt()) } ?: SISYPHUS
         private set
+    /** The tales told so far, one bit for each id. A tale is told when its last part is told. */
+    var talesTold = store.load(KEY_TALES_TOLD)?.toInt() ?: 0
+        private set
+    /** The tales take their own random numbers, so that the visions and the sights stay the same. */
+    private val taleRandom = Random(seed + 1)
     /** The parts of the tale told in this climb. An old save counts its items as told. */
-    var stelesTold = store.load(KEY_STELES_TOLD)?.toInt() ?: min(shop.bought, tale?.size ?: 0)
+    var stelesTold = store.load(KEY_STELES_TOLD)?.toInt() ?: min(shop.bought, tale.parts.size)
         private set
     /** Where the next stone stands, in pixels walked, until its part is told; null when no stone stands ahead. */
     var nextStele = store.load(KEY_NEXT_STELE)?.takeIf { it >= 0 }
@@ -448,7 +455,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         quotes.announce(Quote("$left turns to the top.", "Hermes"))
     }
 
-    private val part get() = tale?.getOrNull(stelesTold)
+    private val part get() = tale.parts.getOrNull(stelesTold)
 
     /** How far he walked into the popup of the next stone, in pixels: it opens [Config.NEAR_TURNS] before the rock reaches the stone. Null before it opens, and at the top. */
     private val near: Double?
@@ -457,9 +464,19 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     /** The text that the next stone tells in a popup over it while he is near it: the texts of its part one after the other, each for [Config.READ_TURNS]. */
     val telling: String? get() = near?.let { part?.texts?.getOrNull((it / READ).toInt()) }
 
-    /** The tale of the world starts again: no part told, and no stone ahead. */
+    /**
+     * The tale of a new climb: the tale of Sisyphus while it is not told, then a tale not told yet, at random.
+     * When all are told, any tale but the one of the climb before.
+     */
+    private fun nextTale(): Tale {
+        val untold = TALES.filter { talesTold and (1 shl it.id) == 0 }
+        if (SISYPHUS in untold) return SISYPHUS
+        val choices = untold.ifEmpty { TALES - tale }
+        return choices[taleRandom.nextInt(choices.size)]
+    }
+
+    /** The tale starts again from its first part: no part told, and no stone ahead. */
     private fun restartTale() {
-        tale = taleOf(place)
         stelesTold = 0
         nextStele = null
         passed.clear()
@@ -473,6 +490,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         nextStele = null
         passed += Stele(at, stelesTold)
         stelesTold++
+        if (stelesTold == tale.parts.size) talesTold = talesTold or (1 shl tale.id)
         dirty = true
     }
 
@@ -482,11 +500,10 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
      */
     private val partsDue: Int
         get() {
-            val tale = tale ?: return 0
             return when {
-                summit != null -> tale.size
+                summit != null -> tale.parts.size
                 day < Config.TALE_DAY -> 0
-                else -> min(1 + shop.bought, tale.size - 1)
+                else -> min(1 + shop.bought, tale.parts.size - 1)
             }
         }
 
@@ -572,6 +589,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     }
 
     private fun begin() {
+        tale = nextTale()
         daysBefore += day - 1
         endVision()
         position = 0.0
@@ -654,6 +672,8 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         store.save(KEY_LABORS_SEEN, laborsSeen.toDouble())
         store.save(KEY_STELES_TOLD, stelesTold.toDouble())
         store.save(KEY_NEXT_STELE, nextStele ?: -1.0)
+        store.save(KEY_TALE, tale.id.toDouble())
+        store.save(KEY_TALES_TOLD, talesTold.toDouble())
         for (line in Line.entries) store.save(shopKey(line), shop.tier(line).toDouble())
         dirty = false
         sinceSave = 0.0

@@ -1,12 +1,12 @@
 package dev.oblac.sisyphus
 
-import dev.oblac.sisyphus.game.CORINTH_TALE
 import dev.oblac.sisyphus.game.Config
 import dev.oblac.sisyphus.game.DAY_LENGTH
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.START_TIME
+import dev.oblac.sisyphus.game.TALES
 import dev.oblac.sisyphus.game.Weather
 import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.scene.SceneGeometry
@@ -67,7 +67,7 @@ class LookTest {
     }
 
     /**
-     * Over a stone that he is near, a popup tells its part. On the smallest phone, every text of the tale fits under the day
+     * Over a stone that he is near, a popup tells its part. On the smallest phone, every text of every tale fits under the day
      * and the obols, in the top 13 rows of the scene. A vision hides the popup.
      */
     @Test
@@ -75,9 +75,9 @@ class LookTest {
         val small = Layout(135, 292, 18, 13, 0, 0).scene.let { SceneGeometry(it.w, it.h) }
         val at = 400.0
         val read = Config.READ_TURNS * PX_PER_TURN
-        fun scene(part: Int, page: Int, near: Boolean, vision: Boolean = false): IntArray {
+        fun scene(tale: Int, part: Int, page: Int, near: Boolean, vision: Boolean = false): IntArray {
             val keys = mapOf(
-                "effort" to (2.5 - START_TIME) * DAY_LENGTH, "stelesTold" to part.toDouble(),
+                "effort" to (2.5 - START_TIME) * DAY_LENGTH, "tale" to tale.toDouble(), "stelesTold" to part.toDouble(),
                 "position" to at - Config.NEAR_TURNS * PX_PER_TURN + page * read + 1, "nextStele" to if (near) at else at + 1000,
             )
             val game = Game(MemoryStore(keys), seed = 3)
@@ -88,13 +88,13 @@ class LookTest {
         }
         val hud = 13 * small.width
         val sky = 45 * small.width
-        for ((part, texts) in CORINTH_TALE.map { it.texts.size }.withIndex()) for (page in 0 until texts) {
-            val near = scene(part, page, near = true)
-            val far = scene(part, page, near = false)
-            assertTrue(near.copyOfRange(0, hud).contentEquals(far.copyOfRange(0, hud)), "part ${part + 1} covers the day")
-            assertFalse(near.copyOfRange(hud, sky).contentEquals(far.copyOfRange(hud, sky)), "part ${part + 1} shows no popup")
+        for (tale in TALES) for ((part, texts) in tale.parts.map { it.texts.size }.withIndex()) for (page in 0 until texts) {
+            val near = scene(tale.id, part, page, near = true)
+            val far = scene(tale.id, part, page, near = false)
+            assertTrue(near.copyOfRange(0, hud).contentEquals(far.copyOfRange(0, hud)), "tale ${tale.id}, part ${part + 1} covers the day")
+            assertFalse(near.copyOfRange(hud, sky).contentEquals(far.copyOfRange(hud, sky)), "tale ${tale.id}, part ${part + 1} shows no popup")
         }
-        assertTrue(scene(0, 0, near = true, vision = true).copyOfRange(0, sky).contentEquals(scene(0, 0, near = false).copyOfRange(0, sky)))
+        assertTrue(scene(0, 0, 0, near = true, vision = true).copyOfRange(0, sky).contentEquals(scene(0, 0, 0, near = false).copyOfRange(0, sky)))
     }
 
     /** On the flat top, a joint between two courses runs straight across, under the sand. */

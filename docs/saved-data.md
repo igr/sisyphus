@@ -42,6 +42,8 @@ The last two columns show what happens to each value when Sisyphus reaches the t
 | `laborsSeen` | How many labors were done when the Labors tab was last open. A dot stands by the day while more are done. | Kept | Kept |
 | `stelesTold` | How many parts of the tale the stones told in this climb. | Back to 0 | Back to 0 |
 | `nextStele` | Where the next stone of the tale stands, in pixels walked, until its part is told. -1 means that no stone stands ahead. | Back to -1 | Back to -1 |
+| `tale` | The id of the tale that the stones of this climb tell. | The next tale | The next tale |
+| `talesTold` | The tales told, one bit for each id: 1 for Sisyphus, 2 for Typhon, 4 for Orpheus, 8 for Isis and Osiris. | Kept | Kept |
 | `sound` | 1 when the sound is on, 0 when it is off. | Kept | Kept |
 | `savedAt` | The time of the last save, in seconds since 1970. | Saved again | Saved again |
 
@@ -57,6 +59,7 @@ When a key is not there, the game uses a start value:
 - `summit`: a top saved with other numbers is no farther than the final climb is now.
 - `stelesTold`: in a climb saved before the stones, the items bought in it, so that no stone tells an old part.
 - `nextStele`: -1, no stone ahead.
+- `tale`: 0, the tale of Sisyphus. An id that the pool does not have also tells the tale of Sisyphus.
 - All other keys: 0.
 
 ## Ids that never change
@@ -65,6 +68,7 @@ Saved games know each line and each world by an id, not by a name in the game or
 
 - The lines have the ids `rock`, `beside`, `alone`, `blessing` and `beauty`. The Sidekicks and the Gods keep `beside` and `alone`, which they had before they got their names.
 - The worlds have the ids 0 (Corinth), 1 (Mount Etna), 2 (The Underworld) and 3 (Cairo).
+- The tales have the ids 0 (Sisyphus), 1 (Typhon), 2 (Orpheus) and 3 (Isis and Osiris).
 - The game never saves the name of an item. The world and the tier of a line tell which item it is.
 - The worlds that cost money are the entitlements `world_etna`, `world_underworld` and `world_cairo` in RevenueCat. A changed entitlement locks the worlds that players bought. The store products have the same names, except on Google Play, where The Underworld is `world_underworld2`.
 

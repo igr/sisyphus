@@ -411,11 +411,10 @@ class SceneRenderer(private val geo: SceneGeometry) {
     private fun drawTelling(px: Pixels, game: Game, p: Int) {
         val text = game.telling ?: return
         val at = game.nextStele ?: return
-        val tale = game.tale ?: return
         if (game.vision != null) return
         val x = steleLeft(at, p) + TALE_STONE.width / 2
         val y = floor(geo.baseY + geo.rockDy - geo.rockR).toInt() - 3
-        drawPopup(px, text, x, y, "${game.stelesTold + 1}/${tale.size}")
+        drawPopup(px, text, x, y, "${game.stelesTold + 1}/${game.tale.parts.size}")
     }
 
     /** The left column of a stone [at] pixels walked, when he has walked [p]: at [at], the front of the rock reaches it. */

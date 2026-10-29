@@ -1,17 +1,22 @@
 package dev.oblac.sisyphus
 
-import dev.oblac.sisyphus.game.CORINTH_TALE
 import dev.oblac.sisyphus.game.Config
 import dev.oblac.sisyphus.game.DAY_LENGTH
 import dev.oblac.sisyphus.game.Game
+import dev.oblac.sisyphus.game.ISIS_AND_OSIRIS
 import dev.oblac.sisyphus.game.Line
+import dev.oblac.sisyphus.game.ORPHEUS
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.PX_PER_TURN
+import dev.oblac.sisyphus.game.SISYPHUS
 import dev.oblac.sisyphus.game.START_TIME
+import dev.oblac.sisyphus.game.TALES
 import dev.oblac.sisyphus.game.Vision
 import kotlin.math.PI
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.assertSame
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -65,7 +70,7 @@ class StationsTest {
         g.update(DT)
         assertEquals(g.position + 360.0, g.nextStele!!, 1e-9)
         assertEquals(0, g.steles.single().part)
-        assertTrue(g.turnUntil { g.telling == CORINTH_TALE[0].texts[0] })
+        assertTrue(g.turnUntil { g.telling == SISYPHUS.parts[0].texts[0] })
     }
 
     /** Before day 3, no stone stands. The parts of the items bought then come from day 3, one after the other. */
@@ -97,7 +102,7 @@ class StationsTest {
         val at = g.nextStele!!
         assertTrue(g.turnUntil { g.telling != null })
         assertTrue(g.position - opens(at) in 0.0..1.0, "opened at ${g.position}")
-        assertEquals(CORINTH_TALE[0].texts[0], g.telling)
+        assertEquals(SISYPHUS.parts[0].texts[0], g.telling)
         assertEquals(0, g.stelesTold)
         assertTrue(g.turnUntil { g.stelesTold == 1 })
         assertTrue(g.position - (opens(at) + read) in 0.0..1.0, "told at ${g.position}")
@@ -110,7 +115,7 @@ class StationsTest {
         val g = game()
         g.buy(Line.GODS)
         assertTrue(g.turnUntil {
-            assertTrue(CORINTH_TALE.none { g.quotes.quote.text in it.texts }, g.quotes.quote.text)
+            assertTrue(TALES.none { tale -> tale.parts.any { g.quotes.quote.text in it.texts } }, g.quotes.quote.text)
             g.stelesTold == 1
         })
     }
@@ -127,7 +132,7 @@ class StationsTest {
             g.telling?.let { if (shown.lastOrNull() != it) shown += it }
             g.stelesTold == 3
         })
-        assertEquals((0..2).map { CORINTH_TALE[it].texts[0] }, shown)
+        assertEquals((0..2).map { SISYPHUS.parts[it].texts[0] }, shown)
         assertEquals(3, stones.size)
         assertTrue(stones.zipWithNext().all { (a, b) -> b - a >= 360.0 }, "$stones")
     }
@@ -170,7 +175,7 @@ class StationsTest {
         g.save()
         val again = game(store)
         assertEquals(g.nextStele, again.nextStele)
-        assertEquals(CORINTH_TALE[0].texts[0], again.telling)
+        assertEquals(SISYPHUS.parts[0].texts[0], again.telling)
         assertTrue(again.turnUntil { again.stelesTold == 1 })
     }
 
@@ -226,7 +231,7 @@ class StationsTest {
         g.untilAsked()
         g.turn(-PI / 8)
         assertEquals(position, g.position)
-        assertEquals(CORINTH_TALE[0].texts[0], g.telling)
+        assertEquals(SISYPHUS.parts[0].texts[0], g.telling)
         g.answer(right = true)
         assertEquals(0, g.stelesTold)
         assertTrue(g.turnUntil { g.stelesTold == 1 })
@@ -236,7 +241,7 @@ class StationsTest {
     @Test
     fun theFinalClimbDoesNotCutAPart() {
         val g = game(store(*fourteen, "stelesTold" to 13.0, "nextStele" to 40.0))
-        val gate = CORINTH_TALE[13].texts
+        val gate = SISYPHUS.parts[13].texts
         assertTrue(g.turnUntil { g.telling == gate[0] })
         assertTrue(g.buy(Line.BEAUTY))
         assertEquals("The top is in sight. Push on.", g.quotes.quote.text)
@@ -250,7 +255,7 @@ class StationsTest {
     @Test
     fun aPartWithTwoTextsShowsThemOneAfterTheOther() {
         val g = game(store(*fourteen, "stelesTold" to 13.0, "nextStele" to 40.0))
-        val gate = CORINTH_TALE[13].texts
+        val gate = SISYPHUS.parts[13].texts
         assertTrue(g.turnUntil { g.telling == gate[0] })
         assertTrue(g.turnUntil { g.telling == gate[1] })
         assertTrue(g.position - (opens(40.0) + read) in 0.0..1.0, "the second at ${g.position}")
@@ -297,17 +302,105 @@ class StationsTest {
     fun theDevStoneShowsTheNextPartAtOnce() {
         val g = game(store("effort" to effortAt(1), "stelesTold" to 4.0))
         g.nearTheNextStone()
-        assertEquals(CORINTH_TALE[4].texts[0], g.telling)
+        assertEquals(SISYPHUS.parts[4].texts[0], g.telling)
         assertTrue(g.nextStele!! > g.position)
         assertTrue(g.turnUntil { g.stelesTold == 5 })
 
         val told = game(store("stelesTold" to 15.0))
         told.nearTheNextStone()
         assertNull(told.nextStele)
+    }
 
-        val etna = game(store("place" to Place.ETNA.id.toDouble()))
-        etna.nearTheNextStone()
-        assertNull(etna.nextStele)
+    @Test
+    fun theFirstClimbTellsTheTaleOfSisyphus() {
+        val g = Game(MemoryStore(), seed = 1, wall = { 0.0 })
+        assertSame(SISYPHUS, g.tale)
+        assertEquals(0, g.talesTold)
+        assertSame(SISYPHUS, game(store("shop.rock" to 2.0)).tale)
+    }
+
+    @Test
+    fun sisyphusComesAgainUntilItIsTold() {
+        for (before in TALES) {
+            val g = game(store("tale" to before.id.toDouble()))
+            g.startOver()
+            assertSame(SISYPHUS, g.tale)
+        }
+    }
+
+    @Test
+    fun aNewClimbTakesATaleNotToldYet() {
+        for (told in listOf(1, 3, 5, 9, 7, 11, 13)) for (seed in 1..5) {
+            val g = Game(store("talesTold" to told.toDouble()), seed = seed, wall = { 0.0 })
+            g.startOver()
+            assertEquals(0, told and (1 shl g.tale.id), "told $told, then ${g.tale.id}")
+        }
+    }
+
+    @Test
+    fun whenAllAreToldTheTaleBeforeDoesNotComeAtOnce() {
+        for (before in TALES) for (seed in 1..5) {
+            val g = Game(store("talesTold" to 15.0, "tale" to before.id.toDouble()), seed = seed, wall = { 0.0 })
+            g.startOver()
+            assertNotEquals(before.id, g.tale.id)
+        }
+    }
+
+    /** All 15 items, the final climb, and the 15th stone near: its part tells the whole tale. Also with a jump of the dev screen. */
+    @Test
+    fun aTaleIsToldWithItsLastPart() {
+        val keys = arrayOf(*fourteen, "shop.beauty" to 3.0, "summit" to 5000.0, "stelesTold" to 14.0, "nextStele" to 40.0)
+        val g = game(store(*keys))
+        assertTrue(g.turnUntil { g.stelesTold == 15 })
+        assertEquals(1, g.talesTold)
+
+        val jump = game(store(*keys, "tale" to 2.0, "talesTold" to 1.0))
+        jump.nearTheTop()
+        jump.update(DT)
+        assertEquals(1 + 4, jump.talesTold)
+    }
+
+    /** The choice of a tale takes no number from the random numbers of the game: the next vision comes at the same turn. */
+    @Test
+    fun theChoiceTakesNoRandomNumber() {
+        fun nextVision(told: Int): Double? {
+            val store = store("talesTold" to told.toDouble())
+            Game(store, seed = 7, wall = { 0.0 }).startOver()
+            return store.load("nextVision")
+        }
+        assertEquals(nextVision(0), nextVision(1))
+    }
+
+    @Test
+    fun aClimbKeepsItsTaleAcrossARestart() {
+        val store = store("tale" to 2.0)
+        val g = game(store)
+        assertSame(ORPHEUS, g.tale)
+        g.save()
+        assertEquals(2.0, store.load("tale"))
+        assertSame(ORPHEUS, game(store).tale)
+    }
+
+    @Test
+    fun anUnknownTaleIdTellsTheTaleOfSisyphus() {
+        assertSame(SISYPHUS, game(store("tale" to 9.0)).tale)
+    }
+
+    @Test
+    fun theResetOfTheShopKeepsTheTale() {
+        val g = game(store("tale" to 3.0, "shop.alone" to 3.0, "stelesTold" to 3.0))
+        g.resetShop()
+        assertSame(ISIS_AND_OSIRIS, g.tale)
+        assertEquals(0, g.stelesTold)
+    }
+
+    @Test
+    fun everyWorldTellsATale() {
+        for (place in Place.entries) {
+            val g = game(store("place" to place.id.toDouble()))
+            g.update(DT)
+            assertEquals(g.position + 360.0, g.nextStele!!, 1e-9, place.title)
+        }
     }
 
     /** The dev screen's Reset of the shop starts the tale again with it. */

@@ -1,7 +1,6 @@
 package dev.oblac.sisyphus
 
 import dev.oblac.sisyphus.game.CLIMB
-import dev.oblac.sisyphus.game.CORINTH_TALE
 import dev.oblac.sisyphus.game.Config
 import dev.oblac.sisyphus.game.DAY_LENGTH
 import dev.oblac.sisyphus.game.FIRST_OBOL
@@ -10,6 +9,7 @@ import dev.oblac.sisyphus.game.God
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.game.Place
+import dev.oblac.sisyphus.game.SISYPHUS
 import dev.oblac.sisyphus.game.Question
 import dev.oblac.sisyphus.game.Shop
 import dev.oblac.sisyphus.game.START_TIME
@@ -1341,7 +1341,7 @@ class ScreenTest {
         s.tap(s.layout!!.devStone)
         assertFalse(s.agoraOpen)
         assertFalse(s.devOpen)
-        assertEquals(CORINTH_TALE[0].texts[0], s.game.telling)
+        assertEquals(SISYPHUS.parts[0].texts[0], s.game.telling)
     }
 
     @Test
