@@ -40,11 +40,11 @@ class JokersTest {
     }
 
     @Test
-    fun everyJokerHasLinesOfOneOrTwoTexts() {
-        assertEquals(listOf(10, 8, 6, 5, 4, 3, 3, 3, 2, 2, 4, 3), JOKERS.map { it.jokes.size })
+    fun everyJokerHasAsManyLinesAsHisWeight() {
+        for (joker in JOKERS) assertTrue(joker.jokes.size >= maxOf(2, joker.weight), "${joker.name}: ${joker.jokes.size} lines for a weight of ${joker.weight}")
         assertTrue(JOKERS.all { joker -> joker.jokes.all { it.texts.size in 1..2 } })
         fun ends(i: Int) = JOKERS[i].jokes.let { it.first().texts.first() to it.last().texts.last() }
-        assertEquals("I carry a lamp at noon. I am looking for an honest man." to "Do not worry. At you, I wag.", ends(0))
+        assertEquals("I carry a lamp at noon. I am looking for an honest man." to "Your rock. Like a lazy dog. And it will not fetch itself. You have to.", ends(0))
         assertEquals(
             "Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn." to "You push, it rolls down, you push again. We should talk.",
             ends(9),

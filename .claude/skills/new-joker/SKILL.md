@@ -15,7 +15,7 @@ A joker is a figure from the public domain who stands by the path and tells a jo
 | Id | The size of `JOKERS` before the new joker. The id is the position in `JOKERS` and in `JOKER_SPRITES`, and the place of the card on the tab. The saved keys `joker` and `met.<id>` hold it. So a joker is never removed, moved or given a new id, and a new joker is always the last card. `jokersSeen` keeps one bit for each id in an `Int`, so the last id is 30. |
 | Weight | Out of `JOKER_WEIGHTS`, 500: the weights always add up to 500. Choose a chance between those of the other jokers; two jokers can have the same chance. Take the weight from Diogenes, the most common, and keep him at 201 or more, so that his card still says "1 in 2". When he is at 201, take it from the next most common joker, and keep the chance that its card shows. The open card shows the chance, `500 / weight` rounded: weight 15 is "1 in 33". A chance of 1 in 100 or rarer, a weight of 5 or less, makes the joker rare: his card gets a gold banner, and `JokersTest.theRarestJokersAreRare` lists him. |
 | Sprite | A new last entry of `JOKER_SPRITES` in `scene/Jokers.kt`, with a one-line KDoc, as the others have. Use `SKIN`, or give `s` and `S` of its own for another skin, as Cleopatra does. |
-| Test | `JokersTest`: the new id and name in `theJokersAreInTheOrderOfTheirIds`, the weights in `theWeightsAddUpToFiveHundred` with the chances, and the number of lines in `everyJokerHasLinesOfOneOrTwoTexts`. |
+| Test | `JokersTest`: the new id and name in `theJokersAreInTheOrderOfTheirIds`, and the weights in `theWeightsAddUpToFiveHundred` with the chances. `everyJokerHasAsManyLinesAsHisWeight` checks the number of lines. |
 | Spec | `docs/jokers.md` and `docs/saved-data.md`. |
 
 These tests already check each joker in `JOKERS`, so they need no change:
@@ -58,7 +58,7 @@ The Jokers tab does not scroll. When the cards no longer fit the smallest phone,
 
 ## Rules for the lines
 
-- The more common the joker, the more lines: 10 for 1 in 2, 8 for 1 in 4, 6 for 1 in 8, 5 for 1 in 16, 4 for 1 in 33, 3 for 1 in 63 to 1 in 167, and 2 for 1 in 250 or rarer.
+- A joker has at least as many lines as his weight, and at least 2: weight 15 needs 15 lines. So each joker comes back to a line after some 750 game days. `JokersTest.everyJokerHasAsManyLinesAsHisWeight` checks. Weight that a new joker takes from Diogenes leaves Diogenes with more lines than he needs, which is fine.
 - A line is a joke or a riddle in the voice of the joker, with one or two texts. A riddle gives its answer as the second text. Most answers turn to Sisyphus, his rock or the climb. A joker only talks: no obols, no tricks.
 - On the smallest phone, with the name as the note, the first text takes at most 3 rows of the bubble and the second at most 4. The first text shows while the joker stands ahead, higher on the slope, and a shorter bubble stays above his head.
 - A joker stands in any world, so no line names the place where he stands. Warm and short, with no cruelty, and no joke that another joker tells.

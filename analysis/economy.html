@@ -137,6 +137,7 @@ tr:last-child td { border-bottom: 0; }
 tr.main td { font-weight: 600; }
 table.orders td:first-child { white-space: normal; min-width: 11em; }
 table.content td:last-child { white-space: normal; min-width: 16em; }
+.pill.rare { color: var(--bronze); margin-left: 6px; }
 th.sel, td.sel { color: var(--accent-hi); }
 
 .rules { display: grid; gap: 8px; max-width: 72ch; color: var(--dim); padding-left: 20px; margin: 0; }
@@ -227,7 +228,7 @@ footer { margin-top: 36px; color: var(--dim); font-size: 13px; }
             <tr><td>Questions of the visions</td><td class="n">1,194</td><td>410 "Who said this?", 761 "Who lived first?" and 23 "What do the Romans call this god?"</td></tr>
             <tr><td>Gods who ask</td><td class="n">9</td><td>Hermes, and two gods of each world.</td></tr>
             <tr><td>Tales of the stones</td><td class="n">4</td><td>Sisyphus, Typhon, Orpheus, and Isis and Osiris: 15 parts each, 61 texts in all.</td></tr>
-            <tr><td>Jokers</td><td class="n">12</td><td>53 lines, 34 jokes and 19 riddles, in 106 texts.</td></tr>
+            <tr><td>Jokers</td><td class="n">12</td><td>501 lines, 373 jokes and 128 riddles, in 1,002 texts.</td></tr>
             <tr><td>Labors</td><td class="n">20</td><td>4 kinds, with 5 tiers each.</td></tr>
             <tr><td>Worlds</td><td class="n">4</td><td>Corinth, Mount Etna, The Underworld and Cairo.</td></tr>
             <tr><td>Items in the Agora</td><td class="n">60</td><td>15 in each world.</td></tr>
@@ -235,6 +236,33 @@ footer { margin-top: 36px; color: var(--dim); font-size: 13px; }
             <tr><td>Sounds</td><td class="n">8</td><td>The knob, a tap, buying, a new world, an obol, a vision, the top, and a bubble that opens.</td></tr>
           </tbody>
         </table></div>
+      </div>
+
+      <div class="section">
+        <div class="sh"><h2>The jokers</h2><span class="dim">From the most common to the rarest</span></div>
+        <div class="tablebox"><table class="jokers">
+          <thead><tr><th>Joker</th><th class="n">Weight</th><th class="n">Chance</th><th class="n">Share</th><th class="n">Once in, game days</th><th class="n">Lines</th><th class="n">Texts</th></tr></thead>
+          <tbody>
+            <tr><td>Diogenes</td><td class="n">227</td><td class="n">1 in 2</td><td class="n">45.4%</td><td class="n">3.3</td><td class="n">227</td><td class="n">454</td></tr>
+            <tr><td>Alice</td><td class="n">124</td><td class="n">1 in 4</td><td class="n">24.8%</td><td class="n">6.0</td><td class="n">124</td><td class="n">248</td></tr>
+            <tr><td>Red Riding Hood</td><td class="n">62</td><td class="n">1 in 8</td><td class="n">12.4%</td><td class="n">12</td><td class="n">62</td><td class="n">124</td></tr>
+            <tr><td>Don Quixote</td><td class="n">31</td><td class="n">1 in 16</td><td class="n">6.2%</td><td class="n">24</td><td class="n">31</td><td class="n">62</td></tr>
+            <tr><td>Pinocchio</td><td class="n">15</td><td class="n">1 in 33</td><td class="n">3.0%</td><td class="n">50</td><td class="n">15</td><td class="n">30</td></tr>
+            <tr><td>Isaac Newton</td><td class="n">15</td><td class="n">1 in 33</td><td class="n">3.0%</td><td class="n">50</td><td class="n">15</td><td class="n">30</td></tr>
+            <tr><td>Cleopatra</td><td class="n">8</td><td class="n">1 in 63</td><td class="n">1.6%</td><td class="n">94</td><td class="n">8</td><td class="n">16</td></tr>
+            <tr><td>Scheherazade</td><td class="n">8</td><td class="n">1 in 63</td><td class="n">1.6%</td><td class="n">94</td><td class="n">8</td><td class="n">16</td></tr>
+            <tr><td>Sherlock Holmes <span class="pill rare">rare</span></td><td class="n">4</td><td class="n">1 in 125</td><td class="n">0.8%</td><td class="n">188</td><td class="n">4</td><td class="n">8</td></tr>
+            <tr><td>Hamlet <span class="pill rare">rare</span></td><td class="n">3</td><td class="n">1 in 167</td><td class="n">0.6%</td><td class="n">250</td><td class="n">3</td><td class="n">6</td></tr>
+            <tr><td>Count Dracula <span class="pill rare">rare</span></td><td class="n">2</td><td class="n">1 in 250</td><td class="n">0.4%</td><td class="n">375</td><td class="n">2</td><td class="n">4</td></tr>
+            <tr><td>Cthulhu <span class="pill rare">rare</span></td><td class="n">1</td><td class="n">1 in 500</td><td class="n">0.2%</td><td class="n">750</td><td class="n">2</td><td class="n">4</td></tr>
+            <tr class="main"><td>All 12</td><td class="n">500</td><td class="n">–</td><td class="n">100%</td><td class="n">1.5</td><td class="n">501</td><td class="n">1,002</td></tr>
+          </tbody>
+        </table></div>
+        <ul class="rules">
+          <li>Each weight is out of 500: a joker of weight w is w in 500 of the jokers by the path. The chance on his card is 500 ÷ w, rounded.</li>
+          <li>After each joker, the next stands 72 to 144 turns of walking ahead: 1.5 game days on average. So a joker of weight w comes about once in 750 ÷ w game days.</li>
+          <li>A line is a joke or a riddle of one or two texts. A joker tells his lines in turn, and has at least as many lines as his weight: so each joker comes back to a line after some 750 game days. A joker of 1 in 100 or rarer is rare: his card has a gold banner.</li>
+        </ul>
       </div>
     </section>
   </div>

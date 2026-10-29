@@ -86,8 +86,8 @@ class JokersOnThePathTest {
     fun aJokerTellsHisLinesInTurn() {
         fun first(met: Int) = game(store("position" to 1000.0, "nextJoker" to 1000.0 + near - 1, "met.0" to met.toDouble())).jesting
         assertEquals(JOKERS[0].jokes[3].texts[0], first(3))
-        assertEquals(JOKERS[0].jokes[0].texts[0], first(10))
-        assertEquals(JOKERS[0].jokes[1].texts[0], first(11))
+        assertEquals(JOKERS[0].jokes[0].texts[0], first(JOKERS[0].jokes.size))
+        assertEquals(JOKERS[0].jokes[1].texts[0], first(JOKERS[0].jokes.size + 1))
     }
 
     /** A stone that comes to stand near a joker sends him 15 turns past it. The stone stands 30 turns ahead, so he is not in the picture. */
