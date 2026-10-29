@@ -33,7 +33,7 @@ The last two columns show what happens to each value when Sisyphus reaches the t
 | `place` | The id of the world: 0 is Corinth, 1 is Mount Etna, 2 is The Underworld, 3 is Cairo. | Kept | The new world |
 | `quoteSeed` | The number that sets the order of the wise words. | Kept | Kept |
 | `quotesDrawn` | How many wise words came so far. | Back to 0 | Back to 0 |
-| `nextVision` | The player's own turns until the next vision. Set when a vision comes. | Kept | Kept |
+| `nextVision` | The player's own turns until the next vision. Set when a vision comes. | 70 to 100 | 70 to 100 |
 | `visionSeed` | The number that sets the order of the visions. | Kept | Kept |
 | `visionsDrawn` | How many visions came so far. | Kept | Kept |
 | `rightAnswers` | How many questions of the visions the player answered right. | Kept | Kept |
