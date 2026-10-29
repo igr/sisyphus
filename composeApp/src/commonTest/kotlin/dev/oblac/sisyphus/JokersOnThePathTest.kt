@@ -248,6 +248,25 @@ class JokersOnThePathTest {
         assertEquals(3, sounds)
     }
 
+    /** The dev screen's Joker and Stone bring a new bubble in place of the open one: it opens with its own sound. */
+    @Test
+    fun aBubbleInPlaceOfTheOpenOneSounds() {
+        val g = game(store("effort" to day3, "position" to 1000.0, "nextJoker" to 5000.0))
+        var sounds = 0
+        g.onBubble = { sounds++ }
+        g.nearTheNextJoker()
+        g.update(DT)
+        assertEquals(1, sounds)
+        g.nearTheNextJoker()
+        g.update(DT)
+        assertEquals(2, sounds)
+        g.nearTheNextStone()
+        g.update(DT)
+        assertEquals(3, sounds)
+        g.update(DT)
+        assertEquals(3, sounds)
+    }
+
     /** The dev screen's Joker brings the jokers in the order of the cards, each a turn into his bubble. */
     @Test
     fun theDevJokerBringsEachJokerInTurn() {

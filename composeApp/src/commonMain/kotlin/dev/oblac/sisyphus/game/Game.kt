@@ -295,8 +295,11 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     var onVision: () -> Unit = {}
     /** A bubble opened: the popup of a stone, or the bubble of a joker. */
     var onBubble: () -> Unit = {}
-    /** A bubble was open at the end of the last update: a bubble that opens after it plays its sound once. */
-    private var bubbleOpen = false
+    /**
+     * The part of the tale or the line of a joker whose bubble was open at the end of the last update: a bubble that opens
+     * after it, or in its place, plays its sound once.
+     */
+    private var bubble: Any? = null
     /** The touches of the knob when the answers showed, and of the touch whose turn picks an answer. */
     private var askedGrabs = 0
     private var answerGrabs = 0
@@ -313,7 +316,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         store.load(KEY_SAVED_AT)?.let { away(wall() - it) }
         beginClimb()
         placeJoker(Config.FIRST_JOKER)
-        bubbleOpen = telling != null || jesting != null
+        bubble = openBubble()
     }
 
     val dayValue get() = START_TIME + effort / DAY_LENGTH
@@ -359,9 +362,9 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         placeStele()
         passJoker()
         placeJoker()
-        val open = telling != null || jesting != null
-        if (open && !bubbleOpen) onBubble()
-        bubbleOpen = open
+        val open = openBubble()
+        if (open != null && open !== bubble) onBubble()
+        bubble = open
         effort += moved
         val helped = if (pausedAt == null) shop.helpersPerHour * dt / 3600 else 0.0
         effort += helped * PX_PER_TURN
@@ -568,6 +571,9 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
 
     /** The text that the next joker tells in a bubble over him while he is near: the texts of his joke one after the other, each for [Config.READ_TURNS]. */
     val jesting: String? get() = nearJoker?.let { joke.texts.getOrNull((it / READ).toInt()) }
+
+    /** What the open bubble tells: the part of the tale over the stone, or the line of the joker. Null while no bubble is open. */
+    private fun openBubble(): Any? = if (telling != null) part else if (jesting != null) joke else null
 
     /** He walked through the bubble of the next joker, also in a jump of the dev screen: the joker is met once more, and stays behind him. */
     private fun passJoker() {
