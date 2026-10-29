@@ -301,6 +301,7 @@ internal val UNDERWORLD_LOOK = Look(
     birdFlat = BAT_FLAT,
     dust = rgb(0x7A7680),
     fall = Fall.RAIN,
+    stone = BLACK_STONE,
 )
 
 /** The roof of the cave, with stalactites, over the misty air. */

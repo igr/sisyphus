@@ -11,7 +11,11 @@ import dev.oblac.sisyphus.game.Weather
 import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.scene.SceneGeometry
 import dev.oblac.sisyphus.scene.SceneRenderer
-import dev.oblac.sisyphus.scene.TALE_STONE
+import dev.oblac.sisyphus.scene.BLACK_STONE
+import dev.oblac.sisyphus.scene.LAVA_STONE
+import dev.oblac.sisyphus.scene.LIMESTONE
+import dev.oblac.sisyphus.scene.SANDSTONE
+import dev.oblac.sisyphus.scene.lookOf
 import dev.oblac.sisyphus.scene.World
 import dev.oblac.sisyphus.ui.Layout
 import kotlin.math.abs
@@ -46,24 +50,40 @@ class LookTest {
         for (other in listOf(Place.CORINTH, Place.ETNA, Place.UNDERWORLD)) assertFalse(noon(Place.CAIRO).contentEquals(noon(other)))
     }
 
-    /** A stone of the tale stands by the path ahead. */
+    /** A stone of the tale stands by the path ahead, in every world. */
     @Test
     fun theStoneAheadIsDrawn() {
-        fun noon(stone: Boolean): IntArray {
-            val keys = mutableMapOf("effort" to (0.5 - START_TIME) * DAY_LENGTH, "shop.alone" to 1.0, "stelesTold" to 0.0)
+        fun noon(place: Place, stone: Boolean): IntArray {
+            val keys = mutableMapOf("effort" to (0.5 - START_TIME) * DAY_LENGTH, "shop.alone" to 1.0, "stelesTold" to 0.0, "place" to place.id.toDouble())
             if (stone) keys["nextStele"] = 2 * PX_PER_TURN
             val px = Pixels(geo.width, geo.height)
             SceneRenderer(geo).render(px, Game(MemoryStore(keys), seed = 3), World(4).also { it.reset(geo, Weather.CLEAR) }, banner = 0.0, hud = false)
             return px.data.copyOf()
         }
-        assertFalse(noon(stone = true).contentEquals(noon(stone = false)))
+        for (place in Place.entries) assertFalse(noon(place, stone = true).contentEquals(noon(place, stone = false)), place.title)
+    }
+
+    /** Each stone, in the colors of its world, has a slab of 9 by 15, and a relief of 7 by 7 for each part of each tale. */
+    @Test
+    fun everyStoneHasTheReliefsOfEveryTale() {
+        for (stone in listOf(LIMESTONE, LAVA_STONE, BLACK_STONE, SANDSTONE)) {
+            assertEquals(9 to 15, stone.slab.width to stone.slab.height)
+            assertEquals(TALES.map { it.parts.size }, stone.reliefs.map { it.size })
+            assertTrue(stone.reliefs.flatten().all { it.width == 7 && it.height == 7 })
+        }
+    }
+
+    @Test
+    fun eachWorldHasItsOwnStone() {
+        val slabs = Place.entries.map { lookOf(it).stone.slab.data.toList() }
+        assertEquals(Place.entries.size, slabs.toSet().size)
     }
 
     /** When he has walked to a stone, it stands at the front of the rock: the rock reaches it there. */
     @Test
     fun theRockReachesAStoneWhenHeHasWalkedToIt() {
         val left = SceneRenderer(geo).steleLeft(at = 500.0, p = 500)
-        assertEquals(geo.heroX + (geo.rockDx + geo.rockR).toInt(), left + TALE_STONE.width / 2)
+        assertEquals(geo.heroX + (geo.rockDx + geo.rockR).toInt(), left + LIMESTONE.slab.width / 2)
     }
 
     /**

@@ -293,6 +293,7 @@ internal val ETNA_LOOK = Look(
     birdFlat = RAVEN_FLAT,
     dust = rgb(0x6A625C),
     fall = Fall.ASH,
+    stone = LAVA_STONE,
 )
 
 /** The crater of the summit, a quarter of the way in, on the horizon. So far away, it stays put while he walks. */

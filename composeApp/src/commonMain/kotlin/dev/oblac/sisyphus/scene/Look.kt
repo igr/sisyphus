@@ -28,6 +28,7 @@ internal class Look(
     val birdFlat: Pixels,
     val dust: Int,
     val fall: Fall,
+    val stone: Stone,
     val layers: (wx: Int, wy: Int, d: Int) -> Int = { wx, _, d -> soil(wx, d) },
 )
 
@@ -44,6 +45,7 @@ internal val CORINTH_LOOK = Look(
     birdFlat = BIRD_FLAT,
     dust = DUST,
     fall = Fall.RAIN,
+    stone = LIMESTONE,
 )
 
 internal fun lookOf(place: Place): Look = when (place) {

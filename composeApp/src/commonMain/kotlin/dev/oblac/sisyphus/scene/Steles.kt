@@ -4,19 +4,8 @@ import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.gfx.rgb
 import dev.oblac.sisyphus.gfx.sprite
 
-private val STONE_COLORS = mapOf(
-    'w' to rgb(0xECE6D8),
-    'W' to rgb(0xB8B0A0),
-    'D' to rgb(0x5A4636),
-    'p' to rgb(0xD8D0BE),
-    'C' to rgb(0x9C9482),
-)
-
-private val RELIEF_COLORS = mapOf('c' to rgb(0xA8A08E), 'k' to rgb(0x7E7666))
-
-/** A stone of the tale: pale limestone with a rounded top, a panel for its relief at (1, 1), and carved letters below. */
-internal val TALE_STONE: Pixels = sprite(
-    STONE_COLORS,
+/** A slab with a rounded top, a panel for its relief at (1, 1), and carved letters below. */
+private val SLAB =
     """
     ..wwwwW..
     .wpppppW.
@@ -33,159 +22,45 @@ internal val TALE_STONE: Pixels = sprite(
     wwwwwwwWW
     wwwwwwwWW
     WWWWWWWWD
-    """,
+    """
+
+/**
+ * A stone of the tales in the colors of one world: `w W D p C` for the slab, and `c k` for the relief carved in it.
+ * Its [reliefs] are by the id of the tale, then in the order of its parts.
+ */
+internal class Stone(colors: Map<Char, Int>) {
+    val slab: Pixels = sprite(colors, SLAB)
+    val reliefs: List<List<Pixels>> = RELIEF_ART.map { tale -> tale.map { sprite(colors, it) } }
+}
+
+/** Pale limestone, in Corinth. */
+internal val LIMESTONE = Stone(
+    mapOf(
+        'w' to rgb(0xECE6D8), 'W' to rgb(0xB8B0A0), 'D' to rgb(0x5A4636), 'p' to rgb(0xD8D0BE), 'C' to rgb(0x9C9482),
+        'c' to rgb(0xA8A08E), 'k' to rgb(0x7E7666),
+    ),
 )
 
-/** The reliefs of the tale of Sisyphus, 7 by 7, carved on its stones in the order of the parts. */
-internal val RELIEFS: List<Pixels> = listOf(
-    // the old walls
-    """
-    .k.k.k.
-    kkkkkkk
-    k.k.k.k
-    kkkkkkk
-    kk...kk
-    kk...kk
-    kkkkkkk
-    """,
-    // the two harbors: a ship
-    """
-    ...k...
-    ...kk..
-    ...kck.
-    ...kcck
-    ...k...
-    kkkkkkk
-    .kkkkk.
-    """,
-    // the palace: a crown
-    """
-    .......
-    k..k..k
-    kk.k.kk
-    kkkkkkk
-    kckckck
-    kkkkkkk
-    .......
-    """,
-    // the cattle pen: a bull
-    """
-    k.....k
-    kk...kk
-    .kkkkk.
-    .kckck.
-    .kkkkk.
-    ..kck..
-    ..kkk..
-    """,
-    // the hoofprints: a hoof
-    """
-    .......
-    .kk.kk.
-    kkk.kkk
-    kkk.kkk
-    kkk.kkk
-    .kk.kk.
-    .......
-    """,
-    // the pine: a dolphin
-    """
-    ...kk..
-    ..kkkkk
-    .kk..kc
-    kk.....
-    k......
-    kkk....
-    k......
-    """,
-    // the stadium: a crown of pine
-    """
-    ..kck..
-    .c...c.
-    k.....k
-    c.....c
-    k.....k
-    .c...c.
-    ..k.k..
-    """,
-    // the cliff: an eagle
-    """
-    ...k...
-    k.kkk.k
-    kkkkkkk
-    .kkkkk.
-    ..kkk..
-    ..k.k..
-    .......
-    """,
-    // Peirene's spring: water
-    """
-    .......
-    .k.k.k.
-    k.k.k.k
-    .......
-    .k.k.k.
-    k.k.k.k
-    .......
-    """,
-    // the dark road: the wings of Death
-    """
-    k.....k
-    kk...kk
-    ckk.kkc
-    .ckkkc.
-    ..ckc..
-    ...k...
-    .......
-    """,
-    // the chains
-    """
-    kk.....
-    k.k....
-    .kkk...
-    ..k.k..
-    ...kkk.
-    ....k.k
-    .....kk
-    """,
-    // the battlefield: a helmet of Corinth
-    """
-    ..kkk..
-    .kkkkk.
-    kkkkkkk
-    kk.k.kk
-    kk...kk
-    kk...kk
-    k.....k
-    """,
-    // the empty grave
-    """
-    .......
-    ...k...
-    ...k...
-    ..kck..
-    .kccck.
-    kcccccc
-    kkkkkkk
-    """,
-    // the gate below: a pomegranate
-    """
-    ..k.k..
-    ...k...
-    .kkkkk.
-    kkckckk
-    kckckck
-    .kkkkk.
-    ..kkk..
-    """,
-    // this hill: the rock
-    """
-    .......
-    ..kkk..
-    .kcckk.
-    .kcckk.
-    ..kkk..
-    ....kkk
-    ..kkkkk
-    """,
-).map { sprite(RELIEF_COLORS, it) }
+/** Dark lava rock, on Mount Etna. */
+internal val LAVA_STONE = Stone(
+    mapOf(
+        'w' to rgb(0x7E746C), 'W' to rgb(0x5A524C), 'D' to rgb(0x241E1C), 'p' to rgb(0x6C635D), 'C' to rgb(0x4A423D),
+        'c' to rgb(0x4E4642), 'k' to rgb(0x302A27),
+    ),
+)
+
+/** Black stone, in The Underworld. The relief is cut lighter, so that it shows in the dark. */
+internal val BLACK_STONE = Stone(
+    mapOf(
+        'w' to rgb(0x5E5E6E), 'W' to rgb(0x3E3E4C), 'D' to rgb(0x121218), 'p' to rgb(0x383846), 'C' to rgb(0x7A7A8E),
+        'c' to rgb(0x66667A), 'k' to rgb(0x9898AE),
+    ),
+)
+
+/** Sandstone, in Cairo. */
+internal val SANDSTONE = Stone(
+    mapOf(
+        'w' to rgb(0xF0DAAA), 'W' to rgb(0xCDAE78), 'D' to rgb(0x6A4E2A), 'p' to rgb(0xE2C690), 'C' to rgb(0xB0905C),
+        'c' to rgb(0xBA985E), 'k' to rgb(0x8C6A3A),
+    ),
+)

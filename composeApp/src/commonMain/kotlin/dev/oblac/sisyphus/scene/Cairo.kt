@@ -335,6 +335,7 @@ internal val CAIRO_LOOK = Look(
     birdFlat = FALCON_FLAT,
     dust = rgb(0xD8BC88),
     fall = Fall.SAND,
+    stone = SANDSTONE,
     layers = ::courses,
 )
 

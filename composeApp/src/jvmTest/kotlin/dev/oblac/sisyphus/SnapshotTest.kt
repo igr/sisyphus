@@ -11,6 +11,7 @@ import dev.oblac.sisyphus.game.CLIMB
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.items
 import dev.oblac.sisyphus.game.START_TIME
+import dev.oblac.sisyphus.game.TALES
 import dev.oblac.sisyphus.game.Weather
 import dev.oblac.sisyphus.audio.SAMPLE_RATE
 import dev.oblac.sisyphus.audio.loadClick
@@ -20,12 +21,11 @@ import dev.oblac.sisyphus.scene.CAIRO_PROPS
 import dev.oblac.sisyphus.scene.ETNA_PROPS
 import dev.oblac.sisyphus.scene.Ending
 import dev.oblac.sisyphus.scene.PROPS
-import dev.oblac.sisyphus.scene.RELIEFS
-import dev.oblac.sisyphus.scene.TALE_STONE
 import dev.oblac.sisyphus.scene.SceneGeometry
 import dev.oblac.sisyphus.scene.SceneRenderer
 import dev.oblac.sisyphus.scene.UNDERWORLD_PROPS
 import dev.oblac.sisyphus.scene.World
+import dev.oblac.sisyphus.scene.lookOf
 import dev.oblac.sisyphus.ui.Rect
 import dev.oblac.sisyphus.ui.itemIcon
 import java.awt.image.BufferedImage
@@ -125,14 +125,22 @@ class SnapshotTest {
         write(s.render(), "8-dev", 3)
     }
 
-    /** The stone of Peirene's spring ahead of the rock, with its part in a popup over it, on both phones; and the 15 stones with their reliefs. */
+    /**
+     * The 9th stone ahead of the rock, with its part in a popup over it: in Corinth on both phones, and in each other world with
+     * another tale. Then the stones of each world, with the reliefs of every tale.
+     */
     @Test
     fun steles() {
-        for ((name, size) in listOf("12-stele" to listOf(1179, 2556, 177, 102), "12-stele-small" to listOf(1080, 2340, 144, 102))) {
+        val big = listOf(1179, 2556, 177, 102)
+        val shots = listOf(
+            Triple("12-stele", big, Place.CORINTH), Triple("12-stele-small", listOf(1080, 2340, 144, 102), Place.CORINTH),
+            Triple("12-stele-etna", big, Place.ETNA), Triple("12-stele-underworld", big, Place.UNDERWORLD), Triple("12-stele-cairo", big, Place.CAIRO),
+        )
+        for ((name, size, place) in shots) {
             val store = MemoryStore(
                 mapOf(
                     "effort" to effortAt(3, 0.5), "position" to 1000.0, "shop.alone" to 3.0, "shop.rock" to 3.0, "shop.beside" to 3.0,
-                    "stelesTold" to 8.0, "nextStele" to 1070.0, "nextVision" to 600.0,
+                    "stelesTold" to 8.0, "nextStele" to 1070.0, "nextVision" to 600.0, "place" to place.id.toDouble(), "tale" to place.id.toDouble(),
                 ),
             )
             val s = Screen(Game(store, seed = 3), seed = 5).apply { resize(size[0], size[1], size[2], size[3]) }
@@ -140,12 +148,15 @@ class SnapshotTest {
             s.idle(4.0)
             write(s.render(), name, 3)
         }
-        val sheet = Pixels(15 * 12, 18).apply { clear(rgb(0x8AA65A)) }
-        for (k in 0 until 15) {
-            sheet.draw(TALE_STONE, k * 12 + 1, 1)
-            sheet.draw(RELIEFS[k], k * 12 + 2, 2)
+        for (place in Place.entries) {
+            val stone = lookOf(place).stone
+            val sheet = Pixels(15 * 12, TALES.size * 18).apply { clear(rgb(0x8AA65A)) }
+            for (tale in TALES) for (k in tale.parts.indices) {
+                sheet.draw(stone.slab, k * 12 + 1, tale.id * 18 + 1)
+                sheet.draw(stone.reliefs[tale.id][k], k * 12 + 2, tale.id * 18 + 2)
+            }
+            write(sheet, "steles-${place.name.lowercase()}", 6)
         }
-        write(sheet, "steles-corinth", 6)
     }
 
     /** A herm of the final climb by the path ahead, in each world, at noon. */

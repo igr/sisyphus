@@ -157,7 +157,7 @@ class SceneRenderer(private val geo: SceneGeometry) {
         drawGround(px, atm, p, look)
         drawProps(px, atm, p, look.props)
         drawHerms(px, atm, game, p)
-        drawSteles(px, atm, game, p)
+        drawSteles(px, atm, game, p, look.stone)
         drawBirds(px, world, game.clock, look)
         if (game.place == Place.UNDERWORLD && beauty >= 3) drawLights(px, geo, atm, p, game.clock)
         drawRock(px, atm, game.position, look.rocks[game.shop.tier(Line.ROCK)], rolled)
@@ -394,13 +394,14 @@ class SceneRenderer(private val geo: SceneGeometry) {
     }
 
     /** The stones of the tale by the path, each with the relief of its part, set into the slope as a herm is. */
-    private fun drawSteles(px: Pixels, atm: Atmosphere, game: Game, p: Int) {
+    private fun drawSteles(px: Pixels, atm: Atmosphere, game: Game, p: Int, stone: Stone) {
+        val reliefs = stone.reliefs[game.tale.id]
         for (stele in game.steles) {
             val x = steleLeft(stele.at, p)
-            if (x < -TALE_STONE.width || x > px.width) continue
-            val top = geo.surfaceY(x, p) - (TALE_STONE.height - 1)
-            px.draw(TALE_STONE, x, top, light = atm.light)
-            px.draw(RELIEFS[stele.part], x + 1, top + 1, light = atm.light)
+            if (x < -stone.slab.width || x > px.width) continue
+            val top = geo.surfaceY(x, p) - (stone.slab.height - 1)
+            px.draw(stone.slab, x, top, light = atm.light)
+            px.draw(reliefs[stele.part], x + 1, top + 1, light = atm.light)
         }
     }
 
@@ -412,13 +413,13 @@ class SceneRenderer(private val geo: SceneGeometry) {
         val text = game.telling ?: return
         val at = game.nextStele ?: return
         if (game.vision != null) return
-        val x = steleLeft(at, p) + TALE_STONE.width / 2
+        val x = steleLeft(at, p) + LIMESTONE.slab.width / 2
         val y = floor(geo.baseY + geo.rockDy - geo.rockR).toInt() - 3
         drawPopup(px, text, x, y, "${game.stelesTold + 1}/${game.tale.parts.size}")
     }
 
-    /** The left column of a stone [at] pixels walked, when he has walked [p]: at [at], the front of the rock reaches it. */
-    internal fun steleLeft(at: Double, p: Int) = floor(at).toInt() - p + geo.heroX + (geo.rockDx + geo.rockR).toInt() - TALE_STONE.width / 2
+    /** The left column of a stone [at] pixels walked, when he has walked [p]: at [at], the front of the rock reaches it. All stones have the same shape. */
+    internal fun steleLeft(at: Double, p: Int) = floor(at).toInt() - p + geo.heroX + (geo.rockDx + geo.rockR).toInt() - LIMESTONE.slab.width / 2
 
     private fun drawBirds(px: Pixels, world: World, clock: Double, look: Look) {
         for (b in world.birds) {
