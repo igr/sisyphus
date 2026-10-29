@@ -51,6 +51,9 @@ The stores sell each world as a product of the same name, except Google Play, wh
   Find the player in the RevenueCat dashboard by that id.
 - The RevenueCat CLI `rc` shows and changes the products: `rc products list`, `rc offerings verify`.
   `rc setup apple app7651e8d161` and `rc setup google app62a1b9ad7a` connect the stores, with two-factor sign-in.
+- The price of each world is `Config.WORLD_PRICE`. `just play-price` shows the price of every world on Google Play,
+  and `just play-price --apply` sets it from `Config.WORLD_PRICE` in every country, as the convert of Play Console does.
+  It uses the service account of `just beta`. The Test Store and the App Store change with `rc`.
 
 ## Code
 
