@@ -27,6 +27,8 @@ import dev.oblac.sisyphus.gfx.PixelFont
 import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.ui.AGORA_NOTE
 import dev.oblac.sisyphus.ui.BACKGROUND
+import dev.oblac.sisyphus.ui.COIN_COLORS
+import dev.oblac.sisyphus.ui.JOKERS_TITLE
 import dev.oblac.sisyphus.ui.NOTE_HERO
 import dev.oblac.sisyphus.ui.DAY_NOTE
 import dev.oblac.sisyphus.gfx.TRANSPARENT
@@ -341,6 +343,7 @@ class ScreenTest {
         chooseEtna()
         assertEquals(Place.ETNA, s.moving)
         assertNull(s.buying)
+        s.back()
         s.back()
         s.openDev()
         assertEquals(Touch.DEV, s.tap(l.devWorlds))
@@ -1511,15 +1514,15 @@ class ScreenTest {
         assertTrue(s.worldsOpen)
     }
 
-    /** Each column of the small card shows the Jokers tab from the Worlds tab, and the room of the dot of Labors stays with Labors. */
+    /** Each column of "Jokers" shows the Jokers tab from the Worlds tab, and the room of the dot of Labors stays with Labors. */
     @Test
-    fun theWholeCardTabTakesItsTaps() {
-        for (dx in 0 until Layout.CARD_TAB) {
+    fun theWholeJokersTabTakesItsTaps() {
+        for (dx in 0 until PixelFont.width(JOKERS_TITLE)) {
             val s = smallest()
             val l = s.layout!!
             s.tap(l.dayLabel(s.game.day))
             s.tap(l.jokersTab.x + dx + 0.5f, l.jokersTab.y + l.jokersTab.h / 2f)
-            assertTrue(s.jokersShown, "column $dx of the card")
+            assertTrue(s.jokersShown, "column $dx of Jokers")
         }
         val s = smallest()
         val l = s.layout!!
@@ -1529,9 +1532,21 @@ class ScreenTest {
         assertFalse(s.jokersShown)
     }
 
-    /** A tap on the obols over an open card goes to the Agora, and the card closes: one back then closes the Agora. */
+    /**
+     * The Worlds screen shows no obols. A tap where they stand on the other screens is a tap on its title row: it closes an open card,
+     * then the screen, and opens no Agora.
+     */
     @Test
-    fun theObolsCloseAnOpenCard() {
+    fun theWorldsScreenShowsNoObols() {
+        fun corner(obols: Double): List<Int> {
+            val s = screen(MemoryStore(mapOf("obols" to obols)))
+            s.tap(s.layout!!.dayLabel(s.game.day))
+            val px = s.render()
+            val r = s.layout!!.coinIcon
+            return (r.y until r.bottom).flatMap { y -> (r.x until r.right).map { px[it, y] } }
+        }
+        assertEquals(corner(0.0), corner(345.0))
+        assertTrue(corner(345.0).none { it in COIN_COLORS.values })
         val s = screen(MemoryStore(mapOf("met.0" to 1.0, "jokersSeen" to 1.0)))
         val l = s.layout!!
         s.tap(l.dayLabel(s.game.day))
@@ -1539,9 +1554,10 @@ class ScreenTest {
         s.tap(l.jokerCards[0])
         assertNotNull(s.openCard)
         s.tap(l.coinIcon)
-        assertTrue(s.agoraOpen)
         assertNull(s.openCard)
-        assertTrue(s.back())
+        assertTrue(s.worldsOpen)
+        s.tap(l.coinIcon)
+        assertFalse(s.worldsOpen)
         assertFalse(s.agoraOpen)
     }
 
@@ -1566,6 +1582,22 @@ class ScreenTest {
         s.tap(l.jokerCards[2])
         s.tap(l.laborsTab)
         assertNull(s.openCard)
+    }
+
+    /** A card face shows only its joker, on paper: no rank in a corner, and none on the open card. */
+    @Test
+    fun theCardsShowNoRank() {
+        val s = screen(MemoryStore(JOKERS.associate { "met.${it.id}" to 1.0 } + ("jokersSeen" to 1023.0)))
+        val l = s.layout!!
+        s.tap(l.dayLabel(s.game.day))
+        s.tap(l.jokersTab)
+        val rank = rgb(0xC8643C)
+        fun inks(px: Pixels, r: Rect) = (r.y until r.bottom).flatMap { y -> (r.x until r.right).map { px[it, y] } }
+        val tab = s.render()
+        for ((i, card) in l.jokerCards.withIndex()) assertTrue(inks(tab, card).none { it == rank }, "card $i")
+        s.tap(l.jokerCards[9])
+        val open = s.render()
+        assertTrue(inks(open, Rect(l.openCard.x + 1, l.openCard.y + 1, 20, 20)).none { it == rank })
     }
 
     /** The cards show which jokers the player met, and the open card shows how many times. */
@@ -1624,8 +1656,7 @@ class ScreenTest {
         }
         for ((joker, sprite) in JOKERS.zip(JOKER_SPRITES.map { it.outlined(rgb(0x2A1A0C)) })) {
             assertTrue(sprite.width + 4 <= cards[0].w, joker.name)
-            assertTrue(Layout.CARD_FACE + sprite.height + 2 <= cards[0].h, joker.name)
-            assertTrue(PixelFont.width(joker.rank) + 4 <= cards[0].w, "the rank of ${joker.name}")
+            assertTrue(sprite.height + 4 <= cards[0].h, joker.name)
             assertTrue(PixelFont.width(joker.name) <= l.openCardText.w, joker.name)
             assertTrue(PixelFont.wrap(joker.about, l.openCardText.w).size <= Layout.ABOUT_LINES, joker.name)
             assertTrue(2 * sprite.height <= Layout.OPEN_SPRITE, joker.name)
@@ -1665,7 +1696,7 @@ class ScreenTest {
         val l = smallest().layout!!
         assertTrue(l.worldsTab.right + 4 <= l.laborsTab.x)
         assertTrue(l.laborsTab.right + 4 <= l.jokersTab.x)
-        assertTrue(l.jokersTab.right + 2 <= l.coinIcon.x, "the tabs end at ${l.jokersTab.right}, the obols start at ${l.coinIcon.x}")
+        assertTrue(l.jokersTab.right <= l.agoraTitle.right, "the tabs end at ${l.jokersTab.right}, the row at ${l.agoraTitle.right}")
     }
 
     @Test

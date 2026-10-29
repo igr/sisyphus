@@ -185,10 +185,8 @@ internal fun supportTag(id: String?, build: String?): String? =
 /** The title of the Worlds screen, and of its tab for the labors. */
 internal const val WORLDS_TITLE = "Worlds"
 internal const val LABORS_TITLE = "Labors"
+internal const val JOKERS_TITLE = "Jokers"
 internal const val JOKERS_MET = "Jokers met"
-
-/** The tab of the jokers: a small playing card with a diamond. */
-private val CARD_TAB = listOf(".###.", "#####", "##.##", "#...#", "##.##", "#####", ".###.")
 
 /** The colors of each category of labors: its title and lines, and the band behind a labor that is done. */
 private val CATEGORY_COLORS = mapOf(
@@ -524,17 +522,16 @@ class UiRenderer {
     }
 
     /**
-     * The title row of the Worlds screen: the [shown] tab in cream, the others in gray, a dot after "Labors" while a labor is new,
-     * and a dot after the card of the jokers while a card is new.
+     * The title row of the Worlds screen: the [shown] tab in cream, the others in gray, and a dot after "Labors" while a labor is new,
+     * and after "Jokers" while a card is new.
      */
     fun tabs(px: Pixels, layout: Layout, shown: Tab, newLabors: Boolean, newJokers: Boolean) {
         fun color(tab: Tab) = if (tab == shown) CREAM else DISABLED
         PixelFont.draw(px, WORLDS_TITLE, layout.worldsTab.x, layout.worldsTab.y, color(Tab.WORLDS))
         PixelFont.draw(px, LABORS_TITLE, layout.laborsTab.x, layout.laborsTab.y, color(Tab.LABORS))
-        val j = layout.jokersTab
-        for ((dy, row) in CARD_TAB.withIndex()) for ((dx, ch) in row.withIndex()) if (ch == '#') px[j.x + dx, j.y + dy] = color(Tab.JOKERS)
+        PixelFont.draw(px, JOKERS_TITLE, layout.jokersTab.x, layout.jokersTab.y, color(Tab.JOKERS))
         if (newLabors) px.fillRect(layout.laborsTab.x + PixelFont.width(LABORS_TITLE) + 2, layout.laborsTab.y + PixelFont.CAP_HEIGHT / 2 - 1, 2, 2, BRONZE[4])
-        if (newJokers) px.fillRect(j.x + Layout.CARD_TAB + 2, j.y + PixelFont.CAP_HEIGHT / 2 - 1, 2, 2, BRONZE[4])
+        if (newJokers) px.fillRect(layout.jokersTab.x + PixelFont.width(JOKERS_TITLE) + 2, layout.jokersTab.y + PixelFont.CAP_HEIGHT / 2 - 1, 2, 2, BRONZE[4])
         val t = layout.agoraTitle
         px.hline(t.x, t.right - 1, t.bottom + 2, TERRA_DARK)
     }
@@ -553,7 +550,6 @@ class UiRenderer {
                 continue
             }
             card(px, c, CREAM, NOT_DONE)
-            PixelFont.draw(px, joker.rank, c.x + 2, c.y + 2, TERRA)
             val sprite = cardSprites[joker.id]
             px.draw(sprite, c.x + (c.w - sprite.width) / 2, c.bottom - 2 - sprite.height)
         }
@@ -564,7 +560,6 @@ class UiRenderer {
         for (y in 0 until px.height) for (x in 0 until px.width) px[x, y] = dim(px[x, y])
         val r = layout.openCard
         card(px, r, CREAM, TERRA)
-        PixelFont.draw(px, joker.rank, r.x + 4, r.y + 4, TERRA)
         val sprite = cardSprites[joker.id]
         px.drawScaled(sprite, r.x + (r.w - 2 * sprite.width) / 2, r.y + 6 + Layout.OPEN_SPRITE - 2 * sprite.height, 2)
         fun centered(text: String, y: Int, color: Int) = PixelFont.draw(px, text, r.x + (r.w - PixelFont.width(text)) / 2, y, color)

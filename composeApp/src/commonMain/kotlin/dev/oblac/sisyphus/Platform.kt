@@ -63,10 +63,10 @@ object NoHaptics : Haptics {
 
 interface Sound {
     /**
-     * Takes the knob click, the click of every other tap, the sound of buying, the fanfare, the coin, the spell of a vision
-     * and the victory at the top, as mono samples at 44.1 kHz.
+     * Takes the knob click, the click of every other tap, the sound of buying, the fanfare, the coin, the spell of a vision,
+     * the victory at the top and the pop of a bubble, as mono samples at 44.1 kHz.
      */
-    fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray, spell: FloatArray, victory: FloatArray) {}
+    fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray, spell: FloatArray, victory: FloatArray, popup: FloatArray) {}
     /** Called when a finger touches the knob, before the first click. */
     fun prepare() {}
     /** One detent of the knob. */
@@ -83,6 +83,8 @@ interface Sound {
     fun spell() {}
     /** Plays when he reaches the top. */
     fun victory() {}
+    /** Plays when a bubble opens, over a stone or a joker. */
+    fun popup() {}
     /** Releases the audio hardware until the next click. */
     fun pause() {}
 }
@@ -100,6 +102,11 @@ fun Sound.obol(on: Boolean) {
 /** A vision plays the spell, unless the sound is off. */
 fun Sound.vision(on: Boolean) {
     if (on) spell()
+}
+
+/** A bubble that opens plays the pop, unless the sound is off. */
+fun Sound.bubble(on: Boolean) {
+    if (on) popup()
 }
 
 /** The top plays the victory, unless the sound is off. */

@@ -138,7 +138,7 @@ Other ideas from the same talk, not planned: trials of the gods (a harder climb 
 
 ## Worlds
 
-- **The Worlds screen** opens when you tap the day, and after the black screen at the top. It shows a picture of each world: Corinth (the hill by the sea), Mount Etna (the hill on the volcano), The Underworld (the hill in Tartarus) and Cairo (the pyramid by the Nile). The current world has a bright frame and a check. A tap on it closes the screen, and the climb goes on. The help points to it.
+- **The Worlds screen** opens when you tap the day, and after the black screen at the top. It shows a picture of each world: Corinth (the hill by the sea), Mount Etna (the hill on the volcano), The Underworld (the hill in Tartarus) and Cairo (the pyramid by the Nile). The current world has a bright frame and a check. A tap on it closes the screen, and the climb goes on. The help points to it. The screen has three tabs, Worlds, Labors and Jokers, and it shows no obols.
 - **Two tabs** stand in the title row: Worlds and Labors. A tap on the other tab shows it, and a tap on the shown tab closes the screen. The Labors tab lists the labors of all climbs: see `docs/labors.md`.
 - **The list scrolls** when the worlds do not fit, with a thin scrollbar on the right. A drag scrolls it, and after a quick swipe it coasts and slows down. A tap chooses a world when the finger lifts. A tap that stops the coasting list chooses nothing.
 - **The pictures** are cut from the real scene of each world at noon.

@@ -7,7 +7,7 @@ import dev.oblac.sisyphus.audio.SAMPLE_RATE
 
 /**
  * Plays the knob click: three short tracks take turns, each restarted at a detent.
- * The click of every other tap, the sound of buying, the fanfare, the coin, the spell and the victory have a track each. Without audio it stays silent.
+ * The click of every other tap, the sound of buying, the fanfare, the coin, the spell, the victory and the pop of a bubble have a track each. Without audio it stays silent.
  */
 internal class TrackSound : Sound {
     private var tracks: List<AudioTrack> = emptyList()
@@ -17,9 +17,10 @@ internal class TrackSound : Sound {
     private var coinTrack: AudioTrack? = null
     private var spellTrack: AudioTrack? = null
     private var victoryTrack: AudioTrack? = null
+    private var popupTrack: AudioTrack? = null
     private var next = 0
 
-    override fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray, spell: FloatArray, victory: FloatArray) {
+    override fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray, spell: FloatArray, victory: FloatArray, popup: FloatArray) {
         try {
             tracks = List(3) { track(click) }.filter { it.state == AudioTrack.STATE_INITIALIZED }
             uiTrack = track(ui).takeIf { it.state == AudioTrack.STATE_INITIALIZED }
@@ -28,6 +29,7 @@ internal class TrackSound : Sound {
             coinTrack = track(coin).takeIf { it.state == AudioTrack.STATE_INITIALIZED }
             spellTrack = track(spell).takeIf { it.state == AudioTrack.STATE_INITIALIZED }
             victoryTrack = track(victory).takeIf { it.state == AudioTrack.STATE_INITIALIZED }
+            popupTrack = track(popup).takeIf { it.state == AudioTrack.STATE_INITIALIZED }
         } catch (e: Exception) {
             tracks = emptyList()
             uiTrack = null
@@ -36,6 +38,7 @@ internal class TrackSound : Sound {
             coinTrack = null
             spellTrack = null
             victoryTrack = null
+            popupTrack = null
         }
     }
 
@@ -68,6 +71,10 @@ internal class TrackSound : Sound {
         victoryTrack?.restart()
     }
 
+    override fun popup() {
+        popupTrack?.restart()
+    }
+
     fun release() {
         tracks.forEach { it.release() }
         uiTrack?.release()
@@ -76,6 +83,7 @@ internal class TrackSound : Sound {
         coinTrack?.release()
         spellTrack?.release()
         victoryTrack?.release()
+        popupTrack?.release()
     }
 
     private fun AudioTrack.restart() {

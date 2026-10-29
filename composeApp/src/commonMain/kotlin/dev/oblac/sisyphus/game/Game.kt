@@ -293,6 +293,10 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     private val news = ArrayDeque<Quote>()
     /** A vision came. */
     var onVision: () -> Unit = {}
+    /** A bubble opened: the popup of a stone, or the bubble of a joker. */
+    var onBubble: () -> Unit = {}
+    /** A bubble was open at the end of the last update: a bubble that opens after it plays its sound once. */
+    private var bubbleOpen = false
     /** The touches of the knob when the answers showed, and of the touch whose turn picks an answer. */
     private var askedGrabs = 0
     private var answerGrabs = 0
@@ -309,6 +313,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         store.load(KEY_SAVED_AT)?.let { away(wall() - it) }
         beginClimb()
         placeJoker(Config.FIRST_JOKER)
+        bubbleOpen = telling != null || jesting != null
     }
 
     val dayValue get() = START_TIME + effort / DAY_LENGTH
@@ -354,6 +359,9 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         placeStele()
         passJoker()
         placeJoker()
+        val open = telling != null || jesting != null
+        if (open && !bubbleOpen) onBubble()
+        bubbleOpen = open
         effort += moved
         val helped = if (pausedAt == null) shop.helpersPerHour * dt / 3600 else 0.0
         effort += helped * PX_PER_TURN

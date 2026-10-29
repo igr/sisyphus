@@ -12,7 +12,7 @@ The climb is long, and the same every day. A joker is a small surprise: who stan
 - 10 jokers, all from the public domain: figures of old books, of folk tales and of history. Each has its own chance: from 1 in 2 for the most common, Diogenes, to 1 in 500 for the rarest, Cthulhu.
 - A joker only talks: no obols, and no change to the climb.
 - The bubble of a joker never shows with the popup of a stone, or during a vision.
-- A third tab of the Worlds screen, a small card, shows the 10 cards of the jokers. The card of a joker that the player has met is face up, and a tap on it shows who the joker is. The other cards are face down, and a tap does nothing.
+- A third tab of the Worlds screen, Jokers, shows the 10 cards of the jokers. The card of a joker that the player has met is face up, and a tap on it shows who the joker is. The other cards are face down, and a tap does nothing.
 - The jokers are the same in every world.
 
 ## Not in this project
@@ -20,7 +20,6 @@ The climb is long, and the same every day. A joker is a small surprise: who stan
 - Answers by the player. A riddle shows its answer after the question; nothing is asked of the knob.
 - Rewards: no obols, no labor for the jokers.
 - Jokers who walk with him, or who come more than one at a time.
-- Sounds for the jokers.
 
 ## Must not happen
 
@@ -35,7 +34,7 @@ The climb is long, and the same every day. A joker is a small surprise: who stan
 
 - **Where a joker stands.** At the start of each climb, the first joker stands by the path 20 to 40 turns of walking ahead, at random, `Config.FIRST_JOKER`: day 2 begins after 53 turns, so he talks on day 1. After each joker, the next stands 72 to 144 turns of walking ahead, at random: one to two days at the pace of a new climb, `Config.JOKER_TURNS`. With a rock, he walks faster, and the days go faster too, so it stays one to two days.
 - **Which joker.** The game takes the joker when it puts one by the path, at random, by the weights below. Each weight is out of 500, so the chance of Diogenes is 250 in 500: 1 in 2.
-- **The bubble.** It works as the popup of a stone does. It opens when the rock is 3 turns of walking from the joker, `Config.NEAR_TURNS`. Each text shows for 6 turns of walking, `Config.READ_TURNS`. A riddle and most jokes have two texts: the question, then the answer. Its tail points down at the joker, from above his head or the rock, and its note is the name of the joker.
+- **The bubble.** It works as the popup of a stone does. It opens when the rock is 3 turns of walking from the joker, `Config.NEAR_TURNS`. Each text shows for 6 turns of walking, `Config.READ_TURNS`. A riddle and most jokes have two texts: the question, then the answer. Its tail points down at the joker, from above his head or the rock, and its note is the name of the joker. It opens with a pop, `popup.wav` at half its volume, as the popup of a stone does, unless the sound is off. The pop plays once for each bubble: not again for its second text, after a vision, or after a restart.
 - **Which line.** Each joker has a set of lines, and the most common jokers have the most. The game counts how many times the player met each joker, in all climbs and worlds. A joker tells the lines in turn: the first line the first time, the second line the next time, and after the last line the first again.
 - **After the bubble.** The joker is met: the card turns face up, and stays face up. The joker turns to watch Sisyphus go, and stays by the path behind him, out of the picture. Then the next joker stands ahead.
 - **Room for the stones.** A joker stands at least 15 turns of walking from the next stone, `Config.JOKER_ROOM`, so that his bubble and its popup do not meet. When a joker would stand nearer, or a new stone stands near a joker, the joker stands 15 turns past the stone. A new stone stands 30 turns ahead, so the joker that moves is never in the picture.
@@ -47,20 +46,20 @@ The climb is long, and the same every day. A joker is a small surprise: who stan
 
 ## The jokers
 
-The id is the order of the cards, from the most common to the rarest. It never changes. The rank is the corner of the card: the rarer the joker, the higher the card.
+The id is the order of the cards, from the most common to the rarest. It never changes.
 
-| Id | Joker | Weight | Chance | Rank | Look | Who (on the card) |
-|---|---|---|---|---|---|---|
-| 0 | Diogenes | 250 | 1 in 2 | 5 | An old man with a white beard, a brown cloak and bare feet. He holds a lit lamp. | The Cynic of Corinth. He lived in a jar, and with a lamp by day he looked for an honest man. |
-| 1 | Humpty Dumpty | 124 | 1 in 4 | 6 | A big egg with a face, a cravat and thin legs. | An egg from an old riddle, who talks to Alice in Through the Looking-Glass by Lewis Carroll, 1871. |
-| 2 | Red Riding Hood | 62 | 1 in 8 | 7 | A girl in a red cape with a hood, with a basket. | A girl who met a wolf on the way to her grandmother, in the tale of Charles Perrault, 1697. |
-| 3 | Don Quixote | 31 | 1 in 16 | 8 | A tall, thin knight with a beard, a basin for a helmet, and a long lance. | A knight who fought windmills as giants, in the book of Miguel de Cervantes, 1605. |
-| 4 | Pinocchio | 15 | 1 in 33 | 9 | A wooden boy with a long nose and a pointed paper cap. | A wooden puppet whose nose grows when he lies, in the book of Carlo Collodi, 1883. |
-| 5 | Cleopatra | 8 | 1 in 63 | 10 | A queen with a black bob, a gold band, a gold collar and a white dress. | The last queen of Egypt, the friend of Caesar and of Mark Antony. |
-| 6 | Sherlock Holmes | 4 | 1 in 125 | J | A thin man in a deerstalker cap and a cape, with a pipe. | A detective of Baker Street, London, who sees what others miss. Arthur Conan Doyle, 1887. |
-| 7 | Hamlet | 3 | 1 in 167 | Q | A pale prince in black, who holds up a skull. | The prince of Denmark, with the skull of the jester Yorick. William Shakespeare, about 1600. |
-| 8 | Count Dracula | 2 | 1 in 250 | K | A pale man with black hair and a black cape with a red lining and a high collar. | A count of Transylvania who sleeps by day and drinks blood by night. Bram Stoker, 1897. |
-| 9 | Cthulhu | 1 | 1 in 500 | A | A small green figure with a head like an octopus, small wings and claws. | A great old one who sleeps, dreaming, in his sunken city of R'lyeh. H. P. Lovecraft, 1928. |
+| Id | Joker | Weight | Chance | Look | Who (on the card) |
+|---|---|---|---|---|---|
+| 0 | Diogenes | 250 | 1 in 2 | An old man with a white beard, a brown cloak and bare feet. He holds a lit lamp. | The Cynic of Corinth. He lived in a jar, and with a lamp by day he looked for an honest man. |
+| 1 | Humpty Dumpty | 124 | 1 in 4 | A big egg with a face, a cravat and thin legs. | An egg from an old riddle, who talks to Alice in Through the Looking-Glass by Lewis Carroll, 1871. |
+| 2 | Red Riding Hood | 62 | 1 in 8 | A girl in a red cape with a hood, with a basket. | A girl who met a wolf on the way to her grandmother, in the tale of Charles Perrault, 1697. |
+| 3 | Don Quixote | 31 | 1 in 16 | A tall, thin knight with a beard, a basin for a helmet, and a long lance. | A knight who fought windmills as giants, in the book of Miguel de Cervantes, 1605. |
+| 4 | Pinocchio | 15 | 1 in 33 | A wooden boy with a long nose and a pointed paper cap. | A wooden puppet whose nose grows when he lies, in the book of Carlo Collodi, 1883. |
+| 5 | Cleopatra | 8 | 1 in 63 | A queen with a black bob, a gold band, a gold collar and a white dress. | The last queen of Egypt, the friend of Caesar and of Mark Antony. |
+| 6 | Sherlock Holmes | 4 | 1 in 125 | A thin man in a deerstalker cap and a cape, with a pipe. | A detective of Baker Street, London, who sees what others miss. Arthur Conan Doyle, 1887. |
+| 7 | Hamlet | 3 | 1 in 167 | A pale prince in black, who holds up a skull. | The prince of Denmark, with the skull of the jester Yorick. William Shakespeare, about 1600. |
+| 8 | Count Dracula | 2 | 1 in 250 | A pale man with black hair and a black cape with a red lining and a high collar. | A count of Transylvania who sleeps by day and drinks blood by night. Bram Stoker, 1897. |
+| 9 | Cthulhu | 1 | 1 in 500 | A small green figure with a head like an octopus, small wings and claws. | A great old one who sleeps, dreaming, in his sunken city of R'lyeh. H. P. Lovecraft, 1928. |
 
 The jokers come from works that are in the public domain everywhere. Their looks follow the old books and pictures, not later films: Humpty Dumpty as John Tenniel drew him, Pinocchio with the paper cap of the book, Dracula with no look of a film.
 
@@ -182,17 +181,17 @@ A `|` is the change from the first text to the second. On the smallest phone, ev
 
 ## The art
 
-- **A joker:** a sprite of at most 15 by 24 pixels, a little shorter than Sisyphus, standing on the slope like the props, with the feet on the ground under the middle of the sprite. A joker faces down the hill, to Sisyphus, and turns to watch Sisyphus go once the rock has passed. A joker stands where the front of the rock reaches the middle of the sprite, as a stone does, and is drawn behind the rock and Sisyphus.
+- **A joker:** a sprite of at most 15 by 22 pixels, so that it fits the card with its outline, a little shorter than Sisyphus, standing on the slope like the props, with the feet on the ground under the middle of the sprite. A joker faces down the hill, to Sisyphus, and turns to watch Sisyphus go once the rock has passed. A joker stands where the front of the rock reaches the middle of the sprite, as a stone does, and is drawn behind the rock and Sisyphus.
 - **The bubble:** `drawPopup`, as for a stone. Its tail points at the middle of the joker; when the joker has left the picture, it points at the edge of the picture. The tip of the tail stands 3 pixels above the head of the joker, or above the rock when the rock is higher. The bubble stays under the day and the obols: when it would rise into them, it moves down.
-- **A card:** like a small playing card, with round corners, 5 to a row. Face down, it shows the back of the deck: dark terra, with a pattern of crossed lines. Face up, it is paper, with the rank in the top-left corner and the joker, outlined in dark, standing on its bottom. The outline lets the white and the cream of a joker show on the paper.
+- **A card:** like a small playing card, about as tall for its width, with round corners, 5 to a row. It has no rank: the chance shows on the open card. Face down, it shows the back of the deck: dark terra, with a pattern of crossed lines. Face up, it is paper, with the joker, outlined in dark, standing on its bottom. The outline lets the white and the cream of a joker show on the paper.
 - **The open card:** a big card over the cards: the joker at twice the size, the name, the chance, such as "1 in 8", who the joker is, and how many times the player met the joker, such as "Met 3 times".
 
 ## The Jokers tab
 
-- The tabs of the Worlds screen become Worlds, Labors, and a small playing card for the jokers. A third word does not fit the smallest phone next to the obols.
+- The tabs of the Worlds screen become Worlds, Labors and Jokers. The Worlds screen shows no obols, so the three words fit the smallest phone. The obols open the Agora from the main screen.
 - Under the title row, "Jokers met" and how many of the 10 the player has met, such as "3/10". Then the 10 cards in two rows of 5, in the order of the ids.
 - A tap on a face-up card opens it. A tap anywhere closes it. The back button closes it too.
-- While a card is face up that the player has not seen on the tab, a dot stands after the card of the tab, and the dot by the day shows, as for a new labor. The Worlds screen then opens on the tab with the news: Labors first, then Jokers.
+- While a card is face up that the player has not seen on the tab, a dot stands after "Jokers", and the dot by the day shows, as for a new labor. The Worlds screen then opens on the tab with the news: Labors first, then Jokers.
 
 ## Saved data
 

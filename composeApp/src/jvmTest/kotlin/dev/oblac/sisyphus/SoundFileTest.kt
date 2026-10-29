@@ -5,6 +5,7 @@ import dev.oblac.sisyphus.audio.loadClick
 import dev.oblac.sisyphus.audio.loadCoin
 import dev.oblac.sisyphus.audio.loadFanfare
 import dev.oblac.sisyphus.audio.loadSpell
+import dev.oblac.sisyphus.audio.loadPopup
 import dev.oblac.sisyphus.audio.loadUi
 import dev.oblac.sisyphus.audio.loadVictory
 import dev.oblac.sisyphus.audio.loadWin
@@ -73,6 +74,16 @@ class SoundFileTest {
         assertTrue(victory.size in 5 * SAMPLE_RATE..8 * SAMPLE_RATE, "${victory.size} samples")
         val peak = victory.maxOf { abs(it) }
         assertTrue(victory.take(SAMPLE_RATE * 3 / 100).any { abs(it) > peak / 50 })
+    }
+
+    /** A bubble opens often, so its pop is short and softer than the fanfare. */
+    @Test
+    fun thePopupStartsAtOnceIsShortAndSofterThanTheFanfare() {
+        val popup = runBlocking { loadPopup() }
+        val peak = popup.maxOf { abs(it) }
+        assertTrue(popup.take(SAMPLE_RATE / 100).any { abs(it) > peak / 50 })
+        assertTrue(popup.size in SAMPLE_RATE / 2..SAMPLE_RATE, "${popup.size} samples")
+        assertTrue(loudest(popup) < loudest(runBlocking { loadFanfare() }))
     }
 
     @Test

@@ -23,6 +23,9 @@ suspend fun loadCoin(): FloatArray = readWav(Res.readBytes("files/coin.wav"))
 /** The spell of a vision, from composeResources/files/magic-spell.wav, at 40% of its volume, so that it is softer than the fanfare. */
 suspend fun loadSpell(): FloatArray = readWav(Res.readBytes("files/magic-spell.wav")).apply { for (i in indices) this[i] *= 0.4f }
 
+/** The pop of a bubble that opens, over a stone or a joker, from composeResources/files/popup.wav, at half its volume: it comes often, so it is softer than the fanfare. */
+suspend fun loadPopup(): FloatArray = readWav(Res.readBytes("files/popup.wav")).apply { for (i in indices) this[i] *= 0.5f }
+
 /** The victory at the top, from composeResources/files/success-fanfare.wav. */
 suspend fun loadVictory(): FloatArray = readWav(Res.readBytes("files/success-fanfare.wav"))
 

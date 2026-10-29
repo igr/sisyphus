@@ -246,7 +246,7 @@ class Screen(
             ui.helpButton(pixels, l.helpIcon)
         }
         val count = game.shop.obols.toInt()
-        ui.coins(pixels, l.coinIcon, if (game.climbed != null) null else count)
+        if (!worldsOpen) ui.coins(pixels, l.coinIcon, if (game.climbed != null) null else count)
         if (!agoraOpen && !worldsOpen && !helpOpen) gain?.let { ui.gain(pixels, l.coinIcon, it.obols, it.age, count) }
         if (helpOpen) ui.help(pixels, l, game.day, game.shop.obols, game.climbed)
         if (!agoraOpen && !worldsOpen) ending?.let { ui.ending(pixels, l, it, game.climbs) }
@@ -269,15 +269,11 @@ class Screen(
             helpOpen = false
             return Touch.HELP
         }
-        if (l.coinIcon.near(x, y, TOUCH_SLOP)) {
+        if (!worldsOpen && l.coinIcon.near(x, y, TOUCH_SLOP)) {
             cover()
             agoraOpen = !agoraOpen
             devOpen = false
             offer = null
-            worldsOpen = false
-            moving = null
-            buying = null
-            openCard = null
             return Touch.SHOP
         }
         if (worldsOpen) return pressWorlds(x, y, l)

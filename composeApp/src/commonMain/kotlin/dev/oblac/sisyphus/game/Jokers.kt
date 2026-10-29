@@ -8,15 +8,15 @@ class Joke(vararg val texts: String)
 
 /**
  * A famous figure of the public domain, who stands by the path and tells his [jokes] in turn. His [id] never changes: saved
- * games keep it. He comes [weight] times in [JOKER_WEIGHTS]. His card shows [rank] in its top-left corner, and [about] tells who he is.
+ * games keep it. He comes [weight] times in [JOKER_WEIGHTS], and [about] tells who he is on his card.
  * See `docs/jokers.md`.
  */
-class Joker(val id: Int, val name: String, val weight: Int, val rank: String, val about: String, val jokes: List<Joke>)
+class Joker(val id: Int, val name: String, val weight: Int, val about: String, val jokes: List<Joke>)
 
 /** The jokers, in the order of their ids: from the most common to the rarest. */
 val JOKERS = listOf(
     Joker(
-        0, "Diogenes", 250, "5",
+        0, "Diogenes", 250,
         "The Cynic of Corinth. He lived in a jar, and with a lamp by day he looked for an honest man.",
         listOf(
             Joke("I carry a lamp at noon. I am looking for an honest man.", "You push a rock, and you say that it is a rock. You may be the one."),
@@ -32,7 +32,7 @@ val JOKERS = listOf(
         ),
     ),
     Joker(
-        1, "Humpty Dumpty", 124, "6",
+        1, "Humpty Dumpty", 124,
         "An egg from an old riddle, who talks to Alice in Through the Looking-Glass by Lewis Carroll, 1871.",
         listOf(
             Joke("My words mean just what I choose them to mean.", "Today, rock means feather. There. Lighter already?"),
@@ -46,7 +46,7 @@ val JOKERS = listOf(
         ),
     ),
     Joker(
-        2, "Red Riding Hood", 62, "7",
+        2, "Red Riding Hood", 62,
         "A girl who met a wolf on the way to her grandmother, in the tale of Charles Perrault, 1697.",
         listOf(
             Joke("Is this the way to my grandmother's house?", "Past the man with the rock? Oh, that is you. Thank you!"),
@@ -58,7 +58,7 @@ val JOKERS = listOf(
         ),
     ),
     Joker(
-        3, "Don Quixote", 31, "8",
+        3, "Don Quixote", 31,
         "A knight who fought windmills as giants, in the book of Miguel de Cervantes, 1605.",
         listOf(
             Joke("Halt! Is that a giant that you push?", "Ah, a rock. Carry on, good knight."),
@@ -69,7 +69,7 @@ val JOKERS = listOf(
         ),
     ),
     Joker(
-        4, "Pinocchio", 15, "9",
+        4, "Pinocchio", 15,
         "A wooden puppet whose nose grows when he lies, in the book of Carlo Collodi, 1883.",
         listOf(
             Joke("I am not made of wood.", "Oops. My nose. Please look away."),
@@ -79,7 +79,7 @@ val JOKERS = listOf(
         ),
     ),
     Joker(
-        5, "Cleopatra", 8, "10",
+        5, "Cleopatra", 8,
         "The last queen of Egypt, the friend of Caesar and of Mark Antony.",
         listOf(
             Joke("I came to Caesar rolled up in a carpet.", "Try it with your rock. Make an entrance."),
@@ -88,7 +88,7 @@ val JOKERS = listOf(
         ),
     ),
     Joker(
-        6, "Sherlock Holmes", 4, "J",
+        6, "Sherlock Holmes", 4,
         "A detective of Baker Street, London, who sees what others miss. Arthur Conan Doyle, 1887.",
         listOf(
             Joke("I perceive that you push a rock uphill.", "How? You are pushing a rock uphill. Some cases are simple."),
@@ -97,7 +97,7 @@ val JOKERS = listOf(
         ),
     ),
     Joker(
-        7, "Hamlet", 3, "Q",
+        7, "Hamlet", 3,
         "The prince of Denmark, with the skull of the jester Yorick. William Shakespeare, about 1600.",
         listOf(
             Joke("Alas, poor Yorick! I knew him well.", "He told the best jokes. Now his head is the joke."),
@@ -106,7 +106,7 @@ val JOKERS = listOf(
         ),
     ),
     Joker(
-        8, "Count Dracula", 2, "K",
+        8, "Count Dracula", 2,
         "A count of Transylvania who sleeps by day and drinks blood by night. Bram Stoker, 1897.",
         listOf(
             Joke("Good evening. I came out in the sun to meet you.", "Very brave of me. Also, I am on fire a little. Goodbye!"),
@@ -114,7 +114,7 @@ val JOKERS = listOf(
         ),
     ),
     Joker(
-        9, "Cthulhu", 1, "A",
+        9, "Cthulhu", 1,
         "A great old one who sleeps, dreaming, in his sunken city of R'lyeh. H. P. Lovecraft, 1928.",
         listOf(
             Joke("Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn.", "It means: nice rock. Roughly."),

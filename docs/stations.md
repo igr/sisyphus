@@ -19,7 +19,6 @@ The middle of a climb has few new things. At 5 minutes a day, a session is about
 - Rewards of any kind. A stone gives no obols, and it does not make a climb shorter or longer.
 - A page that lists the tales and the parts told so far.
 - A choice of the tale by the player.
-- A sound for a stone.
 
 ## Must not happen
 
@@ -33,7 +32,7 @@ The middle of a climb has few new things. At 5 minutes a day, a session is about
 ## How it works
 
 - **The stones.** On day 3 of a climb, `Config.TALE_DAY`, the first stone stands by the path 30 turns of walking ahead: 360 pixels, as one turn walks 12 pixels without a rock. Each item bought brings one more part, up to the 14th, and its stone stands 30 turns ahead once the part before it is told. Before day 3, no stone stands: the parts of the items bought then come from day 3, one after the other. With a rock, he walks faster, so he reaches a stone in 20 to 30 turns.
-- **The popup.** When the rock is 3 turns of walking from the stone, `Config.NEAR_TURNS`, a comic popup opens over it. It shows the text of the part, and at the right of its last line how far the tale has come, such as "9/15". It stays for 6 turns of walking, `Config.READ_TURNS`: the rock reaches the stone in the middle of them. Then the part is told. A part with two texts shows them one after the other, 6 turns each. The wise words go on in the panel as before.
+- **The popup.** When the rock is 3 turns of walking from the stone, `Config.NEAR_TURNS`, a comic popup opens over it, with a pop, `popup.wav`, unless the sound is off. It shows the text of the part, and at the right of its last line how far the tale has come, such as "9/15". It stays for 6 turns of walking, `Config.READ_TURNS`: the rock reaches the stone in the middle of them. Then the part is told. A part with two texts shows them one after the other, 6 turns each. The wise words go on in the panel as before.
 - **One at a time.** When the player buys two or more items together, their stones stand one after another, 30 turns apart.
 - **The visions.** A vision hides the popup. A vision also stops him, so the popup waits, and it shows again after the vision. A part is not told while a vision shows.
 - **The final climb.** The 15th item begins the final climb, and Hermes says that the top is in sight. The 15th stone stands 30 turns ahead, so its part comes before the first herm at 100 turns.

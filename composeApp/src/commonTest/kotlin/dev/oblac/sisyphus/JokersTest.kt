@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 
 class JokersTest {
     @Test
-    fun theJokersAreTenInTheOrderOfTheirIds() {
+    fun theJokersAreInTheOrderOfTheirIds() {
         assertEquals((0..9).toList(), JOKERS.map { it.id })
         assertEquals(
             listOf(
@@ -21,7 +21,6 @@ class JokersTest {
             ),
             JOKERS.map { it.name },
         )
-        assertEquals(listOf("5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"), JOKERS.map { it.rank })
     }
 
     /** Each weight is out of 500: Diogenes comes 1 time in 2, Cthulhu 1 time in 500. */
@@ -47,7 +46,7 @@ class JokersTest {
 
     @Test
     fun everyTextHasOnlyLettersOfTheFont() {
-        for (joker in JOKERS) for (text in joker.jokes.flatMap { it.texts.toList() } + joker.name + joker.about + joker.rank) {
+        for (joker in JOKERS) for (text in joker.jokes.flatMap { it.texts.toList() } + joker.name + joker.about) {
             for (ch in text) assertTrue(PixelFont.hasGlyph(ch), "missing '$ch' in \"$text\"")
         }
     }

@@ -14,7 +14,7 @@ import platform.AVFAudio.AVAudioSessionCategoryAmbient
 import platform.AVFAudio.setPreferredIOBufferDuration
 
 /**
- * Plays the knob click, the click of every other tap, the sound of buying, the fanfare, the coin, the spell and the victory. The ambient session mixes with other apps' music
+ * Plays the knob click, the click of every other tap, the sound of buying, the fanfare, the coin, the spell, the victory and the pop of a bubble. The ambient session mixes with other apps' music
  * and stays quiet when the phone is on silent.
  */
 @OptIn(ExperimentalForeignApi::class)
@@ -28,7 +28,8 @@ internal class EngineSound : Sound {
     private val coinPlayer = AVAudioPlayerNode()
     private val spellPlayer = AVAudioPlayerNode()
     private val victoryPlayer = AVAudioPlayerNode()
-    private val nodes = players + uiPlayer + winPlayer + fanfarePlayer + coinPlayer + spellPlayer + victoryPlayer
+    private val popupPlayer = AVAudioPlayerNode()
+    private val nodes = players + uiPlayer + winPlayer + fanfarePlayer + coinPlayer + spellPlayer + victoryPlayer + popupPlayer
     private var clickBuffer: AVAudioPCMBuffer? = null
     private var uiBuffer: AVAudioPCMBuffer? = null
     private var winBuffer: AVAudioPCMBuffer? = null
@@ -36,6 +37,7 @@ internal class EngineSound : Sound {
     private var coinBuffer: AVAudioPCMBuffer? = null
     private var spellBuffer: AVAudioPCMBuffer? = null
     private var victoryBuffer: AVAudioPCMBuffer? = null
+    private var popupBuffer: AVAudioPCMBuffer? = null
     private var next = 0
 
     init {
@@ -48,7 +50,7 @@ internal class EngineSound : Sound {
         }
     }
 
-    override fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray, spell: FloatArray, victory: FloatArray) {
+    override fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray, spell: FloatArray, victory: FloatArray, popup: FloatArray) {
         clickBuffer = buffer(click)
         uiBuffer = buffer(ui)
         winBuffer = buffer(win)
@@ -56,6 +58,7 @@ internal class EngineSound : Sound {
         coinBuffer = buffer(coin)
         spellBuffer = buffer(spell)
         victoryBuffer = buffer(victory)
+        popupBuffer = buffer(popup)
     }
 
     override fun prepare() {
@@ -103,6 +106,12 @@ internal class EngineSound : Sound {
         val buffer = victoryBuffer ?: return
         if (!start()) return
         victoryPlayer.scheduleBuffer(buffer, atTime = null, options = AVAudioPlayerNodeBufferInterrupts, completionHandler = null)
+    }
+
+    override fun popup() {
+        val buffer = popupBuffer ?: return
+        if (!start()) return
+        popupPlayer.scheduleBuffer(buffer, atTime = null, options = AVAudioPlayerNodeBufferInterrupts, completionHandler = null)
     }
 
     override fun pause() {

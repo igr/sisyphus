@@ -136,6 +136,7 @@ td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: 
 tr:last-child td { border-bottom: 0; }
 tr.main td { font-weight: 600; }
 table.orders td:first-child { white-space: normal; min-width: 11em; }
+table.content td:last-child { white-space: normal; min-width: 16em; }
 th.sel, td.sel { color: var(--accent-hi); }
 
 .rules { display: grid; gap: 8px; max-width: 72ch; color: var(--dim); padding-left: 20px; margin: 0; }
@@ -148,7 +149,7 @@ footer { margin-top: 36px; color: var(--dim); font-size: 13px; }
   <header class="top">
     <div class="eyebrow">Sisyphus · Push the Rock</div>
     <h1>Sisyphus Economy</h1>
-    <p class="intro">The numbers behind obols, the 15 items, the visions and the final climb. Change a number on the left, and the results on the right follow at once. Fields with a dashed border are worked out from the others. <b>Save for everyone</b> shares your numbers with everyone who opens this page.</p>
+    <p class="intro">The numbers behind obols, the 15 items, the visions and the final climb, and a count of what the game holds. Change a number on the left, and the results on the right follow at once. Fields with a dashed border are worked out from the others. <b>Save for everyone</b> shares your numbers with everyone who opens this page.</p>
     <div class="meander" aria-hidden="true"></div>
   </header>
 
@@ -215,6 +216,25 @@ footer { margin-top: 36px; color: var(--dim); font-size: 13px; }
       <div class="section">
         <h2>How the game counts</h2>
         <ul class="rules" id="rules"></ul>
+      </div>
+
+      <div class="section">
+        <div class="sh"><h2>What the game holds</h2><span class="dim">Counted from the code on 29 October 2026</span></div>
+        <div class="tablebox"><table class="content">
+          <thead><tr><th>What</th><th class="n">How many</th><th>In it</th></tr></thead>
+          <tbody>
+            <tr><td>Wise words</td><td class="n">649</td><td>By 102 authors, in the panel under the picture.</td></tr>
+            <tr><td>Questions of the visions</td><td class="n">1,194</td><td>410 "Who said this?", 761 "Who lived first?" and 23 "What do the Romans call this god?"</td></tr>
+            <tr><td>Gods who ask</td><td class="n">9</td><td>Hermes, and two gods of each world.</td></tr>
+            <tr><td>Tales of the stones</td><td class="n">4</td><td>Sisyphus, Typhon, Orpheus, and Isis and Osiris: 15 parts each, 61 texts in all.</td></tr>
+            <tr><td>Jokers</td><td class="n">10</td><td>46 lines, 28 jokes and 18 riddles, in 92 texts.</td></tr>
+            <tr><td>Labors</td><td class="n">20</td><td>4 kinds, with 5 tiers each.</td></tr>
+            <tr><td>Worlds</td><td class="n">4</td><td>Corinth, Mount Etna, The Underworld and Cairo.</td></tr>
+            <tr><td>Items in the Agora</td><td class="n">60</td><td>15 in each world.</td></tr>
+            <tr><td>Props by the path</td><td class="n">38</td><td>9 or 10 in each world.</td></tr>
+            <tr><td>Sounds</td><td class="n">8</td><td>The knob, a tap, buying, a new world, an obol, a vision, the top, and a bubble that opens.</td></tr>
+          </tbody>
+        </table></div>
       </div>
     </section>
   </div>

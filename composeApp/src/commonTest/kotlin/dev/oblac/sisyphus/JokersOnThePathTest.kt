@@ -214,6 +214,40 @@ class JokersOnThePathTest {
         assertEquals(1, g.jokersSeen)
     }
 
+    /**
+     * The popup of a stone and the bubble of a joker each open with a sound, once: not again for the second text, nor after
+     * a vision. A restart in the middle of a bubble is silent, and the dev screen's Joker sounds at the next update.
+     */
+    @Test
+    fun aBubbleOpensWithASoundOnce() {
+        val s = store("effort" to day3, "position" to 1000.0, "stelesTold" to 0.0, "nextStele" to 1000.0 + near + 60, "nextJoker" to 1460.0)
+        val g = game(s)
+        var sounds = 0
+        g.onBubble = { sounds++ }
+        assertTrue(g.turnUntil { g.telling != null })
+        assertEquals(1, sounds)
+        assertTrue(g.turnUntil { g.telling == null })
+        assertTrue(g.turnUntil { g.jesting != null })
+        assertEquals(2, sounds)
+        val first = g.jesting
+        assertTrue(g.turnUntil { g.jesting != first })
+        g.summonVision()
+        repeat(60) { g.update(DT) }
+        g.endVision()
+        repeat(120) { g.update(DT) }
+        assertEquals(2, sounds)
+        g.save()
+        val restarted = game(s)
+        var again = 0
+        restarted.onBubble = { again++ }
+        restarted.update(DT)
+        assertEquals(0, again)
+        assertTrue(g.turnUntil { g.jesting == null })
+        g.nearTheNextJoker()
+        g.update(DT)
+        assertEquals(3, sounds)
+    }
+
     /** The dev screen's Joker brings the jokers in the order of the cards, each a turn into his bubble. */
     @Test
     fun theDevJokerBringsEachJokerInTurn() {

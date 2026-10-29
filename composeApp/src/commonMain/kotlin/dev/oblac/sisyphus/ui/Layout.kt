@@ -33,7 +33,7 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
 
     /**
      * The obols, in the top-right corner of the display across from the day. They open and close the Agora,
-     * and stay in the same place there.
+     * and stay in the same place there. The Worlds screen shows no obols.
      */
     val coinIcon = (COIN_SIZE + 2 + PixelFont.width("9999")).let { w -> Rect(scene.right - 4 - w, scene.y + 4, w, COIN_SIZE) }
 
@@ -138,12 +138,12 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     fun worldText(index: Int) = worldPreview(index).let { Rect(it.x, it.bottom + 3, it.w, 2 * PixelFont.LINE_HEIGHT) }
 
     /**
-     * In the title row of the Worlds screen, its three tabs: "Worlds", "Labors", and a small card for the jokers, as a third word
-     * does not fit the smallest phone. "Labors" and the card have room for the dot after them.
+     * In the title row of the Worlds screen, its three tabs. The Worlds screen shows no obols, so they fit the smallest phone.
+     * "Labors" and "Jokers" have room for the dot after them.
      */
     val worldsTab = Rect(agoraTitle.x, agoraTitle.y, PixelFont.width(WORLDS_TITLE), PixelFont.CAP_HEIGHT)
     val laborsTab = Rect(worldsTab.right + 8, agoraTitle.y, PixelFont.width(LABORS_TITLE) + 5, PixelFont.CAP_HEIGHT)
-    val jokersTab = Rect(laborsTab.right + 4, agoraTitle.y, CARD_TAB + 5, PixelFont.CAP_HEIGHT)
+    val jokersTab = Rect(laborsTab.right + 4, agoraTitle.y, PixelFont.width(JOKERS_TITLE) + 5, PixelFont.CAP_HEIGHT)
 
     /** On the Jokers tab, under the title row: "Jokers met", and how many of them the player has met, such as "3/10". */
     val jokersMet = Rect(worldList.x, worldList.y, worldList.w, PixelFont.CAP_HEIGHT)
@@ -239,12 +239,9 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
         const val LABOR_DOTS = 19
         const val LABOR_TIERS = 26
         const val LABOR_DONE = 36
-        /** The width of the card in the tabs of the Worlds screen. */
-        const val CARD_TAB = 5
         const val CARD_GAP = 2
-        /** A card of a joker: his rank above [CARD_FACE], and the outlined joker under it, standing on its bottom. */
-        const val CARD_HEIGHT = 36
-        const val CARD_FACE = 10
+        /** A card of a joker, about as tall for its width as a playing card: the outlined joker stands on its bottom. */
+        const val CARD_HEIGHT = 30
         /** In the open card, the room for the outlined joker at twice his size, and for the lines of who he is. */
         const val OPEN_SPRITE = 52
         const val ABOUT_LINES = 5

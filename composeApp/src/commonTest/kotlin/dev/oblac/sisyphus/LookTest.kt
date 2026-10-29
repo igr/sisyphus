@@ -135,11 +135,11 @@ class LookTest {
         assertTrue(scene(0, 0, 0, near = true, vision = true).copyOfRange(0, sky).contentEquals(scene(0, 0, 0, near = false).copyOfRange(0, sky)))
     }
 
-    /** Each joker has a sprite of his own, a little shorter than Sisyphus. */
+    /** Each joker has a sprite of his own, a little shorter than Sisyphus: at most 15 by 22, so that it fits his card with its outline. */
     @Test
     fun everyJokerHasASprite() {
         assertEquals(JOKERS.size, JOKER_SPRITES.size)
-        assertTrue(JOKER_SPRITES.all { it.width <= 15 && it.height <= 24 })
+        assertTrue(JOKER_SPRITES.all { it.width <= 15 && it.height <= 22 })
         assertEquals(JOKERS.size, JOKER_SPRITES.map { it.data.toList() }.toSet().size)
     }
 
