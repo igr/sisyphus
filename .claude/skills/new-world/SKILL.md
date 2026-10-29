@@ -61,10 +61,11 @@ These are the same in every world: the price, `Config.WORLD_PRICE` in US dollars
    - The worlds do not fit the smallest phone. `theWorldsFitTheSmallestPhone` and `theWorldsScrollWhenTheyDoNotFit` already scroll to the last world.
    - `SnapshotTest`: add the world to `moments`, `beauty`, `iconSheet`, `propSheet`, `rockSheet` and the shots of `steles`. Where a test counts the worlds, use `Place.entries.size`.
 12. Update the docs: the ids in `docs/saved-data.md` (the `place` key and "Ids that never change"), the Worlds section in `docs/shop.md`, the gods of each world in `docs/voices.md`, the stone of the world in `docs/stations.md`, and `README.md` where it tells about the worlds or the scene.
+    - The Economy page, `analysis/economy.html`: in "What the game holds", the gods who ask, the worlds, the items in the Agora, the props by the path, and the date of the count; and the worlds in the footer. Then publish the page again to the same artifact. Its link is not in the repo: if you do not have it, ask the user.
 13. Do the checks:
     - Run `./gradlew :composeApp:jvmTest :composeApp:testAndroidHostTest`. Look at each new image in `composeApp/build/snapshots`, also at the images of the smallest phone.
     - Run `./gradlew :androidApp:assembleDebug :composeApp:compileKotlinIosSimulatorArm64`.
-    - Show the world on the simulator: a debug build shows its lock and its price, and buys it in the Test Store. It starts at day 1, with no obols, in the new scene, and it stays there after a restart. The Top button of the dev screen starts the final climb there. Look at the ground of the flat top: no snapshot shows it. Do not use `just run` for this: the desktop game has a real save, and the move deletes its progress.
+    - Show the world on the simulator: a debug build shows its lock and its price, and buys it in the Test Store. It starts at day 1, with no obols, in the new scene, and it stays there after a restart. The Top button of the dev screen starts the final climb there. Look at the ground of the flat top: no snapshot shows it. The Joker button, in the row "Worlds and jokers", brings a joker: he and his bubble must show on the ground of the world, because the snapshots show the jokers only in Corinth. Do not use `just run` for this: the desktop game has a real save, and the move deletes its progress.
 
 ## Rules for names and texts
 

@@ -42,6 +42,7 @@ These tests already check each tale in `TALES`, so they need no change:
 8. Update the docs:
    - `docs/stations.md`: the names in "Goals", the ids in "The pool", the reliefs in "The art", the bits of `talesTold` in "Saved data", and the sources of the tale in "Sources". If "Later" names the tale, remove it there.
    - `docs/saved-data.md`: the bits of `talesTold`, and the ids of the tales in "Ids that never change".
+   - The Economy page, `analysis/economy.html`: the tales of the stones in "What the game holds", with their names and texts, and the date of the count. Then publish the page again to the same artifact. Its link is not in the repo: if you do not have it, ask the user.
 9. Tell the user when players meet the tale. Ask before you commit.
 
 ## Rules for the texts
