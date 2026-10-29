@@ -30,9 +30,10 @@ A world is a new look and new names on the same game. The rules, the economy and
 | Blessings | Purse of Hermes, Gift of Tyche, Wealth of Plutus | `items`; icons |
 | Beauty | Dolphins leap in the sea, Pegasus flies by, the Pleiades shine at night | `items`; icons; `World.update` and `SceneRenderer.render` |
 | Voices | The Sphinx and Hecate come in the visions, as Hermes does, and ask the questions | `God` and `godsOf` in `game/Voices.kt`; sprites in `scene/Visions.kt` |
+| Tale | The tale of Sisyphus in 15 parts, carved on stones by the path from day 3. A popup over each stone tells its part | `taleOf` and `CORINTH_TALE` in `game/Tales.kt`; `TALE_STONE` and `RELIEFS` in `scene/Steles.kt`; `docs/stations.md` |
 | Picture | The scene at noon, from the top of the rock down to the far view | `worldPreview` in `ui/Previews.kt` |
 
-These are the same in every world: the price, `Config.WORLD_PRICE` in US dollars, Sisyphus, the first rock, the knob, the day length, the final climb and its end, the prices and the effects of the 15 items, the line titles, the notes of the first four lines ("turns count 1.5x"), the wise words, Hermes, the questions of the visions, the sounds and the screens.
+These are the same in every world: the price, `Config.WORLD_PRICE` in US dollars, Sisyphus, the first rock, the knob, the day length, the final climb and its end, the prices and the effects of the 15 items, the line titles, the notes of the first four lines ("turns count 1.5x"), the wise words, Hermes, the questions of the visions, the rules of the stones and their popup, the sounds and the screens.
 
 ## Steps
 
@@ -49,16 +50,18 @@ These are the same in every world: the price, `Config.WORLD_PRICE` in US dollars
 6. Write the 15 items, and draw 12 icons (16 x 16) and 3 rocks. The details first tell what the item is, then what it does, with the effect words of Corinth. Each details text ends as the Corinth item of the same line and tier ends, for example "He takes Merope's place."
 7. Make the three beauty sights, one for each tier of the Beauty line. A sight uses the timer of the Corinth sight of the same tier (`nextLeap`, `nextFlight`). Code that all worlds run must not take more random numbers, because then the other worlds change.
 8. Choose the two gods of the world who come in the visions, from its myths. Add them to `God` with the world as their place, each with a farewell that it says when nobody answers, and draw their sprites (25 x 15) in `scene/Visions.kt`.
-9. Look at the picture on the Worlds screen: `worldPreview` cuts it from the real scene at noon. The landmark must show in it.
-10. Update the tests. Each test that has Cairo in it gets the new world too:
+9. A new world tells no tale: `taleOf` returns null for it, so no stone stands there. `taleOf` is not a `when (place)`, so the compiler does not show it. A tale for the world is a project of its own, only when the user asks for it: 15 parts whose texts fit the popup, and a relief for each part. See "Later" in `docs/stations.md`.
+10. Look at the picture on the Worlds screen: `worldPreview` cuts it from the real scene at noon. The landmark must show in it.
+11. Update the tests. Each test that has Cairo in it gets the new world too:
    - `GameTest`: add the new id to the ids that never change, and the product to the products that never change. A save with the new id loads its items.
    - `ShopTest`, `BeautyTest`, `PropsTest`, `RockLookTest` and `LookTest`.
    - `VoicesTest.eachWorldHasHermesAndTwoGodsOfItsOwn`: the gods of the new world. The fit, letter and picture tests already cover every god.
    - `ScreenTest`: its own icons. The fit and letter tests already cover every world.
+   - `TalesTest.otherWorldsTellNoTaleYet`: the new world tells no tale yet.
    - The worlds do not fit the smallest phone. `theWorldsFitTheSmallestPhone` and `theWorldsScrollWhenTheyDoNotFit` already scroll to the last world.
    - `SnapshotTest`: add the world to `moments`, `beauty`, `iconSheet`, `propSheet` and `rockSheet`. Where a test counts the worlds, use `Place.entries.size`.
-11. Update the docs: the ids in `docs/saved-data.md` (the `place` key and "Ids that never change"), the Worlds section in `docs/shop.md`, the gods of each world in `docs/voices.md`, and `README.md` where it tells about the worlds or the scene.
-12. Do the checks:
+12. Update the docs: the ids in `docs/saved-data.md` (the `place` key and "Ids that never change"), the Worlds section in `docs/shop.md`, the gods of each world in `docs/voices.md`, the worlds with no tale yet in `docs/stations.md`, and `README.md` where it tells about the worlds or the scene.
+13. Do the checks:
     - Run `./gradlew :composeApp:jvmTest :composeApp:testAndroidHostTest`. Look at each new image in `composeApp/build/snapshots`, also at the images of the smallest phone.
     - Run `./gradlew :androidApp:assembleDebug :composeApp:compileKotlinIosSimulatorArm64`.
     - Show the world on the simulator: a debug build shows its lock and its price, and buys it in the Test Store. It starts at day 1, with no obols, in the new scene, and it stays there after a restart. The Top button of the dev screen starts the final climb there. Look at the ground of the flat top: no snapshot shows it. Do not use `just run` for this: the desktop game has a real save, and the move deletes its progress.
