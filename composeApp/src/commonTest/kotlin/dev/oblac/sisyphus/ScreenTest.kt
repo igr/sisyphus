@@ -929,14 +929,14 @@ class ScreenTest {
         assertFalse(s.worldsOpen)
     }
 
-    /** A store that sells every world but [owned] for $0.99. A purchase waits in [pending] until the test answers for the player. */
+    /** A store that sells every world but [owned] for the price of [Config.WORLD_PRICE]. A purchase waits in [pending] until the test answers for the player. */
     private class FakeBilling(vararg owned: Place) : Billing {
         private val owned = owned.toMutableSet()
         override val userId = "\$RCAnonymousID:0123456789abcdef"
         var pending: ((Boolean) -> Unit)? = null
         var restores = 0
         override fun owns(place: Place) = place.product == null || place in owned
-        override fun price(place: Place) = "$0.99"
+        override fun price(place: Place) = "\$${Config.WORLD_PRICE}"
         override fun buy(place: Place, done: (Boolean) -> Unit) {
             pending = { bought ->
                 pending = null

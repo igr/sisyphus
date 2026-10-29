@@ -8,7 +8,7 @@ Earn obols as you push, and spend them in the Agora Market: better rocks, helper
 When everything is bought, a final climb leads to the top. There the rock rolls down, and everything begins again, in the same world or in a new one.
 Tap the day to choose another world: Corinth, Mount Etna, The Underworld or Cairo. There the climb starts over.
 The same screen lists the labors: honors for all your climbs, such as Tina Turner for 10,000 turns of the knob.
-Corinth is free. The other worlds are bought once, for $0.99.
+Corinth is free. The other worlds are bought once, for $1.99 (`Config.WORLD_PRICE`).
 
 Website, support and privacy policy: https://igr.github.io/sisyphus/ (from the `gh-pages` branch).
 

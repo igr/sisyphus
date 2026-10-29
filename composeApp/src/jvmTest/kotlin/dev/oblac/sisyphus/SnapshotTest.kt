@@ -240,7 +240,7 @@ class SnapshotTest {
     fun buyWorlds() {
         val notBought = object : Billing {
             override fun owns(place: Place) = place.product == null
-            override fun price(place: Place) = "$0.99"
+            override fun price(place: Place) = "\$${Config.WORLD_PRICE}"
             override val userId = "\$RCAnonymousID:9c4e2b7a51d84f0e8a3b6c2d1f7e3f9a"
             override fun buy(place: Place, done: (Boolean) -> Unit) {}
             override fun restore(done: () -> Unit) {}
