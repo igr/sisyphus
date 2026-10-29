@@ -35,6 +35,12 @@ private const val ZENITH = 24
 /** The day and the obols take this many rows at the top of the display. A bubble of a joker stays under them. */
 private const val HUD_ROWS = 13
 
+/** The gold sparkles around him at the top: how many, and the seconds that each takes to twinkle once. */
+private const val SPARKLES = 20
+private const val SPARKLE_TIME = 0.9
+internal val SPARKLE = rgb(0xFFD54A)
+private val SPARKLE_CORE = rgb(0xFFF8DC)
+
 internal val GROUND = intArrayOf(
     rgb(0xB4C46A), rgb(0x82A048), rgb(0x5A7E38),
     rgb(0xB08A56), rgb(0x94704A), rgb(0x765840),
@@ -463,6 +469,27 @@ class SceneRenderer(private val geo: SceneGeometry) {
             val up = sin((clock + b.flap) * 2 * PI * 2.8) > 0
             val bird = if (up) look.birdUp else look.birdFlat
             px.draw(bird, floor(b.x).toInt() - bird.width / 2, floor(b.y).toInt() - bird.height / 2, flipX = b.vx < 0)
+        }
+    }
+
+    /** At the top, gold sparkles twinkle around him and the rock, [time] seconds after they began. */
+    fun sparkle(px: Pixels, time: Double) {
+        val left = geo.heroX - 18
+        val right = (geo.heroX + geo.rockDx + geo.rockR + 12).toInt()
+        val top = geo.baseY - 46
+        val bottom = geo.baseY - 6
+        for (i in 0 until SPARKLES) {
+            val x = left + (hash01(i, 1, 59) * (right - left)).toInt()
+            val y = top + (hash01(i, 2, 59) * (bottom - top)).toInt()
+            val b = sin((time / SPARKLE_TIME + hash01(i, 3, 59)) * 2 * PI)
+            if (b < 0.2) continue
+            for (d in 1..(if (b > 0.75) 2 else 1)) {
+                px[x - d, y] = SPARKLE
+                px[x + d, y] = SPARKLE
+                px[x, y - d] = SPARKLE
+                px[x, y + d] = SPARKLE
+            }
+            px[x, y] = SPARKLE_CORE
         }
     }
 

@@ -265,11 +265,33 @@ fun drawVision(px: Pixels, vision: Vision) {
     val light = vision.light.toFloat()
     if (light <= 0f) return
     for (i in px.data.indices) px.data[i] = lerpColor(px.data[i], VISION_DARK, 0.6f * light)
+    glowGod(px, vision.god, px.width / 2, light)
 
-    val glow = art(vision.god).outlined(VISION_LIGHT)
+    if (vision.phase != Vision.Phase.ASKING) return
+    val wide = (px.width - 12) / 2 - 8
+    answer(px, vision.left, wide, left = true)
+    answer(px, vision.right, wide, left = false)
+}
+
+/** The width of the widest god with its glow, as it shows in the sky. */
+internal val GOD_GLOW = God.entries.maxOf { art(it).width + 2 } * VISION_SCALE
+
+/** The middle of the god in [slot] at the top, 0 on the left and 1 on the right, across a scene [width] pixels wide. */
+internal fun godMiddle(slot: Int, width: Int) = width * (1 + 2 * slot) / 4
+
+/** At the top, the [gods] glow in the sky as bright as [light], the first on the left and the second on the right, and the scene darkens a little. */
+fun drawGods(px: Pixels, gods: List<God>, light: Float) {
+    if (light <= 0f) return
+    for (i in px.data.indices) px.data[i] = lerpColor(px.data[i], VISION_DARK, 0.35f * light)
+    gods.forEachIndexed { slot, god -> glowGod(px, god, godMiddle(slot, px.width), light) }
+}
+
+/** A god at twice its size, glowing high in the sky as bright as [light], with its middle [middle] pixels across. */
+private fun glowGod(px: Pixels, god: God, middle: Int, light: Float) {
+    val glow = art(god).outlined(VISION_LIGHT)
     val w = glow.width * VISION_SCALE
     val h = glow.height * VISION_SCALE
-    val x0 = (px.width - w) / 2
+    val x0 = middle - w / 2
     val y0 = (px.height * 0.3).toInt() - h / 2
     val cx = x0 + w / 2.0
     val cy = y0 + h / 2.0
@@ -290,11 +312,6 @@ fun drawVision(px: Pixels, vision: Vision) {
             px[x, y] = lerpColor(px[x, y], c, k)
         }
     }
-
-    if (vision.phase != Vision.Phase.ASKING) return
-    val wide = (px.width - 12) / 2 - 8
-    answer(px, vision.left, wide, left = true)
-    answer(px, vision.right, wide, left = false)
 }
 
 /** An answer in its bottom corner, 6 pixels from the edges, in [wide] pixels of at most 2 lines. */

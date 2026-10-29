@@ -6,6 +6,9 @@ class Quote(val text: String, val author: String)
 
 val TUTORIAL = Quote("Turn the knob below to push the rock up the hill.", "the Gods")
 
+/** What the gods say when he reaches the top. */
+val AT_THE_TOP = Quote("You made it to the top.", "the Gods")
+
 /** At the first purchase of a climb, Hermes tells the goal: all the items bring the top in sight. */
 val GOAL = Quote("One of fifteen. Buy them all, and the top will come in sight.", "Hermes")
 

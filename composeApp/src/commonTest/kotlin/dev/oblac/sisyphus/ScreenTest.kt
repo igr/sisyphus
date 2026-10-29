@@ -35,8 +35,12 @@ import dev.oblac.sisyphus.ui.DAY_NOTE
 import dev.oblac.sisyphus.gfx.TRANSPARENT
 import dev.oblac.sisyphus.gfx.luminance
 import dev.oblac.sisyphus.gfx.rgb
+import dev.oblac.sisyphus.game.godsOf
 import dev.oblac.sisyphus.scene.ANSWER
 import dev.oblac.sisyphus.scene.Ending
+import dev.oblac.sisyphus.scene.GOD_GLOW
+import dev.oblac.sisyphus.scene.SPARKLE
+import dev.oblac.sisyphus.scene.godMiddle
 import dev.oblac.sisyphus.scene.HERM
 import dev.oblac.sisyphus.scene.JOKER_SPRITES
 import dev.oblac.sisyphus.scene.SceneGeometry
@@ -685,6 +689,61 @@ class ScreenTest {
         val dt = 1 / 60.0
         repeat(((Ending.BLACK_AT + Ending.READ) / dt).toInt()) { s.update(dt) }
         assertEquals(1, tops)
+    }
+
+    /** A screen that has just reached the top, after [climbs] climbs. */
+    private fun atTheTop(climbs: Int = 0): Screen {
+        val store = MemoryStore(allBought + mapOf("position" to 100.0, "summit" to 100.0, "effort" to 50_000.0, "climbs" to climbs.toDouble()))
+        return screen(store).apply { update(1 / 60.0) }
+    }
+
+    private fun Screen.idle(seconds: Double) = repeat((seconds * 60).toInt()) { update(1 / 60.0) }
+
+    /** At the top, two of the three gods of the world glow over him and cheer him in the panel. The rock rolls when they are gone. */
+    @Test
+    fun atTheTopTwoGodsOfTheWorldCheerHimBeforeTheRockRolls() {
+        val s = atTheTop()
+        val l = s.layout!!
+        fun edge() = s.render()[l.quote.x - 2, l.quote.y + 5]
+        val end = s.ending!!
+        assertEquals(2, end.gods.toSet().size)
+        assertTrue(end.gods.all { it in godsOf(s.game.place) })
+        assertEquals("You made it to the top.", s.game.quotes.quote.text)
+        assertEquals("the Gods", s.game.quotes.quote.author)
+        s.idle(2.0)
+        assertEquals(1f, end.godLight)
+        assertEquals(0.0, end.rolled)
+        assertEquals(VOICE_FRAME, edge())
+        s.idle(Ending.ROLL_AT - 2.0 + 0.5)
+        assertEquals(0f, end.godLight)
+        assertTrue(end.rolled!! > 0.0)
+        assertNotEquals(VOICE_FRAME, edge())
+    }
+
+    @Test
+    fun eachClimbHasItsOwnPairOfGods() {
+        val pairs = (0..5).map { atTheTop(climbs = it).ending!!.gods }
+        assertTrue(pairs.toSet().size > 1)
+    }
+
+    @Test
+    fun goldSparklesTwinkleAroundHimWhileTheGodsAreThere() {
+        val s = atTheTop()
+        val d = s.layout!!.display
+        fun sparkles() = s.render().let { px -> (d.y until d.bottom).sumOf { y -> (d.x until d.right).count { x -> px[x, y] == SPARKLE } } }
+        assertEquals(0, sparkles())
+        s.idle(2.0)
+        assertTrue(sparkles() > 4)
+        s.idle(Ending.ROLL_AT - 2.0)
+        assertEquals(0, sparkles())
+    }
+
+    @Test
+    fun theGodsAtTheTopFitTheSmallestPhone() {
+        val w = smallest().layout!!.scene.w
+        val (left, right) = (0..1).map { godMiddle(it, w) - GOD_GLOW / 2 until godMiddle(it, w) + GOD_GLOW / 2 }
+        assertTrue(left.first >= 0 && right.last < w, "$left $right in $w")
+        assertTrue(left.last < right.first)
     }
 
     /** A screen at the top, after Camus' words have had time to be read, with [billing] as the store. */

@@ -6,12 +6,14 @@ import dev.oblac.sisyphus.game.Joker
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.Vision
+import dev.oblac.sisyphus.game.godsOf
 import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.scene.Ending
 import dev.oblac.sisyphus.scene.SceneGeometry
 import dev.oblac.sisyphus.scene.SceneRenderer
 import dev.oblac.sisyphus.scene.World
 import dev.oblac.sisyphus.scene.atmosphere
+import dev.oblac.sisyphus.scene.drawGods
 import dev.oblac.sisyphus.scene.drawVision
 import dev.oblac.sisyphus.ui.DEV_STEPS
 import dev.oblac.sisyphus.ui.GAIN_TIME
@@ -188,7 +190,7 @@ class Screen(
         game.update(dt)
         gain = gain?.let { Gain(it.obols, it.age + dt) }?.takeIf { it.age < GAIN_TIME }
         copied = max(0.0, copied - dt)
-        val end = ending ?: if (game.atTop) Ending().also { ending = it; onTop() } else null
+        val end = ending ?: if (game.atTop) reachTop() else null
         if (end != null) {
             val black = end.time >= Ending.BLACK_AT
             end.update(dt)
@@ -209,6 +211,15 @@ class Screen(
         if (game.day > lastDay) banner = 3.0
         lastDay = game.day
         banner = max(0.0, banner - dt)
+    }
+
+    /** He reaches the top: two of the three gods of the world come, a pair of each climb's own, and cheer him. */
+    private fun reachTop(): Ending {
+        val end = Ending(godsOf(game.place).shuffled(Random(game.climbs)).take(2))
+        ending = end
+        game.cheer()
+        onTop()
+        return end
     }
 
     fun render(): Pixels {
@@ -233,6 +244,10 @@ class Screen(
         } else {
             renderer.render(scene, game, world, banner, rolled = ending?.rolled)
             game.vision?.let { drawVision(scene, it) }
+            ending?.let { end ->
+                drawGods(scene, end.gods, end.godLight)
+                end.sparkles?.let { renderer.sparkle(scene, it) }
+            }
             pixels.draw(scene, l.scene.x, l.scene.y)
             ui.bezel(pixels, l.display)
             ui.obolBar(pixels, l.obolBar, game.shop.obols, game.climbed)
@@ -241,7 +256,8 @@ class Screen(
                 corner.forEachIndexed { i, item -> ui.helper(pixels, l.helper(corner.size - 1 - i), item) }
             }
             ui.band(pixels, l.band)
-            ui.quote(pixels, l.quote, game.quotes, game.clock, voice = game.vision?.let { it.phase != Vision.Phase.LEAVING } == true)
+            val voice = game.vision?.let { it.phase != Vision.Phase.LEAVING } == true || (ending?.godLight ?: 0f) > 0f
+            ui.quote(pixels, l.quote, game.quotes, game.clock, voice)
             ui.knob(pixels, l, game)
             ui.helpButton(pixels, l.helpIcon)
         }

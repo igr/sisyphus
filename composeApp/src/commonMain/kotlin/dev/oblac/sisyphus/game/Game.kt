@@ -455,6 +455,9 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         save()
     }
 
+    /** At the top, the gods cheer him in the panel. */
+    fun cheer() = quotes.announce(AT_THE_TOP)
+
     /** A vision that comes or asks ends without an answer, and its god says farewell. */
     fun endVision() {
         val v = vision ?: return

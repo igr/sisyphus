@@ -243,7 +243,10 @@ class SnapshotTest {
         write(s.render(), "9-helpers", 3)
     }
 
-    /** The top: the flat top ahead, standing on it, the rock rolling down, the black screen, and the first morning again. */
+    /**
+     * The top: the flat top ahead, the two gods coming, then glowing with the sparkles, standing on it, the rock rolling down,
+     * the black screen, and the first morning again. The gods also on the smallest phone.
+     */
     @Test
     fun summit() {
         val bought = Line.entries.associate { "shop." + it.id to 3.0 }
@@ -252,19 +255,25 @@ class SnapshotTest {
         s.idle(0.5)
         write(s.render(), "10-near-top", 3)
         while (s.ending == null) s.push(10)
-        s.idle(1.0)
+        s.idle(0.5)
         write(s.render(), "10-top", 3)
-        s.idle(0.8)
+        s.idle(2.0)
+        write(s.render(), "10-gods", 3)
+        s.idle(Ending.ROLL_AT + 0.3 - 2.5)
         write(s.render(), "10-standing", 3)
         s.idle(1.5)
         write(s.render(), "10-rolling", 3)
-        s.idle(Ending.BLACK_AT + Ending.READ - 3.0)
+        s.idle(Ending.BLACK_AT + Ending.READ - Ending.ROLL_AT - 1.5)
         write(s.render(), "10-black", 3)
         s.press(s.offsetX + 10f, s.offsetY + 10f)
         write(s.render(), "10-worlds", 3)
         s.back()
         s.idle(2.0)
         write(s.render(), "10-again", 3)
+        val top = MemoryStore(bought + mapOf("effort" to effortAt(40, 0.42), "position" to 37_800.0, "summit" to 37_800.0))
+        val small = Screen(Game(top, seed = 3), seed = 5).apply { resize(1080, 2340, 144, 102) }
+        small.idle(2.5)
+        write(small.render(), "10-gods-small", 3)
     }
 
     /** The Worlds screen, and its question before going to Mount Etna, on a big phone and on the narrowest one. */
