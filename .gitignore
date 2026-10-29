@@ -12,3 +12,4 @@ iosApp/DerivedData/
 **/xcuserdata/
 .run-artifacts/
 
+__pycache__/

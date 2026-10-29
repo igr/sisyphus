@@ -70,3 +70,5 @@ The knob click, the click of every other tap, the sound of buying, the fanfare o
 - `iosMain`, `androidMain`, `jvmMain` — saving, sound and haptics for each platform; `androidApp` is the Android app
 
 The data that the game saves on the device is listed in [docs/saved-data.md](docs/saved-data.md).
+
+The models of the economy, such as how long a climb takes and how many visions come, are in [analysis](analysis/README.md).

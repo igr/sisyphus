@@ -1,0 +1,826 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Sisyphus Economy</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
+<style>
+/* Layout: a workbench. The numbers sit on the left, what they do on the right; a sticky strip keeps the key result in view. */
+:root {
+  --bg: #17110d; --panel: #201711; --well: #2a1e16; --line: #3d2c20;
+  --fg: #f1e4c8; --dim: #b9a98c; --accent: #c8643c; --accent-hi: #f29a62; --bronze: #d9a441;
+  --good: #9cc985; --warn: #e8bb52; --bad: #ee7a62;
+  --s2: #8fb8de; --s5: #f29a62; --s10: #d9a441; --s30: #a7c97f;
+  --display: "Pixelify Sans", ui-monospace, monospace;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f3e8d2; --panel: #fbf5ea; --well: #efe2c8; --line: #dcc7a2;
+    --fg: #2a1d14; --dim: #6c5843; --accent: #a8492a; --accent-hi: #b4532c; --bronze: #8d6110;
+    --good: #3f7a35; --warn: #8a6100; --bad: #b23a26;
+    --s2: #33658f; --s5: #b4532c; --s10: #8d6110; --s30: #4d7a2c;
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f3e8d2; --panel: #fbf5ea; --well: #efe2c8; --line: #dcc7a2;
+  --fg: #2a1d14; --dim: #6c5843; --accent: #a8492a; --accent-hi: #b4532c; --bronze: #8d6110;
+  --good: #3f7a35; --warn: #8a6100; --bad: #b23a26;
+  --s2: #33658f; --s5: #b4532c; --s10: #8d6110; --s30: #4d7a2c;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.5 var(--body); }
+.page { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 64px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; text-wrap: balance; margin: 0; }
+h1 { font-size: 40px; line-height: 1.05; letter-spacing: .5px; }
+h2 { font-size: 22px; line-height: 1.2; }
+h3 { font-size: 16px; line-height: 1.25; font-weight: 500; }
+p { margin: 0; }
+.dim { color: var(--dim); }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+button { font: 500 14px var(--body); border-radius: 6px; padding: 8px 14px; cursor: pointer; border: 1px solid var(--line); background: var(--panel); color: var(--fg); }
+button:hover:not(:disabled) { border-color: var(--accent); }
+button:disabled { opacity: .45; cursor: default; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff7ec; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent-hi); outline-offset: 2px; }
+
+header.top { display: grid; gap: 12px; }
+.eyebrow { font: 500 12px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--accent-hi); }
+.intro { max-width: 68ch; color: var(--dim); }
+.meander { height: 18px; margin-top: 8px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='9' shape-rendering='crispEdges'%3E%3Cpath fill='%23c8643c' d='M0 0h7v1H0zM6 1h1v6H6zM1 2h4v1H1zM1 3h1v4H1zM4 3h1v2H4zM3 4h1v1H3zM1 6h6v1H1zM0 8h7v1H0z'/%3E%3C/svg%3E") repeat-x; background-size: 14px 18px; image-rendering: pixelated; }
+
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; margin: 18px 0 22px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.bar .key { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; min-width: 0; flex: 1 1 360px; }
+.bar .key b { font: 700 18px var(--display); color: var(--accent-hi); }
+.bar .state { font-size: 13px; color: var(--dim); }
+.bar .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.banner { margin: -10px 0 18px; padding: 10px 14px; border: 1px dashed var(--accent); border-radius: 10px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+.grid { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 28px; align-items: start; }
+@media (max-width: 980px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* the numbers */
+.knobs { display: grid; gap: 18px; }
+.group { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 12px; }
+.group > .gh { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.field { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; align-items: center; }
+.field label { font-weight: 500; }
+.field .help { grid-column: 1 / -1; font-size: 13px; color: var(--dim); }
+.inp { display: flex; align-items: center; gap: 6px; }
+.inp input { width: 86px; font: 500 15px var(--mono); font-variant-numeric: tabular-nums; text-align: right; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--well); color: var(--fg); }
+.inp input.changed { border-color: var(--accent-hi); }
+.inp input.bad { border-color: var(--bad); color: var(--bad); }
+.inp input.ro { border-style: dashed; background: transparent; color: var(--dim); }
+.item .ro-cell { grid-column: 3; }
+.inp .unit { font-size: 12px; color: var(--dim); min-width: 22px; }
+.inp.pair input { width: 64px; }
+.inp .sep { color: var(--dim); }
+.was { font: 12px var(--mono); color: var(--accent-hi); grid-column: 1 / -1; }
+.was button { padding: 0 6px; font-size: 12px; margin-left: 6px; border-radius: 4px; }
+.line { display: grid; gap: 6px; padding-top: 10px; border-top: 1px solid var(--line); }
+.line:first-of-type { border-top: 0; padding-top: 0; }
+.line .lh { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.line .lh span { font-size: 12px; color: var(--dim); }
+.item { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 4px 10px; align-items: center; }
+.item .name { min-width: 0; }
+.item .name small { display: block; font-size: 12px; color: var(--dim); }
+.item .inp input { width: 64px; }
+.item .was { grid-column: 1 / -1; }
+.coin { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--bronze); box-shadow: inset -2px -2px 0 rgba(0,0,0,.25); }
+
+/* what they do */
+.results { display: grid; gap: 22px; min-width: 0; }
+.section { display: grid; gap: 12px; min-width: 0; }
+.section > .sh { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 12px; }
+.cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 720px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 8px; align-content: start; cursor: pointer; text-align: left; font: inherit; color: inherit; }
+.card.sel { border-color: var(--accent-hi); box-shadow: 0 0 0 1px var(--accent-hi) inset; }
+.card .ch { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.card .sw { width: 12px; height: 4px; border-radius: 2px; }
+.card .big { font: 700 28px/1 var(--display); }
+.card .big small { font: 500 13px var(--body); color: var(--dim); margin-left: 4px; }
+.card dl { display: grid; grid-template-columns: auto auto; justify-content: space-between; gap: 2px 10px; margin: 0; font-size: 13px; }
+.card dt { color: var(--dim); }
+.card dd { margin: 0; text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+.chartbox { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 10px 4px; overflow-x: auto; }
+.chartbox svg { display: block; width: 100%; min-width: 520px; height: auto; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--dim); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+.checks { display: grid; gap: 8px; }
+.check { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; padding: 10px 12px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line); }
+.pill { font: 600 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.pill.ok { color: var(--good); } .pill.no { color: var(--bad); } .pill.warn { color: var(--warn); }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.fact { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 6px; align-content: start; }
+.fact .v { font: 700 22px/1.1 var(--display); color: var(--accent-hi); }
+.fact .f { font: 13px var(--mono); color: var(--dim); overflow-wrap: anywhere; }
+
+.changes { display: grid; gap: 4px; font: 13px var(--mono); }
+.changes .none { font-family: var(--body); color: var(--dim); }
+
+.tablebox { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font: 600 12px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--dim); }
+td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+tr:last-child td { border-bottom: 0; }
+tr.main td { font-weight: 600; }
+table.orders td:first-child { white-space: normal; min-width: 11em; }
+th.sel, td.sel { color: var(--accent-hi); }
+
+.rules { display: grid; gap: 8px; max-width: 72ch; color: var(--dim); padding-left: 20px; margin: 0; }
+.rules li::marker { color: var(--accent); }
+footer { margin-top: 36px; color: var(--dim); font-size: 13px; }
+@media (prefers-reduced-motion: no-preference) { .card, button, .inp input { transition: border-color .15s, box-shadow .15s; } }
+</style>
+
+<div class="page">
+  <header class="top">
+    <div class="eyebrow">Sisyphus · Push the Rock</div>
+    <h1>Sisyphus Economy</h1>
+    <p class="intro">The numbers behind obols, the 15 items, the visions and the final climb. Change a number on the left, and the results on the right follow at once. Fields with a dashed border are worked out from the others. <b>Save for everyone</b> shares your numbers with everyone who opens this page.</p>
+    <div class="meander" aria-hidden="true"></div>
+  </header>
+
+  <div class="bar" id="bar">
+    <div class="key" id="key"></div>
+    <div class="state" id="state">Saved numbers load when the page connects.</div>
+    <div class="actions">
+      <button id="undo" type="button" disabled>Undo my changes</button>
+      <button id="game" type="button" disabled>Use the game's numbers</button>
+      <button id="save" type="button" class="primary" disabled>Save for everyone</button>
+    </div>
+  </div>
+  <div class="banner" id="banner" hidden>
+    <span id="bannerText"></span>
+    <button id="loadSaved" type="button">Load the saved numbers</button>
+  </div>
+
+  <div class="grid">
+    <section class="knobs" id="knobs" aria-label="The numbers"></section>
+
+    <section class="results" aria-label="What the numbers do">
+      <div class="section">
+        <div class="sh"><h2>How long it takes</h2><span class="dim" id="cardsNote"></span></div>
+        <div class="cards" id="cards"></div>
+      </div>
+
+      <div class="section">
+        <div class="sh"><h2>Items bought, day by day</h2><div class="legend" id="legend"></div></div>
+        <div class="chartbox"><svg id="chart" viewBox="0 0 640 270" role="img" aria-label="Items bought by day of play"></svg></div>
+      </div>
+
+      <div class="section">
+        <div class="sh"><h2>Checks</h2><span class="dim">The rules from the shop plan</span></div>
+        <div class="checks" id="checks"></div>
+      </div>
+
+      <div class="section">
+        <div class="sh"><h2>The math</h2><span class="dim">At <span id="tpmNote">60</span> turns a minute</span></div>
+        <div class="facts" id="facts"></div>
+      </div>
+
+      <div class="section">
+        <div class="sh"><h2>Changes from the game</h2><span class="dim">What a save would change in the code</span></div>
+        <div class="changes" id="changes"></div>
+      </div>
+
+      <div class="section">
+        <div class="sh"><h2 id="orderTitle">The order of purchases</h2><span class="dim">Tap a card above to pick another player</span></div>
+        <div class="tablebox"><table>
+          <thead><tr><th class="n">#</th><th>Item</th><th>Line</th><th class="n">Price</th><th class="n">Day of play</th><th class="n">Game day</th></tr></thead>
+          <tbody id="order"></tbody>
+        </table></div>
+      </div>
+
+      <div class="section">
+        <div class="sh"><h2>Buy order</h2><span class="dim">The day of the top, by minutes of play a day</span></div>
+        <div class="tablebox"><table class="orders">
+          <thead id="ordersHead"></thead>
+          <tbody id="orders"></tbody>
+        </table></div>
+        <ul class="rules" id="ordersNotes"></ul>
+      </div>
+
+      <div class="section">
+        <h2>How the game counts</h2>
+        <ul class="rules" id="rules"></ul>
+      </div>
+    </section>
+  </div>
+
+  <footer>Every world has the prices and the effects of Corinth, so these numbers hold in Mount Etna, The Underworld and Cairo too. The results come from a minute-by-minute run of the game's rules.</footer>
+</div>
+
+<script>
+(() => {
+  const PX = 12;           // pixels walked for one turn, as in the game
+  const START = 0.27;      // the first day starts just after sunrise
+  const PLAYERS = [2, 5, 10, 30];
+  const SERIES = { 2: "--s2", 5: "--s5", 10: "--s10", 30: "--s30" };
+
+  const LINES = [
+    { id: "rock", title: "Rock", what: "every turn counts more", unit: "×", step: 0.05, names: ["River stone", "Pumice", "Sphere of Daedalus"] },
+    { id: "sidekicks", title: "Sidekicks", what: "push beside him, times the rock", unit: "×", step: 0.05, names: ["Merope", "Bellerophon", "Heracles"] },
+    { id: "gods", title: "Gods", what: "push on their own, also with the app closed", unit: "turns/h", step: 1, names: ["Amalthea", "Pan", "Thanatos"] },
+    { id: "blessings", title: "Blessings", what: "cheaper obols: a part of the work for an obol", unit: "part", step: 0.05, names: ["Purse of Hermes", "Gift of Tyche", "Wealth of Plutus"] },
+    { id: "beauty", title: "Beauty", what: "only to look at", unit: null, step: 1, names: ["Dolphins", "Pegasus", "The Pleiades"] },
+  ];
+
+  /** The numbers in the game's code today: game/Config.kt. */
+  const GAME = {
+    turnsPerDay: 72, sunCap: 1.5, workPerObol: 144, obolSpread: 0.25, fastObols: 4, fastPart: 0.25, climbTurns: 300, hermTurns: 100,
+    firstVisionMin: 70, firstVisionMax: 100, nextVisionMin: 200, nextVisionMax: 600, visionObols: 1, turnsPerMinute: 60, rightAnswers: 0,
+    "rock.1.price": 2, "rock.1.effect": 1.5, "rock.2.price": 5, "rock.2.effect": 2, "rock.3.price": 9, "rock.3.effect": 3,
+    "sidekicks.1.price": 3, "sidekicks.1.effect": 1.25, "sidekicks.2.price": 6, "sidekicks.2.effect": 1.5, "sidekicks.3.price": 10, "sidekicks.3.effect": 2,
+    "gods.1.price": 1, "gods.1.effect": 6, "gods.2.price": 4, "gods.2.effect": 12, "gods.3.price": 8, "gods.3.effect": 24,
+    "blessings.1.price": 2, "blessings.1.effect": 0.75, "blessings.2.price": 6, "blessings.2.effect": 0.5, "blessings.3.price": 10, "blessings.3.effect": 0.25,
+    "beauty.1.price": 1, "beauty.2.price": 2, "beauty.3.price": 3,
+  };
+
+  /** Numbers kept from before the blessings and the fast obols were parts of the work for an obol. */
+  function migrate(v) {
+    const out = { ...v };
+    const work = out.workPerObol > 0 ? out.workPerObol : GAME.workPerObol;
+    for (const t of [1, 2, 3]) if (out[`blessings.${t}.effect`] > 1) out[`blessings.${t}.effect`] /= work;
+    if (out.firstObol > 0 && !(out.fastPart > 0)) out.fastPart = out.firstObol / work;
+    if (out.obolSpread > 1) out.obolSpread /= work;
+    delete out.firstObol;
+    return out;
+  }
+
+  const CORE = [
+    { group: "The day", fields: [
+      { key: "turnsPerDay", label: "Turns for a day", unit: "turns", step: 1, min: 1, help: "Knob turns that move the sun through one game day, before any rock or sidekick." },
+      { key: "sunCap", label: "Fastest sun", unit: "×", step: 0.05, min: 1, help: "The rock and the sidekick make each turn count more, but the sun and the walk go at most this much faster." },
+    ] },
+    { group: "The obol", fields: [
+      { key: "workPerObol", label: "Work for an obol", unit: "work", step: 1, min: 1, help: "One turn is one unit of work, times the rock and the sidekick. The fast obols and the blessings are parts of this number, so it sets the pace of the whole climb." },
+      { key: "obolSpread", label: "Give or take", unit: "part", step: 0.05, min: 0, max: 0.9, help: "Each obol after the fast ones needs its work, plus or minus up to this part of it, so that obols come at any hour of the day. The results use the average." },
+      { key: "fastObols", label: "Fast obols", unit: "obols", step: 1, min: 0, help: "The first obols of each climb come sooner, so that the first items come soon." },
+      { key: "fastPart", label: "Fast obol part", unit: "part", step: 0.05, min: 0.01, help: "Each fast obol needs this part of the work for an obol." },
+      { ro: "fastWork", label: "Work for a fast obol", unit: "work", help: "The work for an obol times the fast obol part. A blessing makes it smaller, as it does every obol.", value: (p) => p.workPerObol * p.fastPart },
+    ] },
+    { group: "The final climb", fields: [
+      { key: "climbTurns", label: "Turns to the top", unit: "turns", step: 10, min: 1, help: "After the 15th item, the turns of pushing to the top, at the fastest walk. Gods do not climb, and obols stop." },
+      { key: "hermTurns", label: "A herm every", unit: "turns", step: 10, min: 1, help: "A herm stands by the path after every this many turns of the climb, and Hermes says how far the top is." },
+    ] },
+    { group: "The voices", fields: [
+      { pair: ["firstVisionMin", "firstVisionMax"], label: "First vision", unit: "turns", step: 10, min: 0, help: "In each climb, the first god comes after a random number of the player's own turns, from the fewest to the most. The gods' pushes and the final climb do not count." },
+      { key: "nextVisionMin", label: "Next vision: fewest turns", unit: "turns", step: 10, min: 1, help: "After each vision, the next one comes after a random number of the player's turns, between these two numbers." },
+      { key: "nextVisionMax", label: "Next vision: most turns", unit: "turns", step: 10, min: 1, help: "So a vision is a surprise, never on a schedule." },
+      { ro: "visionEvery", label: "A vision every", unit: "turns", help: "On average: the middle of the range above. The results use the averages.", value: (p) => (p.nextVisionMin + p.nextVisionMax) / 2 },
+      { key: "visionObols", label: "Obols for a right answer", unit: "obols", step: 1, min: 0, help: "A wrong answer, or no answer, gives nothing." },
+    ] },
+    { group: "The player", note: "Not part of the game: how the results play.", fields: [
+      { key: "turnsPerMinute", label: "Turns a minute", unit: "turns", step: 1, min: 1, help: "How fast the player turns the knob while playing." },
+      { key: "rightAnswers", label: "Right answers", unit: "%", step: 10, min: 0, max: 100, help: "How many of the questions the player answers right." },
+    ] },
+  ];
+
+  const LABELS = {};
+  for (const g of CORE) for (const f of g.fields) {
+    if (f.key) LABELS[f.key] = f.label;
+    if (f.pair) f.pair.forEach((k, i) => { LABELS[k] = `${f.label}: ${i ? "most" : "fewest"} ${f.unit}`; });
+  }
+  for (const l of LINES) l.names.forEach((n, i) => {
+    LABELS[`${l.id}.${i + 1}.price`] = `${n}: price`;
+    LABELS[`${l.id}.${i + 1}.effect`] = `${n}: ${l.unit === "×" ? "bonus" : l.id === "gods" ? "turns an hour" : "part of the work for an obol"}`;
+  });
+
+  const state = {
+    local: { ...GAME },
+    saved: { ...GAME },
+    savedBy: null, savedAt: null,
+    pick: 5,
+    db: null, user: null, ref: null, canWrite: null, saving: false, pending: null,
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const fmt = (n, d = 0) => Number.isFinite(n) ? n.toLocaleString("en-US", { maximumFractionDigits: d, minimumFractionDigits: 0 }) : "–";
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const same = (a, b) => Object.keys(GAME).every((k) => a[k] === b[k]);
+  const dirty = () => !same(state.local, state.saved);
+  const minutes = (m) => m < 60 ? `${fmt(m, m < 10 ? 1 : 0)} min` : `${fmt(m / 60, 1)} h`;
+
+  /* ---------- the numbers ---------- */
+
+  function fieldRow(f) {
+    if (f.ro) return `<div class="field" data-ro="${f.ro}">
+      <label for="ro-${f.ro}">${f.label}</label>
+      <span class="inp"><input id="ro-${f.ro}" class="ro" type="text" readonly><span class="unit">${f.unit}</span></span>
+      <span class="help">${f.help}</span>
+    </div>`;
+    if (f.pair) return `<div class="field" data-key="${f.pair.join(",")}">
+      <label for="f-${f.pair[0]}">${f.label}</label>
+      <span class="inp pair">${f.pair.map((k, i) => `<input id="f-${k}" type="number" inputmode="decimal" step="${f.step}" min="${f.min}" aria-label="${LABELS[k]}">`).join(`<span class="sep">/</span>`)}<span class="unit">${f.unit}</span></span>
+      <span class="help">${f.help}</span>
+      <span class="was" hidden></span>
+    </div>`;
+    return `<div class="field" data-key="${f.key}">
+      <label for="f-${f.key}">${f.label}</label>
+      <span class="inp"><input id="f-${f.key}" type="number" inputmode="decimal" step="${f.step}" min="${f.min}"${f.max != null ? ` max="${f.max}"` : ""}><span class="unit">${f.unit}</span></span>
+      <span class="help">${f.help}</span>
+      <span class="was" hidden></span>
+    </div>`;
+  }
+
+  function buildKnobs() {
+    const core = CORE.map((g) => `<div class="group"><div class="gh"><h3>${g.group}</h3>${g.note ? `<span class="dim" style="font-size:12px">${g.note}</span>` : ""}</div>${g.fields.map(fieldRow).join("")}</div>`);
+    const lines = LINES.map((l) => `<div class="line">
+      <div class="lh"><h3>${l.title}</h3><span>${l.what}</span></div>
+      ${l.names.map((n, i) => {
+        const k = `${l.id}.${i + 1}`;
+        return `<div class="item" data-key="${k}">
+          <span class="name">${n}<small>tier ${"I".repeat(i + 1)}${l.id === "blessings" ? ` · <span data-days="${k}"></span>` : ""}</small></span>
+          <span class="inp"><input id="f-${k}.price" data-field="${k}.price" type="number" inputmode="decimal" step="1" min="0" aria-label="${n} price"><span class="coin" title="obols"></span></span>
+          ${l.unit ? `<span class="inp"><input id="f-${k}.effect" data-field="${k}.effect" type="number" inputmode="decimal" step="${l.step}" min="0" aria-label="${n} effect"><span class="unit">${l.unit}</span></span>` : "<span></span>"}
+          ${l.id === "blessings" ? `<span class="inp ro-cell"><input id="ro-${k}" class="ro" type="text" readonly aria-label="${n}: work for an obol"><span class="unit">work</span></span>` : ""}
+          <span class="was" hidden></span>
+        </div>`;
+      }).join("")}
+    </div>`);
+    $("knobs").innerHTML = core.join("") + `<div class="group"><div class="gh"><h3>The Agora</h3><span class="dim" style="font-size:12px">price in obols · effect</span></div>${lines.join("")}</div>`;
+    $("knobs").addEventListener("input", (e) => {
+      const input = e.target.closest("input");
+      if (!input) return;
+      const key = input.id.slice(2);
+      const v = parseFloat(input.value);
+      const bad = !Number.isFinite(v) || v < parseFloat(input.min || "0") || (input.max && v > parseFloat(input.max)) || (key.endsWith(".effect") && v <= 0);
+      input.classList.toggle("bad", bad);
+      if (bad) return;
+      state.local[key] = v;
+      schedule();
+    });
+    $("knobs").addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-reset]");
+      if (!b) return;
+      for (const k of b.dataset.reset.split(",")) state.local[k] = state.saved[k];
+      syncInputs();
+      schedule();
+    });
+  }
+
+  function syncInputs() {
+    for (const k of Object.keys(GAME)) {
+      const input = $("f-" + k);
+      if (!input) continue;
+      if (document.activeElement !== input || parseFloat(input.value) !== state.local[k]) input.value = state.local[k];
+      input.classList.remove("bad");
+    }
+  }
+
+  function markChanges() {
+    for (const row of document.querySelectorAll("[data-key]")) {
+      const base = row.dataset.key;
+      const keys = base.includes(",") ? base.split(",") : base in GAME ? [base] : [base + ".price", base + ".effect"].filter((k) => k in GAME);
+      const was = row.querySelector(".was");
+      const changed = keys.filter((k) => state.local[k] !== state.saved[k]);
+      for (const k of keys) $("f-" + k)?.classList.toggle("changed", state.local[k] !== state.saved[k]);
+      if (!changed.length) { was.hidden = true; continue; }
+      was.hidden = false;
+      was.innerHTML = `saved: ${changed.map((k) => fmt(state.saved[k], 2)).join(" · ")}<button type="button" data-reset="${changed.join(",")}">reset</button>`;
+    }
+    for (const span of document.querySelectorAll("[data-days]")) {
+      const work = state.local.workPerObol * state.local[span.dataset.days + ".effect"];
+      span.textContent = `an obol per ${fmt(work / state.local.turnsPerDay, 1)} days`;
+    }
+    const p = state.local;
+    for (const g of CORE) for (const f of g.fields) if (f.ro) $("ro-" + f.ro).value = fmt(f.value(p), 1);
+    for (const t of [1, 2, 3]) $(`ro-blessings.${t}`).value = fmt(p.workPerObol * p[`blessings.${t}.effect`], 1);
+  }
+
+  /* ---------- the game, minute by minute ---------- */
+
+  function items(p) {
+    return LINES.map((l) => [1, 2, 3].map((t) => ({ name: l.names[t - 1], line: l.title, price: p[`${l.id}.${t}.price`], effect: p[`${l.id}.${t}.effect`] ?? 0 })));
+  }
+
+  /** The player of the results: the cheapest next item, as soon as they can afford it. Gives the line to buy from, or -1 to wait. */
+  function cheapest(tier, shop, obols) {
+    let best = -1;
+    for (let li = 0; li < 5; li++) if (tier[li] < 3 && (best < 0 || shop[li][tier[li]].price < shop[best][tier[best]].price)) best = li;
+    return best >= 0 && obols >= shop[best][tier[best]].price ? best : -1;
+  }
+
+  /** One session a day of [play] minutes at the start of the day; gods push all day. [pick] chooses what to buy, while playing. */
+  function simulate(p, play, pick = cheapest) {
+    const shop = items(p);
+    const tier = [0, 0, 0, 0, 0];
+    const day = PX * p.turnsPerDay;
+    let obols = 0, effort = 0, pos = 0, summit = null, top = null;
+    let workPlayer = 0, workGods = 0, turns = 0;
+    const bought = [];
+    const eff = (li, def) => tier[li] ? shop[li][tier[li] - 1].effect : def;
+    /* Every obol needs a part of the work for an obol: a fast one its own part, and a blessing leaves a part of that. */
+    let earned = 0;
+    const part = () => eff(3, 1);
+    const needNext = () => (earned < p.fastObols ? p.fastPart : 1) * p.workPerObol * part();
+    let need = needNext();
+    /* Only the player's own turns bring a vision, at the average of its range, and none in the final climb. A right answer gives obols. */
+    const everyVision = Math.max(1, (p.nextVisionMin + p.nextVisionMax) / 2);
+    const gift = p.visionObols * p.rightAnswers / 100;
+    let nextVision = (p.firstVisionMin + p.firstVisionMax) / 2, visions = 0;
+    /* Work fills the next obol, which needs `need`; the rest goes to the obol after it. The final climb earns no obols.
+       Work within a hair of the rest fills the obol: the game's uneven frames do that, but the even steps here could miss it. */
+    const earn = (work) => {
+      while (summit === null && work > 0) {
+        const whole = Math.floor(obols) + 1, left = (whole - obols) * need;
+        if (work < left - 1e-9) { obols += work / need; return; }
+        work = Math.max(0, work - left); obols = whole; earned++; need = needNext();
+      }
+    };
+    const away = 1440 - play;
+    for (let d = 1; d <= 3650 && top === null; d++) {
+      for (let m = 0; m < play && top === null; m++) {
+        const bonus = eff(0, 1) * eff(1, 1), rate = eff(2, 0);
+        const t = p.turnsPerMinute;
+        let moved = t * Math.min(bonus, p.sunCap) * PX;
+        if (summit !== null && pos + moved >= summit) moved = summit - pos;
+        pos += moved; effort += moved; turns += t;
+        earn(t * bonus); workPlayer += t * bonus;
+        if (summit === null) {
+          nextVision -= t;
+          while (nextVision <= 0) { visions++; nextVision += everyVision; obols += gift; earned += gift; }
+        }
+        const h = rate / 60;
+        effort += h * PX; earn(h); workGods += h;
+        if (summit !== null && pos >= summit - 1e-6) { top = d; break; }
+        for (;;) {
+          const li = pick(tier, shop, obols, bought.length);
+          if (li < 0) break;
+          const it = shop[li][tier[li]];
+          const before = part();
+          obols -= it.price; tier[li]++;
+          need *= part() / before;
+          bought.push({ ...it, day: d, gameDay: Math.floor(START + effort / day) + 1 });
+          if (bought.length === 15) summit = pos + p.climbTurns * p.sunCap * PX;
+        }
+      }
+      if (top !== null) break;
+      const rate = eff(2, 0), h = rate * away / 60;
+      effort += h * PX; earn(h); workGods += h;
+    }
+    const days = bought.map((b) => b.day);
+    let wait = days.length ? days[0] : 0;
+    for (let i = 1; i < days.length; i++) wait = Math.max(wait, days[i] - days[i - 1]);
+    return { play, bought, first: days[0] ?? null, all: days.length === 15 ? days[14] : null, top, wait, gods: workGods / Math.max(1e-9, workGods + workPlayer), turns, visions };
+  }
+
+  /* ---------- other orders ---------- */
+
+  /** Buys the lines of [order] one by one, each as soon as it is affordable. */
+  const inOrder = (order) => (tier, shop, obols, n) => n < order.length && obols >= shop[order[n]][tier[order[n]]].price ? order[n] : -1;
+
+  /** Buys all of Beauty first, then the cheapest. */
+  const beautyFirst = (tier, shop, obols) => tier[4] < 3 ? (obols >= shop[4][tier[4]].price ? 4 : -1) : cheapest(tier, shop, obols);
+
+  /** Buys nothing until the obols pay for everything that is left. */
+  function saver(tier, shop, obols) {
+    let left = 0;
+    for (let li = 0; li < 5; li++) for (let t = tier[li]; t < 3; t++) left += shop[li][t].price;
+    return obols >= left ? cheapest(tier, shop, obols) : -1;
+  }
+
+  const ROWS_DOWN = [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4];
+
+  /** The same random orders every time, so that the middle does not jump when a number changes. Each order is as likely as any other. */
+  const RANDOM = (() => {
+    let seed = 7;
+    const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32;
+    return Array.from({ length: 300 }, () => {
+      const o = ROWS_DOWN.slice();
+      for (let i = o.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [o[i], o[j]] = [o[j], o[i]]; }
+      return o;
+    });
+  })();
+
+  /**
+   * The fastest and the slowest of all orders, with the work of each day spread evenly over the day.
+   * Then a step from one set of items to the next costs the same days, whatever came before it.
+   */
+  function extremes(p, play) {
+    const shop = items(p), memo = new Map();
+    const eff = (t, li, def) => t[li] ? shop[li][t[li] - 1].effect : def;
+    /* From the tiers [t] to all 15: the fewest days and the line to buy next, then the most days and its line. */
+    const from = (t) => {
+      const key = t.join("");
+      if (memo.has(key)) return memo.get(key);
+      const r = [0, -1, 0, -1];
+      const spent = t.reduce((a, n, li) => a + shop[li].slice(0, n).reduce((b, it) => b + it.price, 0), 0);
+      const perDay = play * p.turnsPerMinute * eff(t, 0, 1) * eff(t, 1, 1) + 24 * eff(t, 2, 0);
+      for (let li = 0; li < 5; li++) {
+        if (t[li] === 3) continue;
+        let days = 0;
+        for (let k = spent + 1; k <= spent + shop[li][t[li]].price; k++) days += (k - 1 < p.fastObols ? p.fastPart : 1) * p.workPerObol * eff(t, 3, 1) / perDay;
+        const n = t.slice(); n[li]++;
+        const [fast, , slow] = from(n);
+        if (r[1] < 0 || days + fast < r[0]) { r[0] = days + fast; r[1] = li; }
+        if (r[3] < 0 || days + slow > r[2]) { r[2] = days + slow; r[3] = li; }
+      }
+      memo.set(key, r);
+      return r;
+    };
+    const walk = (i) => { const t = [0, 0, 0, 0, 0], out = []; for (let n = 0; n < 15; n++) { const li = from(t)[i]; out.push(li); t[li]++; } return out; };
+    return { fastest: walk(1), slowest: walk(3) };
+  }
+
+  const orderNames = (o) => { const t = [0, 0, 0, 0, 0]; return o.map((li) => LINES[li].names[t[li]++]).join(", "); };
+
+  /* ---------- what the numbers do ---------- */
+
+  function renderKey(runs) {
+    const r = runs.find((x) => x.play === 5);
+    $("key").innerHTML = r && r.top
+      ? `<span>5 minutes a day:</span><span>all 15 items on <b>day ${r.all}</b></span><span>the top on <b>day ${r.top}</b></span><span>gods do <b>${fmt(r.gods * 100)}%</b></span><span><b>${fmt(r.visions)}</b> visions</span>`
+      : `<span>5 minutes a day: the top does not come within 10 years.</span>`;
+  }
+
+  function renderCards(runs) {
+    $("cards").innerHTML = runs.map((r) => `<button type="button" class="card${r.play === state.pick ? " sel" : ""}" data-play="${r.play}" aria-pressed="${r.play === state.pick}">
+      <span class="ch"><span class="sw" style="background:var(${SERIES[r.play]})"></span>${r.play} min a day</span>
+      <span class="big">${r.top ? `day ${r.top}<small>to the top</small>` : "10+ years"}</span>
+      <dl>
+        <dt>First item</dt><dd>${r.first ? "day " + r.first : "–"}</dd>
+        <dt>All 15</dt><dd>${r.all ? "day " + r.all : "–"}</dd>
+        <dt>Longest wait</dt><dd>${r.first ? fmt(r.wait) + " d" : "–"}</dd>
+        <dt>Gods' work</dt><dd>${fmt(r.gods * 100)}%</dd>
+        <dt>Visions</dt><dd>${fmt(r.visions)}</dd>
+        <dt>Turning in all</dt><dd>${r.top ? minutes(r.turns / state.local.turnsPerMinute) : "–"}</dd>
+      </dl>
+    </button>`).join("");
+    $("cardsNote").textContent = "Days of play, one session a day";
+  }
+
+  function renderChart(runs) {
+    const W = 640, H = 270, L = 40, R = 16, T = 14, B = 34;
+    const maxDay = Math.min(3650, Math.max(10, ...runs.map((r) => r.top ?? r.bought.at(-1)?.day ?? 10)));
+    const niceStep = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000].find((s) => maxDay / s <= 8);
+    const xMax = Math.ceil(maxDay / niceStep) * niceStep;
+    const x = (d) => L + (d / xMax) * (W - L - R);
+    const y = (n) => T + (1 - n / 15) * (H - T - B);
+    const grid = css("--line"), dim = css("--dim");
+    let s = "";
+    for (const n of [0, 5, 10, 15]) s += `<line x1="${L}" x2="${W - R}" y1="${y(n)}" y2="${y(n)}" stroke="${grid}" stroke-width="1"/><text x="${L - 8}" y="${y(n) + 4}" text-anchor="end" font-size="11" fill="${dim}" font-family="IBM Plex Mono, monospace">${n}</text>`;
+    for (let d = 0; d <= xMax; d += niceStep) s += `<line x1="${x(d)}" x2="${x(d)}" y1="${y(0)}" y2="${y(0) + 4}" stroke="${dim}"/><text x="${x(d)}" y="${H - 14}" text-anchor="middle" font-size="11" fill="${dim}" font-family="IBM Plex Mono, monospace">${d}</text>`;
+    s += `<text x="${W - R}" y="${H - 1}" text-anchor="end" font-size="11" fill="${dim}" font-family="IBM Plex Sans, sans-serif">day of play</text>`;
+    s += `<text x="${L}" y="${T - 3}" font-size="11" fill="${dim}" font-family="IBM Plex Sans, sans-serif">items</text>`;
+    for (const r of runs) {
+      const c = css(SERIES[r.play]);
+      let pts = `${x(0)},${y(0)}`, n = 0;
+      for (const b of r.bought) { pts += ` ${x(b.day)},${y(n)}`; n++; pts += ` ${x(b.day)},${y(n)}`; }
+      const w = r.play === state.pick ? 3 : 1.75;
+      s += `<polyline points="${pts}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linejoin="round"/>`;
+      if (r.all && r.top) {
+        s += `<line x1="${x(r.all)}" x2="${x(r.top)}" y1="${y(15)}" y2="${y(15)}" stroke="${c}" stroke-width="${w}" stroke-dasharray="4 3"/>`;
+        s += `<path d="M${x(r.top)} ${y(15) - 9} l6 9 h-12 z" fill="${c}"/>`;
+      }
+    }
+    $("chart").innerHTML = s;
+    $("legend").innerHTML = runs.map((r) => `<span><span class="sw" style="display:inline-block;width:14px;height:3px;background:var(${SERIES[r.play]})"></span>${r.play} min</span>`).join("") + `<span>▲ the top</span>`;
+  }
+
+  function renderChecks(runs) {
+    const p = state.local;
+    const fastest = p.turnsPerDay / p.sunCap;
+    const five = runs.find((r) => r.play === 5);
+    const lines = items(p);
+    const weak = [];
+    lines.forEach((tiers, li) => {
+      const l = LINES[li];
+      if (l.id === "blessings" && tiers[0].effect >= 1) weak.push(`${tiers[0].name} does not make obols cheaper`);
+      for (let t = 1; t < 3; t++) {
+        if (tiers[t].price < tiers[t - 1].price) weak.push(`${tiers[t].name} is cheaper than ${tiers[t - 1].name}`);
+        if (l.unit && (l.id === "blessings" ? tiers[t].effect >= tiers[t - 1].effect : tiers[t].effect <= tiers[t - 1].effect)) weak.push(`${tiers[t].name} is not stronger than ${tiers[t - 1].name}`);
+      }
+    });
+    const list = [
+      [fastest >= 48 ? "ok" : "no", `The sun never races: a day takes at least 48 turns. Now the fastest day takes <b class="num">${fmt(fastest, 1)}</b> turns (${fmt(p.turnsPerDay)} ÷ ${fmt(p.sunCap, 2)}).`],
+      [five.gods >= .15 && five.gods <= .40 ? "ok" : "no", `Pushing stays the main way: at 5 minutes a day, the gods do 15–40% of the work. Now they do <b class="num">${fmt(five.gods * 100)}%</b>.`],
+      [weak.length ? "warn" : "ok", weak.length ? `Each tier should be stronger and cost more than the one before: ${weak.join("; ")}.` : "Each tier is stronger, and costs more, than the one before."],
+    ];
+    $("checks").innerHTML = list.map(([k, t]) => `<div class="check"><span class="pill ${k}">${k === "ok" ? "OK" : k === "no" ? "Fails" : "Look"}</span><p>${t}</p></div>`).join("");
+  }
+
+  function renderFacts() {
+    const p = state.local, tpm = p.turnsPerMinute;
+    const it = items(p);
+    const maxBonus = it[0][2].effect * it[1][2].effect;
+    const bestPart = Math.min(1, ...it[3].map((x) => x.effect));
+    const bestWork = p.workPerObol * bestPart;
+    const fastWork = p.workPerObol * p.fastPart;
+    const every = (p.nextVisionMin + p.nextVisionMax) / 2;
+    const total = it.flat().reduce((a, b) => a + b.price, 0);
+    const thanatos = it[2][2];
+    const facts = [
+      ["A day", `${fmt(p.turnsPerDay)} turns`, `${minutes(p.turnsPerDay / tpm)} of turning · fastest ${fmt(p.turnsPerDay, 0)} ÷ ${fmt(p.sunCap, 2)} = ${fmt(p.turnsPerDay / p.sunCap, 1)} turns`],
+      ["Fast obols", `${fmt(p.fastObols)} × ${fmt(fastWork, 1)} turns`, `each ${fmt(p.workPerObol)} × ${fmt(p.fastPart, 2)} = ${fmt(fastWork / p.turnsPerDay, 1)} game days · ${minutes(fastWork / tpm)}`],
+      ["Each obol after them", `${fmt(p.workPerObol)} ± ${fmt(p.workPerObol * p.obolSpread)} turns`, `${fmt(p.workPerObol / p.turnsPerDay, 1)} game days on average · ${minutes(p.workPerObol / tpm)}`],
+      ["The last obols", `${fmt(bestWork / maxBonus, 1)} turns`, `${fmt(p.workPerObol)} × ${fmt(bestPart, 2)} ÷ (${fmt(it[0][2].effect, 2)} × ${fmt(it[1][2].effect, 2)}) per obol, with everything bought`],
+      ["All 15 items", `${fmt(total)} obols`, `the Agora's prices added up`],
+      [thanatos.name, `a day in ${fmt(p.turnsPerDay / thanatos.effect, 1)} h`, `${fmt(p.turnsPerDay)} ÷ ${fmt(thanatos.effect)} turns an hour · ${fmt(thanatos.effect * 24 / bestWork, 2)} obols a day on his own`],
+      ["A vision", `every ${fmt(every)} turns`, `the first after ${fmt((p.firstVisionMin + p.firstVisionMax) / 2)} · ${minutes(every / tpm)} of turning · every ${fmt(every / (5 * tpm), 1)} days at 5 minutes a day`],
+      ["The final climb", `${fmt(p.climbTurns)} turns`, `${minutes(p.climbTurns / tpm)} of turning · ${fmt(p.climbTurns / (5 * tpm), 1)} days at 5 minutes a day · ${fmt(Math.max(0, Math.floor(p.climbTurns / p.hermTurns) - 1))} herms on the way`],
+    ];
+    $("facts").innerHTML = facts.map(([h, v, f]) => `<div class="fact"><h3>${h}</h3><div class="v">${v}</div><div class="f">${f}</div></div>`).join("");
+    $("tpmNote").textContent = fmt(tpm);
+  }
+
+  function renderChanges() {
+    const keys = Object.keys(GAME).filter((k) => state.local[k] !== GAME[k]);
+    $("changes").innerHTML = keys.length
+      ? keys.map((k) => `<div>${LABELS[k]}: ${fmt(GAME[k], 2)} → <b>${fmt(state.local[k], 2)}</b></div>`).join("")
+      : `<div class="none">None: these are the numbers in the game today.</div>`;
+  }
+
+  function renderOrder(runs) {
+    const r = runs.find((x) => x.play === state.pick);
+    $("orderTitle").textContent = `The order of purchases at ${r.play} minutes a day`;
+    $("order").innerHTML = r.bought.map((b, i) => `<tr><td class="n">${i + 1}</td><td>${b.name}</td><td>${b.line}</td><td class="n">${fmt(b.price)}</td><td class="n">${b.day}</td><td class="n">${b.gameDay}</td></tr>`).join("")
+      + (r.top ? `<tr><td class="n">▲</td><td>The top</td><td>Final climb</td><td class="n">–</td><td class="n">${r.top}</td><td class="n">–</td></tr>` : "");
+  }
+
+  function renderOrders(runs) {
+    const p = state.local;
+    const all = PLAYERS.map((play) => {
+      const x = extremes(p, play);
+      const top = (pick) => simulate(p, play, pick).top ?? Infinity;
+      const tops = RANDOM.map((o) => top(inOrder(o))).sort((a, b) => a - b);
+      return {
+        play, x,
+        days: [top(inOrder(x.fastest)), runs.find((r) => r.play === play).top ?? Infinity, tops[Math.floor((tops.length - 1) / 2)],
+          top(inOrder(ROWS_DOWN)), top(beautyFirst), top(inOrder(ROWS_DOWN.slice().reverse())), top(inOrder(x.slowest)), top(saver)],
+      };
+    });
+    const labels = ["The fastest order", "The cheapest item first, as above", "A random order: the middle of 300", "The Agora rows, from the top down",
+      "Beauty first, then the cheapest", "The Agora rows, from the bottom up", "The slowest order", "Nothing, until all 15 are paid for"];
+    const sel = (play) => play === state.pick ? ` class="n sel"` : ` class="n"`;
+    $("ordersHead").innerHTML = `<tr><th>Order</th>${PLAYERS.map((m) => `<th${sel(m)}>${m} min</th>`).join("")}</tr>`;
+    $("orders").innerHTML = labels.map((label, i) => `<tr${i === 1 ? ` class="main"` : ""}><td>${label}</td>${all.map((a) => `<td${sel(a.play)}>${Number.isFinite(a.days[i]) ? a.days[i] : "10+ years"}</td>`).join("")}</tr>`).join("");
+    const it = items(p).flat(), beauty = items(p)[4].reduce((a, b) => a + b.price, 0);
+    const pick = all.find((a) => a.play === state.pick);
+    $("ordersNotes").innerHTML = [
+      `Each order buys its next item as soon as the player can pay for it, and runs minute by minute, as the results above do.`,
+      `The fastest and the slowest orders come from all 168,168,000 orders, with the work of each day spread evenly over the day.`,
+      `Beauty costs ${fmt(beauty)} of the ${fmt(it.reduce((a, b) => a + b.price, 0))} obols and does nothing. Each Beauty item bought early makes the useful items come later.`,
+      `At ${pick.play} minutes a day, the fastest order is: ${orderNames(pick.x.fastest)}.`,
+      `The slowest order is: ${orderNames(pick.x.slowest)}.`,
+    ].map((t) => `<li>${t}</li>`).join("");
+  }
+
+  function renderRules() {
+    const p = state.local;
+    $("rules").innerHTML = [
+      `One turn of the knob is one unit of work, times the <b>bonus</b>: the rock times the sidekick, from 1× up to ${fmt(items(p)[0][2].effect * items(p)[1][2].effect, 2)}×.`,
+      `Work becomes obols. Each obol needs ${fmt(p.workPerObol)} units of work, give or take up to ${fmt(p.workPerObol * p.obolSpread)}, a part of ${fmt(p.obolSpread, 2)}. The first ${fmt(p.fastObols)} obols of a climb need ${fmt(p.fastPart, 2)} of that: ${fmt(p.workPerObol * p.fastPart, 1)} units each. A blessing leaves a part of the work for every obol, the fast ones too: ${items(p)[3].map((b) => fmt(b.effect, 2)).join(", then ")}. The part of the next obol that is earned is kept.`,
+      `The sun and the walk move <span class="num">min(bonus, ${fmt(p.sunCap, 2)})</span> turns for each turn. A day is ${fmt(p.turnsPerDay)} turns.`,
+      `Gods push a number of turns every hour, all the time. Their turns add work and move the sun, without the bonus, and they do not climb.`,
+      `Each line is bought in order, and a newer item replaces the effect of the one before. Beauty does nothing but look good.`,
+      `Only the player's own turns bring a vision: the first after ${fmt(p.firstVisionMin)} to ${fmt(p.firstVisionMax)} turns, then one after every ${fmt(p.nextVisionMin)} to ${fmt(p.nextVisionMax)}. The gods' pushes and the final climb do not count. A right answer gives ${fmt(p.visionObols)} obol${p.visionObols === 1 ? "" : "s"}.`,
+      `When all 15 items are bought, obols stop, and the top is ${fmt(p.climbTurns)} turns of pushing away, with a herm by the path every ${fmt(p.hermTurns)} turns. There the rock rolls down, and everything starts over.`,
+      `The results assume one session a day, at the start of the day, at ${fmt(p.turnsPerMinute)} turns a minute, with ${fmt(p.rightAnswers)}% of the questions answered right, and visions at the average of their ranges. The player buys the cheapest item they can afford, at once, while playing. Buy order, above, tries other orders.`,
+    ].map((t) => `<li>${t}</li>`).join("");
+  }
+
+  /* ---------- saving ---------- */
+
+  async function renderState() {
+    const d = dirty();
+    const el = $("state");
+    let who = "";
+    if (state.savedAt) {
+      let name = "";
+      if (state.savedBy && state.user) {
+        const ps = await state.user.profiles([state.savedBy]);
+        name = ps[state.savedBy]?.name || "";
+      }
+      who = `Saved${name ? " by " + name : ""} ${new Date(state.savedAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}.`;
+    } else if (state.db) {
+      who = "Nobody saved numbers yet: these are the game's.";
+    } else {
+      who = "Saving is off in this view; the numbers stay on this screen.";
+    }
+    const n = Object.keys(GAME).filter((k) => state.local[k] !== state.saved[k]).length;
+    el.textContent = `${who}${d ? ` ${n} change${n === 1 ? "" : "s"} not saved.` : ""}`;
+    $("undo").disabled = !d;
+    $("game").disabled = same(state.local, GAME);
+    const save = $("save");
+    save.hidden = !state.db;
+    save.disabled = !d || state.saving || state.canWrite === false;
+    save.title = state.canWrite === false ? "Only people who can change this page's data can save." : "";
+    save.textContent = state.saving ? "Saving…" : "Save for everyone";
+  }
+
+  async function save() {
+    if (!state.ref || !dirty()) return;
+    state.saving = true;
+    renderState();
+    const values = {};
+    for (const k of Object.keys(GAME)) values[k] = state.local[k];
+    const id = state.user ? await state.user.id() : null;
+    try {
+      await state.ref.set({ values, savedBy: id, savedAt: Date.now() });
+      state.saved = { ...state.local };
+      state.savedBy = id; state.savedAt = Date.now();
+    } catch (e) {
+      if (e && (e.code === "invalid_argument" || e.code === "not_granted")) state.canWrite = false;
+      $("state").textContent = e && e.code === "invalid_argument" ? "You can try numbers here, but only people who can change this page's data can save." : "The save did not go through. Try again in a moment.";
+      state.saving = false;
+      $("save").disabled = state.canWrite === false;
+      return;
+    }
+    state.saving = false;
+    render();
+  }
+
+  function takeSaved(snap) {
+    const data = snap.exists ? snap.data() : null;
+    const values = { ...GAME, ...migrate((data && data.values) || {}) };
+    for (const k of Object.keys(GAME)) if (typeof values[k] !== "number" || !Number.isFinite(values[k])) values[k] = GAME[k];
+    const wasDirty = dirty();
+    const changed = !same(values, state.saved);
+    state.saved = values;
+    state.savedBy = data && typeof data.savedBy === "string" ? data.savedBy : null;
+    state.savedAt = data && typeof data.savedAt === "number" ? data.savedAt : null;
+    if (!wasDirty) {
+      state.local = { ...values };
+      syncInputs();
+      $("banner").hidden = true;
+    } else if (changed && !snap.metadata.hasPendingWrites) {
+      state.pending = values;
+      $("bannerText").textContent = "Someone saved new numbers while you were changing yours.";
+      $("banner").hidden = false;
+    }
+    render();
+  }
+
+  async function connect() {
+    const [db, user] = await Promise.all([window.claude?.use?.("db") ?? null, window.claude?.use?.("user") ?? null]);
+    state.user = user;
+    if (!db) { renderState(); return; }
+    state.db = db;
+    state.canWrite = user ? await user.can("data.write") : null;
+    state.ref = db.doc("config/current");
+    state.ref.onSnapshot(takeSaved, () => { state.db = null; renderState(); });
+    renderState();
+  }
+
+  /* ---------- glue ---------- */
+
+  let timer = 0;
+  function schedule() {
+    clearTimeout(timer);
+    timer = setTimeout(render, 40);
+  }
+
+  let ordersTimer = 0;
+  function render() {
+    const runs = PLAYERS.map((m) => simulate(state.local, m));
+    renderKey(runs); renderCards(runs); renderChart(runs); renderChecks(runs); renderFacts(); renderChanges(); renderOrder(runs); renderRules();
+    clearTimeout(ordersTimer);
+    ordersTimer = setTimeout(() => renderOrders(runs), 0);
+    markChanges();
+    renderState();
+  }
+
+  function start(hot) {
+    if (hot && hot.local) { state.local = { ...GAME, ...migrate(hot.local) }; state.pick = hot.pick || 5; }
+    buildKnobs();
+    syncInputs();
+    render();
+    $("cards").addEventListener("click", (e) => {
+      const c = e.target.closest(".card");
+      if (!c) return;
+      state.pick = Number(c.dataset.play);
+      render();
+    });
+    $("undo").addEventListener("click", () => { state.local = { ...state.saved }; syncInputs(); render(); });
+    $("game").addEventListener("click", () => { state.local = { ...GAME }; syncInputs(); render(); });
+    $("save").addEventListener("click", save);
+    $("loadSaved").addEventListener("click", () => {
+      if (state.pending) state.local = { ...state.pending };
+      state.pending = null;
+      $("banner").hidden = true;
+      syncInputs(); render();
+    });
+    matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", render);
+    new MutationObserver(render).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    connect();
+  }
+
+  window.claude?.hot?.snapshot?.(() => ({ local: state.local, pick: state.pick }));
+  window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+})();
+</script>
+
+</body></html>
