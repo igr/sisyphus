@@ -29,6 +29,8 @@ class JokersOnThePathTest {
 
     /** How far ahead a new joker stands: one to two days of walking. */
     private val ahead = Config.JOKER_TURNS.start * PX_PER_TURN..Config.JOKER_TURNS.endInclusive * PX_PER_TURN
+    /** How far ahead the first joker of a climb stands: so near that he talks on day 1. */
+    private val first = Config.FIRST_JOKER.start * PX_PER_TURN..Config.FIRST_JOKER.endInclusive * PX_PER_TURN
     private val near = Config.NEAR_TURNS * PX_PER_TURN
     private val read = Config.READ_TURNS * PX_PER_TURN
     private val room = Config.JOKER_ROOM * PX_PER_TURN
@@ -46,11 +48,14 @@ class JokersOnThePathTest {
         return done()
     }
 
+    /** In a new game, the first joker stands 20 to 40 turns ahead, and he has talked before day 2 begins. */
     @Test
-    fun aJokerStandsOneToTwoDaysAhead() {
+    fun theFirstJokerOfAClimbTalksOnDay1() {
         for (seed in 1..20) {
             val g = game(MemoryStore(), seed)
-            assertTrue(g.nextJoker!! - g.position in ahead, "seed $seed: ${g.nextJoker}")
+            assertTrue(g.nextJoker!! - g.position in first, "seed $seed: ${g.nextJoker}")
+            assertTrue(g.turnUntil(300.0) { g.metJoker != null }, "seed $seed")
+            assertEquals(1, g.day, "seed $seed")
         }
     }
 
@@ -146,13 +151,13 @@ class JokersOnThePathTest {
         val g = game(store("position" to 1000.0, "nextJoker" to 1000.0 + near, "met.9" to 1.0))
         assertTrue(g.turnUntil { g.metJoker != null })
         g.startOver()
-        assertTrue(g.nextJoker!! in ahead)
+        assertTrue(g.nextJoker!! in first)
         assertNull(g.metJoker)
         assertEquals(1, g.met(JOKERS[0]))
         assertEquals(1, g.met(JOKERS[9]))
         g.turn(2 * PI)
         g.moveTo(Place.ETNA)
-        assertTrue(g.nextJoker!! in ahead)
+        assertTrue(g.nextJoker!! in first)
         assertEquals(1, g.met(JOKERS[0]))
     }
 
@@ -173,9 +178,9 @@ class JokersOnThePathTest {
     }
 
     @Test
-    fun anOldSaveHasMetNoJokerAndOneStandsAhead() {
+    fun anOldSaveHasMetNoJokerAndOneComesSoon() {
         val g = game(store("position" to 5000.0))
-        assertTrue(g.nextJoker!! - g.position in ahead)
+        assertTrue(g.nextJoker!! - g.position in first)
         assertTrue(JOKERS.all { g.met(it) == 0 })
         assertFalse(g.newJokers)
     }

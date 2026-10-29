@@ -66,7 +66,13 @@ object Config {
     /** Turns of walking that each text of a part shows in the popup over its stone. */
     const val READ_TURNS = 6
 
-    /** The next joker stands this many turns of walking ahead, at random: one to two days at the pace of a new climb. */
+    /**
+     * The first joker of a climb stands this many turns of walking ahead, at random, so that he talks on day 1: day 2 begins
+     * after 53 turns, and his bubble ends 9 turns after he is reached.
+     */
+    val FIRST_JOKER = 20.0..40.0
+
+    /** After each joker, the next stands this many turns of walking ahead, at random: one to two days at the pace of a new climb. */
     val JOKER_TURNS = TURNS_PER_DAY..2 * TURNS_PER_DAY
 
     /** A joker stands at least this many turns of walking from the next stone, so that his bubble and its popup do not meet. */

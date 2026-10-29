@@ -308,7 +308,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     init {
         store.load(KEY_SAVED_AT)?.let { away(wall() - it) }
         beginClimb()
-        placeJoker()
+        placeJoker(Config.FIRST_JOKER)
     }
 
     val dayValue get() = START_TIME + effort / DAY_LENGTH
@@ -571,10 +571,13 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         dirty = true
     }
 
-    /** With no joker ahead, the next one stands one to two days of walking ahead, at random, clear of the next stone. */
-    private fun placeJoker() {
+    /**
+     * With no joker ahead, the next one stands [ahead] turns of walking ahead, at random, clear of the next stone: one to two days
+     * after a joker, and on day 1 for the first joker of a climb, or of a game saved before the jokers.
+     */
+    private fun placeJoker(ahead: ClosedFloatingPointRange<Double> = Config.JOKER_TURNS) {
         if (nextJoker != null) return
-        val turns = Config.JOKER_TURNS.let { it.start + jokerRandom.nextDouble() * (it.endInclusive - it.start) }
+        val turns = ahead.start + jokerRandom.nextDouble() * (ahead.endInclusive - ahead.start)
         joker = pickJoker(jokerRandom)
         nextJoker = position + turns * PX_PER_TURN
         keepRoom()
@@ -678,7 +681,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         restartTale()
         nextJoker = null
         metJoker = null
-        placeJoker()
+        placeJoker(Config.FIRST_JOKER)
         quotes = QuoteBox(quoteSeed, drawn = 0, firstTime = true, news = ::nextNews)
         save()
     }

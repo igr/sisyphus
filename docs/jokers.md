@@ -8,7 +8,7 @@ The climb is long, and the same every day. A joker is a small surprise: who stan
 
 ## Goals
 
-- About once a game day or two of walking, a joker stands by the path ahead. When the rock comes near, a bubble over the joker tells a joke or a riddle, with the name of the joker as its note.
+- On day 1 of each climb, and then about once a game day or two of walking, a joker stands by the path ahead. When the rock comes near, a bubble over the joker tells a joke or a riddle, with the name of the joker as its note.
 - 10 jokers, all from the public domain: figures of old books, of folk tales and of history. Each has its own chance: from 1 in 2 for the most common, Diogenes, to 1 in 500 for the rarest, Cthulhu.
 - A joker only talks: no obols, and no change to the climb.
 - The bubble of a joker never shows with the popup of a stone, or during a vision.
@@ -33,16 +33,16 @@ The climb is long, and the same every day. A joker is a small surprise: who stan
 
 ## How it works
 
-- **Where a joker stands.** At the start of each climb, and after each joker, the next joker stands by the path 72 to 144 turns of walking ahead, at random: one to two days at the pace of a new climb, `Config.JOKER_TURNS`. With a rock, he walks faster, and the days go faster too, so it stays one to two days.
+- **Where a joker stands.** At the start of each climb, the first joker stands by the path 20 to 40 turns of walking ahead, at random, `Config.FIRST_JOKER`: day 2 begins after 53 turns, so he talks on day 1. After each joker, the next stands 72 to 144 turns of walking ahead, at random: one to two days at the pace of a new climb, `Config.JOKER_TURNS`. With a rock, he walks faster, and the days go faster too, so it stays one to two days.
 - **Which joker.** The game takes the joker when it puts one by the path, at random, by the weights below. Each weight is out of 500, so the chance of Diogenes is 250 in 500: 1 in 2.
 - **The bubble.** It works as the popup of a stone does. It opens when the rock is 3 turns of walking from the joker, `Config.NEAR_TURNS`. Each text shows for 6 turns of walking, `Config.READ_TURNS`. A riddle and most jokes have two texts: the question, then the answer. Its tail points down at the joker, from above his head or the rock, and its note is the name of the joker.
 - **Which line.** Each joker has a set of lines, and the most common jokers have the most. The game counts how many times the player met each joker, in all climbs and worlds. A joker tells the lines in turn: the first line the first time, the second line the next time, and after the last line the first again.
 - **After the bubble.** The joker is met: the card turns face up, and stays face up. The joker turns to watch Sisyphus go, and stays by the path behind him, out of the picture. Then the next joker stands ahead.
 - **Room for the stones.** A joker stands at least 15 turns of walking from the next stone, `Config.JOKER_ROOM`, so that his bubble and its popup do not meet. When a joker would stand nearer, or a new stone stands near a joker, the joker stands 15 turns past the stone. A new stone stands 30 turns ahead, so the joker that moves is never in the picture.
 - **The visions.** A vision hides the bubble, as it hides the popup of a stone. A vision also stops him, so the bubble waits, and it shows again after the vision.
-- **The top.** No bubble shows at the top. A new climb, a move to another world and the Reset of the climb put a new joker by the path, 72 to 144 turns into the new climb.
+- **The top.** No bubble shows at the top. A new climb, a move to another world and the Reset of the climb put a new joker by the path, 20 to 40 turns into the new climb.
 - **The light.** The light of the time of day falls on the jokers, as on the props. It does not fall on the bubble.
-- **Old saved games.** A game saved before the jokers has met none. Its first joker stands 72 to 144 turns ahead.
+- **Old saved games.** A game saved before the jokers has met none. Its first joker stands 20 to 40 turns ahead.
 - **The dev screen.** In dev builds, Joker in the row of the worlds, now "Worlds and jokers", brings the next joker in the order of the cards, a turn into the bubble. So a few taps show all 10. A stone too near that joker stands 15 turns past the joker.
 
 ## The jokers
@@ -206,7 +206,7 @@ A `|` is the change from the first text to the second. On the smallest phone, ev
 
 - The jokers: 10, with the ids 0 to 9 in order; the weights add up to 500, from 250 down to 1; each has a line, each line one or two texts; every text has only the letters of the font; every text fits the bubble with its note on the smallest phone.
 - The choice: over many choices, each joker comes about as often as its weight says; the choice takes no number from the random numbers of the game, so the visions and the tales stay the same.
-- On the path: a joker stands 72 to 144 turns ahead at the start of a climb, and after each joker; the bubble opens 3 turns before the rock reaches the joker, and each text shows for 6 turns; after it, the joker is met once more, and the next joker stands ahead; the lines of a joker come in turn; a joker stands at least 15 turns from the next stone, also when the stone comes after him; a vision hides the bubble, and it waits; the gods' pushes do not reach a joker; no bubble at the top; a new climb puts a new joker ahead; the joker ahead, his id and the jokers met survive a restart.
+- On the path: the first joker of a climb stands 20 to 40 turns ahead and talks on day 1, and after each joker the next stands 72 to 144 turns ahead; the bubble opens 3 turns before the rock reaches the joker, and each text shows for 6 turns; after it, the joker is met once more, and the next joker stands ahead; the lines of a joker come in turn; a joker stands at least 15 turns from the next stone, also when the stone comes after him; a vision hides the bubble, and it waits; the gods' pushes do not reach a joker; no bubble at the top; a new climb puts a new joker ahead; the joker ahead, his id and the jokers met survive a restart.
 - The tab: the tabs fit the smallest phone; a face-down card does not open; a face-up card opens, and a tap closes it; the dot shows for a new card, and goes when the tab opens; the Worlds screen opens on the tab with the news.
 - The dev screen: Joker brings the next joker at once, and its row fits the smallest phone.
 - Snapshots: Diogenes with his bubble, ahead of the rock and behind Sisyphus, also on the smallest phone; all 10 jokers in a row, as they are and in the light of the night; the Jokers tab with some cards face up, and the dot by the day; an open card.

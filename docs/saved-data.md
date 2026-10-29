@@ -64,7 +64,7 @@ When a key is not there, the game uses a start value:
 - `stelesTold`: in a climb saved before the stones, the items bought in it, so that no stone tells an old part.
 - `nextStele`: -1, no stone ahead.
 - `tale`: 0, the tale of Sisyphus. An id that the pool does not have also tells the tale of Sisyphus.
-- `nextJoker`: -1, so a joker is put by the path at once, 72 to 144 turns ahead.
+- `nextJoker`: -1, so a joker is put by the path at once, 20 to 40 turns ahead.
 - `joker`: 0, Diogenes. An id that the game does not have is Diogenes too.
 - All other keys: 0.
 
