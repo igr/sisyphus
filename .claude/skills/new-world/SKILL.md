@@ -29,10 +29,10 @@ A world is a new look and new names on the same game. The rules, the economy and
 | Gods | Amalthea, Pan, Thanatos | `items`; icons |
 | Blessings | Purse of Hermes, Gift of Tyche, Wealth of Plutus | `items`; icons |
 | Beauty | Dolphins leap in the sea, Pegasus flies by, the Pleiades shine at night | `items`; icons; `World.update` and `SceneRenderer.render` |
-| Voices | The Sphinx and Hecate come in the visions, as Hermes does, and ask "Who said this?" | `God` and `godsOf` in `game/Voices.kt`; sprites in `scene/Visions.kt` |
+| Voices | The Sphinx and Hecate come in the visions, as Hermes does, and ask the questions | `God` and `godsOf` in `game/Voices.kt`; sprites in `scene/Visions.kt` |
 | Picture | The scene at noon, from the top of the rock down to the far view | `worldPreview` in `ui/Previews.kt` |
 
-These are the same in every world: the price of USD 0.99, Sisyphus, the first rock, the knob, the day length, the final climb and its end, the prices and the effects of the 15 items, the line titles, the notes of the first four lines ("turns count 1.5x"), the wise words, Hermes, the "Who said this?" of the visions, the sounds and the screens.
+These are the same in every world: the price of USD 0.99, Sisyphus, the first rock, the knob, the day length, the final climb and its end, the prices and the effects of the 15 items, the line titles, the notes of the first four lines ("turns count 1.5x"), the wise words, Hermes, the questions of the visions, the sounds and the screens.
 
 ## Steps
 

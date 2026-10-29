@@ -57,13 +57,21 @@ In each world, one of three gods comes, chosen at random. Hermes comes in every 
 | The Underworld | Charon, the ferryman of the dead, and Persephone, their queen |
 | Cairo | Thoth, the scribe of the gods, with the head of an ibis, and Anubis, the jackal who weighs the hearts of the dead |
 
-Every god asks "Who said this?": one of the wise words, its author, and the author of another one. The first voices also asked riddles, but they were easy to guess, so they are gone.
+There are three kinds of questions. Each round of three visions asks one of each, in an order that the game shuffles. The two answers are always of the same kind, so that only knowing helps. The first voices also asked riddles, but their answers gave them away, so they are gone.
+
+| Kind | Example | The two answers |
+|---|---|---|
+| "Who said this?" | "Who said this? "The sun is new every day."" Heraclitus, or Pindar. | The author of the wise words, and the author of other ones. |
+| "Who lived first?" | Thales, or Livy. The reply: "Thales was born about 624 BC, Livy about 59 BC." | Two people of the wise words, born a century apart or more, so that the order is sure. Both lived in antiquity, or both in modern times, so that the era does not give the answer away. |
+| "What do the Romans call ...?" | "What do the Romans call Hermes?" Mercury, or Pluto. | The Roman name of the god, and the Roman name of another god, or of another goddess for a goddess. |
 
 - Each god has a farewell of its own, which it says when nobody answers.
-- The gods make their questions from the wise words, so they never run out. They use only sayings of real people, not the lines of Sisyphus and his world, and the other author is never the same person under another name.
+- The gods make the questions from the wise words, so they do not run out: 410 sayings and 761 pairs of people. They use only sayings of real people, not the lines of Sisyphus and his world, and the other author is never the same person under another name.
+- "Who lived first?" uses only the 58 people whose year of birth is known well enough. Before the year 1000, the reply says "about".
+- "What do the Romans call ...?" uses 23 gods whose Roman name does not sound like the Greek one, so Heracles and Persephone are left out.
 - No god names itself as an answer: Empedocles of Mount Etna wrote wise words too.
 - The right answer stands on the left or on the right at random.
-- A saying does not come again until all the sayings have come, in all worlds together.
+- No question comes again until all the questions of its kind have come, in all worlds together.
 - Every text uses only the letters of `PixelFont`, and fits on the smallest phone: a question or a reply in 3 lines of the panel, and an answer in 2 lines of its half of the scene, 46 pixels wide. Today, 5 names of authors do not fit: Antisthenes, Empedocles, La Rochefoucauld, Schopenhauer and Xenophanes. The gods leave them out. A test checks every text, as `QuotesTest` does for the wise words.
 
 ## A new world

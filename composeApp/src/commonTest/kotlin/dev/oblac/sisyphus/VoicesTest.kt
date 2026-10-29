@@ -1,15 +1,20 @@
 package dev.oblac.sisyphus
 
+import dev.oblac.sisyphus.game.BIRTH_YEARS
 import dev.oblac.sisyphus.game.Config
 import dev.oblac.sisyphus.game.God
+import dev.oblac.sisyphus.game.LIVED_FIRST
 import dev.oblac.sisyphus.game.NARROWEST_ANSWER
 import dev.oblac.sisyphus.game.NARROWEST_TEXT
 import dev.oblac.sisyphus.game.PEOPLE
 import dev.oblac.sisyphus.game.Place
+import dev.oblac.sisyphus.game.QUOTES
+import dev.oblac.sisyphus.game.ROMANS
 import dev.oblac.sisyphus.game.SAYINGS
 import dev.oblac.sisyphus.game.Vision
 import dev.oblac.sisyphus.game.Voices
 import dev.oblac.sisyphus.game.godsOf
+import dev.oblac.sisyphus.game.romanName
 import dev.oblac.sisyphus.game.whoSaid
 import dev.oblac.sisyphus.gfx.PixelFont
 import kotlin.random.Random
@@ -22,7 +27,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class VoicesTest {
-    private val all = SAYINGS.map { whoSaid(it, "Seneca") }
+    private val all = SAYINGS.map { whoSaid(it, "Seneca") } + LIVED_FIRST + ROMANS.map { romanName(it, "Mars") }
     private val farewells = God.entries.map { it.farewell }
 
     private fun fits(text: String, width: Int, lines: Int): Boolean {
@@ -78,12 +83,58 @@ class VoicesTest {
     }
 
     @Test
-    fun everyGodAsksWhoSaidTheWords() {
+    fun aGodOfTheWorldAsks() {
         val v = Voices(1, 0, null, 0, Random(2))
-        for (place in Place.entries) for (k in 0 until 30) {
-            val vision = v.visionAt(k, place)
-            assertTrue(vision.god in godsOf(place))
-            assertTrue(vision.question.text.startsWith("Who said this?"), vision.question.text)
+        for (place in Place.entries) for (k in 0 until 30) assertTrue(v.visionAt(k, place).god in godsOf(place))
+    }
+
+    /** Each round of three visions asks who said some wise words, who lived first, and what the Romans call a god. */
+    @Test
+    fun theThreeKindsOfQuestionsComeInTurn() {
+        val v = Voices(1, 0, null, 0, Random(2))
+        for (r in 0..20) {
+            val texts = (0..2).map { v.visionAt(3 * r + it, Place.CORINTH).question.text }
+            assertEquals(1, texts.count { it.startsWith("Who said this?") }, "$texts")
+            assertEquals(1, texts.count { it == "Who lived first?" }, "$texts")
+            assertEquals(1, texts.count { it.startsWith("What do the Romans call ") }, "$texts")
+        }
+    }
+
+    /** Both lived in antiquity, or both in modern times, so that the era does not give the answer away. */
+    @Test
+    fun whoLivedFirstAsksAboutTwoPeopleOfOneEraACenturyApart() {
+        assertTrue(LIVED_FIRST.size >= 500, "only ${LIVED_FIRST.size}")
+        for (q in LIVED_FIRST) {
+            assertTrue(q.right in PEOPLE && q.wrong in PEOPLE, q.yes)
+            val (first, second) = BIRTH_YEARS.getValue(q.right) to BIRTH_YEARS.getValue(q.wrong)
+            assertTrue(first + 100 <= second, q.yes)
+            assertEquals(first < 1000, second < 1000, q.yes)
+        }
+        for (name in BIRTH_YEARS.keys) assertTrue(QUOTES.any { it.author == name }, name)
+    }
+
+    @Test
+    fun theReplyTellsWhenBothWereBorn() {
+        val ancient = LIVED_FIRST.first { it.right == "Plato" && it.wrong == "Plutarch" }
+        assertEquals("Correct. Plato was born about 428 BC, Plutarch about 46 AD.", ancient.reply(right = true))
+        val modern = LIVED_FIRST.first { it.right == "Goethe" && it.wrong == "Albert Camus" }
+        assertEquals("Wrong. Goethe was born in 1749, Albert Camus in 1913.", modern.reply(right = false))
+    }
+
+    /** The wrong answer is a god if the right one is a god, and a goddess if it is a goddess, so that only knowing helps. */
+    @Test
+    fun theRomansNameAGodOfTheSameKind() {
+        assertTrue(ROMANS.size >= 20, "only ${ROMANS.size}")
+        val v = Voices(1, 0, null, 0, Random(2))
+        val asked = (0 until 300).map { v.visionAt(it, Place.CORINTH).question }.filter { it.text.startsWith("What do the Romans call ") }
+        assertEquals(100, asked.size)
+        for (q in asked) {
+            val god = ROMANS.first { it.roman == q.right }
+            val other = ROMANS.first { it.roman == q.wrong }
+            assertNotEquals(god, other)
+            assertEquals(god.goddess, other.goddess, q.text)
+            assertEquals("What do the Romans call ${god.greek}?", q.text)
+            assertEquals("Correct. ${god.greek} is ${god.roman} in Rome.", q.reply(right = true))
         }
     }
 
@@ -126,12 +177,17 @@ class VoicesTest {
         assertTrue(v.count in Config.NEXT_VISION)
     }
 
-    /** The world changes every 7 visions: still no saying comes twice before all have come. */
+    /** The world changes every 7 visions: still no question comes twice before all of its kind have come. */
     @Test
-    fun noSayingComesAgainBeforeAllHaveComeInAllWorlds() {
+    fun noQuestionComesAgainBeforeAllOfItsKindHaveComeInAllWorlds() {
         val v = Voices(1, 0, null, 0, Random(2))
-        val texts = SAYINGS.indices.map { k -> v.visionAt(k, Place.entries[k / 7 % Place.entries.size]).question.text }
-        assertEquals(SAYINGS.size, texts.toSet().size)
+        val asked = (0 until 3 * maxOf(SAYINGS.size, LIVED_FIRST.size)).map { k -> v.visionAt(k, Place.entries[k / 7 % Place.entries.size]).question }
+        val said = asked.filter { it.text.startsWith("Who said this?") }.take(SAYINGS.size).map { it.text }
+        assertEquals(SAYINGS.size, said.toSet().size)
+        val first = asked.filter { it.text == "Who lived first?" }.map { it.right to it.wrong }
+        assertEquals(LIVED_FIRST.size, first.toSet().size)
+        val roman = asked.filter { it.text.startsWith("What do the Romans call ") }.take(ROMANS.size).map { it.text }
+        assertEquals(ROMANS.size, roman.toSet().size)
     }
 
     @Test
@@ -146,12 +202,12 @@ class VoicesTest {
     }
 
     @Test
-    fun everyGodNamesAnotherPerson() {
+    fun theTwoAnswersDiffer() {
         val v = Voices(1, 0, null, 0, Random(2))
-        for (k in 0..60) {
+        for (k in 0..90) {
             val q = v.visionAt(k, Place.CORINTH).question
             assertNotEquals(q.right, q.wrong)
-            assertTrue(q.right in PEOPLE && q.wrong in PEOPLE)
+            if (q.text.startsWith("Who said this?")) assertTrue(q.right in PEOPLE && q.wrong in PEOPLE)
         }
     }
 
