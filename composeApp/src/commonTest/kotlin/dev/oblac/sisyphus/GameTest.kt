@@ -14,6 +14,7 @@ import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.START_TIME
 import dev.oblac.sisyphus.game.TUTORIAL
 import dev.oblac.sisyphus.game.Vision
+import dev.oblac.sisyphus.game.WHO_SAID
 import dev.oblac.sisyphus.game.godsOf
 import dev.oblac.sisyphus.game.Weather
 import dev.oblac.sisyphus.gfx.PixelFont
@@ -547,7 +548,20 @@ class GameTest {
         game.turn(2.5 * 2 * PI)
         val vision = assertNotNull(game.vision)
         assertEquals(vision.question.text, game.quotes.quote.text)
-        assertEquals(vision.god.title, game.quotes.quote.author)
+        assertEquals(vision.byline, game.quotes.quote.author)
+    }
+
+    /** A god who asks who said the wise words in the panel shows them again, with "Who said this?" in place of their author. */
+    @Test
+    fun aQuestionAboutTheWordsInThePanelHidesTheirAuthor() {
+        val game = Game(MemoryStore(), seed = 1, wall = { 0.0 })
+        repeat(4) { if (game.vision?.question?.prompt != WHO_SAID) game.summonVision() }
+        val question = assertNotNull(game.vision).question
+        assertEquals(WHO_SAID, question.prompt)
+        game.quotes.announce(Quote(question.text, question.right))
+        repeat(60) { game.update(DT) }
+        assertEquals(question.text, game.quotes.quote.text)
+        assertEquals(WHO_SAID, game.quotes.quote.author)
     }
 
     @Test

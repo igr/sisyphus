@@ -1,20 +1,24 @@
 package dev.oblac.sisyphus
 
-import dev.oblac.sisyphus.game.BIRTH_YEARS
+import dev.oblac.sisyphus.game.AUTHORS
 import dev.oblac.sisyphus.game.Config
 import dev.oblac.sisyphus.game.God
-import dev.oblac.sisyphus.game.LIVED_FIRST
 import dev.oblac.sisyphus.game.NARROWEST_ANSWER
 import dev.oblac.sisyphus.game.NARROWEST_TEXT
 import dev.oblac.sisyphus.game.PEOPLE
+import dev.oblac.sisyphus.game.PROVERBS
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.QUOTES
-import dev.oblac.sisyphus.game.ROMANS
+import dev.oblac.sisyphus.game.Quote
 import dev.oblac.sisyphus.game.SAYINGS
+import dev.oblac.sisyphus.game.TRIVIA
+import dev.oblac.sisyphus.game.VOICES
 import dev.oblac.sisyphus.game.Vision
 import dev.oblac.sisyphus.game.Voices
+import dev.oblac.sisyphus.game.WHO_SAID
+import dev.oblac.sisyphus.game.answerLines
 import dev.oblac.sisyphus.game.godsOf
-import dev.oblac.sisyphus.game.romanName
+import dev.oblac.sisyphus.game.kin
 import dev.oblac.sisyphus.game.whoSaid
 import dev.oblac.sisyphus.gfx.PixelFont
 import kotlin.random.Random
@@ -27,7 +31,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class VoicesTest {
-    private val all = SAYINGS.map { whoSaid(it, "Seneca") } + LIVED_FIRST + ROMANS.map { romanName(it, "Mars") }
+    private val all = SAYINGS.map { saying -> whoSaid(saying, kin(saying.author).first { it != saying.author }) } + TRIVIA
     private val farewells = God.entries.map { it.farewell }
 
     private fun fits(text: String, width: Int, lines: Int): Boolean {
@@ -58,19 +62,38 @@ class VoicesTest {
         for (t in all.flatMap { listOf(it.yes, it.no) }) assertFalse(again.containsMatchIn(t), "says it twice: \"$t\"")
     }
 
+    /** On the smallest phone, a name too wide for its corner breaks with a hyphen, as La Roche-foucauld. */
     @Test
     fun everyAnswerFitsItsCorner() {
-        for (t in all.flatMap { listOf(it.right, it.wrong) } + PEOPLE) {
-            assertTrue(fits(t, NARROWEST_ANSWER, 2), "too wide: \"$t\" -> ${PixelFont.wrap(t, NARROWEST_ANSWER)}")
+        for (t in all.flatMap { listOf(it.right, it.wrong) } + AUTHORS) {
+            val lines = answerLines(t, NARROWEST_ANSWER)
+            assertTrue(lines.size <= 2 && lines.all { PixelFont.width(it) <= NARROWEST_ANSWER }, "too wide: \"$t\" -> $lines")
         }
+        assertEquals(listOf("La Roche-", "foucauld"), answerLines("La Rochefoucauld", NARROWEST_ANSWER))
+        assertEquals(listOf("La Rochefoucauld"), answerLines("La Rochefoucauld", 100))
     }
 
+    /** The gods ask about all the wise words: of people, of the voices of Sisyphus's world, and the proverbs. */
     @Test
-    fun theGodsAskOnlyAboutPeople() {
-        assertTrue(SAYINGS.none { it.author == "Sisyphus" || it.author == "Proverb" || it.author == "the Rock" })
-        assertTrue(SAYINGS.all { it.author in PEOPLE })
-        assertTrue(SAYINGS.size >= 400, "only ${SAYINGS.size} sayings")
-        assertEquals(PEOPLE.size, PEOPLE.toSet().size)
+    fun theGodsAskAboutAllTheWiseWords() {
+        assertEquals(QUOTES, SAYINGS)
+        assertTrue("Sisyphus" in VOICES && "the Rock" in VOICES && "Japanese proverb" in PROVERBS)
+        assertEquals(AUTHORS.toSet(), (PEOPLE + VOICES.filter { it in AUTHORS } + PROVERBS.filter { it in AUTHORS }).toSet())
+        assertTrue(VOICES.none { it in PEOPLE } && PROVERBS.none { it in PEOPLE })
+        for (author in AUTHORS) assertTrue(kin(author).count { it != author } > 0, author)
+    }
+
+    /** The words show as the wise words do, with "Who said this?" under them; the other answer is of the same kind as the right one. */
+    @Test
+    fun whoSaidThisAsksAboutTheWordsAsTheyAre() {
+        val heraclitus = QUOTES.first { it.author == "Heraclitus" }
+        val q = whoSaid(heraclitus, "Pindar")
+        assertEquals(heraclitus.text, q.text)
+        assertEquals(WHO_SAID, q.prompt)
+        assertEquals("Correct. These are the words of Heraclitus.", q.reply(right = true))
+        assertEquals("Wrong. This is a Japanese proverb.", whoSaid(Quote("Fall seven times, stand up eight.", "Japanese proverb"), "Latin proverb").reply(right = false))
+        assertEquals("Correct. This is a proverb.", whoSaid(Quote("Rome was not built in a day.", "Proverb"), "Zen saying").reply(right = true))
+        assertTrue(kin("the Rock").all { it in VOICES } && kin("Zen saying").all { it in PROVERBS } && kin("Seneca").all { it in PEOPLE })
     }
 
     @Test
@@ -89,53 +112,27 @@ class VoicesTest {
         for (place in Place.entries) for (k in 0 until 30) assertTrue(v.visionAt(k, place).god in godsOf(place))
     }
 
-    /** Each round of three visions asks who said some wise words, who lived first, and what the Romans call a god. */
+    /** Each round of two visions asks who said some wise words, and a question of general knowledge or pop culture. */
     @Test
-    fun theThreeKindsOfQuestionsComeInTurn() {
+    fun theTwoKindsOfQuestionsComeInTurn() {
         val v = Voices(1, 0, null, 0, Random(2))
-        for (r in 0..20) {
-            val texts = (0..2).map { v.visionAt(3 * r + it, Place.CORINTH).question.text }
-            assertEquals(1, texts.count { it.startsWith("Who said this?") }, "$texts")
-            assertEquals(1, texts.count { it == "Who lived first?" }, "$texts")
-            assertEquals(1, texts.count { it.startsWith("What do the Romans call ") }, "$texts")
+        for (r in 0..40) {
+            val questions = (0..1).map { v.visionAt(2 * r + it, Place.CORINTH).question }
+            assertEquals(1, questions.count { it.prompt == WHO_SAID }, questions.joinToString { it.text })
+            assertEquals(1, questions.count { it in TRIVIA }, questions.joinToString { it.text })
         }
     }
 
-    /** Both lived in antiquity, or both in modern times, so that the era does not give the answer away. */
+    /** A question of general knowledge or pop culture asks with a question mark, and its reply tells one fact, right or wrong. */
     @Test
-    fun whoLivedFirstAsksAboutTwoPeopleOfOneEraACenturyApart() {
-        assertTrue(LIVED_FIRST.size >= 500, "only ${LIVED_FIRST.size}")
-        for (q in LIVED_FIRST) {
-            assertTrue(q.right in PEOPLE && q.wrong in PEOPLE, q.yes)
-            val (first, second) = BIRTH_YEARS.getValue(q.right) to BIRTH_YEARS.getValue(q.wrong)
-            assertTrue(first + 100 <= second, q.yes)
-            assertEquals(first < 1000, second < 1000, q.yes)
-        }
-        for (name in BIRTH_YEARS.keys) assertTrue(QUOTES.any { it.author == name }, name)
-    }
-
-    @Test
-    fun theReplyTellsWhenBothWereBorn() {
-        val ancient = LIVED_FIRST.first { it.right == "Plato" && it.wrong == "Plutarch" }
-        assertEquals("Correct. Plato was born about 428 BC, Plutarch about 46 AD.", ancient.reply(right = true))
-        val modern = LIVED_FIRST.first { it.right == "Goethe" && it.wrong == "Albert Camus" }
-        assertEquals("Wrong. Goethe was born in 1749, Albert Camus in 1913.", modern.reply(right = false))
-    }
-
-    /** The wrong answer is a god if the right one is a god, and a goddess if it is a goddess, so that only knowing helps. */
-    @Test
-    fun theRomansNameAGodOfTheSameKind() {
-        assertTrue(ROMANS.size >= 20, "only ${ROMANS.size}")
-        val v = Voices(1, 0, null, 0, Random(2))
-        val asked = (0 until 300).map { v.visionAt(it, Place.CORINTH).question }.filter { it.text.startsWith("What do the Romans call ") }
-        assertEquals(100, asked.size)
-        for (q in asked) {
-            val god = ROMANS.first { it.roman == q.right }
-            val other = ROMANS.first { it.roman == q.wrong }
-            assertNotEquals(god, other)
-            assertEquals(god.goddess, other.goddess, q.text)
-            assertEquals("What do the Romans call ${god.greek}?", q.text)
-            assertEquals("Correct. ${god.greek} is ${god.roman} in Rome.", q.reply(right = true))
+    fun theOtherQuestionsAreOfGeneralKnowledgeAndPopCulture() {
+        assertTrue(TRIVIA.size >= 400, "only ${TRIVIA.size}")
+        assertEquals(TRIVIA.size, TRIVIA.map { it.text }.toSet().size)
+        for (q in TRIVIA) {
+            assertTrue(q.text.endsWith("?"), q.text)
+            assertNotEquals(q.right, q.wrong, q.text)
+            assertEquals(q.yes, q.no, q.text)
+            assertNull(q.prompt, q.text)
         }
     }
 
@@ -182,13 +179,11 @@ class VoicesTest {
     @Test
     fun noQuestionComesAgainBeforeAllOfItsKindHaveComeInAllWorlds() {
         val v = Voices(1, 0, null, 0, Random(2))
-        val asked = (0 until 3 * maxOf(SAYINGS.size, LIVED_FIRST.size)).map { k -> v.visionAt(k, Place.entries[k / 7 % Place.entries.size]).question }
-        val said = asked.filter { it.text.startsWith("Who said this?") }.take(SAYINGS.size).map { it.text }
+        val asked = (0 until 2 * maxOf(SAYINGS.size, TRIVIA.size)).map { k -> v.visionAt(k, Place.entries[k / 7 % Place.entries.size]).question }
+        val said = asked.filter { it.prompt == WHO_SAID }.take(SAYINGS.size).map { it.text to it.right }
         assertEquals(SAYINGS.size, said.toSet().size)
-        val first = asked.filter { it.text == "Who lived first?" }.map { it.right to it.wrong }
-        assertEquals(LIVED_FIRST.size, first.toSet().size)
-        val roman = asked.filter { it.text.startsWith("What do the Romans call ") }.take(ROMANS.size).map { it.text }
-        assertEquals(ROMANS.size, roman.toSet().size)
+        val trivia = asked.filter { it.prompt == null }.take(TRIVIA.size).map { it.text }
+        assertEquals(TRIVIA.size, trivia.toSet().size)
     }
 
     @Test
@@ -208,7 +203,7 @@ class VoicesTest {
         for (k in 0..90) {
             val q = v.visionAt(k, Place.CORINTH).question
             assertNotEquals(q.right, q.wrong)
-            if (q.text.startsWith("Who said this?")) assertTrue(q.right in PEOPLE && q.wrong in PEOPLE)
+            if (q.prompt == WHO_SAID) assertTrue(q.wrong in kin(q.right), q.text)
         }
     }
 
@@ -230,9 +225,13 @@ class VoicesTest {
         assertEquals(q.wrong, v.right)
     }
 
-    /** The name of the god stands under its question, as the author under the wise words. */
+    /** The name of the god stands under its question, as the author under the wise words; under the wise words it asks about, "Who said this?". */
     @Test
     fun everyGodsNameFitsThePanel() {
         for (g in God.entries) assertTrue(PixelFont.width("— ${g.title}") <= NARROWEST_TEXT, g.title)
+        assertTrue(PixelFont.width("— $WHO_SAID") <= NARROWEST_TEXT)
+        val v = Vision(whoSaid(SAYINGS[0], "Seneca"), God.SPHINX, rightOnLeft = true)
+        assertEquals(WHO_SAID, v.byline)
+        assertEquals(God.SPHINX.title, Vision(TRIVIA[0], God.SPHINX, rightOnLeft = true).byline)
     }
 }

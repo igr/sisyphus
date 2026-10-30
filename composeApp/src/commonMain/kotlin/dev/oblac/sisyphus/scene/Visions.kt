@@ -2,6 +2,7 @@ package dev.oblac.sisyphus.scene
 
 import dev.oblac.sisyphus.game.God
 import dev.oblac.sisyphus.game.Vision
+import dev.oblac.sisyphus.game.answerLines
 import dev.oblac.sisyphus.gfx.PixelFont
 import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.gfx.TRANSPARENT
@@ -368,7 +369,7 @@ private fun glowGod(px: Pixels, god: God, middle: Int, light: Float) {
 
 /** An answer in its bottom corner, 6 pixels from the edges, in [wide] pixels of at most 2 lines. */
 private fun answer(px: Pixels, text: String, wide: Int, left: Boolean) {
-    val lines = PixelFont.wrap(text, wide).take(2)
+    val lines = answerLines(text, wide).take(2)
     if (lines.isEmpty()) return
     val top = px.height - 6 - PixelFont.CAP_HEIGHT - (lines.size - 1) * PixelFont.LINE_HEIGHT
     lines.forEachIndexed { i, line ->

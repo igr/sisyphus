@@ -418,7 +418,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         v.update(dt)
         when (v.phase) {
             Vision.Phase.COMING -> when {
-                quotes.quote.text != v.question.text -> quotes.announce(Quote(v.question.text, v.god.title))
+                quotes.quote.text != v.question.text || quotes.quote.author != v.byline -> quotes.announce(Quote(v.question.text, v.byline))
                 v.light >= 1.0 && quotes.phase == QuoteBox.Phase.SHOWING -> {
                     v.ask()
                     askedGrabs = knob.grabs
@@ -460,7 +460,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     /** A vision comes: the knob stops, and the god asks in the panel of the wise words. */
     private fun come(v: Vision) {
         knob.stop()
-        quotes.announce(Quote(v.question.text, v.god.title))
+        quotes.announce(Quote(v.question.text, v.byline))
         onVision()
         save()
     }
