@@ -1022,6 +1022,18 @@ class GameTest {
         assertTrue(third.none { it in first || it in second }, "the climb in another world repeats the sayings of the climbs before")
     }
 
+    /** A restart before the first saying of a new climb shows its first words again, not the last saying of the climb before. */
+    @Test
+    fun aRestartAtTheStartOfANewClimbShowsItsFirstWords() {
+        val store = MemoryStore(mapOf("nextVision" to 10_000.0, "effort" to DAY_LENGTH))
+        val game = Game(store, seed = 1, wall = { 0.0 })
+        game.wiseWords(60.0)
+        game.startOver()
+        game.turn(0.2)
+        game.pause()
+        assertSame(TUTORIAL, Game(store, seed = 1, wall = { 0.0 }).quotes.quote)
+    }
+
     @Test
     fun theNewsOfATopSurvivesTheNewClimb() {
         val game = Game(MemoryStore(mapOf("nextVision" to 10_000.0, "effort" to DAY_LENGTH)), seed = 1, wall = { 0.0 })

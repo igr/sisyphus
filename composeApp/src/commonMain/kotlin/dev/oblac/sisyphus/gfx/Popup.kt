@@ -52,7 +52,10 @@ fun drawPopup(px: Pixels, text: String, x: Int, tipY: Int, note: String? = null,
     px.hline(left + 2, right - 2, bottom, INK)
     px.vline(left, top + 2, bottom - 2, INK)
     px.vline(right, top + 2, bottom - 2, INK)
-    for ((cx, cy) in listOf(left + 1 to top + 1, right - 1 to top + 1, left + 1 to bottom - 1, right - 1 to bottom - 1)) px[cx, cy] = INK
+    px[left + 1, top + 1] = INK
+    px[right - 1, top + 1] = INK
+    px[left + 1, bottom - 1] = INK
+    px[right - 1, bottom - 1] = INK
 
     val baseLeft = (x - 3).coerceIn(left + 3, right - 8)
     val baseRight = baseLeft + 5

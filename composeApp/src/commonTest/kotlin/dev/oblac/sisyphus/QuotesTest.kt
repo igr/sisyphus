@@ -43,6 +43,15 @@ class QuotesTest {
         assertEquals(text, PixelFont.wrap(text, 60).joinToString(" "))
     }
 
+    /** A text is wrapped once for each width: the wise words, the bubbles and the questions are drawn in every frame. */
+    @Test
+    fun aTextIsWrappedOnceForEachWidth() {
+        val text = "The way up and the way down are one and the same."
+        assertSame(PixelFont.wrap(text, 60), PixelFont.wrap(text, 60))
+        assertEquals(text, PixelFont.wrap(text, 100).joinToString(" "))
+        assertNotSame(PixelFont.wrap(text, 60), PixelFont.wrap(text, 100))
+    }
+
     @Test
     fun theTutorialLeavesAfterTheFirstTurn() {
         val box = QuoteBox(seed = 1, drawn = 0, firstTime = true)

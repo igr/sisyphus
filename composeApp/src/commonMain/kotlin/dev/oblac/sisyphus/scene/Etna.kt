@@ -267,7 +267,7 @@ private fun lavaMark(u: Double, v: Double): Int =
     if ((hash(floor(u / 1.3).toInt(), floor(v / 1.3).toInt(), 73) and 0xFF) < 26) -2 else 0
 
 /** The crust of the bomb cracked as it flew, and the red inside shows. */
-private val BOMB_CRACKS = listOf(
+private val BOMB_CRACKS = arrayOf(
     doubleArrayOf(-7.0, -2.0, -2.5, -1.0, 0.5, -4.5, 2.5, -7.0),
     doubleArrayOf(-2.5, -1.0, -0.5, 3.0, 4.0, 4.5, 7.0, 3.0),
     doubleArrayOf(-0.5, 3.0, -4.0, 6.0),

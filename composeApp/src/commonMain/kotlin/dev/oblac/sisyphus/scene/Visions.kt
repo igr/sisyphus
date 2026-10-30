@@ -10,6 +10,10 @@ import dev.oblac.sisyphus.gfx.bayer
 import dev.oblac.sisyphus.gfx.lerpColor
 import dev.oblac.sisyphus.gfx.rgb
 import dev.oblac.sisyphus.gfx.sprite
+import kotlin.math.ceil
+import kotlin.math.floor
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -329,6 +333,9 @@ fun drawVision(px: Pixels, vision: Vision) {
 /** The width of the widest god with its glow, as it shows in the sky. */
 internal val GOD_GLOW = God.entries.maxOf { art(it).width + 2 } * VISION_SCALE
 
+/** Each god with its glow around it, made once: a vision draws it in every frame. */
+private val GLOWS = God.entries.associateWith { art(it).outlined(VISION_LIGHT) }
+
 /** The middle of the god in [slot] at the top, 0 on the left and 1 on the right, across a scene [width] pixels wide. */
 internal fun godMiddle(slot: Int, width: Int) = width * (1 + 2 * slot) / 4
 
@@ -341,7 +348,7 @@ fun drawGods(px: Pixels, gods: List<God>, light: Float) {
 
 /** A god at twice its size, glowing high in the sky as bright as [light], with its middle [middle] pixels across. */
 private fun glowGod(px: Pixels, god: God, middle: Int, light: Float) {
-    val glow = art(god).outlined(VISION_LIGHT)
+    val glow = GLOWS.getValue(god)
     val w = glow.width * VISION_SCALE
     val h = glow.height * VISION_SCALE
     val x0 = middle - w / 2
@@ -349,7 +356,12 @@ private fun glowGod(px: Pixels, god: God, middle: Int, light: Float) {
     val cx = x0 + w / 2.0
     val cy = y0 + h / 2.0
     val r = w * 0.75
-    for (y in 0 until px.height) for (x in 0 until px.width) {
+    // The light falls only inside an ellipse r wide and r / 1.3 high around the god: no pixel outside it is visited.
+    val top = max(0, floor(cy - r / 1.3).toInt())
+    val bottom = min(px.height - 1, ceil(cy + r / 1.3).toInt())
+    val left = max(0, floor(cx - r).toInt())
+    val right = min(px.width - 1, ceil(cx + r).toInt())
+    for (y in top..bottom) for (x in left..right) {
         val dx = x - cx
         val dy = (y - cy) * 1.3
         val d = sqrt(dx * dx + dy * dy) / r

@@ -33,6 +33,7 @@ The last two columns show what happens to each value when Sisyphus reaches the t
 | `place` | The id of the world: 0 is Corinth, 1 is Mount Etna, 2 is The Underworld, 3 is Cairo, 4 is Mount Fuji. | Kept | The new world |
 | `quoteSeed` | The number that sets the order of the wise words. | Kept | Kept |
 | `quotesDrawn` | How many wise words came so far. The next climb goes on from there, so that every saying comes before one comes again. | Kept | Kept |
+| `quotesAtStart` | How many wise words had come when this climb began. Until one more comes, a restart shows the first words of the climb again, not the last saying of the climb before. | `quotesDrawn` | `quotesDrawn` |
 | `nextVision` | The player's own turns until the next vision. Set when a vision comes. | 70 to 100 | 70 to 100 |
 | `visionSeed` | The number that sets the order of the visions. | Kept | Kept |
 | `visionsDrawn` | How many visions came so far. | Kept | Kept |

@@ -272,7 +272,7 @@ private val UNDERWORLD_ROCKS = listOf(
 private fun letheMark(u: Double, v: Double): Int = if (abs(sin(v * 0.9 + sin(u * 0.5))) < 0.22) 2 else 0
 
 /** Deep cracks in the rock that hangs over Tantalus. */
-private val TANTALUS_CRACKS = listOf(
+private val TANTALUS_CRACKS = arrayOf(
     doubleArrayOf(-7.0, 1.0, -3.0, 0.0, 0.0, 2.5, 3.5, 1.5, 7.0, 3.0),
     doubleArrayOf(-2.0, -7.0, -1.0, -3.5, -3.0, 0.0),
     doubleArrayOf(2.0, 6.5, 0.0, 2.5),

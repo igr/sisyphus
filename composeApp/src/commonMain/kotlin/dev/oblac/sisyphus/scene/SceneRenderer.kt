@@ -104,7 +104,7 @@ private class Star(val x: Int, val y: Int, val threshold: Float, val bright: Boo
 
 private class Island(val center: Int, val half: Double, val height: Double)
 
-private val ISLANDS = listOf(Island(24, 13.0, 4.0), Island(70, 6.0, 2.0), Island(150, 18.0, 6.0))
+private val ISLANDS = arrayOf(Island(24, 13.0, 4.0), Island(70, 6.0, 2.0), Island(150, 18.0, 6.0))
 
 /** A body in the sky. [altitude] is 1 at its highest and below 0 under the horizon. */
 private class Orb(val x: Double, val y: Double, val altitude: Double)
@@ -702,7 +702,8 @@ private fun pumiceMark(u: Double, v: Double): Int =
 
 /** Whether (u, v) lies on the crack through [points], given as x, y pairs. */
 internal fun crack(u: Double, v: Double, points: DoubleArray = CRACK): Boolean {
-    for (k in 0 until points.size - 2 step 2) {
+    for (i in 0 until points.size / 2 - 1) {
+        val k = 2 * i
         val x0 = points[k]
         val y0 = points[k + 1]
         val x1 = points[k + 2]

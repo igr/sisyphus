@@ -48,6 +48,9 @@ private val DISABLED = rgb(0x5A5048)
 /** A labor not done yet: gray, but still easy to read. */
 private val NOT_DONE = rgb(0x8A7E72)
 
+/** The four sides of a pixel, as x, y pairs: an outline is drawn on them for every pixel of a frame, so no list is made. */
+private val SIDES = intArrayOf(-1, 0, 1, 0, 0, -1, 0, 1)
+
 /** The dot of a tier of the labors, done and not done. */
 private val DOT_FULL = listOf(".###.", "#####", "#####", "#####", ".###.")
 private val DOT_RING = listOf(".###.", "#...#", "#...#", "#...#", ".###.")
@@ -391,7 +394,11 @@ class UiRenderer {
         fun stroke(x: Int, y: Int) = x in 0 until r.w && y in MEANDER.indices && MEANDER[y][x % MEANDER[0].length] == '#'
         for (y in MEANDER.indices) for (x in 0 until r.w) {
             if (!stroke(x, y)) continue
-            for ((ox, oy) in listOf(-1 to 0, 1 to 0, 0 to -1, 0 to 1)) if (!stroke(x + ox, y + oy)) px[r.x + x + ox, r.y + y + oy] = SHADOW
+            for (k in 0 until 4) {
+                val ox = SIDES[2 * k]
+                val oy = SIDES[2 * k + 1]
+                if (!stroke(x + ox, y + oy)) px[r.x + x + ox, r.y + y + oy] = SHADOW
+            }
         }
         for (y in MEANDER.indices) for (x in 0 until r.w) {
             if (!stroke(x, y)) continue
@@ -899,7 +906,7 @@ class UiRenderer {
     private fun coin(px: Pixels, x: Int, y: Int, colors: Map<Char, Int>, outline: Boolean = false) {
         if (outline) for ((dy, row) in COIN.withIndex()) for ((dx, ch) in row.withIndex()) {
             if (ch == '.') continue
-            for ((ox, oy) in listOf(-1 to 0, 1 to 0, 0 to -1, 0 to 1)) px[x + dx + ox, y + dy + oy] = SHADOW
+            for (k in 0 until 4) px[x + dx + SIDES[2 * k], y + dy + SIDES[2 * k + 1]] = SHADOW
         }
         for ((dy, row) in COIN.withIndex()) for ((dx, ch) in row.withIndex()) {
             px[x + dx, y + dy] = colors[ch] ?: continue

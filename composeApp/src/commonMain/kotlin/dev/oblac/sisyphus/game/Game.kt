@@ -37,6 +37,7 @@ private const val KEY_ROLL = "roll"
 private const val KEY_KNOB = "knob"
 private const val KEY_QUOTE_SEED = "quoteSeed"
 private const val KEY_QUOTES_DRAWN = "quotesDrawn"
+private const val KEY_QUOTES_AT_START = "quotesAtStart"
 private const val KEY_OBOLS = "obols"
 private const val KEY_NEXT_OBOL = "nextObol"
 private const val KEY_SAVED_AT = "savedAt"
@@ -297,7 +298,11 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     val begun get() = position > 0
 
     private val quoteSeed = store.load(KEY_QUOTE_SEED)?.toInt() ?: seed
-    var quotes = QuoteBox(quoteSeed, drawn = store.load(KEY_QUOTES_DRAWN)?.toInt() ?: 0, firstTime = effort == 0.0, news = ::nextNews)
+    /** How many wise words had come when this climb began: until one more comes, a restart shows the first words of the climb again. */
+    private var quotesAtStart = store.load(KEY_QUOTES_AT_START)?.toInt() ?: 0
+    var quotes = (store.load(KEY_QUOTES_DRAWN)?.toInt() ?: 0).let { drawn ->
+        QuoteBox(quoteSeed, drawn = drawn, firstTime = effort == 0.0 || drawn == quotesAtStart, news = ::nextNews)
+    }
         private set
     var onTick: () -> Unit = {}
     /** Obols that came before anybody listened, as while the app was closed: the next listener hears them at once. */
@@ -361,7 +366,8 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     /** The days pushed through in all climbs: the first day of a climb has none. */
     val days get() = daysBefore + day - 1
     val counts get() = Counts(climbs, turnsPushed, days, voices.rightAnswers)
-    val laborsDone get() = LABORS.count { it.done(counts) }
+    /** The labors done. The day reads it in every frame for its dot, so the counts are made once, not once for each labor. */
+    val laborsDone get() = counts.let { c -> LABORS.count { it.done(c) } }
     /** A labor is done that the player has not seen on the Labors tab. */
     val newLabors get() = laborsDone > laborsSeen
 
@@ -759,7 +765,8 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         nextJoker = null
         metJoker = null
         placeJoker(Config.FIRST_JOKER)
-        quotes = QuoteBox(quoteSeed, drawn = quotes.drawn, firstTime = true, news = ::nextNews)
+        quotesAtStart = quotes.drawn
+        quotes = QuoteBox(quoteSeed, drawn = quotesAtStart, firstTime = true, news = ::nextNews)
         save()
     }
 
@@ -842,6 +849,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         store.save(KEY_KNOB, knob.angle)
         store.save(KEY_QUOTE_SEED, quoteSeed.toDouble())
         store.save(KEY_QUOTES_DRAWN, quotes.drawn.toDouble())
+        store.save(KEY_QUOTES_AT_START, quotesAtStart.toDouble())
         store.save(KEY_OBOLS, shop.obols)
         store.save(KEY_NEXT_OBOL, shop.nextObol)
         store.save(KEY_SAVED_AT, pausedAt ?: wall())
