@@ -161,11 +161,13 @@ class Screen(
     var onTop: () -> Unit = {}
     /** Called when the store's answer, not a touch, begins the climb in a new world: a world just bought. */
     var onMove: () -> Unit = {}
+    /** The coin rings in the next frame: the obols of the time away come before the sounds are ready. */
+    private var ring = false
 
     init {
         game.onObol = { obols ->
             gain = Gain(obols + (gain?.obols ?: 0), 0.0)
-            onCoin()
+            ring = true
         }
     }
 
@@ -208,6 +210,10 @@ class Screen(
         geo?.top = game.summit?.let { floor(it).toInt() }
         game.covered = agoraOpen || worldsOpen || settingsOpen || helpOpen || ending != null
         game.update(dt)
+        if (ring) {
+            ring = false
+            onCoin()
+        }
         gain = gain?.let { Gain(it.obols, it.age + dt) }?.takeIf { it.age < GAIN_TIME }
         copied = max(0.0, copied - dt)
         val end = ending ?: if (game.atTop) reachTop() else null

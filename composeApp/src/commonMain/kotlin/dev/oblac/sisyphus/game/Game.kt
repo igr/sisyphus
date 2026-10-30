@@ -294,8 +294,16 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     var quotes = QuoteBox(quoteSeed, drawn = store.load(KEY_QUOTES_DRAWN)?.toInt() ?: 0, firstTime = effort == 0.0, news = ::nextNews)
         private set
     var onTick: () -> Unit = {}
+    /** Obols that came before anybody listened, as while the app was closed: the next listener hears them at once. */
+    private var unheard = 0
     /** New obols came, while the game runs or for the time away: it tells how many came together. */
-    var onObol: (Int) -> Unit = {}
+    var onObol: (Int) -> Unit = { unheard += it }
+        set(value) {
+            field = value
+            val obols = unheard
+            unheard = 0
+            if (obols > 0) value(obols)
+        }
 
     private val visionSeed = store.load(KEY_VISION_SEED)?.toInt() ?: seed
     /** The gods who come as visions, and ask. Only the player's own turns bring them. */

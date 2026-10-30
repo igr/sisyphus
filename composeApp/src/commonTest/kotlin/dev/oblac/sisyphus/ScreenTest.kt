@@ -435,6 +435,20 @@ class ScreenTest {
         assertNull(s.gain)
     }
 
+    /** Obols that came while the app was closed show as "+N" when it starts again, and the coin rings with the first frame. */
+    @Test
+    fun obolsThatCameWhileClosedShowWhenTheGameStarts() {
+        val store = MemoryStore(mapOf("shop.alone" to 3.0, "nextObol" to 100.0, "savedAt" to 0.0))
+        val s = Screen(Game(store, seed = 1, wall = { 80 * 3600.0 }), seed = 2).apply { resize(1179, 2556, 177, 102) }
+        var rings = 0
+        s.onCoin = { rings++ }
+        val obols = s.game.shop.obols.toInt()
+        assertTrue(obols >= 2)
+        assertEquals(obols, s.gain?.obols)
+        s.update(1 / 60.0)
+        assertEquals(1, rings)
+    }
+
     @Test
     fun obolsSpentOrAddedInTheDevScreenShowNoGain() {
         val s = screen(MemoryStore(mapOf("obols" to 5.0)))
