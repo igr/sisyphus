@@ -18,7 +18,7 @@ Website, support and privacy policy: https://igr.github.io/sisyphus/ (from the `
   For a real iPhone, set your signing team in the target settings.
 - Android: `./gradlew :androidApp:installDebug` with a phone or emulator connected.
   The Android SDK path goes in `local.properties` (`sdk.dir=...`).
-  The Google Play bundle: `./gradlew :androidApp:bundleRelease` (see `playstore/listing.md`).
+  The Google Play bundle: `./gradlew :androidApp:bundleRelease` (see `stores/playstore/listing.md`).
 - Desktop window on a Mac, for quick checks: `just run` (or `./gradlew :composeApp:run`)
 - Test builds: `just beta` uploads the current commit to Google Play internal testing and to TestFlight
   (`just beta-android`, `just beta-ios` for one of them). These builds have the dev screen.
@@ -27,6 +27,7 @@ Website, support and privacy policy: https://igr.github.io/sisyphus/ (from the `
 - Store releases: `just release` uploads the current commit without the dev screen: a production draft on Google Play
   (roll it out in Play Console) and a build in App Store Connect (submit it for review there).
   Never send a test build to the stores: do not promote internal builds to production, or submit TestFlight builds from `just beta`.
+  The texts, the screenshots and the privacy policy for the stores are in `stores/`: see `stores/listing.md`.
 - Dev screen: in debug builds (Run in Xcode, `installDebug`, `just run`), tap the "Agora Market" title
   to add or take away obols, to reset the shop, to start the climb again, to go three clicks before the next obol,
   to go near the top, or to open every world without buying.

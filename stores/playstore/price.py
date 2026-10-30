@@ -4,7 +4,7 @@ Sets the price of every world on Google Play from Config.WORLD_PRICE, in every c
 
 It only reads and tells what it would change, unless --apply is given. It signs in with the service account of the
 Gradle Play Publisher, ~/.android/sisyphus-play.json, and uses the one-time products of the Play Developer API.
-Run: python3 playstore/price.py [--apply]
+Run: python3 stores/playstore/price.py [--apply]
 """
 import base64
 import json
@@ -19,7 +19,7 @@ import urllib.request
 
 PACKAGE = "dev.oblac.sisyphus"
 KEY = os.path.expanduser("~/.android/sisyphus-play.json")
-CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "composeApp/src/commonMain/kotlin/dev/oblac/sisyphus/game/Config.kt")
+CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "composeApp/src/commonMain/kotlin/dev/oblac/sisyphus/game/Config.kt")
 API = f"https://androidpublisher.googleapis.com/androidpublisher/v3/applications/{PACKAGE}"
 
 

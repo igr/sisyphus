@@ -9,7 +9,7 @@ run:
 
 # shows the price of each world on Google Play; with --apply, sets it from Config.WORLD_PRICE in every country
 play-price *args:
-    python3 playstore/price.py {{args}}
+    python3 stores/playstore/price.py {{args}}
 
 # uploads this commit, with the dev screen, to Google Play internal testing and to TestFlight
 beta: beta-android beta-ios
