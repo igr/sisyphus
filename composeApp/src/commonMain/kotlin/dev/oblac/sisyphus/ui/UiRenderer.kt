@@ -243,7 +243,9 @@ internal fun itemsBought(shop: Shop) = "${shop.bought}/${items(shop.place).size}
 
 internal fun buyTitle(place: Place) = "Buy ${place.title}?"
 
-internal fun buyText(price: String?) = "You pay ${if (price == null) "" else "$price "}once, and the world is yours forever."
+/** What buying a world costs. In the middle of a climb it also says that the climb starts over there: the world begins at once. */
+internal fun buyText(price: String?, climbing: Boolean = false) =
+    "You pay ${if (price == null) "" else "$price "}once, and the world is yours forever." + if (climbing) " The climb starts over there." else ""
 
 /** The button on the Worlds screen that asks the store for the worlds bought before. */
 internal const val RESTORE = "Restore"
@@ -794,9 +796,9 @@ class UiRenderer {
     /** Asks before going to another world, since everything starts from the beginning there. */
     fun confirm(px: Pixels, layout: Layout, place: Place) = question(px, layout, "Go to ${place.title}?", MOVE_WARNING, "Yes")
 
-    /** Asks before buying a world. While the store's payment sheet is open, Yes waits. */
-    fun buy(px: Pixels, layout: Layout, place: Place, price: String?, paying: Boolean) =
-        question(px, layout, buyTitle(place), buyText(price), if (paying) "..." else "Yes")
+    /** Asks before buying a world, and says when the purchase ends the climb. While the store's payment sheet is open, Yes waits. */
+    fun buy(px: Pixels, layout: Layout, place: Place, price: String?, paying: Boolean, climbing: Boolean) =
+        question(px, layout, buyTitle(place), buyText(price, climbing), if (paying) "..." else "Yes")
 
     /** Below the worlds, the button that asks the store for the worlds bought before, and the wait for its answer. */
     fun restore(px: Pixels, r: Rect, restoring: Boolean) = PixelFont.draw(px, if (restoring) "Restoring..." else RESTORE, r.x, r.y, TERRA)

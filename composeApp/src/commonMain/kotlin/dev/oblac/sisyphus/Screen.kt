@@ -30,6 +30,7 @@ import kotlin.math.atan2
 import kotlin.math.exp
 import kotlin.math.floor
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlin.random.Random
@@ -45,6 +46,12 @@ class Gain(val obols: Int, val age: Double)
 
 /** The whole screen is one small framebuffer, scaled up by a whole number so every pixel stays sharp. */
 private const val TARGET_WIDTH = 144f
+
+/**
+ * The game is at most as wide as a 16:9 phone of the same height. A tablet, an unfolded phone or a wide window shows it
+ * with bars at the sides: a wider screen would leave the scene too short for the popups.
+ */
+private const val WIDEST = 9.0 / 16
 
 /** Extra virtual pixels around small icons, so they are easy to hit with a finger. */
 private const val TOUCH_SLOP = 6
@@ -179,14 +186,16 @@ class Screen(
         val args = listOf(widthPx, heightPx, safeTop, safeBottom, safeLeft, safeRight)
         if (widthPx <= 0 || heightPx <= 0 || args == lastResize) return
         lastResize = args
-        val s = max(1, (widthPx / TARGET_WIDTH).roundToInt())
-        val w = widthPx / s
+        val used = min(widthPx, (heightPx * WIDEST).toInt())
+        val s = max(1, (used / TARGET_WIDTH).roundToInt())
+        val w = used / s
         val h = heightPx / s
         scale = s
         offsetX = (widthPx - w * s) / 2
         offsetY = (heightPx - h * s) / 2
         pixels = Pixels(w, h)
-        val l = Layout(w, h, safeTop.ceilDiv(s), safeBottom.ceilDiv(s), safeLeft.ceilDiv(s), safeRight.ceilDiv(s))
+        fun side(inset: Int) = max(0, inset - offsetX).ceilDiv(s)
+        val l = Layout(w, h, safeTop.ceilDiv(s), safeBottom.ceilDiv(s), side(safeLeft), side(safeRight))
         layout = l
         val geo = SceneGeometry(l.scene.w, l.scene.h)
         this.geo = geo
@@ -206,6 +215,8 @@ class Screen(
             val black = end.time >= Ending.BLACK_AT
             end.update(dt)
             if (!black && end.time >= Ending.BLACK_AT) {
+                game.knob.release()
+                game.knob.stop()
                 game.startOver()
                 geo?.let { world.reset(it, game.weather) }
             }
@@ -255,7 +266,7 @@ class Screen(
             openCard?.let { ui.openCard(pixels, l, it, game.met(it)) }
             openTale?.let { ui.openTale(pixels, l, it, talePage, game.partsHeard(it)) }
             moving?.let { ui.confirm(pixels, l, it) }
-            buying?.let { ui.buy(pixels, l, it, billing.price(it), paying) }
+            buying?.let { ui.buy(pixels, l, it, billing.price(it), paying, climbing = game.begun && ending == null) }
         } else {
             renderer.render(scene, game, world, banner, rolled = ending?.rolled)
             game.vision?.let { drawVision(scene, it) }

@@ -794,6 +794,22 @@ class ScreenTest {
         assertEquals(Touch.KNOB, s.tap(l.knobX + l.knobR * 0.6f, l.knobY + 0.5f))
     }
 
+    /** A finger that keeps turning the knob through the top does not push the next climb under the black screen. */
+    @Test
+    fun aFingerTurningThroughTheTopDoesNotPushTheNextClimb() {
+        val s = screen(MemoryStore(allBought + mapOf("position" to 100.0, "summit" to 100.0, "effort" to 50_000.0)))
+        var angle = 0.0
+        s.game.knob.grab(angle)
+        repeat(((Ending.BLACK_AT + 2) * 60).toInt()) {
+            angle += 0.1
+            s.game.knob.drag(angle)
+            s.update(1 / 60.0)
+        }
+        assertEquals(1, s.game.climbs)
+        assertEquals(0.0, s.game.position)
+        assertFalse(s.game.begun)
+    }
+
     @Test
     fun reachingTheTopPlaysTheVictoryOnce() {
         val s = screen(MemoryStore(allBought + mapOf("position" to 100.0, "summit" to 100.0, "effort" to 50_000.0)))
@@ -1187,6 +1203,22 @@ class ScreenTest {
         assertEquals(1, fanfares)
     }
 
+    /** In the middle of a climb, the question to buy a world also says that the climb starts over there, since the world begins at once. */
+    @Test
+    fun inTheMiddleOfAClimbTheQuestionToBuyAWorldSaysTheClimbStartsOver() {
+        fun lines(position: Double): Int {
+            val s = worlds(FakeBilling(), position = position)
+            val l = s.layout!!
+            s.choose(l.worldRow(Place.ETNA.ordinal))
+            val px = s.render()
+            val r = l.confirmText
+            return (0 until Layout.CONFIRM_LINES).count { i ->
+                area(px, Rect(r.x, r.y + i * PixelFont.LINE_HEIGHT, r.w, PixelFont.LINE_HEIGHT)).any { it != BACKGROUND }
+            }
+        }
+        assertTrue(lines(900.0) > lines(0.0))
+    }
+
     @Test
     fun whenThePlayerDoesNotPayNothingChanges() {
         val billing = FakeBilling()
@@ -1259,6 +1291,20 @@ class ScreenTest {
         assertEquals("160 JPY", shownPrice("¥160", 160_000_000, "JPY"))
     }
 
+    /** A tablet or an unfolded phone shows the game in the shape of a tall phone, with bars at the sides, so that the scene keeps its height. */
+    @Test
+    fun aWideScreenKeepsTheShapeOfAPhone() {
+        for ((w, h) in listOf(1812 to 2176, 1600 to 2560, 1600 to 440)) {
+            val s = Screen(Game(MemoryStore(), seed = 1), seed = 2).apply { resize(w, h) }
+            val l = s.layout!!
+            assertTrue(l.height >= l.width * 16 / 9 - 1, "$w x $h gives ${l.width} x ${l.height}")
+            assertTrue(s.offsetX > 0, "$w x $h")
+        }
+        for ((w, h, width) in listOf(Triple(1080, 1920, 135), Triple(1080, 2400, 135), Triple(1179, 2556, 147))) {
+            assertEquals(width, Screen(Game(MemoryStore(), seed = 1), seed = 2).apply { resize(w, h) }.layout!!.width, "$w x $h")
+        }
+    }
+
     @Test
     fun theOfferOfAWorldFitsTheSmallestPhone() {
         val l = smallest().layout!!
@@ -1267,7 +1313,7 @@ class ScreenTest {
             assertTrue(PixelFont.width(buyTitle(place)) <= l.confirmText.w, place.title)
             assertTrue(PixelFont.width(place.title) + 4 + PixelFont.width(price) + 2 + Layout.COIN_SIZE <= l.worldText(0).w, place.title)
         }
-        assertTrue(PixelFont.wrap(buyText(price), l.confirmText.w).size <= Layout.CONFIRM_LINES)
+        assertTrue(PixelFont.wrap(buyText(price, climbing = true), l.confirmText.w).size <= Layout.CONFIRM_LINES)
         assertTrue(l.restore.right <= l.worldList.right)
         assertTrue(l.restore.y >= l.worldList.bottom)
     }

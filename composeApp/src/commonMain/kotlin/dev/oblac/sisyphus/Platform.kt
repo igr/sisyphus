@@ -89,7 +89,7 @@ interface Sound {
     fun popup() {}
     /** The rock rolls in a loop as loud as [level]: 0 while it stands still, 1 at a brisk push. */
     fun roll(level: Float) {}
-    /** Releases the audio hardware until the next click. */
+    /** Stops every sound, a long one too, and releases the audio hardware until the next click. */
     fun pause() {}
 }
 

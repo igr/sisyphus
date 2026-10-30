@@ -657,8 +657,14 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         }
     }
 
-    /** Pausing again keeps the first time: iOS also pauses on its way back to the foreground. A vision ends. */
+    /**
+     * Pausing again keeps the first time: iOS also pauses on its way back to the foreground. A vision ends. The knob stops, and
+     * the rock with it: the frames that still come before the app is gone must not roll it again, since no frame comes after them.
+     */
     fun pause() {
+        knob.release()
+        knob.stop()
+        rolling = 0.0
         endVision()
         if (pausedAt == null) pausedAt = wall()
         save()

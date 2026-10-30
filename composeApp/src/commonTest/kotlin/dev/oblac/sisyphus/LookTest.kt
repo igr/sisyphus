@@ -31,6 +31,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
+/** The narrow phones, in virtual pixels: the narrowest, a 1080 × 1920 Android phone, the shortest, and the iPhone 8 Plus. */
+private val NARROW_PHONES = listOf(Layout(135, 292, 18, 13, 0, 0), Layout(135, 240, 0, 0, 0, 0), Layout(138, 245, 0, 0, 0, 0))
+
 class LookTest {
     private val geo = SceneGeometry(133, 133)
 
@@ -111,12 +114,15 @@ class LookTest {
     }
 
     /**
-     * Over a stone that he is near, a popup tells its part. On the smallest phone, every text of every tale fits under the day
-     * and the obols, in the top 13 rows of the scene. A vision hides the popup.
+     * Over a stone that he is near, a popup tells its part. On the narrow phones, the shortest too, every text of every tale fits
+     * under the day and the obols, in the top 13 rows of the scene. A vision hides the popup.
      */
     @Test
-    fun thePopupOfAStoneFitsTheSmallestPhone() {
-        val small = Layout(135, 292, 18, 13, 0, 0).scene.let { SceneGeometry(it.w, it.h) }
+    fun thePopupOfAStoneFitsTheNarrowPhones() {
+        for (phone in NARROW_PHONES) popupOfAStoneFits(phone.scene.let { SceneGeometry(it.w, it.h) })
+    }
+
+    private fun popupOfAStoneFits(small: SceneGeometry) {
         val at = 400.0
         val read = Config.READ_TURNS * PX_PER_TURN
         fun scene(tale: Int, part: Int, page: Int, near: Boolean, vision: Boolean = false): IntArray {
@@ -165,12 +171,15 @@ class LookTest {
     }
 
     /**
-     * Over a joker that he is near, a bubble tells his joke. On the smallest phone, every text of every joker, with his name as
-     * its note, fits under the day and the obols. A vision hides the bubble.
+     * Over a joker that he is near, a bubble tells his joke. On the narrow phones, the shortest too, every text of every joker,
+     * with his name as its note, fits under the day and the obols. A vision hides the bubble.
      */
     @Test
-    fun theBubbleOfAJokerFitsTheSmallestPhone() {
-        val small = Layout(135, 292, 18, 13, 0, 0).scene.let { SceneGeometry(it.w, it.h) }
+    fun theBubbleOfAJokerFitsTheNarrowPhones() {
+        for (phone in NARROW_PHONES) bubbleOfAJokerFits(phone.scene.let { SceneGeometry(it.w, it.h) })
+    }
+
+    private fun bubbleOfAJokerFits(small: SceneGeometry) {
         val at = 400.0
         val read = Config.READ_TURNS * PX_PER_TURN
         fun scene(joker: Joker, line: Int, page: Int, near: Boolean, vision: Boolean = false): IntArray {

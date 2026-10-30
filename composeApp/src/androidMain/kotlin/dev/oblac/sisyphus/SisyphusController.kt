@@ -41,7 +41,7 @@ class SisyphusController(private val context: Context, view: View, dev: Boolean,
     /** Back closes the Agora; tells whether it did. */
     fun back() = screen.back()
 
-    /** The game pauses, and the rock stops rolling: no frame comes to stop it while the app is away. */
+    /** The game pauses, and every sound stops: the frames that still come until the app is gone keep them silent. */
     fun pause() {
         game.pause()
         sound.pause()

@@ -32,7 +32,7 @@ private const val ISLAND_PERIOD = 220
 /** At their highest, the sun and the moon stand this far below the top of the display: a little under the obol bar. */
 private const val ZENITH = 24
 
-/** The day and the obols take this many rows at the top of the display. A bubble of a joker stays under them. */
+/** The day and the obols take this many rows at the top of the display. The popup of a stone and the bubble of a joker stay under them. */
 private const val HUD_ROWS = 13
 
 /** The gold sparkles around him at the top: how many, and the seconds that each takes to twinkle once. */
@@ -425,7 +425,8 @@ class SceneRenderer(private val geo: SceneGeometry) {
 
     /**
      * The popup over the stone that he is near, with the text that it tells and how far the tale has come, such as "9/15".
-     * Its tail points down at the stone from above the rock, so that it covers neither him nor the rock. A vision hides it.
+     * Its tail points down at the stone from above the rock, so that it covers neither him nor the rock. It stays under the day
+     * and the obols, also in the short scene of a 16:9 phone. A vision hides it.
      */
     private fun drawTelling(px: Pixels, game: Game, p: Int) {
         val text = game.telling ?: return
@@ -433,7 +434,7 @@ class SceneRenderer(private val geo: SceneGeometry) {
         if (game.vision != null) return
         val x = steleLeft(at, p) + LIMESTONE.slab.width / 2
         val y = floor(geo.baseY + geo.rockDy - geo.rockR).toInt() - 3
-        drawPopup(px, text, x, y, "${game.stelesTold + 1}/${game.tale.parts.size}")
+        drawPopup(px, text, x, y, "${game.stelesTold + 1}/${game.tale.parts.size}", ceiling = HUD_ROWS)
     }
 
     /** The left column of a stone [at] pixels walked, when he has walked [p]: at [at], the front of the rock reaches it. All stones have the same shape. */

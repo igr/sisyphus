@@ -90,8 +90,12 @@ internal class TrackSound : Sound {
         if (!playing) track.play()
     }
 
+    /** Every sound stops: the roll, and a long sound that still plays, such as the victory, so that it does not go on over another app. */
     override fun pause() {
         roll(0f)
+        for (track in tracks + listOfNotNull(uiTrack, winTrack, fanfareTrack, coinTrack, spellTrack, victoryTrack, popupTrack)) {
+            if (track.playState == AudioTrack.PLAYSTATE_PLAYING) track.pause()
+        }
     }
 
     fun release() {

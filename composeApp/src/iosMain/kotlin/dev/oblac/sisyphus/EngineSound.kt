@@ -128,12 +128,22 @@ internal class EngineSound : Sound {
         rolling = true
     }
 
+    /** Every sound stops: a paused engine would play the rest of a long sound, such as the victory, at its next start. */
     override fun pause() {
+        for (player in nodes) player.stop()
+        rolling = false
         if (engine.running) engine.pause()
     }
 
+    /**
+     * An engine that stopped, in a pause or by itself when the output changes, such as AirPods or a car, has lost the loop of the
+     * roll: the next push schedules it again.
+     */
     private fun start(): Boolean {
-        if (!engine.running && !engine.startAndReturnError(null)) return false
+        if (!engine.running) {
+            rolling = false
+            if (!engine.startAndReturnError(null)) return false
+        }
         for (player in nodes) if (!player.playing) player.play()
         return true
     }

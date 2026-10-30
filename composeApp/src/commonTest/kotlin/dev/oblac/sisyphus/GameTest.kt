@@ -453,6 +453,21 @@ class GameTest {
         assertEquals(0.0, game.rolling)
     }
 
+    /** A pause stops the knob: the frames that still come before the app is gone do not roll the rock again, since no frame comes after them to stop it. */
+    @Test
+    fun aPauseStopsTheKnobAndTheRock() {
+        val game = Game(MemoryStore(), seed = 1, wall = { 0.0 })
+        game.turn(2 * PI, step = 2 * PI / 60)
+        game.knob.release()
+        game.pause()
+        val position = game.position
+        repeat(60) {
+            game.update(DT)
+            assertEquals(0.0, game.rolling)
+        }
+        assertEquals(position, game.position)
+    }
+
     @Test
     fun theRockDoesNotRollAtTheTop() {
         val game = Game(MemoryStore(allBought + mapOf("position" to 100.0, "summit" to 100.0)), seed = 1, wall = { 0.0 })
