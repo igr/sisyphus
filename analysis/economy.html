@@ -114,6 +114,14 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .chartbox svg { display: block; width: 100%; min-width: 520px; height: auto; }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--dim); }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend svg { display: block; }
+
+.journey { position: relative; }
+.journey svg { min-width: 0; }
+.tip { position: absolute; z-index: 2; pointer-events: none; max-width: 250px; padding: 6px 9px; border-radius: 6px; background: var(--well); border: 1px solid var(--line); font: 13px/1.4 var(--body); color: var(--fg); box-shadow: 0 4px 14px rgba(0, 0, 0, .25); }
+.tip b { font: 500 12px var(--mono); color: var(--dim); display: block; }
+details.events summary { cursor: pointer; color: var(--dim); }
+details.events[open] summary { margin-bottom: 8px; }
 
 .checks { display: grid; gap: 8px; }
 .check { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; padding: 10px 12px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line); }
@@ -180,6 +188,18 @@ footer { margin-top: 36px; color: var(--dim); font-size: 13px; }
       <div class="section">
         <div class="sh"><h2>Items bought, day by day</h2><div class="legend" id="legend"></div></div>
         <div class="chartbox"><svg id="chart" viewBox="0 0 640 270" role="img" aria-label="Items bought by day of play"></svg></div>
+      </div>
+
+      <div class="section">
+        <div class="sh"><h2 id="journeyTitle">The journey of a climb</h2><span class="dim">Tap a card above to pick another player</span></div>
+        <p class="dim" id="journeyNote"></p>
+        <div class="facts" id="journeyFacts"></div>
+        <div class="legend" id="journeyLegend"></div>
+        <div class="chartbox journey" id="journeyBox"><svg id="journey" role="img" aria-label="The events of one climb, by game day"></svg><div class="tip" id="journeyTip" hidden></div></div>
+        <details class="events"><summary>All the events, in order</summary><div class="tablebox"><table>
+          <thead><tr><th class="n">Game day</th><th class="n">Day of play</th><th>Event</th></tr></thead>
+          <tbody id="journeyRows"></tbody>
+        </table></div></details>
       </div>
 
       <div class="section">
@@ -585,6 +605,127 @@ footer { margin-top: 36px; color: var(--dim); font-size: 13px; }
 
   const orderNames = (o) => { const t = [0, 0, 0, 0, 0]; return o.map((li) => LINES[li].names[t[li]++]).join(", "); };
 
+  /* ---------- the journey of a climb ---------- */
+
+  /** As in game/Config.kt: the first stone on day 3, a stone 30 turns of walking ahead; the first joker 20 to 40 turns ahead, the next 72 to 144 (the middles here). */
+  const TALE_DAY = 3, STELE_TURNS = 30, FIRST_JOKER = 30, JOKER_TURNS = 108;
+
+  /** The labors that one climb can do, as in game/Labors.kt: what they count, the goal, and the name. */
+  const FIRST_LABORS = [
+    ["turns", 100, "Turn On"], ["turns", 1000, "Spin Doctor"], ["turns", 10000, "Tina Turner"], ["turns", 100000, "Revolutionary"],
+    ["days", 10, "Carpe Diem"], ["days", 100, "The Hundred Days"], ["days", 1000, "Days of Our Lives"],
+    ["answers", 1, "Lucky Guess"], ["answers", 10, "Teacher's Pet"], ["answers", 50, "The Oracle"], ["answers", 100, "Know-It-All"],
+    ["hills", 1, "Top of the Morning"],
+  ];
+
+  /**
+   * The run of simulate for one player, with the time of each event in game days. An event takes its place inside its minute
+   * from the turns, the walk or the work that brought it. Stones, jokers and visions come only while the player pushes.
+   */
+  function journey(p, play, pick = cheapest) {
+    const shop = items(p);
+    const tier = [0, 0, 0, 0, 0];
+    const dayPx = PX * p.turnsPerDay;
+    const gameDay = (e) => START + e / dayPx + 1;
+    let obols = 0, effort = 0, pos = 0, summit = null, top = null, turns = 0, bought = 0;
+    const events = [], sessions = [];
+    const eff = (li, def) => tier[li] ? shop[li][tier[li] - 1].effect : def;
+    let earned = 0;
+    const part = () => eff(3, 1);
+    const needNext = () => (earned < p.fastObols ? p.fastPart : 1) * p.workPerObol * part();
+    let need = needNext();
+    const everyVision = Math.max(1, (p.nextVisionMin + p.nextVisionMax) / 2);
+    const gift = p.visionObols * p.rightAnswers / 100;
+    let nextVision = (p.firstVisionMin + p.firstVisionMax) / 2, right = 0;
+    let nextJoker = FIRST_JOKER * PX, stele = null, told = 0, climb = null, herm = 1;
+    const labors = FIRST_LABORS.map(([what, goal, name]) => ({ what, goal, name, done: false }));
+    /* The span of the events now: [e0] its effort at the start and [span] the effort it adds; [t0] the player's turns at the start and [dt] the turns it adds. */
+    let e0 = 0, span = 0, t0 = 0, dt = 0, now = {};
+    const add = (kind, f, what, name = what) => events.push({ kind, y: gameDay(e0 + span * Math.min(1, Math.max(0, f))), turns: t0 + dt * Math.min(1, Math.max(0, f)), what, name, ...now });
+    const laborDone = (l, f) => { l.done = true; add("labor", f, `Labor done: ${l.name}`, l.name); };
+    const earn = (work, what) => {
+      const total = work;
+      while (summit === null && work > 0) {
+        const whole = Math.floor(obols) + 1, left = (whole - obols) * need;
+        if (work < left - 1e-9) { obols += work / need; return; }
+        work = Math.max(0, work - left); obols = whole; earned++; need = needNext();
+        add("obol", total > 0 ? 1 - work / total : 1, what);
+      }
+    };
+    const days = () => {
+      for (const l of labors) if (l.what === "days" && !l.done && span > 0 && e0 + span >= (l.goal - START) * dayPx) laborDone(l, ((l.goal - START) * dayPx - e0) / span);
+    };
+    /* One part of the tale is due from day 3, one more for each item bought, and the 15th in the final climb. */
+    const due = () => bought === 15 ? 15 : gameDay(e0) >= TALE_DAY ? Math.min(14, 1 + bought) : 0;
+    const away = 1440 - play;
+    for (let d = 1; d <= 3650 && top === null; d++) {
+      const session = { day: d, y0: gameDay(effort), y1: 0 };
+      for (let m = 0; m < play && top === null; m++) {
+        const bonus = eff(0, 1) * eff(1, 1), rate = eff(2, 0);
+        const t = p.turnsPerMinute;
+        let moved = t * Math.min(bonus, p.sunCap) * PX;
+        if (summit !== null && pos + moved >= summit) moved = summit - pos;
+        const h = rate / 60, p0 = pos;
+        e0 = effort; span = moved + h * PX; t0 = turns; dt = t; now = { day: d, minute: m + 1, playing: true };
+        const walked = (x) => moved > 0 ? (x - p0) / moved : 1;
+        pos += moved; effort += moved; turns += t;
+        earn(t * bonus, "An obol, for pushing");
+        if (summit === null) {
+          nextVision -= t;
+          while (nextVision <= 0) {
+            right += p.rightAnswers / 100;
+            add("vision", 1 + nextVision / t, "A vision: a god asks a question", "a vision");
+            for (const l of labors) if (l.what === "answers" && !l.done && right >= l.goal - 1e-9) laborDone(l, 1 + nextVision / t);
+            nextVision += everyVision; obols += gift; earned += gift;
+          }
+        }
+        effort += h * PX; earn(h, "An obol, from the gods");
+        for (const l of labors) if (l.what === "turns" && !l.done && turns >= l.goal) laborDone(l, (l.goal - t0) / t);
+        days();
+        /* Each stone stands 30 turns of walking ahead, one at a time: the next one after the part before it is told. */
+        if (stele === null && told < due()) stele = p0 + STELE_TURNS * PX;
+        while (stele !== null && stele <= pos) {
+          told++;
+          add("stone", walked(stele), `Stone ${told} of 15: a part of the tale`, `stone ${told}`);
+          stele = told < due() ? stele + STELE_TURNS * PX : null;
+        }
+        while (nextJoker <= pos) { add("joker", walked(nextJoker), "A joker by the path", "a joker"); nextJoker += JOKER_TURNS * PX; }
+        while (climb !== null && herm * p.hermTurns < p.climbTurns && climb + herm * p.hermTurns * p.sunCap * PX <= pos) {
+          add("herm", walked(climb + herm * p.hermTurns * p.sunCap * PX), `A herm: Hermes tells how far the top is`, "Herm");
+          herm++;
+        }
+        if (summit !== null && pos >= summit - 1e-6) {
+          top = d;
+          add("top", 1, "The top: the gods cheer, and the rock rolls down", "The top");
+          for (const l of labors) if (l.what === "hills" && !l.done) laborDone(l, 1);
+          break;
+        }
+        for (;;) {
+          const li = pick(tier, shop, obols, bought);
+          if (li < 0) break;
+          const it = shop[li][tier[li]];
+          const before = part();
+          obols -= it.price; tier[li]++;
+          need *= part() / before;
+          bought++;
+          add("item", 1, `${it.name}: ${it.line}, ${it.price} obol${it.price === 1 ? "" : "s"}`, it.name);
+          if (bought === 15) {
+            summit = pos + p.climbTurns * p.sunCap * PX; climb = pos;
+            add("climb", 1, "The 15th item: the final climb, with the top in sight", "The final climb");
+          }
+        }
+      }
+      session.y1 = gameDay(effort);
+      sessions.push(session);
+      if (top !== null) break;
+      const h = eff(2, 0) * away / 60;
+      e0 = effort; span = h * PX; t0 = turns; dt = 0; now = { day: d, playing: false };
+      effort += h * PX; earn(h, "An obol, from the gods, while away");
+      days();
+    }
+    return { events, sessions, top: top === null ? null : gameDay(effort), turns };
+  }
+
   /* ---------- what the numbers do ---------- */
 
   function renderKey(runs) {
@@ -636,6 +777,139 @@ footer { margin-top: 36px; color: var(--dim); font-size: 13px; }
     }
     $("chart").innerHTML = s;
     $("legend").innerHTML = runs.map((r) => `<span><span class="sw" style="display:inline-block;width:14px;height:3px;background:var(${SERIES[r.play]})"></span>${r.play} min</span>`).join("") + `<span>▲ the top</span>`;
+  }
+
+  /** The marks of the journey, by kind, in the order of their lanes. Each is drawn around (x, y) in the colors [c]. */
+  const KINDS = [
+    { kind: "obol", label: "Obol", mark: (x, y, c) => `<circle cx="${x}" cy="${y}" r="2.5" fill="${c.bronze}"/>` },
+    { kind: "stone", label: "Stone of the tale", mark: (x, y, c) => `<path d="M${x - 3.5} ${y + 4.5}v-5.5a3.5 3.5 0 0 1 7 0v5.5z" fill="${c.fg}"/>` },
+    { kind: "joker", label: "Joker", mark: (x, y, c) => `<rect x="${x - 3.25}" y="${y - 4.25}" width="6.5" height="8.5" rx="1.5" fill="none" stroke="${c.fg}" stroke-width="1.5"/>` },
+    { kind: "vision", label: "Vision", mark: (x, y, c) => `<path d="M${x} ${y - 5}l5 5-5 5-5-5z" fill="${c.fg}"/>` },
+    { kind: "labor", label: "Labor", mark: (x, y, c) => `<path d="${star(x, y, 5.5)}" fill="${c.bronze}"/>` },
+    { kind: "item", label: "Item", mark: (x, y, c) => `<circle cx="${x}" cy="${y}" r="4.5" fill="${c.accent}"/>` },
+  ];
+
+  function star(x, y, r) {
+    let d = "";
+    for (let i = 0; i < 10; i++) {
+      const a = -Math.PI / 2 + i * Math.PI / 5, k = i % 2 ? r * 0.45 : r;
+      d += `${i ? "L" : "M"}${(x + k * Math.cos(a)).toFixed(2)} ${(y + k * Math.sin(a)).toFixed(2)}`;
+    }
+    return d + "z";
+  }
+
+  let journeyHits = [], journeyBands = [];
+
+  /** The events of one climb of the picked player, down a line of game days: lanes of marks, the sessions of play, and the quietest stretch. */
+  function renderJourney() {
+    const p = state.local, play = state.pick, tpm = p.turnsPerMinute;
+    const j = journey(p, play);
+    const c = { fg: css("--fg"), dim: css("--dim"), accent: css("--accent-hi"), bronze: css("--bronze"), line: css("--line"), well: css("--well"), warn: css("--warn"), mark: css("--accent") };
+    const count = (k) => j.events.filter((e) => e.kind === k).length;
+    const news = j.events.filter((e) => e.playing && e.kind !== "obol").sort((a, b) => a.turns - b.turns);
+    let quiet = null, prev = { turns: 0, y: 1, name: "the start" };
+    for (const e of news) { if (!quiet || e.turns - prev.turns > quiet.gap) quiet = { gap: e.turns - prev.turns, a: prev, b: e }; prev = e; }
+    const playMinutes = j.turns / tpm;
+    const said = (e) => ["item", "labor"].includes(e.kind) ? e.name : e.name.charAt(0).toLowerCase() + e.name.slice(1);
+    const obols = j.events.filter((e) => e.kind === "obol"), fromGods = obols.filter((e) => !e.what.endsWith("pushing")).length;
+    $("journeyTitle").textContent = `The journey of a climb at ${play} minutes a day`;
+    $("journeyNote").textContent = `Each event of one climb, down a line of game days. A band is a session of play; between the bands the player is away, and the gods move the sun on alone. Hover a mark, or tap it, for what it is.`;
+    $("journeyFacts").innerHTML = [
+      ["Something new", news.length ? `every ${minutes(playMinutes / news.length)}` : "–", `${fmt(news.length)} events in ${minutes(playMinutes)} of play: items, stones, jokers, visions, labors, herms and the top. Obols are not counted.`],
+      ["The quietest stretch", quiet ? minutes(quiet.gap / tpm) : "–", quiet ? `of play, from ${said(quiet.a)} to ${said(quiet.b)}, on game days ${fmt(quiet.a.y, 1)} to ${fmt(quiet.b.y, 1)}` : ""],
+      ["In one climb", `${fmt(news.length + obols.length)} events`, `${count("item")} items, ${count("stone")} stones, ${count("joker")} jokers, ${count("vision")} visions, ${count("labor")} labors, and ${fmt(obols.length)} obols, ${fmt(obols.length ? fromGods / obols.length * 100 : 0)}% of them from the gods`],
+      ["The top", j.top ? `game day ${fmt(Math.floor(j.top))}` : "10+ years", `on day ${fmt(j.sessions.length)} of play; between the sessions, the gods push the sun on`],
+    ].map(([h, v, f]) => `<div class="fact"><h3>${h}</h3><div class="v">${v}</div><div class="f">${f}</div></div>`).join("");
+    const icon = (k) => `<svg width="14" height="14" viewBox="-7 -7 14 14" aria-hidden="true">${KINDS.find((x) => x.kind === k).mark(0, 0, c)}</svg>`;
+    $("journeyLegend").innerHTML = KINDS.map((k) => `<span>${icon(k.kind)}${k.label}</span>`).join("")
+      + `<span><svg width="16" height="14" aria-hidden="true"><line x1="0" x2="16" y1="7" y2="7" stroke="${c.mark}" stroke-width="2" stroke-dasharray="4 3"/></svg>Final climb, herms, the top</span>`
+      + `<span><svg width="14" height="14" aria-hidden="true"><rect width="14" height="14" rx="2" fill="${c.well}"/><rect x="5" width="4" height="14" fill="${c.accent}"/></svg>Playing</span>`
+      + `<span><svg width="14" height="14" aria-hidden="true"><path d="M3 1h3M3 1v12M3 13h3" stroke="${c.warn}" stroke-width="2" fill="none"/></svg>The quietest stretch</span>`;
+
+    const box = $("journeyBox"), svg = $("journey");
+    const W = Math.max(300, box.clientWidth - 20);
+    const end = j.top ?? Math.max(2, ...j.events.map((e) => e.y));
+    const last = Math.ceil(end + 0.5);
+    const per = Math.min(24, Math.max(8, 980 / last));
+    const T = 30, B = 16;
+    const y = (d) => T + (d - 1) * per;
+    const SPINE = 52, gap = Math.round(Math.min(44, Math.max(22, (W - 320) / 7)));
+    const LANES = Object.fromEntries(KINDS.map((k, i) => [k.kind, SPINE + gap + i * gap + (k.kind === "item" ? 2 : 0)])), LABEL = LANES.item + 20;
+    let s = "";
+    journeyBands = j.sessions.map((ses) => ({ y0: y(ses.y0), y1: y(ses.y1), html: `<b>Day ${ses.day} of play</b>${play} minutes of pushing, game days ${fmt(ses.y0, 1)} to ${fmt(ses.y1, 1)}` }));
+    for (const b of journeyBands) s += `<rect x="${SPINE - 4}" y="${b.y0}" width="${W - SPINE + 4}" height="${Math.max(2, b.y1 - b.y0)}" fill="${c.well}"/>`;
+    const step = [1, 2, 5, 10, 20, 50, 100].find((n) => n * per >= 18);
+    for (let d = 1; d <= last; d++) {
+      const yy = y(d);
+      if ((d - 1) % step === 0) {
+        s += `<line x1="${SPINE + 6}" x2="${W}" y1="${yy}" y2="${yy}" stroke="${c.line}" stroke-width="1"/>`;
+        s += `<text x="${SPINE - 12}" y="${yy + 4}" text-anchor="end" font-size="11" fill="${c.dim}" font-family="IBM Plex Mono, monospace">${d}</text>`;
+      }
+      s += `<line x1="${SPINE - 3}" x2="${SPINE + 3}" y1="${yy}" y2="${yy}" stroke="${c.dim}" stroke-width="1"/>`;
+    }
+    s += `<text x="${SPINE - 12}" y="${T - 14}" text-anchor="end" font-size="11" fill="${c.dim}" font-family="IBM Plex Sans, sans-serif">day</text>`;
+    s += `<line x1="${SPINE}" x2="${SPINE}" y1="${y(1)}" y2="${y(end)}" stroke="${c.dim}" stroke-width="1" stroke-dasharray="2 3"/>`;
+    for (const b of journeyBands) s += `<line x1="${SPINE}" x2="${SPINE}" y1="${b.y0}" y2="${Math.max(b.y0 + 1, b.y1)}" stroke="${c.accent}" stroke-width="4" stroke-linecap="round"/>`;
+    for (const k of KINDS) s += k.mark(LANES[k.kind], T - 16, c);
+    if (quiet && quiet.gap > 0) {
+      const ya = y(quiet.a.y), yb = y(quiet.b.y), x = SPINE - 30;
+      s += `<path d="M${x + 5} ${ya}h-5V${yb}h5" stroke="${c.warn}" stroke-width="2" fill="none"/>`;
+      s += `<text transform="translate(${x - 4} ${(ya + yb) / 2}) rotate(-90)" text-anchor="middle" font-size="10" fill="${c.warn}" font-family="IBM Plex Sans, sans-serif">quietest</text>`;
+    }
+    const hits = [], labels = [];
+    const tip = (e) => `<b>Game day ${fmt(e.y, 1)} · day ${e.day} of play${e.playing ? `, minute ${e.minute}` : ", away"}</b>${e.what}`;
+    for (const e of j.events.filter((x) => ["climb", "herm", "top"].includes(x.kind))) {
+      const yy = y(e.y);
+      s += `<line x1="${SPINE + 6}" x2="${LABEL - 4}" y1="${yy}" y2="${yy}" stroke="${c.mark}" stroke-width="${e.kind === "herm" ? 1 : 2}"${e.kind === "top" ? "" : ` stroke-dasharray="4 3"`}/>`;
+      if (e.kind === "top") s += `<path d="M${SPINE} ${yy - 9}l6 9h-12z" fill="${c.mark}"/>`;
+      hits.push({ x: LABEL - 12, y: yy, html: tip(e) });
+      labels.push({ y: yy, x: LABEL - 4, text: e.name, color: c.fg, weight: 600 });
+    }
+    for (const k of KINDS) {
+      let lastY = -1e9, nudge = 0;
+      for (const e of j.events.filter((x) => x.kind === k.kind).sort((a, b) => a.y - b.y)) {
+        const yy = y(e.y);
+        nudge = k.kind !== "obol" && yy - lastY < 8 ? (nudge + 1) % 3 : 0;
+        lastY = yy;
+        const x = LANES[k.kind] + nudge * 6;
+        s += k.mark(x, yy, c);
+        hits.push({ x, y: yy, html: tip(e) });
+        if (k.kind === "item") labels.push({ y: yy, x: x + 5, text: e.name, color: c.fg, weight: 500 });
+        if (k.kind === "labor") labels.push({ y: yy, x: x + 6, text: e.name, color: c.dim, weight: 400 });
+      }
+    }
+    labels.sort((a, b) => a.y - b.y);
+    let below = -1e9, H = y(last) + B;
+    for (const l of labels) {
+      const ly = Math.max(l.y, below + 13);
+      below = ly;
+      if (Math.abs(ly - l.y) > 1 || l.x < LABEL - 8) s += `<path d="M${l.x} ${l.y}L${LABEL - 3} ${ly}" stroke="${c.line}" stroke-width="1" fill="none"/>`;
+      s += `<text x="${LABEL}" y="${ly + 4}" font-size="12" font-weight="${l.weight}" fill="${l.color}" font-family="IBM Plex Sans, sans-serif">${l.text}</text>`;
+      H = Math.max(H, ly + B);
+    }
+    svg.setAttribute("viewBox", `0 0 ${W} ${Math.ceil(H)}`);
+    svg.innerHTML = s;
+    journeyHits = hits;
+    $("journeyRows").innerHTML = j.events.filter((e) => e.kind !== "obol").sort((a, b) => a.y - b.y)
+      .map((e) => `<tr><td class="n">${fmt(e.y, 1)}</td><td class="n">${e.day}${e.playing ? "" : " (away)"}</td><td>${e.what}</td></tr>`).join("")
+      + `<tr><td class="n">–</td><td class="n">–</td><td>${fmt(obols.length)} obols: ${fmt(obols.length - fromGods)} for pushing, ${fmt(fromGods)} from the gods</td></tr>`;
+  }
+
+  /** The mark nearest to the pointer, or the session under it, in the tip by the pointer. */
+  function journeyTip(ev) {
+    const svg = $("journey"), tipEl = $("journeyTip"), box = $("journeyBox");
+    const r = svg.getBoundingClientRect(), k = r.width ? svg.viewBox.baseVal.width / r.width : 1;
+    const x = (ev.clientX - r.left) * k, yy = (ev.clientY - r.top) * k;
+    let best = null, d2 = 14 * 14;
+    for (const h of journeyHits) { const d = (h.x - x) ** 2 + (h.y - yy) ** 2; if (d < d2) { d2 = d; best = h; } }
+    const html = best ? best.html : journeyBands.find((b) => yy >= b.y0 - 2 && yy <= b.y1 + 2 && x > 40)?.html;
+    if (!html) { tipEl.hidden = true; return; }
+    tipEl.innerHTML = html;
+    tipEl.hidden = false;
+    const b = box.getBoundingClientRect();
+    const left = Math.min(ev.clientX - b.left + 14, b.width - tipEl.offsetWidth - 6);
+    tipEl.style.left = `${Math.max(6, left)}px`;
+    tipEl.style.top = `${ev.clientY - b.top + box.scrollTop + 14}px`;
   }
 
   function renderChecks(runs) {
@@ -834,7 +1108,7 @@ footer { margin-top: 36px; color: var(--dim); font-size: 13px; }
   let ordersTimer = 0;
   function render() {
     const runs = PLAYERS.map((m) => simulate(state.local, m));
-    renderKey(runs); renderCards(runs); renderChart(runs); renderChecks(runs); renderFacts(); renderChanges(); renderOrder(runs); renderRules();
+    renderKey(runs); renderCards(runs); renderChart(runs); renderJourney(); renderChecks(runs); renderFacts(); renderChanges(); renderOrder(runs); renderRules();
     clearTimeout(ordersTimer);
     ordersTimer = setTimeout(() => renderOrders(runs), 0);
     markChanges();
@@ -862,6 +1136,18 @@ footer { margin-top: 36px; color: var(--dim); font-size: 13px; }
       syncInputs(); render();
     });
     matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", render);
+    const svg = $("journey");
+    svg.addEventListener("pointermove", journeyTip);
+    svg.addEventListener("pointerdown", journeyTip);
+    svg.addEventListener("pointerleave", () => { $("journeyTip").hidden = true; });
+    let width = $("journeyBox").clientWidth, resized = 0;
+    new ResizeObserver(() => {
+      const w = $("journeyBox").clientWidth;
+      if (w === width) return;
+      width = w;
+      clearTimeout(resized);
+      resized = setTimeout(renderJourney, 60);
+    }).observe($("journeyBox"));
     new MutationObserver(render).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
     connect();
   }
