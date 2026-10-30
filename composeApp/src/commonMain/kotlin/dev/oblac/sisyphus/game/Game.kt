@@ -270,6 +270,8 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
 
     /** He stands on the top: the knob moves him no more. */
     val atTop get() = summit?.let { position >= it } == true
+    /** The climb has begun: he has pushed the rock up from the foot of the hill, and a move to another world loses it. */
+    val begun get() = position > 0
 
     private val quoteSeed = store.load(KEY_QUOTE_SEED)?.toInt() ?: seed
     var quotes = QuoteBox(quoteSeed, drawn = store.load(KEY_QUOTES_DRAWN)?.toInt() ?: 0, firstTime = effort == 0.0, news = ::nextNews)
@@ -684,7 +686,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
      */
     fun moveTo(place: Place) {
         this.place = place
-        begin(newTale = position > 0)
+        begin(newTale = begun)
     }
 
     private fun begin(newTale: Boolean = true) {

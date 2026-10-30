@@ -278,11 +278,11 @@ class SnapshotTest {
         write(small.render(), "10-gods-small", 3)
     }
 
-    /** The Worlds screen, and its question before going to Mount Etna, on a big phone and on the narrowest one. */
+    /** The Worlds screen, and its question before going to Mount Etna in the middle of a climb, on a big phone and on the narrowest one. */
     @Test
     fun worlds() {
         for ((name, size) in listOf("11-worlds" to listOf(1179, 2556, 177, 102), "11-worlds-small" to listOf(1080, 2340, 144, 102))) {
-            val s = Screen(Game(MemoryStore(mapOf("effort" to effortAt(3, 0.4))), seed = 3), seed = 5)
+            val s = Screen(Game(MemoryStore(mapOf("effort" to effortAt(3, 0.4), "position" to 900.0)), seed = 3), seed = 5)
             s.resize(size[0], size[1], size[2], size[3])
             val l = s.layout!!
             fun tap(r: Rect) = s.press((r.x + r.w / 2f) * s.scale + s.offsetX, (r.y + r.h / 2f) * s.scale + s.offsetY)

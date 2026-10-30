@@ -335,7 +335,7 @@ class ScreenTest {
     /** Testers reach every world from the dev screen, without the store. A second tap gives the store's answer back. */
     @Test
     fun theDevScreenOpensEveryWorld() {
-        val s = Screen(Game(MemoryStore(), seed = 1), seed = 2, dev = true, billing = FakeBilling()).apply { resize(1179, 2556, 177, 102) }
+        val s = Screen(Game(MemoryStore(mapOf("position" to 900.0)), seed = 1), seed = 2, dev = true, billing = FakeBilling()).apply { resize(1179, 2556, 177, 102) }
         val l = s.layout!!
         fun chooseEtna() {
             s.tap(l.coinIcon)
@@ -868,7 +868,7 @@ class ScreenTest {
 
     @Test
     fun goingToAnotherWorldAsksFirstBecauseTheClimbStartsOver() {
-        val s = screen(MemoryStore(mapOf("effort" to 5000.0, "obols" to 7.0)))
+        val s = screen(MemoryStore(mapOf("position" to 900.0, "effort" to 5000.0, "obols" to 7.0)))
         val l = s.layout!!
         s.tap(l.dayLabel(s.game.day))
         assertEquals(Touch.WORLDS, s.choose(l.worldRow(Place.ETNA.ordinal)))
@@ -883,6 +883,18 @@ class ScreenTest {
         assertEquals(1, s.game.day)
         assertEquals(0.0, s.game.shop.obols)
         assertFalse(s.worldsOpen)
+    }
+
+    /** Before the first push there is nothing to lose, so a tap on a world goes there without a question. */
+    @Test
+    fun aClimbNotBegunGoesToAnotherWorldAtOnce() {
+        val s = screen()
+        val l = s.layout!!
+        s.tap(l.dayLabel(s.game.day))
+        assertEquals(Touch.MOVE, s.choose(l.worldRow(Place.ETNA.ordinal)))
+        assertNull(s.moving)
+        assertFalse(s.worldsOpen)
+        assertEquals(Place.ETNA, s.game.place)
     }
 
     @Test
@@ -913,8 +925,8 @@ class ScreenTest {
         assertEquals(most, s.worldsScroll)
         assertNull(s.moving)
         val last = l.worldRow(Place.entries.size - 1)
-        assertEquals(Touch.WORLDS, s.choose(Rect(last.x, last.y - most, last.w, last.h)))
-        assertEquals(Place.entries.last(), s.moving)
+        assertEquals(Touch.MOVE, s.choose(Rect(last.x, last.y - most, last.w, last.h)))
+        assertEquals(Place.entries.last(), s.game.place)
     }
 
     /** On a short screen, opens the worlds and swipes the list up quickly; the finger lifts at the end. */
@@ -986,7 +998,7 @@ class ScreenTest {
 
     @Test
     fun backClosesTheQuestionThenTheWorlds() {
-        val s = screen()
+        val s = screen(MemoryStore(mapOf("position" to 900.0)))
         val l = s.layout!!
         s.tap(l.dayLabel(s.game.day))
         s.choose(l.worldRow(Place.UNDERWORLD.ordinal))
@@ -1018,9 +1030,9 @@ class ScreenTest {
         }
     }
 
-    /** The Worlds screen, open in [place], with [billing] as the store. */
-    private fun worlds(billing: Billing, place: Place = Place.CORINTH) =
-        Screen(Game(MemoryStore(mapOf("place" to place.id.toDouble())), seed = 1), seed = 2, billing = billing).apply {
+    /** The Worlds screen, open in [place], with [billing] as the store, and him [position] pixels up the hill. */
+    private fun worlds(billing: Billing, place: Place = Place.CORINTH, position: Double = 0.0) =
+        Screen(Game(MemoryStore(mapOf("place" to place.id.toDouble(), "position" to position)), seed = 1), seed = 2, billing = billing).apply {
             resize(1179, 2556, 177, 102)
             tap(layout!!.dayLabel(game.day))
         }
@@ -1038,11 +1050,14 @@ class ScreenTest {
         assertNull(billing.pending)
     }
 
+    /** The player buys a world to go there: it begins at once, with its fanfare, even in the middle of a climb. */
     @Test
-    fun onceBoughtTheWorldAsksToGoThere() {
+    fun onceBoughtTheWorldBeginsAtOnce() {
         val billing = FakeBilling()
-        val s = worlds(billing)
+        val s = worlds(billing, position = 900.0)
         val l = s.layout!!
+        var fanfares = 0
+        s.onMove = { fanfares++ }
         s.choose(l.worldRow(Place.ETNA.ordinal))
         assertEquals(Touch.WORLDS, s.tap(l.confirmYes))
         assertTrue(s.paying)
@@ -1052,9 +1067,11 @@ class ScreenTest {
         billing.pending!!(true)
         assertFalse(s.paying)
         assertNull(s.buying)
-        assertEquals(Place.ETNA, s.moving)
-        assertEquals(Touch.MOVE, s.tap(l.confirmYes))
+        assertNull(s.moving)
+        assertFalse(s.worldsOpen)
         assertEquals(Place.ETNA, s.game.place)
+        assertEquals(0.0, s.game.position)
+        assertEquals(1, fanfares)
     }
 
     @Test
@@ -1074,7 +1091,7 @@ class ScreenTest {
 
     @Test
     fun aWorldBoughtBeforeIsNotSoldAgain() {
-        val s = worlds(FakeBilling(Place.ETNA))
+        val s = worlds(FakeBilling(Place.ETNA), position = 900.0)
         s.choose(s.layout!!.worldRow(Place.ETNA.ordinal))
         assertNull(s.buying)
         assertEquals(Place.ETNA, s.moving)

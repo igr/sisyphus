@@ -141,7 +141,7 @@ class Screen(
     var onCoin: () -> Unit = {}
     /** Called when he reaches the top. */
     var onTop: () -> Unit = {}
-    /** Called when the store's answer, not a touch, begins the climb in a new world: after the top, a world just bought. */
+    /** Called when the store's answer, not a touch, begins the climb in a new world: a world just bought. */
     var onMove: () -> Unit = {}
 
     init {
@@ -403,11 +403,9 @@ class Screen(
                 billing.buy(wanted) { bought ->
                     paying = false
                     buying = null
-                    if (bought && ending != null) {
+                    if (bought) {
                         goTo(wanted)
                         onMove()
-                    } else if (bought) {
-                        moving = wanted
                     }
                 }
                 return Touch.WORLDS
@@ -468,7 +466,7 @@ class Screen(
 
     /**
      * The finger lifts: the knob coasts on, or a tap on the list goes back to the world he is in, or asks to go to another world,
-     * or to buy it. After the top, everything starts from the beginning anyway, so a world already bought begins at once.
+     * or to buy it. Before the climb has begun, as after the top, nothing is lost, so a world already bought begins at once.
      * Tells what the lift did.
      */
     fun release(): Touch {
@@ -486,8 +484,8 @@ class Screen(
         }
         when {
             !worlds.owns(place) -> buying = place
-            ending != null -> return goTo(place)
-            else -> moving = place
+            game.begun && ending == null -> moving = place
+            else -> return goTo(place)
         }
         return Touch.WORLDS
     }

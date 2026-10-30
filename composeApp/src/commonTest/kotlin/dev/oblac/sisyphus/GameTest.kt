@@ -438,6 +438,17 @@ class GameTest {
         }
     }
 
+    /** The climb begins with the first push, and a move to another world takes him back to the foot of the hill. */
+    @Test
+    fun theClimbBeginsWithTheFirstPush() {
+        val game = Game(MemoryStore(), seed = 1, wall = { 0.0 })
+        assertFalse(game.begun)
+        game.turn(PI)
+        assertTrue(game.begun)
+        game.moveTo(Place.ETNA)
+        assertFalse(game.begun)
+    }
+
     @Test
     fun onEtnaTheShopSellsTheItemsOfEtna() {
         assertEquals("Empedocles", Game(MemoryStore(mapOf("place" to 1.0)), seed = 1, wall = { 0.0 }).shop.next(Line.SIDEKICKS)?.name)
