@@ -43,7 +43,7 @@ The last two columns show what happens to each value when Sisyphus reaches the t
 | `stelesTold` | How many parts of the tale the stones told in this climb. | Back to 0 | Back to 0 |
 | `nextStele` | Where the next stone of the tale stands, in pixels walked, until its part is told. -1 means that no stone stands ahead. | Back to -1 | Back to -1 |
 | `tale` | The id of the tale that the stones of this climb tell. | The next tale | The next tale |
-| `talesTold` | The tales told, one bit for each id: 1 for Sisyphus, 2 for Typhon, 4 for Orpheus, 8 for Isis and Osiris. | Kept | Kept |
+| `talesTold` | The tales told, one bit for each id: 1 for Sisyphus, 2 for Typhon, 4 for Orpheus, 8 for Isis and Osiris, 16 for Bellerophon, 32 for Empedocles, 64 for Demeter and Persephone, 128 for Hermes, 256 for Phaethon, 512 for Arion, 1024 for Daedalus and Icarus, 2048 for Io, 4096 for Kaguya, 8192 for Izanagi and Izanami. | Kept | Kept |
 | `nextJoker` | Where the next joker stands by the path, in pixels walked. -1 means that none stands ahead yet. | A new joker ahead | A new joker ahead |
 | `joker` | The id of the next joker. | The new joker | The new joker |
 | `met.0` to `met.11` | How many times the player met each joker, by the id of the joker. A joker met once or more has the card face up, and the count tells which line comes next. | Kept | Kept |
@@ -74,7 +74,7 @@ Saved games know each line and each world by an id, not by a name in the game or
 
 - The lines have the ids `rock`, `beside`, `alone`, `blessing` and `beauty`. The Sidekicks and the Gods keep `beside` and `alone`, which they had before they got their names.
 - The worlds have the ids 0 (Corinth), 1 (Mount Etna), 2 (The Underworld), 3 (Cairo) and 4 (Mount Fuji).
-- The tales have the ids 0 (Sisyphus), 1 (Typhon), 2 (Orpheus) and 3 (Isis and Osiris).
+- The tales have the ids 0 (Sisyphus), 1 (Typhon), 2 (Orpheus), 3 (Isis and Osiris), 4 (Bellerophon), 5 (Empedocles), 6 (Demeter and Persephone), 7 (Hermes), 8 (Phaethon), 9 (Arion), 10 (Daedalus and Icarus), 11 (Io), 12 (Kaguya) and 13 (Izanagi and Izanami).
 - The jokers have the ids 0 (Diogenes), 1 (Alice), 2 (Red Riding Hood), 3 (Don Quixote), 4 (Pinocchio), 5 (Cleopatra), 6 (Sherlock Holmes), 7 (Hamlet), 8 (Count Dracula), 9 (Cthulhu), 10 (Isaac Newton) and 11 (Scheherazade).
 - The game never saves the name of an item. The world and the tier of a line tell which item it is.
 - The worlds that cost money are the entitlements `world_etna`, `world_underworld`, `world_cairo` and `world_fuji` in RevenueCat. A changed entitlement locks the worlds that players bought. The store products have the same names, except on Google Play, where The Underworld is `world_underworld2`.

@@ -69,6 +69,106 @@ private val RELIEF_ART = listOf(
     ...k..k
     ..kk...
     """,
+    // Bellerophon: a wing
+    """
+    ......k
+    ....kkk
+    ..kkcck
+    .kccck.
+    kccck..
+    kckk...
+    kk.....
+    """,
+    // Empedocles: a sandal
+    """
+    .......
+    ..k....
+    ..kk...
+    ..k.k..
+    ..kk.k.
+    kkkkkkk
+    .......
+    """,
+    // Demeter and Persephone: an ear of wheat
+    """
+    ...k...
+    ..kkk..
+    .k.k.k.
+    ..kkk..
+    .k.k.k.
+    ..kkk..
+    ...k...
+    """,
+    // Hermes: the staff of Hermes
+    """
+    kk.k.kk
+    .kkkkk.
+    ...k...
+    ..kck..
+    ...k...
+    ..kck..
+    ...k...
+    """,
+    // Phaethon: the sun
+    """
+    k..k..k
+    .k.k.k.
+    ..kkk..
+    kkkckkk
+    ..kkk..
+    .k.k.k.
+    k..k..k
+    """,
+    // Arion: a dolphin
+    """
+    .......
+    ...k...
+    .kkkkk.
+    kkkkkkk
+    k.kkk..
+    k......
+    .......
+    """,
+    // Daedalus and Icarus: the labyrinth
+    """
+    kkkkkkk
+    k.....k
+    k.kkk.k
+    k.k.k.k
+    k.k...k
+    k.kkkkk
+    k......
+    """,
+    // Io: a cow
+    """
+    k.....k
+    kk...kk
+    .kkkkk.
+    .k.k.k.
+    .kkkkk.
+    ..kck..
+    ..kkk..
+    """,
+    // Kaguya: the moon
+    """
+    ..kkk..
+    .kk....
+    kk.....
+    kk.....
+    kk.....
+    .kk....
+    ..kkk..
+    """,
+    // Izanagi and Izanami: a peach
+    """
+    ....kk.
+    ...kk..
+    .kkkkk.
+    kkkckkk
+    kkkckkk
+    .kkckk.
+    ..kkk..
+    """,
 )
 
 /**

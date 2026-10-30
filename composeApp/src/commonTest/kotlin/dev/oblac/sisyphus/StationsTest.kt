@@ -411,7 +411,7 @@ class StationsTest {
 
     @Test
     fun anUnknownTaleIdTellsTheTaleOfSisyphus() {
-        assertSame(SISYPHUS, game(store("tale" to 9.0)).tale)
+        assertSame(SISYPHUS, game(store("tale" to 99.0)).tale)
     }
 
     @Test
