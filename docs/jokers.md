@@ -655,19 +655,19 @@ A `|` is the change from the first text to the second. On the smallest phone, ev
 - **A card:** like a small playing card, about as tall for its width, with round corners, 4 to a row. It has no rank: the chance shows on the open card. Face down, it shows the back of the deck: dark terra, with a pattern of crossed lines. Face up, it is paper, with the joker, outlined in dark, standing on its bottom. The outline lets the white and the cream of a joker show on the paper. A rare card, of a joker who comes 1 in 100 or less often (`RARE_CHANCE`), has a gold banner across its top-right corner, face up and face down: today Sherlock Holmes, Hamlet, Count Dracula and Cthulhu.
 - **The open card:** a big card over the cards: the joker at twice the size, the name, the chance, such as "1 in 8", who the joker is, and how many times the player met the joker, such as "Met 3 times". The open card of a rare joker has the banner too, and says "rare" after the chance, such as "1 in 125 · rare".
 
-## The Jokers tab
+## The Cards tab
 
-- The tabs of the Worlds screen become Worlds, Labors and Jokers. The Worlds screen shows no obols, so the three words fit the smallest phone. The obols open the Agora from the main screen.
-- Under the title row, "Jokers met" and how many of the 12 the player has met, such as "3/12". Then the 12 cards in three rows of 4, in the order of the ids.
+- The tabs of the Worlds screen are Worlds, Labors and Cards. The Worlds screen shows no obols, so the three words fit the smallest phone. The obols open the Agora from the main screen.
+- Under the title row, "Jokers met" and how many of the 12 the player has met, such as "3/12". Then the 12 cards in three rows of 4, in the order of the ids. The cards of the tales come under them (see "The cards of the tales" in `docs/stations.md`), so the list scrolls.
 - A tap on a face-up card opens it. A tap anywhere closes it. The back button closes it too. The banners show which rare cards the player still has to find.
-- While a card is face up that the player has not seen on the tab, a dot stands after "Jokers", and the dot by the day shows, as for a new labor. The Worlds screen then opens on the tab with the news: Labors first, then Jokers.
+- While a card is face up that the player has not seen on the tab, a dot stands after "Cards", and the dot by the day shows, as for a new labor. The Worlds screen then opens on the tab with the news: Labors first, then Cards.
 
 ## Saved data
 
 - `nextJoker`: where the next joker stands, in pixels walked, or -1 when none stands ahead yet. Old saved games: -1, so a joker is put by the path at once.
 - `joker`: the id of the next joker. Old saved games: 0. An id that the game does not have is Diogenes.
 - `met.0` to `met.11`: how many times the player met each joker, by id, in all climbs and worlds. A joker met once or more has the card face up, and the count tells which line comes next. Kept at the top and in another world.
-- `jokersSeen`: the cards seen face up on the Jokers tab, one bit for each id: 1 for Diogenes, 2 for Alice, up to 2048 for Scheherazade. Kept.
+- `jokersSeen`: the cards seen face up on the Cards tab, one bit for each id: 1 for Diogenes, 2 for Alice, up to 2048 for Scheherazade. Kept.
 - `docs/saved-data.md` lists the new keys.
 
 ## To test it
@@ -675,9 +675,9 @@ A `|` is the change from the first text to the second. On the smallest phone, ev
 - The jokers: 12, with the ids 0 to 11 in order; the weights add up to 500; each has a line, each line one or two texts; every text has only the letters of the font; every text fits the bubble with its note on the smallest phone.
 - The choice: over many choices, each joker comes about as often as its weight says; the choice takes no number from the random numbers of the game, so the visions and the tales stay the same.
 - On the path: the first joker of a climb stands 20 to 40 turns ahead and talks on day 1, and after each joker the next stands 72 to 144 turns ahead; the bubble opens 3 turns before the rock reaches the joker, and each text shows for 6 turns; after it, the joker is met once more, and the next joker stands ahead; the lines of a joker come in turn; a joker stands at least 15 turns from the next stone, also when the stone comes after him; a vision hides the bubble, and it waits; the gods' pushes do not reach a joker; no bubble at the top; a new climb puts a new joker ahead; the joker ahead, his id and the jokers met survive a restart.
-- The tab: the tabs fit the smallest phone; a face-down card does not open; a face-up card opens, and a tap closes it; the dot shows for a new card, and goes when the tab opens; the Worlds screen opens on the tab with the news; the cards of the rare jokers, and only they, have a banner, face up and face down, and so has the open card.
+- The tab: the tabs fit the smallest phone; the list scrolls to the last tale; a face-down card does not open; a face-up card opens, and a tap closes it; the dot shows for a new card, and goes when the tab opens; the Worlds screen opens on the tab with the news; the cards of the rare jokers, and only they, have a banner, face up and face down, and so has the open card.
 - The dev screen: Joker brings the next joker at once, and its row fits the smallest phone.
-- Snapshots: Diogenes with his bubble, ahead of the rock and behind Sisyphus, also on the smallest phone; all the jokers in a row, as they are and in the light of the night; the Jokers tab with some cards face up, and the dot by the day; an open card.
+- Snapshots: Diogenes with his bubble, ahead of the rock and behind Sisyphus, also on the smallest phone; all the jokers in a row, as they are and in the light of the night; the Cards tab with some cards face up, and the dot by the day; an open card.
 
 ## Later
 

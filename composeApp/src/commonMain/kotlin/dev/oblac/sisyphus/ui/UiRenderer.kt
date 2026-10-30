@@ -11,6 +11,8 @@ import dev.oblac.sisyphus.game.LABORS
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.Shop
+import dev.oblac.sisyphus.game.TALES
+import dev.oblac.sisyphus.game.Tale
 import dev.oblac.sisyphus.game.QuoteBox
 import dev.oblac.sisyphus.game.chance
 import dev.oblac.sisyphus.game.rare
@@ -28,6 +30,7 @@ import dev.oblac.sisyphus.gfx.rgb
 import dev.oblac.sisyphus.gfx.sprite
 import dev.oblac.sisyphus.scene.Ending
 import dev.oblac.sisyphus.scene.JOKER_SPRITES
+import dev.oblac.sisyphus.scene.LIMESTONE
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -183,11 +186,15 @@ private val BLACK = rgb(0x000000)
 internal fun supportTag(id: String?, build: String?): String? =
     listOfNotNull(id?.let { "ID " + it.takeLast(4) }, build?.let { "[$it]" }).joinToString(" ").ifEmpty { null }
 
-/** The title of the Worlds screen, and of its tab for the labors. */
+/** The title of the Worlds screen, and of its tabs for the labors and the cards. */
 internal const val WORLDS_TITLE = "Worlds"
 internal const val LABORS_TITLE = "Labors"
-internal const val JOKERS_TITLE = "Jokers"
+internal const val CARDS_TITLE = "Cards"
 internal const val JOKERS_MET = "Jokers met"
+internal const val TALES_TOLD = "Tales told"
+
+/** A tale not heard yet: its card is a smooth stone in the shade. */
+private val SMOOTH = LIMESTONE.colors.mapValues { dim(it.value) }
 
 /** The colors of each category of labors: its title and lines, and the band behind a labor that is done. */
 private val CATEGORY_COLORS = mapOf(
@@ -245,6 +252,7 @@ class UiRenderer {
     private val previews = mutableMapOf<Pair<Place, Int>, Pixels>()
     private var worldSheet: Pixels? = null
     private var laborSheet: Pixels? = null
+    private var cardSheet: Pixels? = null
 
     fun background(px: Pixels) {
         val g = grain?.takeIf { it.width == px.width && it.height == px.height } ?: Pixels(px.width, px.height).also {
@@ -524,37 +532,109 @@ class UiRenderer {
 
     /**
      * The title row of the Worlds screen: the [shown] tab in cream, the others in gray, and a dot after "Labors" while a labor is new,
-     * and after "Jokers" while a card is new.
+     * and after "Cards" while a card is new.
      */
-    fun tabs(px: Pixels, layout: Layout, shown: Tab, newLabors: Boolean, newJokers: Boolean) {
+    fun tabs(px: Pixels, layout: Layout, shown: Tab, newLabors: Boolean, newCards: Boolean) {
         fun color(tab: Tab) = if (tab == shown) CREAM else DISABLED
         PixelFont.draw(px, WORLDS_TITLE, layout.worldsTab.x, layout.worldsTab.y, color(Tab.WORLDS))
         PixelFont.draw(px, LABORS_TITLE, layout.laborsTab.x, layout.laborsTab.y, color(Tab.LABORS))
-        PixelFont.draw(px, JOKERS_TITLE, layout.jokersTab.x, layout.jokersTab.y, color(Tab.JOKERS))
+        PixelFont.draw(px, CARDS_TITLE, layout.cardsTab.x, layout.cardsTab.y, color(Tab.CARDS))
         if (newLabors) px.fillRect(layout.laborsTab.x + PixelFont.width(LABORS_TITLE) + 2, layout.laborsTab.y + PixelFont.CAP_HEIGHT / 2 - 1, 2, 2, BRONZE[4])
-        if (newJokers) px.fillRect(layout.jokersTab.x + PixelFont.width(JOKERS_TITLE) + 2, layout.jokersTab.y + PixelFont.CAP_HEIGHT / 2 - 1, 2, 2, BRONZE[4])
+        if (newCards) px.fillRect(layout.cardsTab.x + PixelFont.width(CARDS_TITLE) + 2, layout.cardsTab.y + PixelFont.CAP_HEIGHT / 2 - 1, 2, 2, BRONZE[4])
         val t = layout.agoraTitle
         px.hline(t.x, t.right - 1, t.bottom + 2, TERRA_DARK)
     }
 
-    /** The Jokers tab: how many of the jokers the player has met, and their cards, face up once [met]. */
-    fun jokers(px: Pixels, layout: Layout, met: (Joker) -> Int) {
-        val r = layout.jokersMet
-        val count = "${JOKERS.count { met(it) > 0 }}/${JOKERS.size}"
-        PixelFont.draw(px, JOKERS_MET, r.x, r.y, TERRA)
-        PixelFont.draw(px, count, r.right - PixelFont.width(count), r.y, TERRA)
+    /**
+     * The Cards tab: how many of the jokers the player has met, and their cards, face up once [met]; under them, how many tales were told,
+     * and their cards, carved once [heard]. The list is drawn on a sheet of its own, so that it scrolls by [scroll].
+     */
+    fun cards(px: Pixels, layout: Layout, scroll: Int, met: (Joker) -> Int, heard: (Tale) -> Int) {
+        val list = layout.worldList
+        val sheet = cardSheet?.takeIf { it.width == list.w && it.height == list.h } ?: Pixels(list.w, list.h).also { cardSheet = it }
+        sheet.clear(TRANSPARENT)
+        fun Rect.onSheet() = offset(-list.x, -list.y - scroll)
+        count(sheet, layout.jokersMet.onSheet(), JOKERS_MET, JOKERS.count { met(it) > 0 }, JOKERS.size)
         for (joker in JOKERS) {
-            val c = layout.jokerCards[joker.id]
+            val c = layout.jokerCards[joker.id].onSheet()
             if (met(joker) == 0) {
-                card(px, c, TERRA_DARK, TERRA)
-                for (y in c.y + 2 until c.bottom - 2) for (x in c.x + 2 until c.right - 2) if ((x + y) % 4 == 0 || (x - y) % 4 == 0) px[x, y] = TERRA
+                card(sheet, c, TERRA_DARK, TERRA)
+                for (y in 2 until c.h - 2) for (x in 2 until c.w - 2) if ((x + y) % 4 == 0 || (x - y) % 4 == 0) sheet[c.x + x, c.y + y] = TERRA
             } else {
-                card(px, c, CREAM, NOT_DONE)
+                card(sheet, c, CREAM, NOT_DONE)
                 val sprite = cardSprites[joker.id]
-                px.draw(sprite, c.x + (c.w - sprite.width) / 2, c.bottom - 2 - sprite.height)
+                sheet.draw(sprite, c.x + (c.w - sprite.width) / 2, c.bottom - 2 - sprite.height)
             }
-            if (joker.rare) banner(px, c, 5, 9)
+            if (joker.rare) banner(sheet, c, 5, 9)
         }
+        count(sheet, layout.talesTold.onSheet(), TALES_TOLD, TALES.count { heard(it) == it.parts.size }, TALES.size)
+        for (tale in TALES) taleCard(sheet, layout.taleCards[tale.id].onSheet(), tale, heard(tale))
+        px.draw(sheet, list.x, list.y)
+        scrollbar(px, list, scroll, layout.cardScroll)
+    }
+
+    /** A header of the Cards tab: its [title] on the left, and [done] of [all] on the right, such as "3/12". */
+    private fun count(px: Pixels, r: Rect, title: String, done: Int, all: Int) {
+        val count = "$done/$all"
+        PixelFont.draw(px, title, r.x, r.y, TERRA)
+        PixelFont.draw(px, count, r.right - PixelFont.width(count), r.y, TERRA)
+    }
+
+    /**
+     * The card of a tale: a stone like the stones by the path, smooth until the player [heard] a part of the tale. Then its relief is
+     * carved in it, and under it two lines of letters once the tale is told, or until then how far it has come, such as "9/15".
+     */
+    private fun taleCard(px: Pixels, r: Rect, tale: Tale, heard: Int) {
+        if (heard == 0) return slab(px, r, SMOOTH)
+        slab(px, r, LIMESTONE.colors)
+        px.drawScaled(LIMESTONE.reliefs[tale.id], r.x + (r.w - 7 * Layout.CARD_RELIEF) / 2, r.y + 4, Layout.CARD_RELIEF)
+        val y = r.y + 4 + 7 * Layout.CARD_RELIEF + 3
+        if (heard < tale.parts.size) {
+            val note = "$heard/${tale.parts.size}"
+            PixelFont.draw(px, note, r.x + (r.w - PixelFont.width(note)) / 2, y, TERRA)
+        } else {
+            for (row in 0..1) for (x in 5 until r.w - 5) if ((x + 2 * row) % 5 < 3) px[r.x + x, y + 1 + 3 * row] = LIMESTONE.colors.getValue('C')
+        }
+    }
+
+    /**
+     * A tale, open over the Cards tab on a big stone: its relief, its name, the text of [page], and the part that the text tells, with
+     * an arrow on each side while there is a text before it, or after it among the parts that the player [heard].
+     */
+    fun openTale(px: Pixels, layout: Layout, tale: Tale, page: Int, heard: Int) {
+        for (y in 0 until px.height) for (x in 0 until px.width) px[x, y] = dim(px[x, y])
+        val r = layout.openTale
+        slab(px, r, LIMESTONE.colors)
+        px.drawScaled(LIMESTONE.reliefs[tale.id], r.x + (r.w - 7 * Layout.OPEN_RELIEF) / 2, r.y + 6, Layout.OPEN_RELIEF)
+        PixelFont.draw(px, tale.name, r.x + (r.w - PixelFont.width(tale.name)) / 2, r.y + 6 + 7 * Layout.OPEN_RELIEF + 5, GROOVE)
+        val (part, text) = tale.pages[page]
+        val room = layout.openTaleText
+        for ((i, line) in PixelFont.wrap(text, room.w).withIndex()) PixelFont.draw(px, line, room.x, room.y + i * PixelFont.LINE_HEIGHT, GROOVE)
+        val note = "${part + 1}/${tale.parts.size}"
+        val y = room.bottom + 4
+        PixelFont.draw(px, note, r.x + (r.w - PixelFont.width(note)) / 2, y, TERRA)
+        if (page > 0) arrow(px, r.x + 8, y + PixelFont.CAP_HEIGHT / 2, -1)
+        if (page < tale.pagesOf(heard) - 1) arrow(px, r.right - 9, y + PixelFont.CAP_HEIGHT / 2, 1)
+    }
+
+    /** A small arrow with its tip at ([x], [y]): it points left for [dir] -1, and right for 1. */
+    private fun arrow(px: Pixels, x: Int, y: Int, dir: Int) {
+        for (i in 0..3) px.vline(x - dir * i, y - i, y + i, TERRA)
+    }
+
+    /** A slab of stone in [colors] (`w W D p`), as the stones by the path: light on its top and left, in shade on its right, round at the top. */
+    private fun slab(px: Pixels, r: Rect, colors: Map<Char, Int>) {
+        val light = colors.getValue('w')
+        val shade = colors.getValue('W')
+        px.fillRect(r.x + 1, r.y + 1, r.w - 2, r.h - 2, colors.getValue('p'))
+        px.hline(r.x + 2, r.right - 4, r.y, light)
+        px[r.right - 3, r.y] = shade
+        px.vline(r.x, r.y + 2, r.bottom - 2, light)
+        px[r.x + 1, r.y + 1] = light
+        px.vline(r.right - 1, r.y + 2, r.bottom - 2, shade)
+        px[r.right - 2, r.y + 1] = shade
+        px.hline(r.x, r.right - 2, r.bottom - 1, shade)
+        px[r.right - 1, r.bottom - 1] = colors.getValue('D')
     }
 
     /** A card of a joker, open over the Jokers tab: the joker at twice his size, his name, his chance, who he is, and how often the player [met] him. */

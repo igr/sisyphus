@@ -315,21 +315,40 @@ class SnapshotTest {
         write(s.render(), "12-day-dot", 3)
     }
 
-    /** The Jokers tab with six jokers met, three of them new, on both phones; then the open card of Sherlock Holmes. */
+    /**
+     * The Cards tab with six jokers met, three of them new, and three tales told and one half told, on both phones; then the open card
+     * of Sherlock Holmes; the tab scrolled to the tales; and the open tale of Orpheus, at the part where Sisyphus sits on his rock.
+     */
     @Test
     fun jokerCards() {
-        val met = mapOf("met.0" to 12.0, "met.1" to 5.0, "met.3" to 1.0, "met.6" to 2.0, "met.10" to 1.0, "met.11" to 1.0, "jokersSeen" to 11.0, "effort" to effortAt(3, 0.4))
+        val met = mapOf(
+            "met.0" to 12.0, "met.1" to 5.0, "met.3" to 1.0, "met.6" to 2.0, "met.10" to 1.0, "met.11" to 1.0, "jokersSeen" to 11.0,
+            "talesTold" to 7.0, "talesSeen" to 3.0, "tale" to 3.0, "stelesTold" to 9.0, "effort" to effortAt(3, 0.4),
+        )
         for ((name, size) in listOf("14-jokers-small" to listOf(1080, 2340, 144, 102), "14-jokers" to listOf(1179, 2556, 177, 102))) {
             val s = Screen(Game(MemoryStore(met), seed = 3), seed = 5)
             s.resize(size[0], size[1], size[2], size[3])
             val l = s.layout!!
-            fun tap(r: Rect) = s.press((r.x + r.w / 2f) * s.scale + s.offsetX, (r.y + r.h / 2f) * s.scale + s.offsetY)
+            fun at(x: Float, y: Float) = s.press(x * s.scale + s.offsetX, y * s.scale + s.offsetY)
+            fun tap(r: Rect) = at(r.x + r.w / 2f, r.y + r.h / 2f).also { s.release() }
             write(s.render(), "$name-dot", 3)
             tap(l.dayLabel(s.game.day))
             write(s.render(), name, 3)
             if (name == "14-jokers") {
                 tap(l.jokerCards[6])
                 write(s.render(), "14-card", 3)
+                tap(l.jokerCards[6])
+            }
+            val first = l.jokerCards[0]
+            at(first.x + 10f, first.y + 10f)
+            s.move((first.x + 10f) * s.scale + s.offsetX, (first.y + 10f - 2000f) * s.scale + s.offsetY)
+            s.release()
+            write(s.render(), name.replace("jokers", "tales"), 3)
+            if (name == "14-jokers") {
+                val orpheus = l.taleCards[2]
+                tap(Rect(orpheus.x, orpheus.y - s.worldsScroll, orpheus.w, orpheus.h))
+                repeat(8) { tap(Rect(l.openTale.right - 8, l.openTale.y, 8, l.openTale.h)) }
+                write(s.render(), "14-tale", 3)
             }
         }
     }

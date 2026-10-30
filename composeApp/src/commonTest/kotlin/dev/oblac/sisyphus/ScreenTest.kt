@@ -11,7 +11,10 @@ import dev.oblac.sisyphus.game.God
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.game.Place
+import dev.oblac.sisyphus.game.ORPHEUS
 import dev.oblac.sisyphus.game.SISYPHUS
+import dev.oblac.sisyphus.game.TALES
+import dev.oblac.sisyphus.game.Tale
 import dev.oblac.sisyphus.game.Question
 import dev.oblac.sisyphus.game.Shop
 import dev.oblac.sisyphus.game.START_TIME
@@ -29,7 +32,7 @@ import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.ui.AGORA_NOTE
 import dev.oblac.sisyphus.ui.BACKGROUND
 import dev.oblac.sisyphus.ui.COIN_COLORS
-import dev.oblac.sisyphus.ui.JOKERS_TITLE
+import dev.oblac.sisyphus.ui.CARDS_TITLE
 import dev.oblac.sisyphus.ui.NOTE_HERO
 import dev.oblac.sisyphus.ui.DAY_NOTE
 import dev.oblac.sisyphus.gfx.TRANSPARENT
@@ -1580,17 +1583,17 @@ class ScreenTest {
         s.tap(l.dayLabel(s.game.day))
         assertTrue(s.worldsOpen)
         assertFalse(s.laborsShown)
-        assertFalse(s.jokersShown)
+        assertFalse(s.cardsShown)
         assertEquals(Touch.WORLDS, s.tap(l.laborsTab))
         assertTrue(s.laborsShown)
         assertTrue(s.worldsOpen)
-        assertEquals(Touch.WORLDS, s.tap(l.jokersTab))
-        assertTrue(s.jokersShown)
+        assertEquals(Touch.WORLDS, s.tap(l.cardsTab))
+        assertTrue(s.cardsShown)
         assertFalse(s.laborsShown)
-        assertEquals(Touch.WORLDS, s.tap(l.jokersTab))
+        assertEquals(Touch.WORLDS, s.tap(l.cardsTab))
         assertFalse(s.worldsOpen)
         s.tap(l.dayLabel(s.game.day))
-        assertTrue(s.jokersShown)
+        assertTrue(s.cardsShown)
         s.tap(l.laborsTab)
         assertEquals(Touch.WORLDS, s.tap(l.laborsTab))
         assertFalse(s.worldsOpen)
@@ -1598,26 +1601,26 @@ class ScreenTest {
         assertTrue(s.laborsShown)
         s.tap(l.worldsTab)
         assertFalse(s.laborsShown)
-        assertFalse(s.jokersShown)
+        assertFalse(s.cardsShown)
         assertTrue(s.worldsOpen)
     }
 
-    /** Each column of "Jokers" shows the Jokers tab from the Worlds tab, and the room of the dot of Labors stays with Labors. */
+    /** Each column of "Cards" shows the Cards tab from the Worlds tab, and the room of the dot of Labors stays with Labors. */
     @Test
-    fun theWholeJokersTabTakesItsTaps() {
-        for (dx in 0 until PixelFont.width(JOKERS_TITLE)) {
+    fun theWholeCardsTabTakesItsTaps() {
+        for (dx in 0 until PixelFont.width(CARDS_TITLE)) {
             val s = smallest()
             val l = s.layout!!
             s.tap(l.dayLabel(s.game.day))
-            s.tap(l.jokersTab.x + dx + 0.5f, l.jokersTab.y + l.jokersTab.h / 2f)
-            assertTrue(s.jokersShown, "column $dx of Jokers")
+            s.tap(l.cardsTab.x + dx + 0.5f, l.cardsTab.y + l.cardsTab.h / 2f)
+            assertTrue(s.cardsShown, "column $dx of Cards")
         }
         val s = smallest()
         val l = s.layout!!
         s.tap(l.dayLabel(s.game.day))
         s.tap(l.laborsTab)
         s.tap(l.laborsTab.right - 2f, l.laborsTab.y + l.laborsTab.h / 2f)
-        assertFalse(s.jokersShown)
+        assertFalse(s.cardsShown)
     }
 
     /**
@@ -1638,8 +1641,8 @@ class ScreenTest {
         val s = screen(MemoryStore(mapOf("met.0" to 1.0, "jokersSeen" to 1.0)))
         val l = s.layout!!
         s.tap(l.dayLabel(s.game.day))
-        s.tap(l.jokersTab)
-        s.tap(l.jokerCards[0])
+        s.tap(l.cardsTab)
+        s.choose(l.jokerCards[0])
         assertNotNull(s.openCard)
         s.tap(l.coinIcon)
         assertNull(s.openCard)
@@ -1655,19 +1658,19 @@ class ScreenTest {
         val s = screen(MemoryStore(mapOf("met.2" to 1.0, "jokersSeen" to 4.0)))
         val l = s.layout!!
         s.tap(l.dayLabel(s.game.day))
-        s.tap(l.jokersTab)
-        assertEquals(Touch.NONE, s.tap(l.jokerCards[0]))
+        s.tap(l.cardsTab)
+        assertEquals(Touch.NONE, s.choose(l.jokerCards[0]))
         assertNull(s.openCard)
-        assertEquals(Touch.WORLDS, s.tap(l.jokerCards[2]))
+        assertEquals(Touch.WORLDS, s.choose(l.jokerCards[2]))
         assertSame(JOKERS[2], s.openCard)
         assertEquals(Touch.WORLDS, s.tap(l.jokerCards[0]))
         assertNull(s.openCard)
         assertTrue(s.worldsOpen)
-        s.tap(l.jokerCards[2])
+        s.choose(l.jokerCards[2])
         assertTrue(s.back())
         assertNull(s.openCard)
         assertTrue(s.worldsOpen)
-        s.tap(l.jokerCards[2])
+        s.choose(l.jokerCards[2])
         s.tap(l.laborsTab)
         assertNull(s.openCard)
     }
@@ -1678,12 +1681,12 @@ class ScreenTest {
         val s = screen(MemoryStore(JOKERS.associate { "met.${it.id}" to 1.0 } + ("jokersSeen" to ((1 shl JOKERS.size) - 1).toDouble())))
         val l = s.layout!!
         s.tap(l.dayLabel(s.game.day))
-        s.tap(l.jokersTab)
+        s.tap(l.cardsTab)
         val rank = rgb(0xC8643C)
         fun inks(px: Pixels, r: Rect) = (r.y until r.bottom).flatMap { y -> (r.x until r.right).map { px[it, y] } }
         val tab = s.render()
         for ((i, card) in l.jokerCards.withIndex()) assertTrue(inks(tab, card).none { it == rank }, "card $i")
-        s.tap(l.jokerCards[9])
+        s.choose(l.jokerCards[9])
         val open = s.render()
         assertTrue(inks(open, Rect(l.openCard.x + 1, l.openCard.y + 1, 20, 20)).none { it == rank })
     }
@@ -1694,14 +1697,14 @@ class ScreenTest {
         fun tab(vararg keys: Pair<String, Double>): IntArray {
             val s = screen(MemoryStore(mapOf("jokersSeen" to ((1 shl JOKERS.size) - 1).toDouble(), *keys)))
             s.tap(s.layout!!.dayLabel(s.game.day))
-            s.tap(s.layout!!.jokersTab)
+            s.tap(s.layout!!.cardsTab)
             return s.render().data.copyOf()
         }
         fun open(met: Double): IntArray {
             val s = screen(MemoryStore(mapOf("jokersSeen" to ((1 shl JOKERS.size) - 1).toDouble(), "met.9" to met)))
             s.tap(s.layout!!.dayLabel(s.game.day))
-            s.tap(s.layout!!.jokersTab)
-            s.tap(s.layout!!.jokerCards[9])
+            s.tap(s.layout!!.cardsTab)
+            s.choose(s.layout!!.jokerCards[9])
             return s.render().data.copyOf()
         }
         assertFalse(tab().contentEquals(tab("met.9" to 1.0)))
@@ -1709,19 +1712,19 @@ class ScreenTest {
         assertFalse(open(1.0).contentEquals(open(2.0)))
     }
 
-    /** A joker met whose card was not seen yet: a dot by the day, and the day opens the Jokers tab, which takes the dot away. */
+    /** A joker met whose card was not seen yet: a dot by the day, and the day opens the Cards tab, which takes the dot away. */
     @Test
-    fun aNewCardShowsTheDotUntilTheJokersTabShows() {
+    fun aNewCardShowsTheDotUntilTheCardsTabShows() {
         fun scene(seen: Double) = screen(MemoryStore(mapOf("met.0" to 1.0, "jokersSeen" to seen))).render().data.copyOf()
         assertFalse(scene(0.0).contentEquals(scene(1.0)))
         val s = screen(MemoryStore(mapOf("met.0" to 1.0)))
         assertTrue(s.game.newJokers)
         s.tap(s.layout!!.dayLabel(s.game.day))
-        assertTrue(s.jokersShown)
+        assertTrue(s.cardsShown)
         assertFalse(s.game.newJokers)
     }
 
-    /** A new labor comes first: the day opens the Labors tab, and the next time the Jokers tab. */
+    /** A new labor comes first: the day opens the Labors tab, and the next time the Cards tab. */
     @Test
     fun aNewLaborComesBeforeANewCard() {
         val s = screen(MemoryStore(mapOf("climbs" to 1.0, "met.0" to 1.0)))
@@ -1730,7 +1733,7 @@ class ScreenTest {
         assertTrue(s.laborsShown)
         s.back()
         s.tap(l.dayLabel(s.game.day))
-        assertTrue(s.jokersShown)
+        assertTrue(s.cardsShown)
     }
 
     /**
@@ -1746,27 +1749,28 @@ class ScreenTest {
             val s = screen(MemoryStore(keys))
             val l = s.layout!!
             s.tap(l.dayLabel(s.game.day))
-            s.tap(l.jokersTab)
+            s.tap(l.cardsTab)
             val px = s.render()
             for (joker in JOKERS) assertEquals(joker.rare, gold in corner(px, l.jokerCards[joker.id], 12), "${joker.name}, met: $met")
             if (!met) continue
             for (joker in listOf(JOKERS[0], JOKERS[9])) {
-                s.tap(l.jokerCards[joker.id])
+                s.choose(l.jokerCards[joker.id])
                 assertEquals(joker.rare, gold in corner(s.render(), l.openCard, 24), joker.name)
                 s.tap(l.jokerCards[joker.id])
             }
         }
     }
 
-    /** The cards lie in rows of four, as a hand of three rows. */
+    /** The cards lie in rows of four: the jokers as a hand of three rows, and the tales under them, in the same columns. */
     @Test
     fun theCardsLieInRowsOfFour() {
-        val cards = screen().layout!!.jokerCards
-        for ((i, card) in cards.withIndex()) {
-            assertEquals(cards[i % 4].x, card.x, "card $i")
+        val l = screen().layout!!
+        for (cards in listOf(l.jokerCards, l.taleCards)) for ((i, card) in cards.withIndex()) {
+            assertEquals(l.jokerCards[i % 4].x, card.x, "card $i")
             assertEquals(cards[i / 4 * 4].y, card.y, "card $i")
         }
-        assertTrue(cards[4].y > cards[0].bottom)
+        assertTrue(l.jokerCards[4].y > l.jokerCards[0].bottom)
+        assertTrue(l.talesTold.y > l.jokerCards.last().bottom && l.taleCards[0].y > l.talesTold.bottom)
     }
 
     @Test
@@ -1786,6 +1790,123 @@ class ScreenTest {
             assertTrue(2 * sprite.height <= Layout.OPEN_SPRITE, joker.name)
         }
         assertTrue(l.openCard.y >= l.worldList.y && l.openCard.bottom <= l.worldList.bottom)
+        assertEquals(TALES.size, l.taleCards.size)
+        for ((i, card) in l.taleCards.withIndex()) {
+            assertTrue(card.x >= l.worldList.x && card.right <= l.worldList.right && card.y >= l.talesTold.bottom, "tale card $i")
+            for (other in l.taleCards.drop(i + 1)) assertTrue(card.right <= other.x || other.right <= card.x || card.bottom <= other.y || other.bottom <= card.y)
+        }
+        assertEquals(l.taleCards.last().bottom - l.worldList.bottom, l.cardScroll)
+        assertTrue(7 * Layout.CARD_RELIEF + 4 <= l.taleCards[0].w && PixelFont.width("15/15") + 4 <= l.taleCards[0].w)
+        for (tale in TALES) {
+            assertTrue(PixelFont.width(tale.name) <= l.openTaleText.w, tale.name)
+            for ((part, text) in tale.pages) assertTrue(PixelFont.wrap(text, l.openTaleText.w).size <= Layout.TALE_LINES, "${tale.name}, part ${part + 1}")
+        }
+        assertTrue(l.openTale.y >= l.worldList.y && l.openTale.bottom <= l.worldList.bottom)
+    }
+
+    /** The Cards tab of a game with [keys], scrolled to its end, where the cards of the tales are. */
+    private fun talesShown(vararg keys: Pair<String, Double>): Screen {
+        val s = screen(MemoryStore(mapOf(*keys)))
+        val l = s.layout!!
+        s.tap(l.dayLabel(s.game.day))
+        if (!s.cardsShown) s.tap(l.cardsTab)
+        val first = l.jokerCards[0]
+        s.tap(first)
+        s.drag(first.x + 10f, first.y + 10f - 2000f)
+        s.release()
+        return s
+    }
+
+    /** A tap on the card of [tale], where the list has scrolled it. */
+    private fun Screen.chooseTale(tale: Tale) = layout!!.taleCards[tale.id].let { choose(Rect(it.x, it.y - worldsScroll, it.w, it.h)) }
+
+    /** The cards of the tales lie under the jokers, so the list scrolls to the last tale. */
+    @Test
+    fun theCardsScrollToTheLastTale() {
+        val s = smallest()
+        val l = s.layout!!
+        s.tap(l.dayLabel(s.game.day))
+        s.tap(l.cardsTab)
+        assertTrue(l.cardScroll > 0)
+        val first = l.jokerCards[0]
+        assertEquals(Touch.LIST, s.tap(first))
+        s.drag(first.x + 10f, first.y + 10f - 2000f)
+        assertEquals(Touch.NONE, s.release())
+        assertEquals(l.cardScroll, s.worldsScroll)
+    }
+
+    /** The card of a tale shows its relief once the player heard a part, and how far the tale of the climb has come until it is told. */
+    @Test
+    fun theCardsShowTheTalesHeard() {
+        fun card(vararg keys: Pair<String, Double>): List<Int> {
+            val s = talesShown(*keys)
+            val c = s.layout!!.taleCards[ORPHEUS.id]
+            val px = s.render()
+            return (c.y - s.worldsScroll until c.bottom - s.worldsScroll).flatMap { y -> (c.x until c.right).map { px[it, y] } }
+        }
+        val shut = card()
+        val told = card("talesTold" to 4.0, "talesSeen" to 4.0)
+        val nine = card("tale" to 2.0, "stelesTold" to 9.0)
+        assertNotEquals(shut, told)
+        assertNotEquals(told, nine)
+        assertNotEquals(nine, card("tale" to 2.0, "stelesTold" to 10.0))
+    }
+
+    /** A tale heard opens on a big stone. A tap on its right half shows the next part, on its left half the part before; a tap off it closes it. */
+    @Test
+    fun aToldTaleOpensAndTurnsItsParts() {
+        val s = talesShown("talesTold" to 4.0, "talesSeen" to 4.0)
+        val r = s.layout!!.openTale
+        assertEquals(Touch.WORLDS, s.chooseTale(ORPHEUS))
+        assertSame(ORPHEUS, s.openTale)
+        assertEquals(0, s.talePage)
+        fun side(right: Boolean) = s.tap(r.x + if (right) r.w - 4f else 4f, r.y + r.h / 2f)
+        assertEquals(Touch.NONE, side(right = false))
+        assertEquals(Touch.WORLDS, side(right = true))
+        assertEquals(1, s.talePage)
+        assertEquals(Touch.WORLDS, side(right = false))
+        assertEquals(0, s.talePage)
+        repeat(14) { side(right = true) }
+        assertEquals(14, s.talePage)
+        assertEquals(Touch.NONE, side(right = true))
+        assertEquals(Touch.WORLDS, s.tap(r.x + r.w / 2f, r.bottom + 4f))
+        assertNull(s.openTale)
+        assertTrue(s.worldsOpen)
+    }
+
+    /** The tale of this climb opens before it is told, but only as far as the stones have told it. */
+    @Test
+    fun theTaleOfTheClimbOpensAsFarAsItWasTold() {
+        val s = talesShown("tale" to 2.0, "stelesTold" to 9.0)
+        val r = s.layout!!.openTale
+        s.chooseTale(ORPHEUS)
+        repeat(20) { s.tap(r.x + r.w - 4f, r.y + r.h / 2f) }
+        assertEquals(8, s.talePage)
+    }
+
+    /** The card of a tale that the player has not heard stays shut, and the back button closes an open tale. */
+    @Test
+    fun aTaleNotHeardStaysShut() {
+        val s = talesShown("talesTold" to 1.0, "talesSeen" to 1.0)
+        assertEquals(Touch.NONE, s.chooseTale(ORPHEUS))
+        assertNull(s.openTale)
+        s.chooseTale(SISYPHUS)
+        assertSame(SISYPHUS, s.openTale)
+        assertTrue(s.back())
+        assertNull(s.openTale)
+        assertTrue(s.worldsOpen)
+    }
+
+    /** A tale told whose card was not seen yet: a dot by the day, and the day opens the Cards tab, which takes the dot away. */
+    @Test
+    fun aNewTaleShowsTheDotUntilTheCardsTabShows() {
+        fun scene(seen: Double) = screen(MemoryStore(mapOf("talesTold" to 1.0, "talesSeen" to seen))).render().data.copyOf()
+        assertFalse(scene(0.0).contentEquals(scene(1.0)))
+        val s = screen(MemoryStore(mapOf("talesTold" to 1.0)))
+        assertTrue(s.game.newTales)
+        s.tap(s.layout!!.dayLabel(s.game.day))
+        assertTrue(s.cardsShown)
+        assertFalse(s.game.newTales)
     }
 
     @Test
@@ -1819,8 +1940,8 @@ class ScreenTest {
     fun theTabsFitTheSmallestPhone() {
         val l = smallest().layout!!
         assertTrue(l.worldsTab.right + 4 <= l.laborsTab.x)
-        assertTrue(l.laborsTab.right + 4 <= l.jokersTab.x)
-        assertTrue(l.jokersTab.right <= l.agoraTitle.right, "the tabs end at ${l.jokersTab.right}, the row at ${l.agoraTitle.right}")
+        assertTrue(l.laborsTab.right + 4 <= l.cardsTab.x)
+        assertTrue(l.cardsTab.right <= l.agoraTitle.right, "the tabs end at ${l.cardsTab.right}, the row at ${l.agoraTitle.right}")
     }
 
     @Test

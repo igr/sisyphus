@@ -3,6 +3,7 @@ package dev.oblac.sisyphus.ui
 import dev.oblac.sisyphus.game.Category
 import dev.oblac.sisyphus.game.JOKERS
 import dev.oblac.sisyphus.game.LABORS
+import dev.oblac.sisyphus.game.TALES
 import dev.oblac.sisyphus.gfx.PixelFont
 import kotlin.math.max
 import kotlin.math.min
@@ -139,13 +140,13 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
 
     /**
      * In the title row of the Worlds screen, its three tabs. The Worlds screen shows no obols, so they fit the smallest phone.
-     * "Labors" and "Jokers" have room for the dot after them.
+     * "Labors" and "Cards" have room for the dot after them.
      */
     val worldsTab = Rect(agoraTitle.x, agoraTitle.y, PixelFont.width(WORLDS_TITLE), PixelFont.CAP_HEIGHT)
     val laborsTab = Rect(worldsTab.right + 8, agoraTitle.y, PixelFont.width(LABORS_TITLE) + 5, PixelFont.CAP_HEIGHT)
-    val jokersTab = Rect(laborsTab.right + 4, agoraTitle.y, PixelFont.width(JOKERS_TITLE) + 5, PixelFont.CAP_HEIGHT)
+    val cardsTab = Rect(laborsTab.right + 4, agoraTitle.y, PixelFont.width(CARDS_TITLE) + 5, PixelFont.CAP_HEIGHT)
 
-    /** On the Jokers tab, under the title row: "Jokers met", and how many of them the player has met, such as "3/10". */
+    /** On the Cards tab, before the list scrolls, under the title row: "Jokers met", and how many of them the player has met, such as "3/10". */
     val jokersMet = Rect(worldList.x, worldList.y, worldList.w, PixelFont.CAP_HEIGHT)
 
     /** The cards of the jokers, by id: rows of [CARDS_IN_A_ROW], like a hand of playing cards. */
@@ -155,6 +156,17 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
         }
     }
 
+    /** Under the cards of the jokers: "Tales told", and how many of the tales the player has heard to the end, such as "3/14". */
+    val talesTold = Rect(worldList.x, jokerCards.last().bottom + 8, worldList.w, PixelFont.CAP_HEIGHT)
+
+    /** The cards of the tales, by id, under "Tales told", in the rows and columns of the cards of the jokers. */
+    val taleCards: List<Rect> = List(TALES.size) { i ->
+        Rect(jokerCards[i % CARDS_IN_A_ROW].x, talesTold.bottom + 6 + i / CARDS_IN_A_ROW * (CARD_HEIGHT + 4), jokerCards[0].w, CARD_HEIGHT)
+    }
+
+    /** How far the list of the cards can scroll, down to the last tale. */
+    val cardScroll = max(0, taleCards.last().bottom - worldList.bottom)
+
     /** An open card, over the cards: the joker at twice his size, his name, his chance, who he is, and how often the player met him. */
     val openCard = Rect(
         worldList.x, jokerCards[0].y, worldList.w,
@@ -163,6 +175,15 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
 
     /** In the open card, the room for who he is, under his chance. */
     val openCardText = Rect(openCard.x + 6, openCard.y + 6 + OPEN_SPRITE + 5 + 2 * PixelFont.LINE_HEIGHT + 3, openCard.w - 12, ABOUT_LINES * PixelFont.LINE_HEIGHT)
+
+    /** An open tale, over the cards, on a big stone: its relief, its name, one text, and the part of the tale between two arrows. */
+    val openTale = Rect(
+        worldList.x, jokerCards[0].y, worldList.w,
+        6 + 7 * OPEN_RELIEF + 5 + PixelFont.LINE_HEIGHT + 4 + TALE_LINES * PixelFont.LINE_HEIGHT + 4 + PixelFont.LINE_HEIGHT + 3,
+    )
+
+    /** In the open tale, the room for its text, under its name. */
+    val openTaleText = Rect(openTale.x + 6, openTale.y + 6 + 7 * OPEN_RELIEF + 5 + PixelFont.LINE_HEIGHT + 4, openTale.w - 12, TALE_LINES * PixelFont.LINE_HEIGHT)
 
     /** The width of the text in a row of the list of labors. */
     val laborText = worldList.w - 2 * LABOR_PAD
@@ -248,11 +269,16 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
         /** In the open card, the room for the outlined joker at twice his size, and for the lines of who he is. */
         const val OPEN_SPRITE = 52
         const val ABOUT_LINES = 5
+        /** How many times bigger the relief of a tale is on its card, and on the open tale. */
+        const val CARD_RELIEF = 3
+        const val OPEN_RELIEF = 4
+        /** In the open tale, the room for the lines of a text. */
+        const val TALE_LINES = 5
     }
 }
 
 /** The tabs of the Worlds screen. */
-enum class Tab { WORLDS, LABORS, JOKERS }
+enum class Tab { WORLDS, LABORS, CARDS }
 
 /** The obols each button of the dev screen adds or takes away, from the left. */
 val DEV_STEPS = listOf(-10, -1, 1, 10, 100)

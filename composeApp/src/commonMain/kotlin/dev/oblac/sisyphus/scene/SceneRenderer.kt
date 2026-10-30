@@ -181,7 +181,7 @@ class SceneRenderer(private val geo: SceneGeometry) {
         drawHero(px, atm, game, p, rolled)
         drawParticles(px, world, atm)
         drawRain(px, world, atm, look.fall)
-        if (hud) drawDay(px, game.day, game.newLabors || game.newJokers, banner)
+        if (hud) drawDay(px, game.day, game.newLabors || game.newJokers || game.newTales, banner)
         drawTelling(px, game, p)
         drawJesting(px, game, p)
     }

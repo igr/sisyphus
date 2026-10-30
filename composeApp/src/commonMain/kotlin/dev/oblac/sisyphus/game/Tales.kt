@@ -6,12 +6,22 @@ class Part(vararg val texts: String)
 /** A stone of the tale by the path, carved with the [part] of the tale that it tells. The rock reaches it when he has walked [at] pixels. */
 class Stele(val at: Double, val part: Int)
 
-/** A tale of the pool, told by the stones of a climb in any world. Its [id] never changes: saved games keep it. See `docs/stations.md`. */
-class Tale(val id: Int, val parts: List<Part>)
+/**
+ * A tale of the pool, told by the stones of a climb in any world. Its [id] never changes: saved games keep it. Its [name] is on its card
+ * on the Cards tab. See `docs/stations.md`.
+ */
+class Tale(val id: Int, val name: String, val parts: List<Part>) {
+    /** The texts of the tale one by one, as the open tale shows them, each with the index of its part. */
+    val pages: List<Pair<Int, String>> get() = parts.withIndex().flatMap { (i, part) -> part.texts.map { i to it } }
+
+    /** How many of the [pages] tell the first [parts] parts. */
+    fun pagesOf(parts: Int) = pages.count { it.first < parts }
+}
 
 /** The tale of Sisyphus himself: why he pushes the rock. It comes first. */
 val SISYPHUS = Tale(
     0,
+    "Sisyphus",
     listOf(
         Part("Long ago, Sisyphus built the city of Ephyra, and he became its king."),
         Part("His ships sailed on two seas, and his city grew rich. Later, men called it Corinth."),
@@ -37,6 +47,7 @@ val SISYPHUS = Tale(
 /** Typhon, who fought Zeus, and lies under Mount Etna. */
 val TYPHON = Tale(
     1,
+    "Typhon",
     listOf(
         Part("The gods won their war with the Giants. The Earth, mother of the Giants, was angry."),
         Part("She gave birth to Typhon, taller than the mountains. His head hit the stars."),
@@ -59,6 +70,7 @@ val TYPHON = Tale(
 /** Orpheus, who sang below for Eurydice, and Sisyphus sat on his rock. */
 val ORPHEUS = Tale(
     2,
+    "Orpheus",
     listOf(
         Part("Orpheus was the son of a Muse. When he sang, trees and stones came near to hear."),
         Part("He sailed with Jason on the Argo. His song was louder than the song of the Sirens."),
@@ -81,6 +93,7 @@ val ORPHEUS = Tale(
 /** Isis, who found the pieces of Osiris one by one. */
 val ISIS_AND_OSIRIS = Tale(
     3,
+    "Isis and Osiris",
     listOf(
         Part("Osiris was the king of Egypt. He taught men to sow wheat, and he gave them laws."),
         Part("His brother Set wanted the throne. He measured Osiris in secret, and made a fine chest."),
@@ -103,6 +116,7 @@ val ISIS_AND_OSIRIS = Tale(
 /** Bellerophon, the grandson of Sisyphus, who caught Pegasus. */
 val BELLEROPHON = Tale(
     4,
+    "Bellerophon",
     listOf(
         Part("Bellerophon was the grandson of Sisyphus. The gods gave him beauty and courage."),
         Part("Pegasus, the winged horse, came to drink at the spring Peirene, in Corinth."),
@@ -125,6 +139,7 @@ val BELLEROPHON = Tale(
 /** Empedocles, the wise man of Sicily, who leapt into Etna. */
 val EMPEDOCLES = Tale(
     5,
+    "Empedocles",
     listOf(
         Part("Empedocles was born in Acragas, in Sicily. His grandfather won a horse race at Olympia."),
         Part("\"My people feast as if to die tomorrow,\" he said, \"and build as if to live forever.\""),
@@ -147,6 +162,7 @@ val EMPEDOCLES = Tale(
 /** Demeter, who looked for her daughter Persephone with torches lit at Etna. */
 val DEMETER_AND_PERSEPHONE = Tale(
     6,
+    "Demeter and Persephone",
     listOf(
         Part("Demeter was the first to plow, and to give men grain. Her daughter was Persephone."),
         Part("In Sicily, by a lake near Henna, spring never ended. Persephone picked flowers there."),
@@ -169,6 +185,7 @@ val DEMETER_AND_PERSEPHONE = Tale(
 /** Hermes, who stole the cows of Apollo on the day he was born. */
 val HERMES = Tale(
     7,
+    "Hermes",
     listOf(
         Part("Hermes, the son of Zeus and Maia, was born at dawn, in a cave on Mount Cyllene."),
         Part("At the door he found a tortoise. By noon, he had made its shell into a lyre."),
@@ -191,6 +208,7 @@ val HERMES = Tale(
 /** Phaethon, who drove the chariot of the Sun for a day. */
 val PHAETHON = Tale(
     8,
+    "Phaethon",
     listOf(
         Part("Phaethon was proud that the Sun was his father. Epaphus, son of Zeus, laughed at him."),
         Part("His mother, Clymene, swore by the Sun that it was true. \"Go and ask him,\" she said."),
@@ -213,6 +231,7 @@ val PHAETHON = Tale(
 /** Arion, the singer of Corinth whom a dolphin saved. */
 val ARION = Tale(
     9,
+    "Arion",
     listOf(
         Part("Arion was the finest lyre player of his day. He lived with Periander, ruler of Corinth."),
         Part("When he sang, the streams stood still, and the wolf stopped chasing the lamb."),
@@ -235,6 +254,7 @@ val ARION = Tale(
 /** Daedalus, who flew from Crete on wings of wax, and Icarus, who flew too high. */
 val DAEDALUS_AND_ICARUS = Tale(
     10,
+    "Daedalus and Icarus",
     listOf(
         Part("Daedalus of Athens was the great inventor. Men said his statues could see and walk."),
         Part("In Crete, he built the Labyrinth for King Minos. Even he could hardly find the way out."),
@@ -257,6 +277,7 @@ val DAEDALUS_AND_ICARUS = Tale(
 /** Io, whom the gadfly drove over the world, until the Nile. */
 val IO = Tale(
     11,
+    "Io",
     listOf(
         Part("Io was the daughter of the river god Inachus. Zeus saw her, and he loved her."),
         Part("She ran away, but he hid the land under a dark cloud, and caught her."),
@@ -279,6 +300,7 @@ val IO = Tale(
 /** Kaguya, the moon princess, whose elixir burned on Fuji. */
 val KAGUYA = Tale(
     12,
+    "Kaguya",
     listOf(
         Part("Long ago, an old bamboo cutter saw a stalk that shone. Inside it was a tiny girl."),
         Part("He took her home to his wife. From then on, he often found gold in the bamboo."),
@@ -301,6 +323,7 @@ val KAGUYA = Tale(
 /** Izanagi, who came back from the land of the dead, and shut its way with a rock. */
 val IZANAGI_AND_IZANAMI = Tale(
     13,
+    "Izanagi and Izanami",
     listOf(
         Part("Long ago, the gods gave Izanagi and Izanami a jewelled spear, to make the land."),
         Part("From the Floating Bridge of Heaven, they stirred the sea. The drops became an island."),

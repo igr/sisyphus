@@ -175,7 +175,7 @@ private val RELIEF_ART = listOf(
  * A stone of the tales in the colors of one world: `w W D p C` for the slab, and `c k` for the relief carved in it.
  * Its [reliefs] are by the id of the tale.
  */
-internal class Stone(colors: Map<Char, Int>) {
+internal class Stone(val colors: Map<Char, Int>) {
     val slab: Pixels = sprite(colors, SLAB)
     val reliefs: List<Pixels> = RELIEF_ART.map { sprite(colors, it) }
 }

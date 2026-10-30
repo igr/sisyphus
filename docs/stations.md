@@ -17,7 +17,6 @@ The middle of a climb has few new things. At 5 minutes a day, a session is about
 ## Not in this project
 
 - Rewards of any kind. A stone gives no obols, and it does not make a climb shorter or longer.
-- A page that lists the tales and the parts told so far.
 - A choice of the tale by the player.
 
 ## Must not happen
@@ -392,21 +391,29 @@ Id 13. Izanagi pushes on Mount Fuji. Like Sisyphus he came back from the dead, l
 - One sprite for the stone, in the colors of each world: pale limestone, dark lava rock, black stone, sandstone, gray granite. One relief for each tale: a rock, a volcano, a lyre, the eye of Horus, a wing, a sandal, an ear of wheat, the staff of Hermes, the sun, a dolphin, the labyrinth, a cow, the moon, and a peach, carved in the colors of the stone. The light of the time of day falls on it, as on the props.
 - **The popup:** a bubble of paper (F1E4C8) with a dark outline (2A1A0C) and round corners, 2 pixels from the edges of the scene. The text is dark, from the left; the note is terra (C8643C). Its tail points down at the stone and ends 3 pixels above the top of the rock, so that it covers neither him nor the rock. The light of the time of day does not fall on it. `drawPopup` in `gfx/Popup.kt` draws a popup for any text, so other speakers can use it.
 
+## The cards of the tales
+
+- The Cards tab of the Worlds screen has, under the cards of the jokers, "Tales told" and how many of the tales the player has heard to the end, such as "3/14". Then a card for each tale, in rows of 4, in the order of the ids. The list scrolls.
+- A card is a small stone, like the stones by the path, in pale limestone. The card of a tale that the player has not heard is a smooth stone in the shade. From the first part told, its relief is carved on it, three times its size. Under the relief, a tale told has two lines of carved letters. The tale of the climb shows how far it has come, such as "9/15", until it is told.
+- A tap on a carved card opens the tale on a big stone: its relief, four times its size, its name, one text, and its part between two arrows, such as "9/15". A tap on the right half shows the next text, and a tap on the left half the text before. A tale told opens at its first text, and all of it can be read. The tale of the climb can be read up to the last part told. A tap off the stone, or the back button, closes it. The two texts of a part come one after the other, with the same part between the arrows.
+- While a tale is told whose card the player has not seen on the tab, a dot stands after "Cards", and the dot by the day shows, as for a new joker.
+
 ## Saved data
 
 - `stelesTold`: the parts told in this climb, 0 to 15. Back to 0 when a climb begins.
 - `nextStele`: where the next stone stands, in pixels walked, or -1 when no stone stands ahead. It stays until the part of the stone is told. Back to -1 when a climb begins.
 - `tale`: the id of the tale of this climb. Old saved games: 0, the tale of Sisyphus.
 - `talesTold`: the tales told, one bit for each id: 1 for Sisyphus, 2 for Typhon, 4 for Orpheus, 8 for Isis and Osiris, 16 for Bellerophon, 32 for Empedocles, 64 for Demeter and Persephone, 128 for Hermes, 256 for Phaethon, 512 for Arion, 1024 for Daedalus and Icarus, 2048 for Io, 4096 for Kaguya, 8192 for Izanagi and Izanami. Old saved games: 0.
+- `talesSeen`: the tales told whose cards the player has seen on the Cards tab, one bit for each id. Old saved games: 0, so the dot shows once for the tales told before.
 - `docs/saved-data.md` lists the new keys, with their start values for old saved games.
 
 ## To test it
 
 - Tests: the first stone stands 30 turns ahead on day 3, with no item bought; no stone stands before day 3; a stone stands 30 turns ahead after an item is bought; its popup opens 3 turns before the rock reaches it, and the part is told 6 turns after it opens; a part with two texts shows them one after the other; the panel shows no part; the parts come in order, once each; two items bought together give two stones, 30 turns apart; the gods' pushes do not reach a stone; a popup waits for a vision; the final climb does not cut a part; the 15th part comes before the first herm; no popup shows at the top; the stones, the parts told and an open popup survive a restart; a new climb starts its tale from the first part; every text fits the popup on the smallest phone, and a vision hides it; the dev screen's Stone shows the next part at once, and its row fits the smallest phone.
 - Tests of the pool: the first climb tells the tale of Sisyphus; it comes again until it is told; the next climbs tell each other tale once, before any tale comes again; after that, the tale of the climb before does not come at once; a climb keeps its tale across a restart; the choice takes no number from the random numbers of the game; an old save tells the tale of Sisyphus; every world has stones, in its own colors; the stones of a tale share its relief.
-- Snapshots: a stone ahead of the rock with its popup, also on the smallest phone, and in each world; the stone of each world with the relief of each tale.
+- Tests of the cards: the cards of the tales fit the smallest phone, under the jokers, and the list scrolls to the last; a card shows its relief once a part is heard, and how far the tale of the climb has come; a tale not heard stays shut; an open tale turns its texts both ways, and the tale of the climb only up to its last part told; a tap off it or the back button closes it; every name and text fits the open tale; the dot shows for a tale told, and goes when the tab opens.
+- Snapshots: a stone ahead of the rock with its popup, also on the smallest phone, and in each world; the stone of each world with the relief of each tale; the Cards tab scrolled to the tales, on both phones; an open tale.
 
 ## Later
 
 - A labor for the tales told.
-- The tales told, on a tab of the Worlds screen.

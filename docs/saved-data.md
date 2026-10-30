@@ -44,10 +44,11 @@ The last two columns show what happens to each value when Sisyphus reaches the t
 | `nextStele` | Where the next stone of the tale stands, in pixels walked, until its part is told. -1 means that no stone stands ahead. | Back to -1 | Back to -1 |
 | `tale` | The id of the tale that the stones of this climb tell. | The next tale | The next tale |
 | `talesTold` | The tales told, one bit for each id: 1 for Sisyphus, 2 for Typhon, 4 for Orpheus, 8 for Isis and Osiris, 16 for Bellerophon, 32 for Empedocles, 64 for Demeter and Persephone, 128 for Hermes, 256 for Phaethon, 512 for Arion, 1024 for Daedalus and Icarus, 2048 for Io, 4096 for Kaguya, 8192 for Izanagi and Izanami. | Kept | Kept |
+| `talesSeen` | The tales told whose cards the player has seen on the Cards tab, one bit for each id, as in `talesTold`. A dot stands by the day while a tale is told that is not seen. | Kept | Kept |
 | `nextJoker` | Where the next joker stands by the path, in pixels walked. -1 means that none stands ahead yet. | A new joker ahead | A new joker ahead |
 | `joker` | The id of the next joker. | The new joker | The new joker |
 | `met.0` to `met.11` | How many times the player met each joker, by the id of the joker. A joker met once or more has the card face up, and the count tells which line comes next. | Kept | Kept |
-| `jokersSeen` | The cards seen face up on the Jokers tab, one bit for each id: 1 for Diogenes, 2 for Alice, up to 2048 for Scheherazade. | Kept | Kept |
+| `jokersSeen` | The cards seen face up on the Cards tab, one bit for each id: 1 for Diogenes, 2 for Alice, up to 2048 for Scheherazade. | Kept | Kept |
 | `sound` | 1 when the sound is on, 0 when it is off. | Kept | Kept |
 | `savedAt` | The time of the last save, in seconds since 1970. | Saved again | Saved again |
 
@@ -66,6 +67,7 @@ When a key is not there, the game uses a start value:
 - `tale`: 0, the tale of Sisyphus. An id that the pool does not have also tells the tale of Sisyphus.
 - `nextJoker`: -1, so a joker is put by the path at once, 20 to 40 turns ahead.
 - `joker`: 0, Diogenes. An id that the game does not have is Diogenes too.
+- `talesSeen`: 0, so the dot shows once for the tales told before there were cards of the tales.
 - All other keys: 0.
 
 ## Ids that never change
@@ -87,7 +89,7 @@ The game saves all keys at these times:
 
 - Every second while something changes: the knob turns, an obol comes, or new wise words come.
 - When the app goes to the background, and when the desktop window closes.
-- After a purchase, after a dev screen button, at the top, after a move to another world, and when the Labors tab or the Jokers tab opens.
+- After a purchase, after a dev screen button, at the top, after a move to another world, and when the Labors tab or the Cards tab opens.
 
 The sound setting saves only the `sound` key, at the moment that the player changes it.
 

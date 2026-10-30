@@ -11,7 +11,7 @@ A tale is 15 texts and one relief. The stones by the path tell it, one part at a
 
 | Part | Where |
 |---|---|
-| Texts | `val <NAME> = Tale(<id>, listOf(Part("..."), ...))` after the last tale in `game/Tales.kt`, with a one-line KDoc as the others have. Add it at the end of `TALES`. |
+| Texts | `val <NAME> = Tale(<id>, "<name>", listOf(Part("..."), ...))` after the last tale in `game/Tales.kt`, with a one-line KDoc as the others have. Add it at the end of `TALES`. The name stands on the open tale, on the Cards tab. |
 | Id | The size of `TALES` before the new tale. The id is the position of the tale in `TALES` and in `RELIEF_ART`, and the saved key `tale` holds it. So a tale is never removed, moved or given a new id. `talesTold` keeps one bit for each id in an `Int`, so the last id is 30. |
 | Relief | A new last entry of `RELIEF_ART` in `scene/Steles.kt`, with a comment such as `// Orpheus: a lyre`. It shows one thing that stands for the tale, in 7 rows of 7 characters: `k` is carved deep, `c` less deep, and `.` is not carved. The corners of its top row lie on the rim of the slab. Each world carves it in the colors of its stone. |
 | Test | `TalesTest.thePoolHasTalesOfFifteenParts`: the new id, the new tale in the list, and its first and last texts. |
@@ -24,6 +24,8 @@ These tests already check each tale in `TALES`, so they need no change:
 - `LookTest.everyStoneHasTheReliefOfEveryTale`: each stone has a relief of 7 by 7 for each tale.
 - `StationsTest`: the choice of the tale of a climb.
 - `SnapshotTest.steles`: the sheet `steles.png` shows each relief on the stone of each world. It gets a column for the new tale.
+- `ScreenTest.theCardsFitTheSmallestPhone`: the card of each tale on the Cards tab, and its name and each text on the open tale.
+- `SnapshotTest.jokerCards`: the Cards tab, with a card for each tale.
 
 ## Steps
 
@@ -38,7 +40,7 @@ These tests already check each tale in `TALES`, so they need no change:
 4. Change `TalesTest`. Run it, and see it fail.
 5. Add the tale to `game/Tales.kt`. Run the tests: `LookTest.everyStoneHasTheReliefOfEveryTale`, `LookTest.thePopupOfAStoneFitsTheSmallestPhone` and `SnapshotTest.steles` fail. A stone of the new tale has no relief yet, so it cannot be drawn.
 6. Add the relief. Run `./gradlew :composeApp:jvmTest :composeApp:testAndroidHostTest`, then `./gradlew :androidApp:assembleDebug :composeApp:compileKotlinIosSimulatorArm64`. If a text does not fit the popup, make it shorter in the code and in the doc, and tell the user.
-7. Compare the snapshots with `cmp`. Only `steles.png` changes. Look at its new column, and show it to the user: the relief must show on each stone, also on the dark stone of The Underworld.
+7. Compare the snapshots with `cmp`. `steles.png` changes, and so do the shots of the Cards tab that show the tales, such as `14-tales.png`: their count and the new card. Look at its new column, and show it to the user: the relief must show on each stone, also on the dark stone of The Underworld.
 8. Update the docs:
    - `docs/stations.md`: the names in "Goals", the ids in "The pool", the reliefs in "The art", the bits of `talesTold` in "Saved data", and the sources of the tale in "Sources". If "Later" names the tale, remove it there.
    - `docs/saved-data.md`: the bits of `talesTold`, and the ids of the tales in "Ids that never change".
@@ -58,7 +60,7 @@ These tests already check each tale in `TALES`, so they need no change:
 
 ## When players meet a new tale
 
-`nextTale()` in `game/Game.kt` gives the tale of Sisyphus first, then a tale not told yet, at random. So a player who told all the other tales hears the new tale in the next climb. Other players meet it among the tales that they did not tell yet. The update does not change the tale of a climb that has started.
+`nextTale()` in `game/Game.kt` gives the tale of Sisyphus first, then a tale not told yet, at random. So a player who told all the other tales hears the new tale in the next climb. Other players meet it among the tales that they did not tell yet. The update does not change the tale of a climb that has started. On the Cards tab, the card of the new tale is a smooth stone until the stones tell its first part.
 
 ## To see it in the game
 

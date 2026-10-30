@@ -50,6 +50,7 @@ private const val KEY_STELES_TOLD = "stelesTold"
 private const val KEY_NEXT_STELE = "nextStele"
 private const val KEY_TALE = "tale"
 private const val KEY_TALES_TOLD = "talesTold"
+private const val KEY_TALES_SEEN = "talesSeen"
 private const val KEY_NEXT_JOKER = "nextJoker"
 private const val KEY_JOKER = "joker"
 private const val KEY_JOKERS_SEEN = "jokersSeen"
@@ -236,6 +237,9 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     /** The tales told so far, one bit for each id. A tale is told when its last part is told. */
     var talesTold = store.load(KEY_TALES_TOLD)?.toInt() ?: 0
         private set
+    /** The cards of the tales told that the player has seen on the Cards tab, one bit for each id. */
+    var talesSeen = store.load(KEY_TALES_SEEN)?.toInt() ?: 0
+        private set
     /** The tales take their own random numbers, so that the visions and the sights stay the same. */
     private val taleRandom = Random(seed + 1)
     /** The parts of the tale told in this climb. An old save counts its items as told. */
@@ -259,7 +263,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         private set
     /** How many times the player met each joker, by id, in all climbs and worlds. */
     private val met = IntArray(JOKERS.size) { id -> store.load(metKey(JOKERS[id]))?.toInt() ?: 0 }
-    /** The cards seen face up on the Jokers tab, one bit for each id. */
+    /** The cards seen face up on the Cards tab, one bit for each id. */
     var jokersSeen = store.load(KEY_JOKERS_SEEN)?.toInt() ?: 0
         private set
     /** The joker met last in this climb and this run of the app, and where he stands: he stays by the path behind him. */
@@ -340,11 +344,26 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     /** How many times the player met [joker]. Once met, his card is face up. */
     fun met(joker: Joker) = met[joker.id]
 
-    /** A joker is met whose card the player has not seen on the Jokers tab. */
+    /** A joker is met whose card the player has not seen on the Cards tab. */
     val newJokers get() = JOKERS.any { met[it.id] > 0 && jokersSeen and (1 shl it.id) == 0 }
 
     fun seeJokers() {
         jokersSeen = JOKERS.filter { met[it.id] > 0 }.fold(0) { bits, joker -> bits or (1 shl joker.id) }
+        save()
+    }
+
+    /** How many parts of [tale] the player has heard: all of a tale told, the parts told so far of the tale of this climb, none of the others. */
+    fun partsHeard(tale: Tale) = when {
+        talesTold and (1 shl tale.id) != 0 -> tale.parts.size
+        tale === this.tale -> stelesTold
+        else -> 0
+    }
+
+    /** A tale is told whose card the player has not seen on the Cards tab. */
+    val newTales get() = talesTold and talesSeen.inv() != 0
+
+    fun seeTales() {
+        talesSeen = talesTold
         save()
     }
     val timeOfDay get() = dayValue - floor(dayValue)
@@ -792,6 +811,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         store.save(KEY_NEXT_STELE, nextStele ?: -1.0)
         store.save(KEY_TALE, tale.id.toDouble())
         store.save(KEY_TALES_TOLD, talesTold.toDouble())
+        store.save(KEY_TALES_SEEN, talesSeen.toDouble())
         store.save(KEY_NEXT_JOKER, nextJoker ?: -1.0)
         store.save(KEY_JOKER, joker.id.toDouble())
         store.save(KEY_JOKERS_SEEN, jokersSeen.toDouble())

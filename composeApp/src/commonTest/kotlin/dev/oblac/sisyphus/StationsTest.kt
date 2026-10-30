@@ -409,6 +409,37 @@ class StationsTest {
         assertSame(ORPHEUS, game(store).tale)
     }
 
+    /** The player heard all of a tale told, the parts told so far of the tale of this climb, and nothing of the others. */
+    @Test
+    fun thePlayerHeardTheToldTalesAndThePartsOfThisClimb() {
+        val g = game(store("talesTold" to 2.0, "tale" to 2.0, "stelesTold" to 9.0))
+        assertEquals(0, g.partsHeard(SISYPHUS))
+        assertEquals(15, g.partsHeard(TALES[1]))
+        assertEquals(9, g.partsHeard(ORPHEUS))
+        assertEquals(15, game(store("talesTold" to 4.0, "tale" to 2.0, "stelesTold" to 3.0)).partsHeard(ORPHEUS))
+    }
+
+    /** A tale told whose card the player has not seen is news, until the Cards tab shows; the cards seen stay seen after a restart. */
+    @Test
+    fun aToldTaleIsNewsUntilItsCardIsSeen() {
+        val store = store("talesTold" to 3.0, "talesSeen" to 1.0)
+        val g = game(store)
+        assertTrue(g.newTales)
+        g.seeTales()
+        assertEquals(false, g.newTales)
+        assertEquals(3, game(store).talesSeen)
+        assertEquals(false, game(store("talesTold" to 0.0)).newTales)
+    }
+
+    /** A tale reads text by text: a part of two texts takes two pages, and each page knows its part. */
+    @Test
+    fun aTaleReadsTextByText() {
+        assertEquals(16, SISYPHUS.pages.size)
+        assertEquals(listOf(12, 13, 13, 14), SISYPHUS.pages.drop(12).map { it.first })
+        assertEquals(15, ORPHEUS.pages.size)
+        assertEquals(ORPHEUS.parts[8].texts.single(), ORPHEUS.pages[8].second)
+    }
+
     @Test
     fun anUnknownTaleIdTellsTheTaleOfSisyphus() {
         assertSame(SISYPHUS, game(store("tale" to 99.0)).tale)

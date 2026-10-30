@@ -5,7 +5,7 @@ description: Use when the user asks for a new joker in the Sisyphus game, or ask
 
 # New joker
 
-A joker is a figure from the public domain who stands by the path and tells a joke or a riddle in a bubble. Each joker has a chance, a sprite, a card on the Jokers tab, and a few lines. The jokers are `JOKERS` in `game/Jokers.kt`. The game, the bubble, the cards, the saved keys and most tests already work for each joker in `JOKERS`, so a new joker changes only the parts below. `docs/jokers.md` is the spec: it has the rules, the table of the jokers, and the lines of each.
+A joker is a figure from the public domain who stands by the path and tells a joke or a riddle in a bubble. Each joker has a chance, a sprite, a card on the Cards tab, and a few lines. The jokers are `JOKERS` in `game/Jokers.kt`. The game, the bubble, the cards, the saved keys and most tests already work for each joker in `JOKERS`, so a new joker changes only the parts below. `docs/jokers.md` is the spec: it has the rules, the table of the jokers, and the lines of each.
 
 ## What changes
 
@@ -28,7 +28,7 @@ These tests already check each joker in `JOKERS`, so they need no change:
 - `ScreenTest.theCardsShowNoRank` and `theCardsShowTheJokersMet`: they meet and see every joker.
 - `SnapshotTest.jokers`: `jokers.png` gets the new joker.
 
-The Jokers tab does not scroll. When the cards no longer fit the smallest phone, `ScreenTest.theCardsFitTheSmallestPhone` fails: then ask the user.
+The cards of the jokers lie at the top of the Cards tab, above the cards of the tales, and the tab scrolls. `ScreenTest.theCardsFitTheSmallestPhone` checks that each card fits the smallest phone.
 
 ## Steps
 
@@ -45,7 +45,7 @@ The Jokers tab does not scroll. When the cards no longer fit the smallest phone,
 5. Change `JokersTest`. Run it, and see it fail.
 6. Add the joker to `game/Jokers.kt`, and change the weight of Diogenes. Run the tests: the tests that draw the jokers fail, because the sprite is missing.
 7. Add the sprite. Run `./gradlew :composeApp:jvmTest :composeApp:testAndroidHostTest`, then `./gradlew :androidApp:assembleDebug :composeApp:compileKotlinIosSimulatorArm64`. If a text does not fit its rows, make it shorter in the code and in the doc, and tell the user.
-8. Add `met.<id>` to the store of `SnapshotTest.jokerCards`, so that `14-jokers.png` shows the new card face up. Compare the snapshots with `cmp`: `jokers.png`, `14-jokers.png`, `14-jokers-small.png` and `14-card.png` change. Another image can change only where a new game meets its first joker, because the new weights change which joker comes: look at each one. Send `jokers.png` and `14-jokers.png` from `composeApp/build/snapshots` to the user.
+8. Add `met.<id>` to the store of `SnapshotTest.jokerCards`, so that `14-jokers.png` shows the new card face up. Compare the snapshots with `cmp`: `jokers.png`, `14-jokers.png`, `14-jokers-small.png` and `14-card.png` change, and so do the shots of the tales under the jokers, `14-tales.png`, `14-tales-small.png` and `14-tale.png`, when the new card begins a row. Another image can change only where a new game meets its first joker, because the new weights change which joker comes: look at each one. Send `jokers.png` and `14-jokers.png` from `composeApp/build/snapshots` to the user.
 9. Update the counts and the lists in the docs: search `docs/jokers.md` and `docs/saved-data.md` for the number of jokers, the last id (such as "met.9" and "0 to 9"), its bit (such as "512"), the old weight of Diogenes, and the name of the last joker.
    - The Economy page, `analysis/economy.html`: the jokers in "What the game holds", with their lines, jokes, riddles and texts, and the date of the count; in "The jokers", a row for the new joker, the new weight of Diogenes, and the row of all the jokers. Then publish the page again to the same artifact. Its link is not in the repo: if you do not have it, ask the user.
 10. Tell the user how often players meet the joker: about once in 750 / weight game days, which is about 54,000 / weight turns. Ask before you commit.

@@ -5,6 +5,8 @@ import dev.oblac.sisyphus.game.JOKERS
 import dev.oblac.sisyphus.game.Joker
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.Place
+import dev.oblac.sisyphus.game.TALES
+import dev.oblac.sisyphus.game.Tale
 import dev.oblac.sisyphus.game.Vision
 import dev.oblac.sisyphus.game.godsOf
 import dev.oblac.sisyphus.gfx.Pixels
@@ -98,9 +100,14 @@ class Screen(
     var tab = Tab.WORLDS
         private set
     val laborsShown get() = tab == Tab.LABORS
-    val jokersShown get() = tab == Tab.JOKERS
-    /** The card of a joker open over the Jokers tab. Any tap closes it. */
+    val cardsShown get() = tab == Tab.CARDS
+    /** The card of a joker open over the Cards tab. Any tap closes it. */
     var openCard: Joker? = null
+        private set
+    /** The tale open over the Cards tab, at its [talePage]. A tap on it turns the page; a tap off it closes it. */
+    var openTale: Tale? = null
+        private set
+    var talePage = 0
         private set
     /** The world the player asked to go to, waiting for Yes or No: there the climb starts over. */
     var moving: Place? = null
@@ -207,7 +214,8 @@ class Screen(
         }
         if (worldsOpen) moveList(dt)
         if (worldsOpen && laborsShown && game.newLabors) game.seeLabors()
-        if (worldsOpen && jokersShown && game.newJokers) game.seeJokers()
+        if (worldsOpen && cardsShown && game.newJokers) game.seeJokers()
+        if (worldsOpen && cardsShown && game.newTales) game.seeTales()
         if (game.day > lastDay) banner = 3.0
         lastDay = game.day
         banner = max(0.0, banner - dt)
@@ -230,15 +238,16 @@ class Screen(
             ui.agora(pixels, l, game.shop, game.soundOn, devOpen, openWorlds)
             offer?.let { game.shop.next(it) }?.let { ui.offer(pixels, l, it) }
         } else if (worldsOpen) {
-            ui.tabs(pixels, l, tab, game.newLabors, game.newJokers)
+            ui.tabs(pixels, l, tab, game.newLabors, game.newJokers || game.newTales)
             when (tab) {
                 Tab.WORLDS -> ui.worlds(pixels, l, game.place, worldsScroll, worlds)
                 Tab.LABORS -> ui.labors(pixels, l, game.counts, worldsScroll)
-                Tab.JOKERS -> ui.jokers(pixels, l, game::met)
+                Tab.CARDS -> ui.cards(pixels, l, worldsScroll, game::met, game::partsHeard)
             }
             if (canRestore) ui.restore(pixels, l.restore, restoring)
             supportTag(supportId, build)?.let { ui.supportId(pixels, l.supportId, it, copied > 0) }
             openCard?.let { ui.openCard(pixels, l, it, game.met(it)) }
+            openTale?.let { ui.openTale(pixels, l, it, talePage, game.partsHeard(it)) }
             moving?.let { ui.confirm(pixels, l, it) }
             buying?.let { ui.buy(pixels, l, it, billing.price(it), paying) }
         } else {
@@ -364,7 +373,7 @@ class Screen(
             showWorlds(
                 when {
                     game.newLabors -> Tab.LABORS
-                    game.newJokers -> Tab.JOKERS
+                    game.newJokers || game.newTales -> Tab.CARDS
                     else -> tab
                 },
             )
@@ -385,8 +394,8 @@ class Screen(
     /**
      * On the Worlds screen: a tap on a tab, or else near one, goes to the nearest tab. One that is not shown shows; a tap on the
      * shown tab, or anywhere else on the title row, closes the screen.
-     * The list scrolls or chooses a world, and Yes goes there, or first buys it. A tap on a face-up card opens it, and any tap
-     * closes it. Restore asks the store for the worlds bought before.
+     * The list scrolls or chooses a world, and Yes goes there, or first buys it. An open card closes at any tap; an open tale turns
+     * its page, or closes. Restore asks the store for the worlds bought before.
      */
     private fun pressWorlds(x: Float, y: Float, l: Layout): Touch {
         val to = moving
@@ -414,11 +423,12 @@ class Screen(
             buying = null
             return Touch.WORLDS
         }
+        openTale?.let { return turnTale(it, x, y, l) }
         if (openCard != null) {
             openCard = null
             return Touch.WORLDS
         }
-        val tabs = listOf(Tab.WORLDS to l.worldsTab, Tab.LABORS to l.laborsTab, Tab.JOKERS to l.jokersTab)
+        val tabs = listOf(Tab.WORLDS to l.worldsTab, Tab.LABORS to l.laborsTab, Tab.CARDS to l.cardsTab)
         val touched = tabs.firstOrNull { (_, r) -> r.near(x, y, 0) }
             ?: tabs.filter { (_, r) -> r.near(x, y, TOUCH_SLOP) }.minByOrNull { (_, r) -> r.gap(x, y) }
         if (touched != null && touched.first != tab) {
@@ -437,11 +447,6 @@ class Screen(
         if (supportId != null && l.supportId.near(x, y, TOUCH_SLOP)) {
             copied = COPIED_FOR
             return Touch.COPY
-        }
-        if (jokersShown) {
-            val joker = JOKERS.firstOrNull { l.jokerCards[it.id].near(x, y, 0) && game.met(it) > 0 } ?: return Touch.NONE
-            openCard = joker
-            return Touch.WORLDS
         }
         if (!l.worldList.near(x, y, 0)) return Touch.NONE
         drag = ListDrag(x, y, listScroll, stopped = abs(listSpeed) > STOP_SPEED)
@@ -467,7 +472,7 @@ class Screen(
     /**
      * The finger lifts: the knob coasts on, or a tap on the list goes back to the world he is in, or asks to go to another world,
      * or to buy it. Before the climb has begun, as after the top, nothing is lost, so a world already bought begins at once.
-     * Tells what the lift did.
+     * On the Cards tab, a tap opens the card of a joker met, or a tale heard. Tells what the lift did.
      */
     fun release(): Touch {
         val d = drag ?: return Touch.NONE.also { game.knob.release() }
@@ -475,7 +480,9 @@ class Screen(
         val l = layout ?: return Touch.NONE
         if (d.moved > TAP_SLOP) return Touch.NONE
         listSpeed = 0.0
-        if (d.stopped || tab != Tab.WORLDS) return Touch.NONE
+        if (d.stopped) return Touch.NONE
+        if (tab == Tab.CARDS) return openAt(d.x, d.y + worldsScroll, l)
+        if (tab != Tab.WORLDS) return Touch.NONE
         val row = Place.entries.indices.firstOrNull { l.worldRow(it).near(d.x, d.y + worldsScroll, 0) } ?: return Touch.NONE
         val place = Place.entries[row]
         if (place == game.place) {
@@ -487,6 +494,33 @@ class Screen(
             game.begun && ending == null -> moving = place
             else -> return goTo(place)
         }
+        return Touch.WORLDS
+    }
+
+    /** On the list of cards, before it scrolls, at ([x], [y]): the card of a joker met opens, or a tale heard opens at its first page. */
+    private fun openAt(x: Float, y: Float, l: Layout): Touch {
+        JOKERS.firstOrNull { l.jokerCards[it.id].near(x, y, 0) && game.met(it) > 0 }?.let {
+            openCard = it
+            return Touch.WORLDS
+        }
+        TALES.firstOrNull { l.taleCards[it.id].near(x, y, 0) && game.partsHeard(it) > 0 }?.let {
+            openTale = it
+            talePage = 0
+            return Touch.WORLDS
+        }
+        return Touch.NONE
+    }
+
+    /** A tap on the left half of the open [tale] shows the page before, on its right half the next page heard. A tap off it closes it. */
+    private fun turnTale(tale: Tale, x: Float, y: Float, l: Layout): Touch {
+        val r = l.openTale
+        if (!r.near(x, y, 0)) {
+            openTale = null
+            return Touch.WORLDS
+        }
+        val page = talePage + if (x < r.x + r.w / 2f) -1 else 1
+        if (page !in 0 until tale.pagesOf(game.partsHeard(tale))) return Touch.NONE
+        talePage = page
         return Touch.WORLDS
     }
 
@@ -516,7 +550,7 @@ class Screen(
     private fun mostScroll(l: Layout) = when (tab) {
         Tab.WORLDS -> l.worldScroll(Place.entries.size)
         Tab.LABORS -> l.laborScroll
-        Tab.JOKERS -> 0
+        Tab.CARDS -> l.cardScroll
     }
 
     /** A finger on the list, from where it landed. A finger that [stopped] the list from coasting chooses nothing. */
@@ -525,7 +559,7 @@ class Screen(
     }
 
     /**
-     * Back closes the help, the offer, a question, an open card, the Worlds screen or the Agora. Tells whether there was something to close.
+     * Back closes the help, the offer, a question, an open card or tale, the Worlds screen or the Agora. Tells whether there was something to close.
      * While the store's payment sheet is open, back waits for it.
      */
     fun back(): Boolean {
@@ -548,6 +582,10 @@ class Screen(
         }
         if (openCard != null) {
             openCard = null
+            return true
+        }
+        if (openTale != null) {
+            openTale = null
             return true
         }
         if (worldsOpen) {
@@ -577,8 +615,12 @@ class Screen(
     private fun show(tab: Tab) {
         this.tab = tab
         openCard = null
+        openTale = null
         if (laborsShown) game.seeLabors()
-        if (jokersShown) game.seeJokers()
+        if (cardsShown) {
+            game.seeJokers()
+            game.seeTales()
+        }
         listScroll = 0.0
         listSpeed = 0.0
         lastListScroll = 0.0
