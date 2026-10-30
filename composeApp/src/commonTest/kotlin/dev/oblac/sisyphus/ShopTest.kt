@@ -263,6 +263,7 @@ class ShopTest {
         assertEquals("Odysseus", Shop(mapOf(Line.SIDEKICKS to 2), place = Place.ETNA).owned(Line.SIDEKICKS)?.name)
         assertEquals("Orpheus", Shop(place = Place.UNDERWORLD).next(Line.SIDEKICKS)?.name)
         assertEquals("Io", Shop(place = Place.CAIRO).next(Line.SIDEKICKS)?.name)
+        assertEquals("Kaguya", Shop(place = Place.FUJI).next(Line.SIDEKICKS)?.name)
     }
 
     @Test
@@ -284,6 +285,17 @@ class ShopTest {
                 "Bread and onions", "Gift of the Nile", "Gold of Cheops", "Hippopotamus", "Phoenix", "The Milky Way",
             ),
             items(Place.CAIRO).map { it.name },
+        )
+    }
+
+    @Test
+    fun mountFujiHasNamesOfItsOwn() {
+        assertEquals(
+            listOf(
+                "Mossy stone", "Daruma", "Crystal sphere", "Kaguya", "En no Gyoja", "Kintaro", "Tengu", "Fujin", "Izanagi",
+                "Bowl of rice", "Lucky cat", "Mallet of Daikoku", "Koi", "Dragon", "Fireflies",
+            ),
+            items(Place.FUJI).map { it.name },
         )
     }
 }

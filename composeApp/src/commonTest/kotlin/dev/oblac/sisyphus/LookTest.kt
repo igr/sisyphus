@@ -17,6 +17,7 @@ import dev.oblac.sisyphus.scene.SceneGeometry
 import dev.oblac.sisyphus.scene.SceneRenderer
 import dev.oblac.sisyphus.scene.BLACK_STONE
 import dev.oblac.sisyphus.scene.JOKER_SPRITES
+import dev.oblac.sisyphus.scene.GRANITE
 import dev.oblac.sisyphus.scene.LAVA_STONE
 import dev.oblac.sisyphus.scene.LIMESTONE
 import dev.oblac.sisyphus.scene.SANDSTONE
@@ -56,6 +57,11 @@ class LookTest {
         for (other in listOf(Place.CORINTH, Place.ETNA, Place.UNDERWORLD)) assertFalse(noon(Place.CAIRO).contentEquals(noon(other)))
     }
 
+    @Test
+    fun mountFujiLooksLikeItself() {
+        for (other in listOf(Place.CORINTH, Place.ETNA, Place.UNDERWORLD, Place.CAIRO)) assertFalse(noon(Place.FUJI).contentEquals(noon(other)))
+    }
+
     /** A stone of the tale stands by the path ahead, in every world. */
     @Test
     fun theStoneAheadIsDrawn() {
@@ -72,7 +78,7 @@ class LookTest {
     /** Each stone, in the colors of its world, has a slab of 9 by 15, and a relief of 7 by 7 for each tale. */
     @Test
     fun everyStoneHasTheReliefOfEveryTale() {
-        for (stone in listOf(LIMESTONE, LAVA_STONE, BLACK_STONE, SANDSTONE)) {
+        for (stone in listOf(LIMESTONE, LAVA_STONE, BLACK_STONE, SANDSTONE, GRANITE)) {
             assertEquals(9 to 15, stone.slab.width to stone.slab.height)
             assertEquals(TALES.size, stone.reliefs.size)
             assertTrue(stone.reliefs.all { it.width == 7 && it.height == 7 })
@@ -240,6 +246,11 @@ class LookTest {
         assertTrue(ashFall < 30, "ash falls $ashFall")
         assertTrue(rainSplashes > 0)
         assertEquals(0, ashSplashes)
+    }
+
+    @Test
+    fun rainFallsOnMountFujiAsInCorinth() {
+        assertEquals(rain(Place.CORINTH), rain(Place.FUJI))
     }
 
     @Test

@@ -53,4 +53,5 @@ internal fun lookOf(place: Place): Look = when (place) {
     Place.ETNA -> ETNA_LOOK
     Place.UNDERWORLD -> UNDERWORLD_LOOK
     Place.CAIRO -> CAIRO_LOOK
+    Place.FUJI -> FUJI_LOOK
 }

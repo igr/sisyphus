@@ -111,3 +111,11 @@ internal val SANDSTONE = Stone(
         'c' to rgb(0xBA985E), 'k' to rgb(0x8C6A3A),
     ),
 )
+
+/** Gray granite, the stone of the lanterns, with moss in its shade, on Mount Fuji. */
+internal val GRANITE = Stone(
+    mapOf(
+        'w' to rgb(0xC6CAC8), 'W' to rgb(0x7E8A70), 'D' to rgb(0x343A30), 'p' to rgb(0xB0B6B4), 'C' to rgb(0x767E7C),
+        'c' to rgb(0x8A9290), 'k' to rgb(0x5A6260),
+    ),
+)

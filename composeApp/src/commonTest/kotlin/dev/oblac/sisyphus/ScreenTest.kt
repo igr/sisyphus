@@ -1340,10 +1340,21 @@ class ScreenTest {
     }
 
     @Test
+    fun mountFujiHasIconsOfItsOwn() {
+        for (item in items(Place.FUJI)) {
+            for (other in listOf(Place.CORINTH, Place.ETNA, Place.UNDERWORLD, Place.CAIRO)) {
+                val twin = items(other).first { it.line == item.line && it.tier == item.tier }
+                assertFalse(itemIcon(item).data.contentEquals(itemIcon(twin).data), item.name)
+            }
+        }
+    }
+
+    @Test
     fun everyWorldIsDrawnNow() {
         assertEquals("the hill on the volcano", Place.ETNA.note)
         assertEquals("the hill in Tartarus", Place.UNDERWORLD.note)
         assertEquals("the pyramid by the Nile", Place.CAIRO.note)
+        assertEquals("the hill by the white peak", Place.FUJI.note)
     }
 
     private val allItems = Place.entries.flatMap { items(it) }

@@ -30,7 +30,7 @@ The last two columns show what happens to each value when Sisyphus reaches the t
 | `shop.beauty` | The tier bought in the Beauty line: 0 to 3. | Back to 0 | Back to 0 |
 | `summit` | Where the hill ends, in pixels walked. -1 means that the final climb has not started. | Back to -1 | Back to -1 |
 | `climbs` | How many times Sisyphus reached the top. | Plus 1 | Kept |
-| `place` | The id of the world: 0 is Corinth, 1 is Mount Etna, 2 is The Underworld, 3 is Cairo. | Kept | The new world |
+| `place` | The id of the world: 0 is Corinth, 1 is Mount Etna, 2 is The Underworld, 3 is Cairo, 4 is Mount Fuji. | Kept | The new world |
 | `quoteSeed` | The number that sets the order of the wise words. | Kept | Kept |
 | `quotesDrawn` | How many wise words came so far. | Back to 0 | Back to 0 |
 | `nextVision` | The player's own turns until the next vision. Set when a vision comes. | 70 to 100 | 70 to 100 |
@@ -73,11 +73,11 @@ When a key is not there, the game uses a start value:
 Saved games know each line and each world by an id, not by a name in the game or in the code. An id never changes, so that saved games keep their purchases and their world.
 
 - The lines have the ids `rock`, `beside`, `alone`, `blessing` and `beauty`. The Sidekicks and the Gods keep `beside` and `alone`, which they had before they got their names.
-- The worlds have the ids 0 (Corinth), 1 (Mount Etna), 2 (The Underworld) and 3 (Cairo).
+- The worlds have the ids 0 (Corinth), 1 (Mount Etna), 2 (The Underworld), 3 (Cairo) and 4 (Mount Fuji).
 - The tales have the ids 0 (Sisyphus), 1 (Typhon), 2 (Orpheus) and 3 (Isis and Osiris).
 - The jokers have the ids 0 (Diogenes), 1 (Alice), 2 (Red Riding Hood), 3 (Don Quixote), 4 (Pinocchio), 5 (Cleopatra), 6 (Sherlock Holmes), 7 (Hamlet), 8 (Count Dracula), 9 (Cthulhu), 10 (Isaac Newton) and 11 (Scheherazade).
 - The game never saves the name of an item. The world and the tier of a line tell which item it is.
-- The worlds that cost money are the entitlements `world_etna`, `world_underworld` and `world_cairo` in RevenueCat. A changed entitlement locks the worlds that players bought. The store products have the same names, except on Google Play, where The Underworld is `world_underworld2`.
+- The worlds that cost money are the entitlements `world_etna`, `world_underworld`, `world_cairo` and `world_fuji` in RevenueCat. A changed entitlement locks the worlds that players bought. The store products have the same names, except on Google Play, where The Underworld is `world_underworld2`.
 
 A test fails when an id or a product changes. New lines and new worlds get new ids, and new worlds get new products.
 

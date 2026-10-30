@@ -22,6 +22,8 @@ enum class God(val title: String, val farewell: String, val place: Place?) {
     PERSEPHONE("Persephone", "Spring is calling me. I will ask again.", Place.UNDERWORLD),
     THOTH("Thoth", "No answer? I will write that down.", Place.CAIRO),
     ANUBIS("Anubis", "The scales can wait. So can I.", Place.CAIRO),
+    SAKUYA("Sakuya-hime", "No answer? The blossoms will not wait.", Place.FUJI),
+    IWANAGA("Iwanaga-hime", "No answer. A rock can wait forever.", Place.FUJI),
 }
 
 /** The three gods of [place]: Hermes, and two of its own. */

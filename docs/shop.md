@@ -139,7 +139,7 @@ Other ideas from the same talk, not planned: trials of the gods (a harder climb 
 
 ## Worlds
 
-- **The Worlds screen** opens when you tap the day, and after the black screen at the top. It shows a picture of each world: Corinth (the hill by the sea), Mount Etna (the hill on the volcano), The Underworld (the hill in Tartarus) and Cairo (the pyramid by the Nile). The current world has a bright frame and a check. A tap on it closes the screen, and the climb goes on. The help points to it. The screen has three tabs, Worlds, Labors and Jokers, and it shows no obols.
+- **The Worlds screen** opens when you tap the day, and after the black screen at the top. It shows a picture of each world: Corinth (the hill by the sea), Mount Etna (the hill on the volcano), The Underworld (the hill in Tartarus), Cairo (the pyramid by the Nile) and Mount Fuji (the hill by the white peak). The current world has a bright frame and a check. A tap on it closes the screen, and the climb goes on. The help points to it. The screen has three tabs, Worlds, Labors and Jokers, and it shows no obols.
 - **Two tabs** stand in the title row: Worlds and Labors. A tap on the other tab shows it, and a tap on the shown tab closes the screen. The Labors tab lists the labors of all climbs: see `docs/labors.md`.
 - **The list scrolls** when the worlds do not fit, with a thin scrollbar on the right. A drag scrolls it, and after a quick swipe it coasts and slows down. A tap chooses a world when the finger lifts. A tap that stops the coasting list chooses nothing.
 - **The pictures** are cut from the real scene of each world at noon.
@@ -152,6 +152,7 @@ Other ideas from the same talk, not planned: trials of the gods (a harder climb 
 - **Mount Etna** is a side cone of the volcano. The summit smokes on the horizon, with lava in its crater and down its side. Black lava fields lie below, with a flow of lava that glows at night. The ground is black ash with red stones and thin grass. Birch, broom, chestnut and black pine grow there, among lava boulders, steaming vents and burnt trees. Ravens fly by day. On the days it rains in Corinth, ash falls on Etna.
 - **The Underworld** is Tartarus, where Homer saw Sisyphus push his rock. A rock roof with stalactites hangs over a misty cave, and the pale sun of Elysium crosses it, as Virgil tells. The dark Styx runs below, and on its far shore stand the gates of Hades, with a fire on each side. The ground is gray dust with pale stones and asphodels. Black poplars, willows, white cypresses and pomegranates grow there, among grave stones, amphorae and boulders. Bats fly by day, and the rain drips from the roof.
 - **Cairo** is the pyramid of Cheops, the hill that men built: Herodotus says that a hundred thousand men built it in twenty years. Sisyphus pushes up its courses of limestone blocks, with sand on the steps. On the desert horizon stand the pyramids of Chephren and Mycerinus, with the Sphinx at their feet. The green valley of the Nile lies below, with date palms on its banks. On the steps lie what the builders left, blocks, a sledge, a lever, jars of water and coils of rope, among fallen casing stones, dry grass and young acacias, and a cat sits on the warm stone. Falcons fly by day. On the days it rains in Corinth, a sandstorm blows in Cairo.
+- **Mount Fuji** is a side cone of the sacred mountain of Japan. The Tale of the Bamboo Cutter says that the elixir of no death was burned on its top, so the mountain is called Fuji, "no death". Its white peak stands on the horizon over dark woods, and a lake below shows it upside down. The sun is red when it is low, and at dawn and dusk the snow turns pink. The ground is green grass on black soil, with pink moss phlox. Red pines, garden pines, cherry trees in bloom, maples, cedars and bamboo grow there, among azaleas, stone lanterns and statues of Jizo, who keeps travelers safe. Cranes fly by day. The rain is rain.
 
 The items of Mount Etna:
 
@@ -194,6 +195,20 @@ The items of Cairo:
 The beauty of Cairo: now and then a hippopotamus rises from the Nile and yawns; the Phoenix flies by in red and gold; at night, the Milky Way crosses the sky.
 
 The voices of Cairo: Thoth, Anubis and Hermes ask the questions.
+
+The items of Mount Fuji:
+
+| Line | I | II | III |
+|---|---|---|---|
+| Rock | Mossy stone | Daruma | Crystal sphere |
+| Sidekicks | Kaguya | En no Gyoja | Kintaro |
+| Gods | Tengu | Fujin | Izanagi |
+| Blessings | Bowl of rice | Lucky cat | Mallet of Daikoku |
+| Beauty | Koi | Dragon | Fireflies |
+
+The beauty of Mount Fuji: now and then a koi leaps out of the lake; the dragon flies over the mountain, as Hokusai drew it; at night, fireflies glow in the grass by the path.
+
+The voices of Mount Fuji: Sakuya-hime, Iwanaga-hime and Hermes ask the questions.
 
 ## Later
 

@@ -127,6 +127,33 @@ class BeautyTest {
     }
 
     @Test
+    fun theKoiLeapOnlyOnceBought() {
+        var seen = false
+        live(0, 120, Place.FUJI) { if (it.koi != null) seen = true }
+        assertFalse(seen)
+        live(1, 120, Place.FUJI) {
+            if (it.koi != null) seen = true
+            assertTrue(it.dolphins.isEmpty() && it.sparks.isEmpty() && it.ferry == null && it.hippo == null)
+        }
+        assertTrue(seen)
+    }
+
+    @Test
+    fun theDragonFliesByOnceBought() {
+        var seen = false
+        live(1, 240, Place.FUJI) { if (it.flyer != null) seen = true }
+        assertFalse(seen)
+        live(2, 240, Place.FUJI) { if (it.flyer != null) seen = true }
+        assertTrue(seen)
+    }
+
+    @Test
+    fun theFirefliesGlowOnlyAtNight() {
+        assertFalse(frame(3, 0.95, Place.FUJI).contentEquals(frame(2, 0.95, Place.FUJI)))
+        assertTrue(frame(3, 0.5, Place.FUJI).contentEquals(frame(2, 0.5, Place.FUJI)))
+    }
+
+    @Test
     fun theLightsOfElysiumGlowOnlyAtNight() {
         assertFalse(frame(3, 0.95, Place.UNDERWORLD).contentEquals(frame(2, 0.95, Place.UNDERWORLD)))
         assertTrue(frame(3, 0.5, Place.UNDERWORLD).contentEquals(frame(2, 0.5, Place.UNDERWORLD)))

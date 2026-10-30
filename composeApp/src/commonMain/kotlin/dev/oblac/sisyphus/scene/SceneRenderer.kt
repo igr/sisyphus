@@ -162,6 +162,12 @@ class SceneRenderer(private val geo: SceneGeometry) {
                 drawNile(px, geo, atm, p, game.clock)
                 drawHippo(px, world, atm)
             }
+            Place.FUJI -> {
+                drawFuji(px, geo, atm)
+                drawFlyer(px, world, game.clock, atm, DRAGON_UP, DRAGON_DOWN)
+                drawLake(px, geo, atm, p, game.clock)
+                drawKoi(px, world, atm)
+            }
         }
         drawGround(px, atm, p, look)
         drawProps(px, atm, p, look.props)
@@ -170,6 +176,7 @@ class SceneRenderer(private val geo: SceneGeometry) {
         drawJokers(px, atm, game, p)
         drawBirds(px, world, game.clock, look)
         if (game.place == Place.UNDERWORLD && beauty >= 3) drawLights(px, geo, atm, p, game.clock)
+        if (game.place == Place.FUJI && beauty >= 3) drawFireflies(px, geo, atm, p, game.clock)
         drawRock(px, atm, game.position, look.rocks[game.shop.tier(Line.ROCK)], rolled)
         drawHero(px, atm, game, p, rolled)
         drawParticles(px, world, atm)

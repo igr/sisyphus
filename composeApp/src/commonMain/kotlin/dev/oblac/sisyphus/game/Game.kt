@@ -165,6 +165,7 @@ enum class Place(val id: Int, val title: String, val note: String, val product: 
     ETNA(1, "Mount Etna", "the hill on the volcano", "world_etna"),
     UNDERWORLD(2, "The Underworld", "the hill in Tartarus", "world_underworld"),
     CAIRO(3, "Cairo", "the pyramid by the Nile", "world_cairo"),
+    FUJI(4, "Mount Fuji", "the hill by the white peak", "world_fuji"),
 }
 
 /**

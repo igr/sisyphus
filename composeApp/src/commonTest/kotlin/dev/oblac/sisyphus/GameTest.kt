@@ -463,6 +463,14 @@ class GameTest {
     }
 
     @Test
+    fun onMountFujiTheShopSellsTheItemsOfMountFuji() {
+        assertEquals("Kaguya", Game(MemoryStore(mapOf("place" to 4.0)), seed = 1, wall = { 0.0 }).shop.next(Line.SIDEKICKS)?.name)
+        val game = Game(MemoryStore(), seed = 1, wall = { 0.0 })
+        game.moveTo(Place.FUJI)
+        assertEquals("Tengu", game.shop.next(Line.GODS)?.name)
+    }
+
+    @Test
     fun hermesNamesTheGodOfTheWorld() {
         var now = 1000.0
         val store = MemoryStore(mapOf("shop.alone" to 3.0, "place" to 1.0))
@@ -475,13 +483,13 @@ class GameTest {
     @Test
     fun theSaveIdsNeverChange() {
         assertEquals(listOf("rock", "beside", "alone", "blessing", "beauty"), Line.entries.map { it.id })
-        assertEquals(listOf(0, 1, 2, 3), Place.entries.map { it.id })
+        assertEquals(listOf(0, 1, 2, 3, 4), Place.entries.map { it.id })
     }
 
     /** RevenueCat and the stores know a world by its product. Changing one locks the worlds the players bought. Corinth is free. */
     @Test
     fun theProductIdsNeverChange() {
-        assertEquals(listOf(null, "world_etna", "world_underworld", "world_cairo"), Place.entries.map { it.product })
+        assertEquals(listOf(null, "world_etna", "world_underworld", "world_cairo", "world_fuji"), Place.entries.map { it.product })
     }
 
     @Test

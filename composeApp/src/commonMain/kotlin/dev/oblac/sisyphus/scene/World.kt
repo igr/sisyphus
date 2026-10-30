@@ -30,7 +30,10 @@ class Particle(
 
 class Drop(var x: Double, var y: Double, val speed: Double)
 
-/** A dolphin's leap out of the sea, starting at [x], going [dir]; in Cairo, a hippopotamus that rises from the Nile at [x], facing [dir]. */
+/**
+ * A dolphin's leap out of the sea, starting at [x], going [dir]; in Cairo, a hippopotamus that rises from the Nile at [x], facing [dir];
+ * on Mount Fuji, a koi's leap out of the lake.
+ */
 class Leap(val x: Double, val dir: Double) {
     var t = 0.0
 }
@@ -58,6 +61,9 @@ private const val SAND_WIND = 12.0
 /** Seconds a hippopotamus is out of the water. */
 const val HIPPO_TIME = 4.0
 
+/** Seconds a koi is out of the water. */
+const val KOI_TIME = 0.9
+
 /** Seconds the crater throws fire. */
 private const val BURST_TIME = 1.6
 
@@ -82,6 +88,9 @@ class World(seed: Int) {
     /** In Cairo, a hippopotamus out of the Nile. */
     var hippo: Leap? = null
         private set
+    /** On Mount Fuji, a koi out of the lake. */
+    var koi: Leap? = null
+        private set
     var flyer: Flyer? = null
         private set
     var shootingStar: ShootingStar? = null
@@ -93,7 +102,7 @@ class World(seed: Int) {
         private set
 
     private var dust = 0.0
-    /** Seconds to the next sight of the first beauty item: a dolphin's leap, fire from the crater, Charon's boat, or a hippopotamus. */
+    /** Seconds to the next sight of the first beauty item: a dolphin's leap, fire from the crater, Charon's boat, a hippopotamus, or a koi. */
     private var nextLeap = 0.0
     private var nextFlight = 0.0
     private var burst = 0.0
@@ -117,6 +126,7 @@ class World(seed: Int) {
         burst = 0.0
         ferry = null
         hippo = null
+        koi = null
         flyer = null
         nextLeap = random.nextDouble(5.0, 20.0)
         nextFlight = random.nextDouble(10.0, 45.0)
@@ -140,6 +150,7 @@ class World(seed: Int) {
             Place.ETNA -> updateFountain(dt, beauty)
             Place.UNDERWORLD -> updateFerry(dt, moved, beauty)
             Place.CAIRO -> updateHippo(dt, beauty)
+            Place.FUJI -> updateKoi(dt, beauty)
         }
         updateFlyer(dt, moved, beauty)
     }
@@ -371,7 +382,27 @@ class World(seed: Int) {
         splash(h.x.toInt(), geo.horizon + NILE_WATER)
     }
 
-    /** Bought with the second beauty item: Pegasus, the eagle of Zeus, Psyche or the Phoenix crosses the sky every minute or two, day and night. */
+    /** Bought with the first beauty item on Mount Fuji: now and then a koi leaps out of the lake and dives back in. */
+    private fun updateKoi(dt: Double, beauty: Int) {
+        koi?.let { k ->
+            k.t += dt
+            if (k.t >= KOI_TIME) {
+                splash((k.x + k.dir * 5).toInt(), geo.horizon + LAKE_KOI)
+                koi = null
+            }
+        }
+        if (beauty < 1 || koi != null) return
+        nextLeap -= dt
+        if (nextLeap > 0) return
+        nextLeap = random.nextDouble(15.0, 40.0)
+        val far = geo.heroX - 30.0
+        if (far < 10) return
+        val k = Leap(random.nextDouble(5.0, far), if (random.nextBoolean()) 1.0 else -1.0)
+        koi = k
+        splash(k.x.toInt(), geo.horizon + LAKE_KOI)
+    }
+
+    /** Bought with the second beauty item: Pegasus, the eagle of Zeus, Psyche, the Phoenix or the dragon crosses the sky every minute or two, day and night. */
     private fun updateFlyer(dt: Double, moved: Double, beauty: Int) {
         flyer?.let { f ->
             f.x += f.vx * dt - moved * 0.2

@@ -169,6 +169,41 @@ private val CAIRO_ITEMS = with(Place.CAIRO) {
     )
 }
 
+private val FUJI_ITEMS = with(Place.FUJI) {
+    listOf(
+        item(Line.ROCK, 1, "Mossy stone",
+            "A pebble that grew into a rock, as the old poem says, until moss covered it. Every turn of the knob counts {x} times, so obols come faster."),
+        item(Line.ROCK, 2, "Daruma",
+            "A doll of red paper. Knock it down seven times, and it gets up eight. Every turn counts {x} times. It takes the place of the mossy stone."),
+        item(Line.ROCK, 3, "Crystal sphere",
+            "Rock crystal of Kai, by the mountain, polished perfectly round. Every turn counts {x} times. It takes the place of the daruma."),
+        item(Line.SIDEKICKS, 1, "Kaguya",
+            "The moon princess, whose elixir of no death burned on this mountain, pushes beside him. Each turn counts {x} times more, on top of the rock."),
+        item(Line.SIDEKICKS, 2, "En no Gyoja",
+            "The holy man who flew over the sea each night to climb Fuji pushes beside him. Each turn counts {x} times more. He takes Kaguya's place."),
+        item(Line.SIDEKICKS, 3, "Kintaro",
+            "The golden boy of Mount Ashigara, who wrestled bears, pushes beside him. Each turn counts {x} times more. He takes En no Gyoja's place."),
+        item(Line.GODS, 1, "Tengu",
+            "The long-nosed spirit of the mountain pushes the rock {x} times an hour, even when the app is closed."),
+        item(Line.GODS, 2, "Fujin",
+            "The god of the wind opens his bag of winds and pushes {x} times an hour, even when the app is closed. He takes the tengu's place."),
+        item(Line.GODS, 3, "Izanagi",
+            "The god who came back from the land of the dead, and shut it with a rock, pushes {x} times an hour, day and night. He takes Fujin's place."),
+        item(Line.BLESSING, 1, "Bowl of rice",
+            "Rice was the money of old Japan, and samurai were paid in it: one obol for every {days} of pushing, not {base}."),
+        item(Line.BLESSING, 2, "Lucky cat",
+            "The cat that waves its paw calls luck into the shop: one obol for every {days} of pushing. It takes the place of the rice."),
+        item(Line.BLESSING, 3, "Mallet of Daikoku",
+            "The god of wealth shakes his magic mallet, and gold falls out: one obol for every {days} of pushing. It takes the place of the cat."),
+        item(Line.BEAUTY, 1, "Koi",
+            "Koi leap from the lake now and then. A koi that climbs the waterfall becomes a dragon, they say. Beauty stays, whatever else you buy.", "leap in the lake"),
+        item(Line.BEAUTY, 2, "Dragon",
+            "The dragon flies over the mountain now and then, as Hokusai drew it.", "flies over the peak"),
+        item(Line.BEAUTY, 3, "Fireflies",
+            "At night fireflies glow in the grass, as they do by the rice fields.", "lights in the grass"),
+    )
+}
+
 /**
  * An item of this world: a name and details of its own, with the price and the effect from [Config.ITEMS].
  * In the details, {x} stands for the effect, {days} for the days of pushing for an obol with this blessing, and {base} for those without one.
@@ -210,6 +245,7 @@ fun items(place: Place): List<Item> = when (place) {
     Place.ETNA -> ETNA_ITEMS
     Place.UNDERWORLD -> UNDERWORLD_ITEMS
     Place.CAIRO -> CAIRO_ITEMS
+    Place.FUJI -> FUJI_ITEMS
 }
 
 /**
