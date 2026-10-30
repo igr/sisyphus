@@ -121,6 +121,11 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .tip { position: absolute; z-index: 2; pointer-events: none; max-width: 250px; padding: 6px 9px; border-radius: 6px; background: var(--well); border: 1px solid var(--line); font: 13px/1.4 var(--body); color: var(--fg); box-shadow: 0 4px 14px rgba(0, 0, 0, .25); }
 .tip b { font: 500 12px var(--mono); color: var(--dim); display: block; }
 details.events summary { cursor: pointer; color: var(--dim); }
+.pick { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--dim); }
+.pick .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.pick button { border: 0; border-radius: 0; padding: 4px 10px; font: 500 13px var(--mono); background: var(--panel); color: var(--fg); }
+.pick button + button { border-left: 1px solid var(--line); }
+.pick button[aria-pressed="true"] { background: var(--accent); color: #fff7ec; }
 details.events[open] summary { margin-bottom: 8px; }
 
 .checks { display: grid; gap: 8px; }
@@ -191,7 +196,7 @@ footer { margin-top: 36px; color: var(--dim); font-size: 13px; }
       </div>
 
       <div class="section">
-        <div class="sh"><h2 id="journeyTitle">The journey of a climb</h2><span class="dim">Tap a card above to pick another player</span></div>
+        <div class="sh"><h2 id="journeyTitle">The journey of a climb</h2><div class="pick" data-pick></div></div>
         <p class="dim" id="journeyNote"></p>
         <div class="facts" id="journeyFacts"></div>
         <div class="legend" id="journeyLegend"></div>
@@ -218,7 +223,7 @@ footer { margin-top: 36px; color: var(--dim); font-size: 13px; }
       </div>
 
       <div class="section">
-        <div class="sh"><h2 id="orderTitle">The order of purchases</h2><span class="dim">Tap a card above to pick another player</span></div>
+        <div class="sh"><h2 id="orderTitle">The order of purchases</h2><div class="pick" data-pick></div></div>
         <div class="tablebox"><table>
           <thead><tr><th class="n">#</th><th>Item</th><th>Line</th><th class="n">Price</th><th class="n">Day of play</th><th class="n">Game day</th></tr></thead>
           <tbody id="order"></tbody>
@@ -912,6 +917,13 @@ footer { margin-top: 36px; color: var(--dim); font-size: 13px; }
     tipEl.style.top = `${ev.clientY - b.top + box.scrollTop + 14}px`;
   }
 
+  /** By each section of one player, the minutes of play a day to pick, as the cards of How long it takes do. */
+  function renderPicks() {
+    for (const el of document.querySelectorAll("[data-pick]")) {
+      el.innerHTML = `<span>Play a day</span><span class="seg">${PLAYERS.map((m) => `<button type="button" data-play="${m}" aria-pressed="${m === state.pick}">${m} min</button>`).join("")}</span>`;
+    }
+  }
+
   function renderChecks(runs) {
     const p = state.local;
     const fastest = p.turnsPerDay / p.sunCap;
@@ -1108,7 +1120,7 @@ footer { margin-top: 36px; color: var(--dim); font-size: 13px; }
   let ordersTimer = 0;
   function render() {
     const runs = PLAYERS.map((m) => simulate(state.local, m));
-    renderKey(runs); renderCards(runs); renderChart(runs); renderJourney(); renderChecks(runs); renderFacts(); renderChanges(); renderOrder(runs); renderRules();
+    renderKey(runs); renderCards(runs); renderPicks(); renderChart(runs); renderJourney(); renderChecks(runs); renderFacts(); renderChanges(); renderOrder(runs); renderRules();
     clearTimeout(ordersTimer);
     ordersTimer = setTimeout(() => renderOrders(runs), 0);
     markChanges();
@@ -1120,8 +1132,8 @@ footer { margin-top: 36px; color: var(--dim); font-size: 13px; }
     buildKnobs();
     syncInputs();
     render();
-    $("cards").addEventListener("click", (e) => {
-      const c = e.target.closest(".card");
+    document.addEventListener("click", (e) => {
+      const c = e.target.closest(".card, [data-pick] button");
       if (!c) return;
       state.pick = Number(c.dataset.play);
       render();
