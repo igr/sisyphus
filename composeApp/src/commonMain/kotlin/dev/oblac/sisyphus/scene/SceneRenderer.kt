@@ -434,12 +434,12 @@ class SceneRenderer(private val geo: SceneGeometry) {
     /**
      * The popup over the stone that he is near, with the text that it tells and how far the tale has come, such as "9/15".
      * Its tail points down at the stone from above the rock, so that it covers neither him nor the rock. It stays under the day
-     * and the obols, also in the short scene of a 16:9 phone. A vision hides it.
+     * and the obols, also in the short scene of a 16:9 phone. A vision hides it while it holds him.
      */
     private fun drawTelling(px: Pixels, game: Game, p: Int) {
         val text = game.telling ?: return
         val at = game.nextStele ?: return
-        if (game.vision != null) return
+        if (game.held) return
         val x = steleLeft(at, p) + LIMESTONE.slab.width / 2
         val y = floor(geo.baseY + geo.rockDy - geo.rockR).toInt() - 3
         drawPopup(px, text, x, y, "${game.stelesTold + 1}/${game.tale.parts.size}", ceiling = HUD_ROWS)
@@ -464,12 +464,12 @@ class SceneRenderer(private val geo: SceneGeometry) {
     /**
      * The bubble over the joker that he is near, with what the joker says and his name as its note. Its tail points down at the
      * joker, from above his head and the rock, and stays inside the picture. The bubble stays under the day and the obols.
-     * A vision hides it.
+     * A vision hides it while it holds him.
      */
     private fun drawJesting(px: Pixels, game: Game, p: Int) {
         val text = game.jesting ?: return
         val at = game.nextJoker ?: return
-        if (game.vision != null) return
+        if (game.held) return
         val x = jokerMiddle(at, p).coerceIn(3, px.width - 4)
         val y = min(floor(geo.baseY + geo.rockDy - geo.rockR).toInt(), jokerTop(at, p, JOKER_SPRITES[game.joker.id])) - 3
         drawPopup(px, text, x, y, game.joker.name, ceiling = HUD_ROWS)

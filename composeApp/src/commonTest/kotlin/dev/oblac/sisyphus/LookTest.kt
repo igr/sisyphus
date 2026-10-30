@@ -9,6 +9,7 @@ import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.START_TIME
 import dev.oblac.sisyphus.game.TALES
+import dev.oblac.sisyphus.game.Vision
 import dev.oblac.sisyphus.game.Weather
 import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.gfx.popupRows
@@ -145,6 +146,28 @@ class LookTest {
             assertFalse(near.copyOfRange(hud, sky).contentEquals(far.copyOfRange(hud, sky)), "tale ${tale.id}, part ${part + 1} shows no popup")
         }
         assertTrue(scene(0, 0, 0, near = true, vision = true).copyOfRange(0, sky).contentEquals(scene(0, 0, 0, near = false).copyOfRange(0, sky)))
+    }
+
+    /** As the vision leaves, he walks again: the popup of a stone and the bubble of a joker show again with him, so that no text passes unseen. */
+    @Test
+    fun theTextsByThePathShowAgainAsTheVisionLeaves() {
+        val at = 400.0
+        val near = at - Config.NEAR_TURNS * PX_PER_TURN + 1
+        val stone = mapOf("effort" to (2.5 - START_TIME) * DAY_LENGTH, "position" to near, "nextStele" to at, "nextJoker" to at + 1000)
+        val joker = mapOf("effort" to (0.5 - START_TIME) * DAY_LENGTH, "position" to near, "nextJoker" to at)
+        fun scene(keys: Map<String, Double>, vision: Vision.Phase?): IntArray {
+            val game = Game(MemoryStore(keys), seed = 3)
+            if (vision != null) game.summonVision()
+            if (vision == Vision.Phase.LEAVING) game.vision!!.leave()
+            val px = Pixels(geo.width, geo.height)
+            SceneRenderer(geo).render(px, game, World(4).also { it.reset(geo, Weather.CLEAR) }, banner = 0.0, hud = false)
+            return px.data.copyOf()
+        }
+        for (keys in listOf(stone, joker)) {
+            val plain = scene(keys, null)
+            assertFalse(scene(keys, Vision.Phase.COMING).contentEquals(plain), "a vision that comes hides the text")
+            assertTrue(scene(keys, Vision.Phase.LEAVING).contentEquals(plain), "the text shows again as the vision leaves")
+        }
     }
 
     /** Each joker has a sprite of his own, a little shorter than Sisyphus: at most 15 by 22, so that it fits his card with its outline. */

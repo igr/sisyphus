@@ -39,8 +39,9 @@ class SisyphusController(dev: Boolean, testStore: Boolean) {
         SisyphusApp(game, haptics, sound, screen, copy = { UIPasteboard.generalPasteboard.string = it })
     }
 
-    fun pause() {
-        game.pause()
+    /** The game pauses, and every sound stops. A vision ends only when the app goes [away], not under Control Center or a banner. */
+    fun pause(away: Boolean) {
+        game.pause(away)
         sound.pause()
     }
 

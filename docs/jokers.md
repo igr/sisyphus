@@ -11,7 +11,7 @@ The climb is long, and the same every day. A joker is a small surprise: who stan
 - On day 1 of each climb, and then about once a game day or two of walking, a joker stands by the path ahead. When the rock comes near, a bubble over the joker tells a joke or a riddle, with the name of the joker as its note.
 - 12 jokers, all from the public domain: figures of old books, of folk tales and of history. Each has a chance: from 1 in 2 for the most common, Diogenes, to 1 in 500 for the rarest, Cthulhu.
 - A joker only talks: no obols, and no change to the climb.
-- The bubble of a joker never shows with the popup of a stone, or during a vision.
+- The bubble of a joker never shows with the popup of a stone, or while a vision holds him.
 - A third tab of the Worlds screen, Jokers, shows the 12 cards of the jokers. The card of a joker that the player has met is face up, and a tap on it shows who the joker is. The other cards are face down, and a tap does nothing.
 - The jokers are the same in every world.
 
@@ -23,7 +23,8 @@ The climb is long, and the same every day. A joker is a small surprise: who stan
 
 ## Must not happen
 
-- A bubble of a joker shows with the popup of a stone, or while a vision shows.
+- A bubble of a joker shows with the popup of a stone, or while a vision holds him.
+- A text of a joker passes while nobody can see it.
 - A joker stands in front of him or the rock, or a bubble covers the day or the obols.
 - A joker stops him, or moves him.
 - The gods bring a joker. Only the player's own turns walk him to a joker, as only they walk him to a stone.
@@ -38,7 +39,7 @@ The climb is long, and the same every day. A joker is a small surprise: who stan
 - **Which line.** Each joker has at least as many lines as his weight, and at least 2: Diogenes 227, Cthulhu 2. A joker of weight w comes once in about 750 / w game days, so each joker comes back to a line after some 750 game days, and none sooner. The game counts how many times the player met each joker, in all climbs and worlds. A joker tells the lines in turn: the first line the first time, the second line the next time, and after the last line the first again.
 - **After the bubble.** The joker is met: the card turns face up, and stays face up. The joker turns to watch Sisyphus go, and stays by the path behind him, out of the picture. Then the next joker stands ahead.
 - **Room for the stones.** A joker stands at least 15 turns of walking from the next stone, `Config.JOKER_ROOM`, so that his bubble and its popup do not meet. When a joker would stand nearer, or a new stone stands near a joker, the joker stands 15 turns past the stone. A new stone stands 30 turns ahead, so the joker that moves is never in the picture.
-- **The visions.** A vision hides the bubble, as it hides the popup of a stone. A vision also stops him, so the bubble waits, and it shows again after the vision.
+- **The visions.** A vision hides the bubble while it comes and asks, as it hides the popup of a stone. It also stops him then, so the bubble waits. As the vision leaves, he walks again, and the bubble shows again with him.
 - **The top.** No bubble shows at the top. A new climb, a move to another world and the Reset of the climb put a new joker by the path, 20 to 40 turns into the new climb.
 - **The light.** The light of the time of day falls on the jokers, as on the props. It does not fall on the bubble.
 - **Old saved games.** A game saved before the jokers has met none. Its first joker stands 20 to 40 turns ahead.

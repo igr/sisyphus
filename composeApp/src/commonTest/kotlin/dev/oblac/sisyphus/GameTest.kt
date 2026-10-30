@@ -454,6 +454,18 @@ class GameTest {
         assertEquals(0.0, game.rolling)
     }
 
+    /** A pause while the app stays in sight, as under Control Center or a banner, keeps the vision: only going away ends it. */
+    @Test
+    fun aVisionStaysWhileTheAppOnlyStepsBack() {
+        val game = Game(MemoryStore(), seed = 1, wall = { 0.0 })
+        game.summonVision()
+        game.pause(away = false)
+        assertNotNull(game.vision)
+        game.resume()
+        game.pause()
+        assertNull(game.vision)
+    }
+
     /** A pause stops the knob: the frames that still come before the app is gone do not roll the rock again, since no frame comes after them to stop it. */
     @Test
     fun aPauseStopsTheKnobAndTheRock() {

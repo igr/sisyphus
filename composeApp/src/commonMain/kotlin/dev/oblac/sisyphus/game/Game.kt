@@ -304,6 +304,8 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         store.load(KEY_RIGHT_ANSWERS)?.toInt() ?: 0, random,
     )
     val vision: Vision? get() = voices.vision
+    /** A vision holds him while it comes and asks: he walks again as it leaves, and the texts by the path show again with him. */
+    val held get() = vision?.let { it.phase != Vision.Phase.LEAVING } == true
 
     /** A screen covers the panel of the wise words: the news of a labor waits. */
     var covered = false
@@ -385,7 +387,6 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     fun update(dt: Double) {
         clock += dt
         val turn = knob.update(dt)
-        val held = vision?.let { it.phase != Vision.Phase.LEAVING } == true
         val turns = if (atTop || held) 0.0 else abs(turn) / (2 * PI)
         turnsPushed += turns
         moved = turns * min(shop.bonus, Config.SUN_CAP) * PX_PER_TURN
@@ -658,14 +659,15 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     }
 
     /**
-     * Pausing again keeps the first time: iOS also pauses on its way back to the foreground. A vision ends. The knob stops, and
-     * the rock with it: the frames that still come before the app is gone must not roll it again, since no frame comes after them.
+     * Pausing again keeps the first time: iOS also pauses on its way back to the foreground. A vision ends when the app goes
+     * [away], but not when it stays in sight, as under Control Center or a banner. The knob stops, and the rock with it: the
+     * frames that still come before the app is gone must not roll it again, since no frame comes after them.
      */
-    fun pause() {
+    fun pause(away: Boolean = true) {
         knob.release()
         knob.stop()
         rolling = 0.0
-        endVision()
+        if (away) endVision()
         if (pausedAt == null) pausedAt = wall()
         save()
     }
