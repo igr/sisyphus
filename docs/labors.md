@@ -71,7 +71,7 @@ At 5 minutes a day, a climb takes about a week of play: about 2,300 turns of the
 
 The bottom row of the Worlds screen, "Restore", stays on both tabs. The support ID is in the settings.
 
-The help says: "The sun moves only while you push. Tap the day for worlds and labors." The text is this short so that the notes of the help fit the scene on the smallest phone.
+The help says: "Pushing moves the sun. Tap the day for worlds and labors." The text is this short so that the notes of the help fit the scene on the smallest phone.
 
 ## Saved data
 

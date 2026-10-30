@@ -403,7 +403,7 @@ Id 15. Death, whom Sisyphus once chained, came for Alcestis, and Heracles, who p
 ## Texts
 
 - Plain words, warm and calm, like the wise words. A tale tells what the myths tell, and it does not judge.
-- On the narrow phones, the shortest too, such as a 1080 × 1920 Android phone, each text fits in the popup with its note, under the day and the obols: at most 4 lines. A test in `LookTest` checks every text.
+- On the narrow phones, the shortest too, such as a 1080 × 1920 Android phone, each text fits in the popup with its note, under the day and the obols: at most 4 lines. `LookTest.theTextsOfTheTalesFitTheirRows` checks every text.
 - A text uses only the letters of `PixelFont`.
 
 ## Sources

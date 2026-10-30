@@ -141,7 +141,7 @@ fun Sound.play(touch: Touch, on: Boolean) {
         Touch.KNOB -> prepare()
         Touch.BUY -> win()
         Touch.MOVE -> fanfare()
-        Touch.SOUND, Touch.SHOP, Touch.DEV, Touch.HELP, Touch.AGAIN, Touch.WORLDS, Touch.COPY, Touch.SETTINGS -> ui()
+        Touch.SOUND, Touch.SHOP, Touch.DEV, Touch.HELP, Touch.AGAIN, Touch.WORLDS, Touch.COPY, Touch.SETTINGS, Touch.PRIVACY -> ui()
     }
 }
 

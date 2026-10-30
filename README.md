@@ -2,7 +2,7 @@
 
 A small pixel-art game for iOS and Android, made with Kotlin Multiplatform and Compose Multiplatform.
 Turn the knob, and Sisyphus pushes the rock up the hill. The knob clicks at each step.
-The sun moves only while he works.
+The sun moves only while the rock is pushed: by him, or by the gods he hires.
 Each day has its own weather. Wise words appear under the display as you push.
 Earn obols as you push, and spend them in the Agora Market: better rocks, helpers, blessings and beauty.
 When everything is bought, a final climb leads to the top. There the rock rolls down, and everything begins again, in the same world or in a new one.
@@ -10,7 +10,7 @@ Tap the day to choose another world: Corinth, Mount Etna, The Underworld, Cairo 
 The same screen lists the labors: honors for all your climbs, such as Tina Turner for 10,000 turns of the knob.
 Corinth is free. The other worlds are bought once, for $1.99 (`Config.WORLD_PRICE`).
 
-Website, support and privacy policy: https://igr.github.io/sisyphus/ (from the `gh-pages` branch).
+Website, support and privacy policy: https://katemariongames.com/sisyphus/. The text of the privacy policy is `stores/privacy.md`.
 
 ## Run
 
@@ -63,7 +63,7 @@ scaled up by a whole number, so every pixel stays sharp. A screen wider than a 1
 with bars at the sides. There are no image files: all art is made in code.
 The knob click, the click of every other tap, the sound of buying, the fanfare of a new world, the coin of a new obol, the spell of a vision, the pop of a bubble
 and the loop of the rolling rock are sound files in `composeApp/src/commonMain/composeResources/files`. The speaker in the Agora Market turns all of them on and off.
-The gear across from the help opens the settings: all the sound, the ticks of the knob, the rolling rock, and the player's id and build for support.
+The gear across from the help opens the settings: all the sound, the ticks of the knob, the rolling rock, a link to the privacy policy, and the player's id and build for support.
 
 - `audio` — reads the game's sounds from their WAV files
 - `gfx` — framebuffer, dithering, pixel font

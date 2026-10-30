@@ -123,6 +123,18 @@ class LookTest {
         for (phone in NARROW_PHONES) popupOfAStoneFits(phone.scene.let { SceneGeometry(it.w, it.h) })
     }
 
+    /**
+     * On the narrow phones, every text of every tale, with its note such as "9/15", takes at most 4 rows of the popup. The popup
+     * stays under the day and the obols, so a longer text would cover the rock.
+     */
+    @Test
+    fun theTextsOfTheTalesFitTheirRows() {
+        for (phone in NARROW_PHONES) for (tale in TALES) for ((part, stele) in tale.parts.withIndex()) for (text in stele.texts) {
+            val rows = popupRows(phone.scene.w, text, "${part + 1}/${tale.parts.size}").size
+            assertTrue(rows <= 4, "tale ${tale.id}, part ${part + 1}: $rows rows on a scene ${phone.scene.w} wide")
+        }
+    }
+
     private fun popupOfAStoneFits(small: SceneGeometry) {
         val at = 400.0
         val read = Config.READ_TURNS * PX_PER_TURN

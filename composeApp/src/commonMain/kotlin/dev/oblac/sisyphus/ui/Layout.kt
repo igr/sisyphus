@@ -227,6 +227,9 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     /** In the bottom-left corner of the Worlds screen, the button that asks the store for the worlds bought before. */
     val restore = Rect(left + 2, agoraSound.y, PixelFont.width(RESTORE), PixelFont.CAP_HEIGHT)
 
+    /** In the bottom-left corner of the settings, the link to the privacy policy. */
+    val privacyLink = Rect(left + 2, agoraSound.y, PixelFont.width(PRIVACY), PixelFont.CAP_HEIGHT)
+
     /** In the bottom-right corner of the settings, the player's id for support and the build of the game. */
     val supportId = PixelFont.width("ID 3f9a [999]").let { w -> Rect(coinIcon.right - w, agoraSound.y, w, PixelFont.CAP_HEIGHT) }
 

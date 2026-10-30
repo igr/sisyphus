@@ -233,7 +233,7 @@ internal val NOTE_HERO = sprite(
 )
 
 /** The note of the help that points at the day. */
-internal const val DAY_NOTE = "The sun moves only while you push. Tap the day for worlds and labors."
+internal const val DAY_NOTE = "Pushing moves the sun. Tap the day for worlds and labors."
 
 /** The title of the Agora. */
 internal const val AGORA_TITLE = "Agora Market"
@@ -251,6 +251,10 @@ internal fun buyText(price: String?, climbing: Boolean = false) =
 internal const val RESTORE = "Restore"
 
 internal const val SETTINGS_TITLE = "Settings"
+
+/** The link in the settings to the privacy policy, and where it goes. */
+internal const val PRIVACY = "Privacy"
+const val PRIVACY_URL = "https://katemariongames.com/sisyphus/privacy-policy/"
 
 /** The rows of the settings, from the top: the name of each switch, and what it turns on and off. */
 internal val SETTINGS = listOf(
@@ -411,10 +415,12 @@ class UiRenderer {
     /**
      * The settings: a row for all the sound, for the ticks of the knob and for the roll of the rock, each with its switch.
      * [on] tells which are on, in the order of [SETTINGS]. While all the sound is off, the other rows are dim.
+     * The link to the privacy policy stands in the bottom-left corner.
      */
     fun settings(px: Pixels, layout: Layout, on: List<Boolean>) {
         val t = layout.agoraTitle
         PixelFont.draw(px, SETTINGS_TITLE, t.x, t.y, CREAM)
+        PixelFont.draw(px, PRIVACY, layout.privacyLink.x, layout.privacyLink.y, TERRA)
         px.hline(t.x, t.right - 1, t.bottom + 2, TERRA_DARK)
         for ((i, setting) in SETTINGS.withIndex()) {
             val (name, note) = setting

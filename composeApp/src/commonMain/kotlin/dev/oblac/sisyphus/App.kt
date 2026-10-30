@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import dev.oblac.sisyphus.audio.loadClick
@@ -32,6 +33,7 @@ import dev.oblac.sisyphus.audio.loadVictory
 import dev.oblac.sisyphus.audio.loadWin
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.ui.BACKGROUND
+import dev.oblac.sisyphus.ui.PRIVACY_URL
 
 private const val BUSY_FRAME = 14_000_000L
 private const val IDLE_FRAME = 31_000_000L
@@ -45,6 +47,7 @@ fun SisyphusApp(
     copy: (String) -> Unit = {},
 ) {
     val uploader = remember { frameUploader() }
+    val links = LocalUriHandler.current
     var frame by remember { mutableLongStateOf(0L) }
 
     DisposableEffect(game, haptics, sound, screen) {
@@ -98,6 +101,7 @@ fun SisyphusApp(
                     val touch = screen.press(down.position.x, down.position.y)
                     sound.play(touch, game.soundOn)
                     if (touch == Touch.COPY) screen.supportId?.let(copy)
+                    if (touch == Touch.PRIVACY) runCatching { links.openUri(PRIVACY_URL) }
                     when (touch) {
                         Touch.NONE -> return@awaitEachGesture
                         Touch.KNOB -> haptics.prepare()

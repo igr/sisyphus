@@ -101,6 +101,12 @@ class Knob(angle: Double = 0.0) {
         pending = 0.0
     }
 
+    /** The finger lets go, and the knob stops at once: a finger still on the screen turns it no more. */
+    fun halt() {
+        release()
+        stop()
+    }
+
     /** A null angle means the finger is too close to the center to read a direction. */
     fun drag(touchAngle: Double?) {
         if (!held) return
@@ -313,7 +319,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     )
     val vision: Vision? get() = voices.vision
     /** A vision holds him while it comes and asks: he walks again as it leaves, and the texts by the path show again with him. */
-    val held get() = vision?.let { it.phase != Vision.Phase.LEAVING } == true
+    val visionHolds get() = vision?.let { it.phase != Vision.Phase.LEAVING } == true
 
     /** A screen covers the panel of the wise words: the news of a labor waits. */
     var covered = false
@@ -395,7 +401,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     fun update(dt: Double) {
         clock += dt
         val turn = knob.update(dt)
-        val turns = if (atTop || held) 0.0 else abs(turn) / (2 * PI)
+        val turns = if (atTop || visionHolds) 0.0 else abs(turn) / (2 * PI)
         turnsPushed += turns
         moved = turns * min(shop.bonus, Config.SUN_CAP) * PX_PER_TURN
         summit?.let { if (position + moved >= it - 1e-6) moved = it - position }
@@ -419,10 +425,12 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         if (rolling < STILL) rolling = 0.0
         stillFor = if (moved > 1e-4) 0.0 else stillFor + dt
         tick(dt)
+        // While paused, as under Control Center on iOS, the frames go on, but the wise words and a kept vision wait for the player.
+        val shown = if (pausedAt == null) dt else 0.0
         val drawn = quotes.drawn
-        quotes.update(dt, moved, stillFor)
+        quotes.update(shown, moved, stillFor)
         if (quotes.drawn != drawn) dirty = true
-        listen(turn, dt)
+        listen(turn, shown)
         checkLabors()
         sinceSave += dt
         if (dirty && sinceSave > SAVE_EVERY) save()
@@ -672,8 +680,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
      * frames that still come before the app is gone must not roll it again, since no frame comes after them.
      */
     fun pause(away: Boolean = true) {
-        knob.release()
-        knob.stop()
+        knob.halt()
         rolling = 0.0
         if (away) endVision()
         if (pausedAt == null) pausedAt = wall()

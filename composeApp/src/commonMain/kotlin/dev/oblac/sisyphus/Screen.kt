@@ -7,7 +7,6 @@ import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.TALES
 import dev.oblac.sisyphus.game.Tale
-import dev.oblac.sisyphus.game.Vision
 import dev.oblac.sisyphus.game.godsOf
 import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.scene.Ending
@@ -39,7 +38,7 @@ import kotlin.random.Random
  * What a finger touched. [LIST] is a finger on the list of the Worlds screen: a drag scrolls it, and on the worlds a tap chooses one when the finger lifts.
  * [MOVE] is the Yes that goes to another world. [COPY] copies the player's id for support. [SETTINGS] opens or closes the settings.
  */
-enum class Touch { NONE, KNOB, SOUND, SHOP, BUY, DEV, HELP, AGAIN, WORLDS, LIST, MOVE, COPY, SETTINGS }
+enum class Touch { NONE, KNOB, SOUND, SHOP, BUY, DEV, HELP, AGAIN, WORLDS, LIST, MOVE, COPY, SETTINGS, PRIVACY }
 
 /** New obols on the main screen: how many came together, and the seconds since. */
 class Gain(val obols: Int, val age: Double)
@@ -221,8 +220,7 @@ class Screen(
             val black = end.time >= Ending.BLACK_AT
             end.update(dt)
             if (!black && end.time >= Ending.BLACK_AT) {
-                game.knob.release()
-                game.knob.stop()
+                game.knob.halt()
                 game.startOver()
                 geo?.let { world.reset(it, game.weather) }
             }
@@ -272,7 +270,7 @@ class Screen(
             openCard?.let { ui.openCard(pixels, l, it, game.met(it)) }
             openTale?.let { ui.openTale(pixels, l, it, talePage, game.partsHeard(it)) }
             moving?.let { ui.confirm(pixels, l, it) }
-            buying?.let { ui.buy(pixels, l, it, billing.price(it), paying, climbing = game.begun && ending == null) }
+            buying?.let { ui.buy(pixels, l, it, billing.price(it), paying, climbing) }
         } else {
             renderer.render(scene, game, world, banner, rolled = ending?.rolled)
             game.vision?.let { drawVision(scene, it) }
@@ -288,7 +286,7 @@ class Screen(
                 corner.forEachIndexed { i, item -> ui.helper(pixels, l.helper(corner.size - 1 - i), item) }
             }
             ui.band(pixels, l.band)
-            val voice = game.vision?.let { it.phase != Vision.Phase.LEAVING } == true || (ending?.godLight ?: 0f) > 0f
+            val voice = game.visionHolds || (ending?.godLight ?: 0f) > 0f
             ui.quote(pixels, l.quote, game.quotes, game.clock, voice)
             ui.knob(pixels, l, game)
             ui.helpButton(pixels, l.helpIcon)
@@ -492,6 +490,7 @@ class Screen(
             1 -> game.toggleTicks()
             2 -> game.toggleRoll()
             else -> {
+                if (l.privacyLink.near(x, y, TOUCH_SLOP)) return Touch.PRIVACY
                 if (supportId == null || !l.supportId.near(x, y, TOUCH_SLOP)) return Touch.NONE
                 copied = COPIED_FOR
                 return Touch.COPY
@@ -515,6 +514,9 @@ class Screen(
     /** While a world is not bought, the Worlds screen can ask the store for the worlds bought before. */
     private val canRestore get() = Place.entries.any { !worlds.owns(it) }
 
+    /** The climb has begun and the top has not come: going to another world, or buying one, ends it, so the question says so. */
+    private val climbing get() = game.begun && ending == null
+
     /**
      * The finger lifts: the knob coasts on, or a tap on the list goes back to the world he is in, or asks to go to another world,
      * or to buy it. Before the climb has begun, as after the top, nothing is lost, so a world already bought begins at once.
@@ -537,7 +539,7 @@ class Screen(
         }
         when {
             !worlds.owns(place) -> buying = place
-            game.begun && ending == null -> moving = place
+            climbing -> moving = place
             else -> return goTo(place)
         }
         return Touch.WORLDS

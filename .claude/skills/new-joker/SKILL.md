@@ -22,7 +22,7 @@ These tests already check each joker in `JOKERS`, so they need no change:
 
 - `JokersTest.everyTextHasOnlyLettersOfTheFont` and `eachJokerComesAsOftenAsHisWeightSays`.
 - `LookTest.everyJokerHasASprite`: the size of the sprite, and that it differs from the others.
-- `LookTest.theTextsOfTheJokersFitTheirRows` and `theBubbleOfAJokerFitsTheSmallestPhone`.
+- `LookTest.theTextsOfTheJokersFitTheirRows` and `theBubbleOfAJokerFitsTheNarrowPhones`.
 - `ScreenTest.theCardsFitTheSmallestPhone`: the card, and the name and "who" on the open card.
 - `JokersOnThePathTest`: the bubble, the meetings, the sound and the dev button.
 - `ScreenTest.theCardsShowNoRank` and `theCardsShowTheJokersMet`: they meet and see every joker.

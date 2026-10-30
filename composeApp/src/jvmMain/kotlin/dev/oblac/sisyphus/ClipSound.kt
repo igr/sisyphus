@@ -93,6 +93,13 @@ internal class ClipSound : Sound {
         if (!clip.isRunning) clip.loop(Clip.LOOP_CONTINUOUSLY)
     }
 
+    /** Every sound stops, a long one too, when the sound is turned off. */
+    override fun pause() {
+        for (clip in clips + listOfNotNull(uiClip, winClip, fanfareClip, coinClip, spellClip, victoryClip, popupClip, rollClip)) {
+            if (clip.isRunning) clip.stop()
+        }
+    }
+
     private fun clip(samples: FloatArray): Clip {
         val pcm = pcm16(samples)
         return AudioSystem.getClip().apply { open(AudioFormat(SAMPLE_RATE.toFloat(), 16, 1, true, false), pcm, 0, pcm.size) }

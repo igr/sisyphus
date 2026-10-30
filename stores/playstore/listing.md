@@ -23,9 +23,9 @@ Turn the bronze knob and push the boulder up an endless hill. Calm pixel art.
 |---|---|
 | App access | All functionality is available without special access. |
 | Ads | No, the app has no ads. |
-| Content rating | Category: Game. Answer "Yes" to the question about digital purchases (the worlds), and "No" to every other question. The result is Everyone / PEGI 3. |
+| Content rating | Category: Game. Answer "Yes" to fantasy violence (the myths of the tales, told in text, with no blood shown), to mild fear (Dracula, Cthulhu, Death), to references to alcohol (wine in some jokes and tales), and to digital purchases (the worlds). Answer "No" to every other question. Write here the ratings that the summary page gives. |
 | Target audience | 13 and older. Younger age groups add the Families policy. |
-| Data safety | The app collects one data type, Financial info: Purchase history. It is collected and not shared, the collection is required, and it is for app functionality (the guide of RevenueCat also checks analytics). It is encrypted in transit. There are no accounts. |
+| Data safety | The app collects one data type, Financial info: Purchase history. It is collected and not shared, not processed ephemerally, and the collection is required. The purposes are App functionality and Analytics: RevenueCat counts the purchases for our sales reports. It is encrypted in transit. Users can ask for its deletion: they email their support ID to contact@katemariongames.com. There are no accounts. |
 | Advertising ID | No. |
 | Government, financial, health, news apps | No. |
 

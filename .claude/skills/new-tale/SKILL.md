@@ -20,7 +20,8 @@ A tale is 15 texts and one relief. The stones by the path tell it, one part at a
 These tests already check each tale in `TALES`, so they need no change:
 
 - `TalesTest.everyTextHasOnlyLettersOfTheFont`.
-- `LookTest.thePopupOfAStoneFitsTheSmallestPhone`: on the smallest phone, each text with its note fits in 4 lines under the day and the obols.
+- `LookTest.theTextsOfTheTalesFitTheirRows`: on the narrow phones, each text with its note takes at most 4 rows of the popup.
+- `LookTest.thePopupOfAStoneFitsTheNarrowPhones`: on the narrow phones, the popup of each text stays under the day and the obols.
 - `LookTest.everyStoneHasTheReliefOfEveryTale`: each stone has a relief of 7 by 7 for each tale.
 - `StationsTest`: the choice of the tale of a climb.
 - `SnapshotTest.steles`: the sheet `steles.png` shows each relief on the stone of each world. It gets a column for the new tale.
@@ -38,7 +39,7 @@ These tests already check each tale in `TALES`, so they need no change:
 2. Before any change, run `./gradlew :composeApp:jvmTest` and copy `composeApp/build/snapshots` to the scratchpad.
 3. Add the section `### The tale of <name>` after the last tale in `docs/stations.md`: the id, the line on why, "Relief: <thing>.", and the table `| # | Text |`. Copy the texts from this table to the code word for word.
 4. Change `TalesTest`. Run it, and see it fail.
-5. Add the tale to `game/Tales.kt`. Run the tests: `LookTest.everyStoneHasTheReliefOfEveryTale`, `LookTest.thePopupOfAStoneFitsTheSmallestPhone` and `SnapshotTest.steles` fail. A stone of the new tale has no relief yet, so it cannot be drawn.
+5. Add the tale to `game/Tales.kt`. Run the tests: `LookTest.everyStoneHasTheReliefOfEveryTale`, `LookTest.thePopupOfAStoneFitsTheNarrowPhones` and `SnapshotTest.steles` fail. A stone of the new tale has no relief yet, so it cannot be drawn.
 6. Add the relief. Run `./gradlew :composeApp:jvmTest :composeApp:testAndroidHostTest`, then `./gradlew :androidApp:assembleDebug :composeApp:compileKotlinIosSimulatorArm64`. If a text does not fit the popup, make it shorter in the code and in the doc, and tell the user.
 7. Compare the snapshots with `cmp`. `steles.png` changes, and so do the shots of the Cards tab that show the tales, such as `14-tales.png`: their count and the new card. Look at its new column, and show it to the user: the relief must show on each stone, also on the dark stone of The Underworld.
 8. Update the docs:
@@ -49,7 +50,7 @@ These tests already check each tale in `TALES`, so they need no change:
 
 ## Rules for the texts
 
-- 15 texts, one for each part. As in the other tales, each text has 10 to 17 words and at most 88 characters, in short sentences, because a part shows for only 6 turns of walking. Most texts fill the 4 lines of the popup, so only `LookTest` can tell if a text fits.
+- 15 texts, one for each part. As in the other tales, each text has 10 to 17 words and at most 88 characters, in short sentences, because a part shows for only 6 turns of walking. Most texts fill the 4 lines of the popup, so only `LookTest.theTextsOfTheTalesFitTheirRows` can tell if a text fits.
 - Plain words, warm and calm, like the wise words. Third person, past tense. Tell what the myths tell, and do not judge. Tell a death or a crime in few words, with no detail.
 - Part 1 starts the tale. Part 15 ends it: it comes at the start of the final climb, before the top.
 - A tale shows in every world. So no text points to the place where it shows, such as "here" or "this hill", and the teller never speaks to the player with "you" or "we". Only a spoken line in quotes can do these.

@@ -15,6 +15,7 @@ import dev.oblac.sisyphus.game.START_TIME
 import dev.oblac.sisyphus.game.QUOTES
 import dev.oblac.sisyphus.game.TUTORIAL
 import dev.oblac.sisyphus.game.Vision
+import dev.oblac.sisyphus.game.Voices
 import dev.oblac.sisyphus.game.WHO_SAID
 import dev.oblac.sisyphus.game.godsOf
 import dev.oblac.sisyphus.game.Weather
@@ -466,15 +467,32 @@ class GameTest {
         assertNull(game.vision)
     }
 
+    /** Under Control Center the frames go on, but a kept vision waits for the player: it does not leave unseen, and the panel keeps its question. */
+    @Test
+    fun aKeptVisionWaitsWhileTheAppStepsBack() {
+        val game = asking()
+        val question = game.quotes.quote
+        game.pause(away = false)
+        repeat((2 * Voices.ASK_TIME / DT).toInt()) { game.update(DT) }
+        assertEquals(Vision.Phase.ASKING, game.vision?.phase)
+        assertSame(question, game.quotes.quote)
+        game.resume()
+        repeat((Voices.ASK_TIME / DT).toInt() + 2) { game.update(DT) }
+        assertEquals(Vision.Phase.LEAVING, game.vision?.phase)
+    }
+
     /** A pause stops the knob: the frames that still come before the app is gone do not roll the rock again, since no frame comes after them to stop it. */
     @Test
     fun aPauseStopsTheKnobAndTheRock() {
         val game = Game(MemoryStore(), seed = 1, wall = { 0.0 })
         game.turn(2 * PI, step = 2 * PI / 60)
-        game.knob.release()
         game.pause()
+        assertFalse(game.knob.held)
         val position = game.position
+        var touch = 0.0
         repeat(60) {
+            touch += 0.1
+            game.knob.drag(touch)
             game.update(DT)
             assertEquals(0.0, game.rolling)
         }

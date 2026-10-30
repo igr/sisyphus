@@ -90,25 +90,15 @@ internal class TrackSound : Sound {
         if (!playing) track.play()
     }
 
+    /** Every track: what pause and release must reach, so that a new sound is not left out of either. */
+    private val all get() = tracks + listOfNotNull(uiTrack, winTrack, fanfareTrack, coinTrack, spellTrack, victoryTrack, popupTrack, rollTrack)
+
     /** Every sound stops: the roll, and a long sound that still plays, such as the victory, so that it does not go on over another app. */
     override fun pause() {
-        roll(0f)
-        for (track in tracks + listOfNotNull(uiTrack, winTrack, fanfareTrack, coinTrack, spellTrack, victoryTrack, popupTrack)) {
-            if (track.playState == AudioTrack.PLAYSTATE_PLAYING) track.pause()
-        }
+        for (track in all) if (track.playState == AudioTrack.PLAYSTATE_PLAYING) track.pause()
     }
 
-    fun release() {
-        tracks.forEach { it.release() }
-        uiTrack?.release()
-        winTrack?.release()
-        fanfareTrack?.release()
-        coinTrack?.release()
-        spellTrack?.release()
-        victoryTrack?.release()
-        popupTrack?.release()
-        rollTrack?.release()
-    }
+    fun release() = all.forEach { it.release() }
 
     private fun AudioTrack.restart() {
         stop()

@@ -611,6 +611,19 @@ class ScreenTest {
         return s to s.render()
     }
 
+    /** In the bottom-left corner of the settings, across from the support ID, a link opens the privacy policy. */
+    @Test
+    fun theSettingsLinkToThePrivacyPolicy() {
+        val (s, px) = settings(build = "41")
+        val l = s.layout!!
+        assertTrue(area(px, l.privacyLink).any { (it shr 16 and 0xFF) > 0x80 })
+        assertEquals(Touch.PRIVACY, s.tap(l.privacyLink))
+        assertTrue(s.settingsOpen)
+        val small = smallest().layout!!
+        assertEquals(small.supportId.y, small.privacyLink.y)
+        assertTrue(small.privacyLink.right + 4 <= small.supportId.x)
+    }
+
     @Test
     fun withoutAStoreThereIsNoSupportId() {
         val s = screen()
@@ -1758,6 +1771,7 @@ class ScreenTest {
         val below = (l.scene.bottom until l.quote.y).filter { y -> (0 until px.width).any { px[it, y] == cream } }
         assertTrue(below.isEmpty(), "the notes of the help reach row ${below.firstOrNull()}, the scene ends at ${l.scene.bottom}")
         assertTrue("labors" in DAY_NOTE)
+        assertFalse("only" in DAY_NOTE, "the gods of the Agora move the sun too")
     }
 
     /** A tap on a tab that is not shown shows it; a tap on the shown tab closes the screen, which opens again on it. */

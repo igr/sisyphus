@@ -44,7 +44,7 @@ A climb needs moments that the player does not expect, not only a new item now a
 5. **The reply** types out in the panel. It starts with "Correct." or "Wrong.", so the player knows at once. After a right answer, one obol comes as any new obol does: the coin sounds and glints, and "+1" rises under the obol count. After a wrong answer, the god gives the right answer, and nothing else happens.
 6. **The vision fades,** the light comes back, and the wise words go on. The knob pushes again as soon as the answer is picked.
 
-With no answer in 20 seconds, the god says a farewell line, and the vision fades. A vision also ends without an answer when the app goes to the background (Control Center, Notification Center or a banner over the game does not end it), when the Agora, the Worlds screen or the help opens, when the final climb begins, and when the player moves to another world. In all these cases, nothing is lost, and the count to the next vision starts again.
+With no answer in 20 seconds, the god says a farewell line, and the vision fades. A vision also ends without an answer when the app goes to the background (Control Center, Notification Center or a banner over the game does not end it: the vision and the wise words wait there, and its 20 seconds go on only when the game is back), when the Agora, the Worlds screen or the help opens, when the final climb begins, and when the player moves to another world. In all these cases, nothing is lost, and the count to the next vision starts again.
 
 ## The voices
 

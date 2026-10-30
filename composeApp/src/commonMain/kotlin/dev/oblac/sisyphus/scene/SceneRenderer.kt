@@ -439,7 +439,7 @@ class SceneRenderer(private val geo: SceneGeometry) {
     private fun drawTelling(px: Pixels, game: Game, p: Int) {
         val text = game.telling ?: return
         val at = game.nextStele ?: return
-        if (game.held) return
+        if (game.visionHolds) return
         val x = steleLeft(at, p) + LIMESTONE.slab.width / 2
         val y = floor(geo.baseY + geo.rockDy - geo.rockR).toInt() - 3
         drawPopup(px, text, x, y, "${game.stelesTold + 1}/${game.tale.parts.size}", ceiling = HUD_ROWS)
@@ -469,7 +469,7 @@ class SceneRenderer(private val geo: SceneGeometry) {
     private fun drawJesting(px: Pixels, game: Game, p: Int) {
         val text = game.jesting ?: return
         val at = game.nextJoker ?: return
-        if (game.held) return
+        if (game.visionHolds) return
         val x = jokerMiddle(at, p).coerceIn(3, px.width - 4)
         val y = min(floor(geo.baseY + geo.rockDy - geo.rockR).toInt(), jokerTop(at, p, JOKER_SPRITES[game.joker.id])) - 3
         drawPopup(px, text, x, y, game.joker.name, ceiling = HUD_ROWS)
