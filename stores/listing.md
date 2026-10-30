@@ -36,7 +36,7 @@ Sisyphus is a small, calm pixel-art game. Under a window to a Greek hillside sit
 
 No ads. No accounts. No tracking. Just the hill, the rock and you.
 
-## What's New in 1.2 (474/500)
+## What's New in 2.0 (474/500)
 
 Both stores take this text: the What's New of the App Store, and the release notes of Google Play, which allow 500 characters.
 
