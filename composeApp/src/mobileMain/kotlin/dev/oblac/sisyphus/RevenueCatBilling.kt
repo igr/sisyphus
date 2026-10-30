@@ -71,6 +71,9 @@ class RevenueCatBilling(testStore: Boolean) : Billing {
         },
     )
 
+    /** The packages came once, at the start; when the store could not send them then, as with no network, it is asked again. */
+    override fun refresh() = withPackages {}
+
     private fun packageOf(place: Place) = place.product?.let { packages[it] }
 
     /** Runs [then] once the packages of the worlds are here, or the store could not send them. */

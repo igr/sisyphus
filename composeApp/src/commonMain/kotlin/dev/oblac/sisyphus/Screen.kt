@@ -648,9 +648,10 @@ class Screen(
         game.knob.stop()
     }
 
-    /** Opens the Worlds screen on [tab]. */
+    /** Opens the Worlds screen on [tab]. The store is asked again for the prices that it could not send before. */
     private fun showWorlds(tab: Tab) {
         cover()
+        billing.refresh()
         worldsOpen = true
         show(tab)
     }

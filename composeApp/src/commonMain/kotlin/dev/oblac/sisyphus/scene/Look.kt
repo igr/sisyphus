@@ -8,6 +8,14 @@ import dev.oblac.sisyphus.gfx.rgb
 internal enum class Fall { RAIN, ASH, SAND }
 
 /**
+ * The ground color of the column [wx] of the hill, at the height [wy] and the depth [d] under the surface. It runs for every pixel
+ * of the ground, so its numbers stay plain: a function type would box them.
+ */
+internal fun interface Layers {
+    operator fun invoke(wx: Int, wy: Int, d: Int): Int
+}
+
+/**
  * How a world looks: its [sky] over the day, the colors of its [sun] (its core low and high in the sky, its edge
  * low and high, and the glow around it low and high), its [ground] with [blades] of grass ([grass] says
  * how many) and [flowers], the [props] by the path, its four [rocks], its birds, the [dust] at his feet, and what [fall]s
@@ -29,7 +37,7 @@ internal class Look(
     val dust: Int,
     val fall: Fall,
     val stone: Stone,
-    val layers: (wx: Int, wy: Int, d: Int) -> Int = { wx, _, d -> soil(wx, d) },
+    val layers: Layers = Layers { wx, _, d -> soil(wx, d) },
 )
 
 internal val CORINTH_LOOK = Look(

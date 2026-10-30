@@ -30,6 +30,8 @@ interface Billing {
     fun buy(place: Place, done: (Boolean) -> Unit)
     /** Asks the store for the worlds bought before: on another phone, or before the game was installed again. */
     fun restore(done: () -> Unit)
+    /** Asks the store again for what it could not send before, such as the prices after a start with no network. */
+    fun refresh() {}
     /** The player's id at the store's service, which support can look up; null where there is no store. */
     val userId: String? get() = null
 }

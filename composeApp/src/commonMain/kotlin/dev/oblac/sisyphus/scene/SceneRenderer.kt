@@ -63,10 +63,18 @@ private val ROCK_OUTLINE = rgb(0x221C18)
 private val MOSS = rgb(0x7E8A58)
 
 /**
+ * The mark painted on the rock at ([u], [v]), its place on the face: 0 for none. It runs for every pixel of the rock, so its
+ * numbers stay plain: a function type would box them.
+ */
+internal fun interface Mark {
+    operator fun invoke(u: Double, v: Double): Int
+}
+
+/**
  * One look of the rock: its [colors] from dark to light, and the [mark] painted on it, which can ask for the [accent] color.
  * A [polished] rock has a shine.
  */
-internal class Rock(val colors: IntArray, val mark: (Double, Double) -> Int = { _, _ -> 0 }, val polished: Boolean = false, val accent: Int = MOSS)
+internal class Rock(val colors: IntArray, val mark: Mark = Mark { _, _ -> 0 }, val polished: Boolean = false, val accent: Int = MOSS)
 
 /** The rock that every climb starts with. */
 internal val FIRST_ROCK = Rock(ROCK, ::rockMark)

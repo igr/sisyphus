@@ -1144,6 +1144,7 @@ class ScreenTest {
         override val userId = "\$RCAnonymousID:0123456789abcdef"
         var pending: ((Boolean) -> Unit)? = null
         var restores = 0
+        var refreshes = 0
         override fun owns(place: Place) = place.product == null || place in owned
         override fun price(place: Place) = "\$${Config.WORLD_PRICE}"
         override fun buy(place: Place, done: (Boolean) -> Unit) {
@@ -1157,6 +1158,20 @@ class ScreenTest {
             restores++
             done()
         }
+        override fun refresh() {
+            refreshes++
+        }
+    }
+
+    /** The Worlds screen asks the store again for what it could not send before, such as the prices after a start with no network. */
+    @Test
+    fun theWorldsScreenAsksTheStoreAgain() {
+        val billing = FakeBilling()
+        val s = worlds(billing)
+        assertEquals(1, billing.refreshes)
+        assertTrue(s.back())
+        s.tap(s.layout!!.dayLabel(s.game.day))
+        assertEquals(2, billing.refreshes)
     }
 
     /** The Worlds screen, open in [place], with [billing] as the store, and him [position] pixels up the hill. */
