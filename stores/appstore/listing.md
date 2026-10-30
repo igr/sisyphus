@@ -11,7 +11,7 @@ The fields that only App Store Connect has. The name, the links, the description
 | SKU | sisyphus |
 | Primary language | English (U.S.) |
 | Category | Games: Casual, Simulation |
-| Copyright | 2026 Igor Spasic |
+| Copyright | 2026 KateMarionGames |
 | Age rating | Alcohol, Tobacco, or Drug Use or References: Infrequent (wine in some jokes and tales, and the Wine of Dionysus). Horror/Fear Themes: Infrequent (Dracula, Cthulhu, Death). Cartoon or Fantasy Violence: Infrequent (the myths of the tales, told in text). Guns or Other Weapons: Infrequent (a sword, a spear, a sickle in the tales). Mature or Suggestive Themes: Infrequent (war and abduction in the myths). Contests: Infrequent (the questions of the visions). "None" or "No" to every other question. The result is 13+. |
 
 ## App Privacy

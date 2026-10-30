@@ -4,7 +4,7 @@ Sisyphus for iPhone and Android · Last updated: October 30, 2026
 
 ## Short version
 
-Sisyphus has no accounts, no ads and no tracking. Your game stays on your device. Each time the app starts, it asks the App Store or Google Play, and RevenueCat, which worlds you own and what they cost. RevenueCat knows you only by an anonymous id that the app makes. When you buy a world, the store takes the payment, and RevenueCat keeps a record of the purchase under that id, so that the world stays yours.
+Sisyphus has no accounts, no ads and no tracking. Your game stays on your device. Each time the app opens, it asks the App Store or Google Play, and RevenueCat, which worlds you own and what they cost. RevenueCat knows you only by an anonymous id that the app makes. When you buy a world, the store takes the payment, and RevenueCat keeps a record of the purchase under that id, so that the world stays yours.
 
 ## What the app keeps
 
@@ -14,7 +14,7 @@ The app saves your game on your device: the day, your place on the hill, the ite
 
 Corinth is free. The other worlds are in-app purchases. The App Store or Google Play takes the payment: the app never sees your name, your email or your payment details.
 
-To know which worlds you own, the app uses [RevenueCat](https://www.revenuecat.com), a service for in-app purchases. Each time the app starts, and when you buy or restore a world, RevenueCat receives:
+To know which worlds you own, the app uses [RevenueCat](https://www.revenuecat.com), a service for in-app purchases. Each time the app opens, and when you buy or restore a world, RevenueCat receives:
 
 - an anonymous id that the app makes on your device, which is not linked to your name or your email;
 - the record of your purchases: which world, its price and the date;
@@ -29,7 +29,7 @@ The settings show the end of your anonymous id. A tap copies the whole id. When 
 
 ## Network
 
-The app connects to the internet each time it starts, and when you buy or restore a world: only to the App Store or Google Play, and to RevenueCat. It sends nothing about your game. The game works offline; without a network, the prices and the purchases wait.
+The app connects to the internet each time it opens, and when you buy or restore a world: only to the App Store or Google Play, and to RevenueCat. It sends nothing about your game. The game works offline; without a network, the prices and the purchases wait.
 
 ## Children
 
@@ -45,4 +45,4 @@ If this policy changes, the new version will be posted on this page.
 
 ## Contact
 
-Sisyphus is made by Igor Spasić. Questions about privacy: contact@katemariongames.com.
+Sisyphus is developed by KateMarionGames. Questions about privacy: contact@katemariongames.com.
