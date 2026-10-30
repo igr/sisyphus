@@ -742,7 +742,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         nextJoker = null
         metJoker = null
         placeJoker(Config.FIRST_JOKER)
-        quotes = QuoteBox(quoteSeed, drawn = 0, firstTime = true, news = ::nextNews)
+        quotes = QuoteBox(quoteSeed, drawn = quotes.drawn, firstTime = true, news = ::nextNews)
         save()
     }
 

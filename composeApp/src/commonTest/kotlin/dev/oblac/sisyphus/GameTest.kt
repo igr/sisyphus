@@ -12,6 +12,7 @@ import dev.oblac.sisyphus.game.PX_PER_TURN
 import dev.oblac.sisyphus.game.Quote
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.START_TIME
+import dev.oblac.sisyphus.game.QUOTES
 import dev.oblac.sisyphus.game.TUTORIAL
 import dev.oblac.sisyphus.game.Vision
 import dev.oblac.sisyphus.game.WHO_SAID
@@ -975,6 +976,20 @@ class GameTest {
         val words = game.wiseWords(60.0)
         assertEquals(reply, words[0].text)
         assertEquals("A labor is done: Lucky Guess.", words[1].text)
+    }
+
+    /** The wise words go on where the last climb stopped, after the top and in another world: no climb shows the same sayings again. */
+    @Test
+    fun theNextClimbGoesOnWithTheWiseWords() {
+        val game = Game(MemoryStore(mapOf("nextVision" to 10_000.0, "effort" to DAY_LENGTH)), seed = 1, wall = { 0.0 })
+        val first = game.wiseWords(120.0).filter { it in QUOTES }
+        game.startOver()
+        val second = game.wiseWords(120.0).filter { it in QUOTES }
+        game.moveTo(Place.ETNA)
+        val third = game.wiseWords(120.0).filter { it in QUOTES }
+        assertTrue(first.size > 5 && second.size > 5 && third.size > 5)
+        assertTrue(second.none { it in first }, "the climb after the top repeats the sayings of the climb before")
+        assertTrue(third.none { it in first || it in second }, "the climb in another world repeats the sayings of the climbs before")
     }
 
     @Test
