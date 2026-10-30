@@ -5,8 +5,8 @@ import kotlin.math.abs
 
 const val SAMPLE_RATE = 44100
 
-/** The knob click, from composeResources/files/tick.wav. */
-suspend fun loadClick(): FloatArray = readWav(Res.readBytes("files/tick.wav"))
+/** The knob click, from composeResources/files/softclick.wav. */
+suspend fun loadClick(): FloatArray = readWav(Res.readBytes("files/softclick.wav"))
 
 /** The click of every other tap: menus, buttons, the help. From composeResources/files/ui-click.wav. */
 suspend fun loadUi(): FloatArray = readWav(Res.readBytes("files/ui-click.wav"))
