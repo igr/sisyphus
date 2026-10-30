@@ -1,9 +1,11 @@
 package dev.oblac.sisyphus
 
+import dev.oblac.sisyphus.game.ALCESTIS
 import dev.oblac.sisyphus.game.ARION
 import dev.oblac.sisyphus.game.BELLEROPHON
 import dev.oblac.sisyphus.game.DAEDALUS_AND_ICARUS
 import dev.oblac.sisyphus.game.DEMETER_AND_PERSEPHONE
+import dev.oblac.sisyphus.game.DEUCALION_AND_PYRRHA
 import dev.oblac.sisyphus.game.EMPEDOCLES
 import dev.oblac.sisyphus.game.HERMES
 import dev.oblac.sisyphus.game.IO
@@ -23,11 +25,11 @@ import kotlin.test.assertTrue
 class TalesTest {
     @Test
     fun thePoolHasTalesOfFifteenParts() {
-        assertEquals((0..13).toList(), TALES.map { it.id })
+        assertEquals((0..15).toList(), TALES.map { it.id })
         assertEquals(
             listOf(
                 SISYPHUS, TYPHON, ORPHEUS, ISIS_AND_OSIRIS, BELLEROPHON, EMPEDOCLES, DEMETER_AND_PERSEPHONE, HERMES, PHAETHON, ARION,
-                DAEDALUS_AND_ICARUS, IO, KAGUYA, IZANAGI_AND_IZANAMI,
+                DAEDALUS_AND_ICARUS, IO, KAGUYA, IZANAGI_AND_IZANAMI, DEUCALION_AND_PYRRHA, ALCESTIS,
             ),
             TALES,
         )
@@ -104,6 +106,16 @@ class TalesTest {
             "Long ago, the gods gave Izanagi and Izanami a jewelled spear, to make the land." to
                 "He washed in a river, and the Sun goddess, the Moon god and Susanoo were born.",
             ends(IZANAGI_AND_IZANAMI.parts.map { it.texts.first() }),
+        )
+        assertEquals(
+            "Deucalion was the son of Prometheus, and the great-grandfather of Sisyphus." to
+                "His stones became men, and hers women. So people are a hard race, used to toil.",
+            ends(DEUCALION_AND_PYRRHA.parts.map { it.texts.first() }),
+        )
+        assertEquals(
+            "Zeus punished Apollo. For a year, Apollo had to serve a mortal: Admetus, king of Pherae." to
+                "Alcestis could not speak until the third day. \"Now I am a happy man,\" said Admetus.",
+            ends(ALCESTIS.parts.map { it.texts.first() }),
         )
         assertEquals("The dead wept. The wheel of Ixion stood still, and Sisyphus sat down on his rock.", ORPHEUS.parts[8].texts.single())
     }

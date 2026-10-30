@@ -343,8 +343,54 @@ val IZANAGI_AND_IZANAMI = Tale(
     ),
 )
 
+/** Deucalion and Pyrrha, whose stones became people after the flood. */
+val DEUCALION_AND_PYRRHA = Tale(
+    14,
+    "Deucalion and Pyrrha",
+    listOf(
+        Part("Deucalion was the son of Prometheus, and the great-grandfather of Sisyphus."),
+        Part("Zeus found men wicked. He chose to drown them, and make a new race, unlike the first."),
+        Part("Prometheus told his son to build a chest. Deucalion went into it with his wife, Pyrrha."),
+        Part("The sea had no shore. Men rowed where they had plowed, and dolphins swam in the woods."),
+        Part("For nine days and nights the chest floated. Then it came to rest on Mount Parnassus."),
+        Part("No man was more just than Deucalion, and no woman honored the gods more than Pyrrha."),
+        Part("Zeus saw that only two were left. He drove the clouds away, and the waters went down."),
+        Part("The world was silent. Deucalion wept: \"We two are all the people of the earth.\""),
+        Part("Zeus sent Hermes to grant Deucalion any wish. He wished for people."),
+        Part("Moss covered the temple of Themis. No fire burned there. They kissed its cold stone."),
+        Part("\"Cover your heads,\" said Themis, \"and throw the bones of your great mother behind you.\""),
+        Part("Pyrrha was afraid. \"Forgive me,\" she said. \"I cannot throw my mother's bones.\""),
+        Part("\"Our great mother is the Earth,\" said Deucalion. \"Her bones are the stones.\""),
+        Part("They threw stones behind them. The stones grew soft, and looked like rough statues."),
+        Part("His stones became men, and hers women. So people are a hard race, used to toil."),
+    ),
+)
+
+/** Alcestis, whom Heracles won back from Death. */
+val ALCESTIS = Tale(
+    15,
+    "Alcestis",
+    listOf(
+        Part("Zeus punished Apollo. For a year, Apollo had to serve a mortal: Admetus, king of Pherae."),
+        Part("Apollo kept the king's herds. Every cow bore twins, and lions came to hear his lyre."),
+        Part("To marry Alcestis, Admetus had to yoke a lion and a boar. Apollo yoked them for him."),
+        Part("Apollo tricked the Fates with wine: Admetus could escape death, if another died for him."),
+        Part("His old parents would not die for him. \"Life is short, but sweet,\" said his father."),
+        Part("Only Alcestis, his young wife, was willing to die for him, and see the light no more."),
+        Part("On her last day, she bathed, put on her finest robes, and prayed for her children."),
+        Part("Death came for her with a sword. \"A hero will take her from you,\" Apollo told him."),
+        Part("\"Do not marry again, for the children,\" begged Alcestis. He promised, and she died."),
+        Part("That day Heracles came by, on his way to Thrace. Admetus hid his grief, to welcome him."),
+        Part("Heracles feasted and sang. Then a servant who loved her told him the truth."),
+        Part("Heracles hid by her tomb. When Death came, he leapt out and wrestled him for her."),
+        Part("Heracles came back with a veiled woman. True to his promise, Admetus would not take her."),
+        Part("At last Admetus took her hand, and looked at her. It was Alcestis, alive."),
+        Part("Alcestis could not speak until the third day. \"Now I am a happy man,\" said Admetus."),
+    ),
+)
+
 /** The pool of tales, in the order of their ids. Each climb tells one of them. */
 val TALES = listOf(
     SISYPHUS, TYPHON, ORPHEUS, ISIS_AND_OSIRIS, BELLEROPHON, EMPEDOCLES, DEMETER_AND_PERSEPHONE, HERMES, PHAETHON, ARION,
-    DAEDALUS_AND_ICARUS, IO, KAGUYA, IZANAGI_AND_IZANAMI,
+    DAEDALUS_AND_ICARUS, IO, KAGUYA, IZANAGI_AND_IZANAMI, DEUCALION_AND_PYRRHA, ALCESTIS,
 )

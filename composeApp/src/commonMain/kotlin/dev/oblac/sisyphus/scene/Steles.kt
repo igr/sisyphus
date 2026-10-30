@@ -169,6 +169,26 @@ private val RELIEF_ART = listOf(
     .kkckk.
     ..kkk..
     """,
+    // Deucalion and Pyrrha: a chest on the waters
+    """
+    .......
+    .kkkkk.
+    kccccck
+    kkkkkkk
+    kkk.kkk
+    kkkkkkk
+    c.c.c.c
+    """,
+    // Alcestis: a veiled head
+    """
+    ..kkk..
+    .kcckk.
+    kc...ck
+    kc...ck
+    kkc.ckk
+    kkkkkkk
+    k.kkk.k
+    """,
 )
 
 /**

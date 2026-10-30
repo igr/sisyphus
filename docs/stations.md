@@ -11,7 +11,7 @@ The middle of a climb has few new things. At 5 minutes a day, a session is about
 - From day 3 of each climb, steles, carved stones, stand by the path ahead, one at a time: the first with no purchase, and one more for each item bought. When he comes near a stone, a comic popup over it tells the next part of the tale, and how far the tale has come, such as "9/15".
 - A tale has 15 parts: the first on day 3, then one for each item bought, up to the 14th. The 15th part comes at the start of the final climb. Thus every player hears the whole tale before the top, at any pace.
 - At 5 minutes a day, a session brings about 2 parts. At 30 minutes a day, it brings about 7.
-- A pool of fourteen tales: Sisyphus, Typhon, Orpheus, Isis and Osiris, Bellerophon, Empedocles, Demeter and Persephone, Hermes, Phaethon, Arion, Daedalus and Icarus, Io, Kaguya, and Izanagi and Izanami. Each climb tells one of them. The tale of Sisyphus comes first, then each other tale once, at random. After that, any tale can come again, but not the tale of the climb before.
+- A pool of sixteen tales: Sisyphus, Typhon, Orpheus, Isis and Osiris, Bellerophon, Empedocles, Demeter and Persephone, Hermes, Phaethon, Arion, Daedalus and Icarus, Io, Kaguya, Izanagi and Izanami, Deucalion and Pyrrha, and Alcestis. Each climb tells one of them. The tale of Sisyphus comes first, then each other tale once, at random. After that, any tale can come again, but not the tale of the climb before.
 - Every world has stones. The stone is of the world; the relief is of the tale.
 
 ## Not in this project
@@ -37,7 +37,7 @@ The middle of a climb has few new things. At 5 minutes a day, a session is about
 - **The final climb.** The 15th item begins the final climb, and Hermes says that the top is in sight. The 15th stone stands 30 turns ahead, so its part comes before the first herm at 100 turns.
 - **The stones stay.** A stone whose part was told stays by the path, and then behind him, like the props. A climb has at most 15 stones.
 - **A restart.** The next stone stays where it stands until its part is told. When the app starts again in the middle of a popup, the popup goes on where it was.
-- **The pool.** Each tale has 15 parts, and an id that never changes: Sisyphus 0, Typhon 1, Orpheus 2, Isis and Osiris 3, Bellerophon 4, Empedocles 5, Demeter and Persephone 6, Hermes 7, Phaethon 8, Arion 9, Daedalus and Icarus 10, Io 11, Kaguya 12, Izanagi and Izanami 13. Any tale can be told in any world, so no text names the place where it is told.
+- **The pool.** Each tale has 15 parts, and an id that never changes: Sisyphus 0, Typhon 1, Orpheus 2, Isis and Osiris 3, Bellerophon 4, Empedocles 5, Demeter and Persephone 6, Hermes 7, Phaethon 8, Arion 9, Daedalus and Icarus 10, Io 11, Kaguya 12, Izanagi and Izanami 13, Deucalion and Pyrrha 14, Alcestis 15. Any tale can be told in any world, so no text names the place where it is told.
 - **The tale of a climb.** A climb takes its tale when it begins: in a new game, at the top, at a move to another world, and at the Reset of the climb in the dev screen. A move before he has walked in the climb, as right after the top, keeps the tale that the climb took. While the tale of Sisyphus is not told, it is the tale. After it, the tale is a random one that is not told yet. A tale is told when its 15th part is told. When all are told, the tale is a random one of them, but not the tale of the climb before. A tale stays told. A climb that ends before its tale is told leaves that tale not told, so it can come again. The Reset of the shop in the dev screen starts the same tale again from its first part.
 - **The stones of a world.** All stones have the same shape. Each world has its own stone: pale limestone in Corinth, dark lava rock on Mount Etna, black stone in The Underworld, sandstone in Cairo, and gray granite on Mount Fuji. The relief is carved in the colors of that stone.
 - **Old saved games.** A climb saved before the stations counts the items already bought as parts told. Its next item brings the next part. A climb saved before the pool tells the tale of Sisyphus, and no tale counts as told.
@@ -356,6 +356,50 @@ Id 13. Izanagi pushes on Mount Fuji. Like Sisyphus he came back from the dead, l
 | 14 | She swore to kill a thousand people a day. He swore fifteen hundred would be born. |
 | 15 | He washed in a river, and the Sun goddess, the Moon god and Susanoo were born. |
 
+### The tale of Deucalion and Pyrrha
+
+Id 14. Deucalion was the great-grandfather of Sisyphus. After the flood, the stones that he and Pyrrha threw became people, so it is a tale of stones, told by the stones. It ends with a hard race, used to toil. Relief: a chest on the waters.
+
+| # | Text |
+|---|---|
+| 1 | Deucalion was the son of Prometheus, and the great-grandfather of Sisyphus. |
+| 2 | Zeus found men wicked. He chose to drown them, and make a new race, unlike the first. |
+| 3 | Prometheus told his son to build a chest. Deucalion went into it with his wife, Pyrrha. |
+| 4 | The sea had no shore. Men rowed where they had plowed, and dolphins swam in the woods. |
+| 5 | For nine days and nights the chest floated. Then it came to rest on Mount Parnassus. |
+| 6 | No man was more just than Deucalion, and no woman honored the gods more than Pyrrha. |
+| 7 | Zeus saw that only two were left. He drove the clouds away, and the waters went down. |
+| 8 | The world was silent. Deucalion wept: "We two are all the people of the earth." |
+| 9 | Zeus sent Hermes to grant Deucalion any wish. He wished for people. |
+| 10 | Moss covered the temple of Themis. No fire burned there. They kissed its cold stone. |
+| 11 | "Cover your heads," said Themis, "and throw the bones of your great mother behind you." |
+| 12 | Pyrrha was afraid. "Forgive me," she said. "I cannot throw my mother's bones." |
+| 13 | "Our great mother is the Earth," said Deucalion. "Her bones are the stones." |
+| 14 | They threw stones behind them. The stones grew soft, and looked like rough statues. |
+| 15 | His stones became men, and hers women. So people are a hard race, used to toil. |
+
+### The tale of Alcestis
+
+Id 15. Death, whom Sisyphus once chained, came for Alcestis, and Heracles, who pushes beside Sisyphus in Corinth, wrestled Death and brought her back. Like Sisyphus, she came back from the dead. Relief: a veiled head.
+
+| # | Text |
+|---|---|
+| 1 | Zeus punished Apollo. For a year, Apollo had to serve a mortal: Admetus, king of Pherae. |
+| 2 | Apollo kept the king's herds. Every cow bore twins, and lions came to hear his lyre. |
+| 3 | To marry Alcestis, Admetus had to yoke a lion and a boar. Apollo yoked them for him. |
+| 4 | Apollo tricked the Fates with wine: Admetus could escape death, if another died for him. |
+| 5 | His old parents would not die for him. "Life is short, but sweet," said his father. |
+| 6 | Only Alcestis, his young wife, was willing to die for him, and see the light no more. |
+| 7 | On her last day, she bathed, put on her finest robes, and prayed for her children. |
+| 8 | Death came for her with a sword. "A hero will take her from you," Apollo told him. |
+| 9 | "Do not marry again, for the children," begged Alcestis. He promised, and she died. |
+| 10 | That day Heracles came by, on his way to Thrace. Admetus hid his grief, to welcome him. |
+| 11 | Heracles feasted and sang. Then a servant who loved her told him the truth. |
+| 12 | Heracles hid by her tomb. When Death came, he leapt out and wrestled him for her. |
+| 13 | Heracles came back with a veiled woman. True to his promise, Admetus would not take her. |
+| 14 | At last Admetus took her hand, and looked at her. It was Alcestis, alive. |
+| 15 | Alcestis could not speak until the third day. "Now I am a happy man," said Admetus. |
+
 ## Texts
 
 - Plain words, warm and calm, like the wise words. A tale tells what the myths tell, and it does not judge.
@@ -383,17 +427,19 @@ Id 13. Izanagi pushes on Mount Fuji. Like Sisyphus he came back from the dead, l
 - Ovid, Metamorphoses 1.582–747: Io and Inachus, the cloud, the white cow, Argus, the name in the dust, Hermes and Syrinx, the eyes on the peacock, the Nile, and Io a woman again. Aeschylus, Prometheus Bound 566–682 and 729–852, and Suppliants 299–315 and 574–579: the gadfly, the Bosporus, the touch of Zeus, and Epaphus. Apollodorus, Library 2.1.3–4: the gadfly, Egypt, Epaphus by the Nile, Memphis, and Io called Isis. Herodotus 2.41: Isis has the horns of a cow, as the Greeks show Io.
 - The Tale of the Bamboo Cutter (Taketori Monogatari, about 900), tr. F. V. Dickins, The Old Bamboo-Hewer's Story (1888), pp. 1–36: the shining bamboo, the gold, Kaguya, the five lords, the jewelled branch and its makers, the robe of fire-rat fur, the Emperor and the letters, the moon, the two thousand soldiers, the people of the moon, the elixir and the letter, the robe of feathers, and the burning on Fuji. The Japanese text, 8: she becomes a shadow; 9: the elixir of no death, and the mountain nearest to heaven. Perseus has no Japanese texts, so the pages are those of the translation.
 - Kojiki (712), Book I, sections III–VII and IX–X, tr. B. H. Chamberlain (1882): the jewelled spear and the first island, the pillar, the islands and the gods, the god of fire and the death of Izanami, Yomi, the food of Yomi, the comb, the hag, the grapes and the bamboo shoots, the three peaches, the rock of a thousand men, the thousand deaths and fifteen hundred births, and the washing that brought the Sun goddess, the Moon god and Susanoo. Nihongi (720), Book I, tr. W. G. Aston (1896), pp. 24–30: the peaches flung, and the rock of a thousand men.
+- Ovid, Metamorphoses 1.240–261 and 1.291–415: the wicked race and the new one, the sea with no shore, the man who rowed where he had plowed, the dolphins in the woods, Parnassus, the just man and the woman who honored the gods, the two who were left, the clouds driven away, the silent world, the temple of Themis and its cold stone, the bones of the great mother, Pyrrha's fear, the bones of the Earth, the rough statues, and the hard race used to toil. Apollodorus, Library 1.7.2: the son of Prometheus, the chest, the nine days and nights, Parnassus, Hermes and the wish for people, and the stones of Deucalion and of Pyrrha. Apollodorus, Library 1.7.3 and 1.9.3, and Hesiod, Catalogue of Women, fragments 1 and 4 (Evelyn-White): Hellen, Aeolus, and Sisyphus son of Aeolus.
+- Euripides, Alcestis 1–76, 152–169, 280–392, 476–587, 690–693, 747–860 and 1006–1158: Apollo the herdsman of Admetus, and the lions that came to his lyre, the Fates tricked, the father and the mother who would not die for him, and life short but sweet, Alcestis who would, her last day, Death and his sword, the hero foretold, no stepmother for the children, her death, Heracles on his way to Thrace, the grief hidden from the guest, the feast and the servant, the fight with Death by the tomb, the veiled woman and the hand, the third day, and the happy man. Apollodorus, Library 1.9.15: the lion and the boar, the Fates, and the father and mother who would not die; 3.10.4: a year of service as a herdsman, and the twins of every cow. Aeschylus, Eumenides 723–728: the Fates beguiled with wine.
 - Albert Camus, The Myth of Sisyphus (1942).
 
 ## The art
 
 - **The stone:** a slab with a rounded top, about 9 pixels wide and 15 pixels high, standing on the slope like the props, a little in front of the path. Its relief, about 7 by 7 pixels, fills the top half. Short lines of carved letters fill the bottom half.
-- One sprite for the stone, in the colors of each world: pale limestone, dark lava rock, black stone, sandstone, gray granite. One relief for each tale: a rock, a volcano, a lyre, the eye of Horus, a wing, a sandal, an ear of wheat, the staff of Hermes, the sun, a dolphin, the labyrinth, a cow, the moon, and a peach, carved in the colors of the stone. The light of the time of day falls on it, as on the props.
+- One sprite for the stone, in the colors of each world: pale limestone, dark lava rock, black stone, sandstone, gray granite. One relief for each tale: a rock, a volcano, a lyre, the eye of Horus, a wing, a sandal, an ear of wheat, the staff of Hermes, the sun, a dolphin, the labyrinth, a cow, the moon, a peach, a chest on the waters, and a veiled head, carved in the colors of the stone. The light of the time of day falls on it, as on the props.
 - **The popup:** a bubble of paper (F1E4C8) with a dark outline (2A1A0C) and round corners, 2 pixels from the edges of the scene. The text is dark, from the left; the note is terra (C8643C). Its tail points down at the stone and ends 3 pixels above the top of the rock, so that it covers neither him nor the rock. The light of the time of day does not fall on it. `drawPopup` in `gfx/Popup.kt` draws a popup for any text, so other speakers can use it.
 
 ## The cards of the tales
 
-- The Cards tab of the Worlds screen has, under the cards of the jokers, "Tales told" and how many of the tales the player has heard to the end, such as "3/14". Then a card for each tale, in rows of 4, in the order of the ids. The list scrolls.
+- The Cards tab of the Worlds screen has, under the cards of the jokers, "Tales told" and how many of the tales the player has heard to the end, such as "3/16". Then a card for each tale, in rows of 4, in the order of the ids. The list scrolls.
 - A card is a small stone, like the stones by the path, in pale limestone. The card of a tale that the player has not heard is a smooth stone in the shade. From the first part told, its relief is carved on it, three times its size. Under the relief, a tale told has two lines of carved letters. The tale of the climb shows how far it has come, such as "9/15", until it is told.
 - A tap on a carved card opens the tale on a big stone: its relief, four times its size, its name, one text, and its part between two arrows, such as "9/15". A tap on the right half shows the next text, and a tap on the left half the text before. A tale told opens at its first text, and all of it can be read. The tale of the climb can be read up to the last part told. A tap off the stone, or the back button, closes it. The two texts of a part come one after the other, with the same part between the arrows.
 - While a tale is told whose card the player has not seen on the tab, a dot stands after "Cards", and the dot by the day shows, as for a new joker.
@@ -403,7 +449,7 @@ Id 13. Izanagi pushes on Mount Fuji. Like Sisyphus he came back from the dead, l
 - `stelesTold`: the parts told in this climb, 0 to 15. Back to 0 when a climb begins.
 - `nextStele`: where the next stone stands, in pixels walked, or -1 when no stone stands ahead. It stays until the part of the stone is told. Back to -1 when a climb begins.
 - `tale`: the id of the tale of this climb. Old saved games: 0, the tale of Sisyphus.
-- `talesTold`: the tales told, one bit for each id: 1 for Sisyphus, 2 for Typhon, 4 for Orpheus, 8 for Isis and Osiris, 16 for Bellerophon, 32 for Empedocles, 64 for Demeter and Persephone, 128 for Hermes, 256 for Phaethon, 512 for Arion, 1024 for Daedalus and Icarus, 2048 for Io, 4096 for Kaguya, 8192 for Izanagi and Izanami. Old saved games: 0.
+- `talesTold`: the tales told, one bit for each id: 1 for Sisyphus, 2 for Typhon, 4 for Orpheus, 8 for Isis and Osiris, 16 for Bellerophon, 32 for Empedocles, 64 for Demeter and Persephone, 128 for Hermes, 256 for Phaethon, 512 for Arion, 1024 for Daedalus and Icarus, 2048 for Io, 4096 for Kaguya, 8192 for Izanagi and Izanami, 16384 for Deucalion and Pyrrha, 32768 for Alcestis. Old saved games: 0.
 - `talesSeen`: the tales told whose cards the player has seen on the Cards tab, one bit for each id. Old saved games: 0, so the dot shows once for the tales told before.
 - `docs/saved-data.md` lists the new keys, with their start values for old saved games.
 
