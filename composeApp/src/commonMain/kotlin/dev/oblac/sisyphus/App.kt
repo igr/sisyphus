@@ -26,6 +26,7 @@ import dev.oblac.sisyphus.audio.loadCoin
 import dev.oblac.sisyphus.audio.loadFanfare
 import dev.oblac.sisyphus.audio.loadSpell
 import dev.oblac.sisyphus.audio.loadPopup
+import dev.oblac.sisyphus.audio.loadRoll
 import dev.oblac.sisyphus.audio.loadUi
 import dev.oblac.sisyphus.audio.loadVictory
 import dev.oblac.sisyphus.audio.loadWin
@@ -49,7 +50,7 @@ fun SisyphusApp(
     DisposableEffect(game, haptics, sound, screen) {
         game.onTick = {
             haptics.tick()
-            sound.tick(game.soundOn)
+            sound.tick(game.soundOn && game.ticksOn)
         }
         screen.onCoin = { sound.obol(game.soundOn) }
         game.onVision = { sound.vision(game.soundOn) }
@@ -66,7 +67,7 @@ fun SisyphusApp(
         }
     }
 
-    LaunchedEffect(sound) { sound.load(loadClick(), loadUi(), loadWin(), loadFanfare(), loadCoin(), loadSpell(), loadVictory(), loadPopup()) }
+    LaunchedEffect(sound) { sound.load(loadClick(), loadUi(), loadWin(), loadFanfare(), loadCoin(), loadSpell(), loadVictory(), loadPopup(), loadRoll()) }
 
     LaunchedEffect(screen) {
         var last = 0L
@@ -74,6 +75,7 @@ fun SisyphusApp(
         while (true) {
             withFrameNanos { now ->
                 if (last != 0L) screen.update(((now - last) / 1e9).coerceIn(0.0, 0.1))
+                sound.rock(game.rolling, game.soundOn && game.rollOn)
                 last = now
                 // Pixel art needs no more than 60 frames while turning, and 30 when the knob rests.
                 val busy = game.knob.held || game.knob.velocity != 0.0

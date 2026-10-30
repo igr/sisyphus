@@ -27,9 +27,13 @@ private const val READ = Config.READ_TURNS * PX_PER_TURN
 
 private const val TICKS_PER_TURN = 24
 private const val TICK_ANGLE = 2 * PI / TICKS_PER_TURN
+/** The rock stands still below a thousandth of a turn a second: its roll is silent there, not only very quiet. */
+private const val STILL = 1e-3
 private const val KEY_EFFORT = "effort"
 private const val KEY_POSITION = "position"
 private const val KEY_SOUND = "sound"
+private const val KEY_TICKS = "ticks"
+private const val KEY_ROLL = "roll"
 private const val KEY_KNOB = "knob"
 private const val KEY_QUOTE_SEED = "quoteSeed"
 private const val KEY_QUOTES_DRAWN = "quotesDrawn"
@@ -190,12 +194,21 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     /** Smoothed walking speed, in pixels per second. */
     var speed = 0.0
         private set
+    /** How fast the rock rolls: the smoothed turns a second that move him up. Below [STILL] turns a second, it stands still. */
+    var rolling = 0.0
+        private set
     var stillFor = 10.0
         private set
     var clock = 0.0
         private set
 
     var soundOn = store.load(KEY_SOUND) != 0.0
+        private set
+    /** The knob ticks at each step, unless the settings turned the ticks off. */
+    var ticksOn = store.load(KEY_TICKS) != 0.0
+        private set
+    /** The rock rolls as he pushes, unless the settings turned the roll off. */
+    var rollOn = store.load(KEY_ROLL) != 0.0
         private set
 
     /** The world he pushes in. */
@@ -393,6 +406,8 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         earn(turns * shop.bonus + helped)
         if (moved != 0.0) dirty = true
         if (dt > 0) speed += (moved / dt - speed) * (1 - exp(-dt * 8))
+        if (dt > 0) rolling += (turns / dt - rolling) * (1 - exp(-dt * 8))
+        if (rolling < STILL) rolling = 0.0
         stillFor = if (moved > 1e-4) 0.0 else stillFor + dt
         tick(dt)
         val drawn = quotes.drawn
@@ -786,6 +801,16 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     fun toggleSound() {
         soundOn = !soundOn
         store.save(KEY_SOUND, if (soundOn) 1.0 else 0.0)
+    }
+
+    fun toggleTicks() {
+        ticksOn = !ticksOn
+        store.save(KEY_TICKS, if (ticksOn) 1.0 else 0.0)
+    }
+
+    fun toggleRoll() {
+        rollOn = !rollOn
+        store.save(KEY_ROLL, if (rollOn) 1.0 else 0.0)
     }
 
     fun save() {

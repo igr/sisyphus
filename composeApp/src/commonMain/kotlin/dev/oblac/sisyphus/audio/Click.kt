@@ -5,8 +5,8 @@ import kotlin.math.abs
 
 const val SAMPLE_RATE = 44100
 
-/** The knob click, from composeResources/files/softclick.wav. */
-suspend fun loadClick(): FloatArray = readWav(Res.readBytes("files/softclick.wav"))
+/** The knob click, from composeResources/files/softclick.wav, at half its volume: it ticks all day, under the roll of the rock. */
+suspend fun loadClick(): FloatArray = readWav(Res.readBytes("files/softclick.wav")).apply { for (i in indices) this[i] *= 0.5f }
 
 /** The click of every other tap: menus, buttons, the help. From composeResources/files/ui-click.wav. */
 suspend fun loadUi(): FloatArray = readWav(Res.readBytes("files/ui-click.wav"))
@@ -28,6 +28,9 @@ suspend fun loadPopup(): FloatArray = readWav(Res.readBytes("files/popup.wav")).
 
 /** The victory at the top, from composeResources/files/success-fanfare.wav. */
 suspend fun loadVictory(): FloatArray = readWav(Res.readBytes("files/success-fanfare.wav"))
+
+/** The rock that rolls while he pushes, from composeResources/files/roll.wav: a loop of a wooden wheel, at 10% of its volume, as soft as the clicks at a brisk push. */
+suspend fun loadRoll(): FloatArray = readWav(Res.readBytes("files/roll.wav")).apply { for (i in indices) this[i] *= 0.1f }
 
 /**
  * Reads a WAV file of PCM, 16 or 24 bits, as mono samples in [-1, 1] at [SAMPLE_RATE].

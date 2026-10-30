@@ -6,12 +6,16 @@ import dev.oblac.sisyphus.audio.loadCoin
 import dev.oblac.sisyphus.audio.loadFanfare
 import dev.oblac.sisyphus.audio.loadSpell
 import dev.oblac.sisyphus.audio.loadPopup
+import dev.oblac.sisyphus.audio.loadRoll
 import dev.oblac.sisyphus.audio.loadUi
 import dev.oblac.sisyphus.audio.loadVictory
 import dev.oblac.sisyphus.audio.loadWin
+import dev.oblac.sisyphus.audio.readWav
 import kotlinx.coroutines.runBlocking
+import sisyphus.composeapp.generated.resources.Res
 import kotlin.math.abs
 import kotlin.test.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertTrue
 
 /** The mean square of the loudest half second. */
@@ -31,6 +35,20 @@ class SoundFileTest {
     fun theClickFilePlaysAtOnce() {
         val click = runBlocking { loadClick() }
         assertTrue(click.take(SAMPLE_RATE / 1000).any { abs(it) > 0.01f })
+    }
+
+    /** The knob ticks all day, so its click plays at half the volume of its file. */
+    @Test
+    fun theKnobClickPlaysAtHalfItsVolume() {
+        val file = runBlocking { readWav(Res.readBytes("files/softclick.wav")) }
+        assertContentEquals(FloatArray(file.size) { file[it] * 0.5f }, runBlocking { loadClick() })
+    }
+
+    /** The rock rolls all day too: its loop plays at a tenth of the volume of its file, as soft as the clicks at a brisk push. */
+    @Test
+    fun theRollPlaysAtATenthOfItsVolume() {
+        val file = runBlocking { readWav(Res.readBytes("files/roll.wav")) }
+        assertContentEquals(FloatArray(file.size) { file[it] * 0.1f }, runBlocking { loadRoll() })
     }
 
     @Test

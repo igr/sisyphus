@@ -408,7 +408,7 @@ class GameTest {
 
     @Test
     fun startingOverKeepsOnlyTheClimbsAndTheSound() {
-        val store = MemoryStore(allBought + mapOf("position" to 100.0, "summit" to 100.0, "effort" to 50_000.0, "obols" to 40.0, "sound" to 0.0))
+        val store = MemoryStore(allBought + mapOf("position" to 100.0, "summit" to 100.0, "effort" to 50_000.0, "obols" to 40.0, "sound" to 0.0, "ticks" to 0.0, "roll" to 0.0))
         val game = Game(store, seed = 1, wall = { 0.0 })
         game.startOver()
         for (g in listOf(game, Game(store, seed = 1, wall = { 0.0 }))) {
@@ -419,7 +419,45 @@ class GameTest {
             assertTrue(Line.entries.all { g.shop.tier(it) == 0 })
             assertNull(g.summit)
             assertFalse(g.soundOn)
+            assertFalse(g.ticksOn)
+            assertFalse(g.rollOn)
         }
+    }
+
+    @Test
+    fun theTicksAndTheRollPlayUntilTheSettingsTurnThemOff() {
+        val store = MemoryStore()
+        val game = Game(store, seed = 1, wall = { 0.0 })
+        assertTrue(game.ticksOn)
+        assertTrue(game.rollOn)
+        game.toggleTicks()
+        game.toggleRoll()
+        for (g in listOf(game, Game(store, seed = 1, wall = { 0.0 }))) {
+            assertFalse(g.ticksOn)
+            assertFalse(g.rollOn)
+        }
+        assertEquals(0.0, store.load("ticks"))
+        assertEquals(0.0, store.load("roll"))
+        game.toggleTicks()
+        assertTrue(game.ticksOn)
+        assertEquals(1.0, store.load("ticks"))
+    }
+
+    @Test
+    fun theRockRollsAsFastAsHePushes() {
+        val game = Game(MemoryStore(), seed = 1, wall = { 0.0 })
+        assertEquals(0.0, game.rolling)
+        game.turn(2 * PI, step = 2 * PI / 60)
+        assertEquals(1.0, game.rolling, 0.01)
+        repeat(60) { game.update(DT) }
+        assertEquals(0.0, game.rolling)
+    }
+
+    @Test
+    fun theRockDoesNotRollAtTheTop() {
+        val game = Game(MemoryStore(allBought + mapOf("position" to 100.0, "summit" to 100.0)), seed = 1, wall = { 0.0 })
+        game.turn(2 * PI, step = 2 * PI / 60)
+        assertEquals(0.0, game.rolling)
     }
 
     @Test

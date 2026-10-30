@@ -59,6 +59,8 @@ import dev.oblac.sisyphus.ui.Layout
 import dev.oblac.sisyphus.ui.OBOL_EMPTY
 import dev.oblac.sisyphus.ui.OBOL_FILL
 import dev.oblac.sisyphus.ui.Rect
+import dev.oblac.sisyphus.ui.SETTINGS
+import dev.oblac.sisyphus.ui.SETTINGS_TITLE
 import dev.oblac.sisyphus.ui.DOT_BOUGHT
 import dev.oblac.sisyphus.ui.DOT_LATER
 import dev.oblac.sisyphus.ui.DOT_OFFERED
@@ -527,13 +529,13 @@ class ScreenTest {
 
     private val allBought = Line.entries.associate { "shop." + it.id to 3.0 }
 
-    /** On the Worlds screen, across from Restore, the player's id for support: its last characters. A tap copies the whole id. */
+    /** At the bottom of the settings, the player's id for support: its last characters. A tap copies the whole id. */
     @Test
-    fun theWorldsScreenShowsTheSupportIdAndATapCopiesIt() {
+    fun theSettingsShowTheSupportIdAndATapCopiesIt() {
         val billing = FakeBilling()
         val s = Screen(Game(MemoryStore(), seed = 1), seed = 2, billing = billing).apply { resize(1179, 2556, 177, 102) }
         val l = s.layout!!
-        s.tap(l.dayLabel(s.game.day))
+        s.tap(l.settingsIcon)
         fun corner() = s.render().let { px -> (l.supportId.y until l.supportId.bottom).flatMap { y -> (l.supportId.x until l.supportId.right).map { px[it, y] } } }
         val tag = corner()
         assertEquals("ID cdef", supportTag(billing.userId, build = null))
@@ -544,14 +546,14 @@ class ScreenTest {
         assertEquals(tag, corner())
     }
 
-    /** Across from Restore, the build of the game stands after the player's id, such as "ID cdef [41]". */
+    /** In the settings, the build of the game stands after the player's id, such as "ID cdef [41]". */
     @Test
     fun theBuildStandsAfterTheSupportId() {
         assertEquals("ID cdef [41]", supportTag("abcdef", "41"))
         assertTrue(supportTag("abcdef", "41")!!.all(PixelFont::hasGlyph))
         assertEquals("[41]", supportTag(null, "41"))
         assertNull(supportTag(null, null))
-        fun corner(build: String?) = worlds(build).let { (s, px) ->
+        fun corner(build: String?) = settings(build).let { (s, px) ->
             val r = s.layout!!.supportId
             (r.y until r.bottom).flatMap { y -> (r.x until r.right).map { px[it, y] } }
         }
@@ -569,6 +571,18 @@ class ScreenTest {
         assertEquals(row(null), row("41"))
     }
 
+    /** The Worlds screen keeps only Restore at its bottom: the id and the build are in the settings. */
+    @Test
+    fun theWorldsScreenShowsNoSupportId() {
+        fun corner(build: String?) = worlds(build).let { (s, px) ->
+            val r = s.layout!!.supportId
+            (r.y until r.bottom).flatMap { y -> (r.x until r.right).map { px[it, y] } }
+        }
+        assertEquals(corner(null), corner("41"))
+        val (s, _) = worlds("41")
+        assertEquals(Touch.NONE, s.tap(s.layout!!.supportId))
+    }
+
     /** The Worlds screen of a phone with a store and [build], and its pixels. */
     private fun worlds(build: String?): Pair<Screen, Pixels> {
         val s = Screen(Game(MemoryStore(), seed = 1), seed = 2, billing = FakeBilling(), build = build).apply { resize(1179, 2556, 177, 102) }
@@ -576,22 +590,118 @@ class ScreenTest {
         return s to s.render()
     }
 
+    /** The settings of a phone with a store and [build], and their pixels. */
+    private fun settings(build: String?): Pair<Screen, Pixels> {
+        val s = Screen(Game(MemoryStore(), seed = 1), seed = 2, billing = FakeBilling(), build = build).apply { resize(1179, 2556, 177, 102) }
+        s.tap(s.layout!!.settingsIcon)
+        return s to s.render()
+    }
+
     @Test
     fun withoutAStoreThereIsNoSupportId() {
         val s = screen()
         val l = s.layout!!
-        s.tap(l.dayLabel(s.game.day))
+        s.tap(l.settingsIcon)
         assertNull(s.supportId)
         assertEquals(Touch.NONE, s.tap(l.supportId))
     }
 
     @Test
-    fun theSupportIdFitsBesideRestoreOnTheSmallestPhone() {
+    fun theSupportIdFitsUnderTheSettingsOnTheSmallestPhone() {
         val l = smallest().layout!!
-        assertTrue(l.restore.right + 6 <= l.supportId.x, "Restore ends at ${l.restore.right}, the id starts at ${l.supportId.x}")
         assertTrue(PixelFont.width("Copied") <= l.supportId.w)
         assertTrue(PixelFont.width("ID cdef [999]") <= l.supportId.w)
         assertEquals(l.coinIcon.right, l.supportId.right)
+        assertTrue(l.settingsRow(SETTINGS.size - 1).bottom + 6 <= l.supportId.y, "the last row ends at ${l.settingsRow(SETTINGS.size - 1).bottom}")
+    }
+
+    private fun area(px: Pixels, r: Rect) = (r.y until r.bottom).flatMap { y -> (r.x until r.right).map { px[it, y] } }
+
+    /** The gear stands in the bottom-right corner of the main screen, across from the help. */
+    @Test
+    fun theGearStandsAcrossFromTheHelp() {
+        val s = smallest()
+        val l = s.layout!!
+        assertEquals(l.helpIcon.y, l.settingsIcon.y)
+        assertEquals(l.coinIcon.right, l.settingsIcon.right)
+        assertTrue(area(s.render(), l.settingsIcon).any { (it shr 16 and 0xFF) > 0x80 })
+    }
+
+    @Test
+    fun theGearOpensTheSettingsAndTheirTitleClosesThem() {
+        val s = screen()
+        val l = s.layout!!
+        assertEquals(Touch.SETTINGS, s.tap(l.settingsIcon))
+        assertTrue(s.settingsOpen)
+        assertFalse(s.game.knob.held)
+        assertEquals(Touch.SETTINGS, s.tap(l.agoraTitle))
+        assertFalse(s.settingsOpen)
+    }
+
+    @Test
+    fun backClosesTheSettings() {
+        val s = screen()
+        s.tap(s.layout!!.settingsIcon)
+        assertTrue(s.back())
+        assertFalse(s.settingsOpen)
+        assertFalse(s.back())
+    }
+
+    /** Behind the settings, the knob does not turn, and the obols do not open the Agora: their corner is on the title row, which closes the settings. */
+    @Test
+    fun theSettingsTakeNoTouchOfTheGameBehindThem() {
+        val s = screen()
+        val l = s.layout!!
+        s.tap(l.settingsIcon)
+        assertEquals(Touch.NONE, s.tap(l.knobX + l.knobR * 0.6f, l.knobY + 0.5f))
+        assertFalse(s.game.knob.held)
+        assertEquals(Touch.SETTINGS, s.tap(l.coinIcon))
+        assertFalse(s.settingsOpen)
+        assertFalse(s.agoraOpen)
+    }
+
+    /** Each row of the settings turns its sound off and on: all the sound, the ticks of the knob, and the roll of the rock. A tap anywhere on a row turns it. */
+    @Test
+    fun theSettingsTurnTheSoundTheTicksAndTheRollOffAndOn() {
+        val store = MemoryStore()
+        val s = screen(store)
+        val l = s.layout!!
+        s.tap(l.settingsIcon)
+        fun switches() = s.render().let { px -> SETTINGS.indices.map { area(px, l.settingsSwitch(it)) } }
+        val on = switches()
+        for (i in SETTINGS.indices) assertEquals(Touch.SOUND, s.tap(l.settingsSwitch(i)))
+        assertEquals(listOf(false, false, false), listOf(s.game.soundOn, s.game.ticksOn, s.game.rollOn))
+        assertEquals(listOf(0.0, 0.0, 0.0), listOf("sound", "ticks", "roll").map { store.load(it) })
+        val off = switches()
+        for (i in SETTINGS.indices) assertNotEquals(on[i], off[i], "switch $i")
+        val row = l.settingsRow(1)
+        assertEquals(Touch.SOUND, s.tap(row.x + 2f, row.bottom - 2f))
+        assertTrue(s.game.ticksOn)
+    }
+
+    @Test
+    fun whileAllTheSoundIsOffTheTicksAndTheRollAreDim() {
+        val s = screen()
+        val l = s.layout!!
+        s.tap(l.settingsIcon)
+        val lit = area(s.render(), l.settingsRow(2))
+        s.tap(l.settingsSwitch(0))
+        assertNotEquals(lit, area(s.render(), l.settingsRow(2)))
+    }
+
+    @Test
+    fun theSettingsFitTheSmallestPhone() {
+        val l = smallest().layout!!
+        assertTrue(SETTINGS_TITLE.all(PixelFont::hasGlyph))
+        for ((i, setting) in SETTINGS.withIndex()) {
+            val (name, note) = setting
+            assertTrue((name + note).all(PixelFont::hasGlyph), name)
+            assertTrue(PixelFont.width(name) <= l.settingsText, name)
+            assertTrue(PixelFont.wrap(note, l.settingsText).size <= 2, note)
+            assertTrue(PixelFont.width("Off") + 6 <= l.settingsSwitch(i).w)
+            assertTrue(l.settingsSwitch(i).right <= l.settingsRow(i).right)
+            if (i > 0) assertTrue(l.settingsRow(i - 1).bottom < l.settingsRow(i).y)
+        }
     }
 
     /** In the final climb, a herm stands on the slope ahead of him: the scene changes only where it stands. */
@@ -1972,7 +2082,7 @@ class ScreenTest {
     }
 
     @Test
-    fun restoreAndTheIdStayOnBothTabs() {
+    fun restoreStaysOnBothTabs() {
         val s = Screen(Game(MemoryStore(), seed = 1), seed = 2, billing = FakeBilling(), build = "41").apply { resize(1179, 2556, 177, 102) }
         val l = s.layout!!
         s.tap(l.dayLabel(s.game.day))
@@ -2035,13 +2145,12 @@ class ScreenTest {
         assertTrue(contrast >= 4.5, "contrast $contrast")
     }
 
-    /** The list of the Worlds screen ends with a gap above Restore and the id, so that a row cut by the scroll never touches them. */
+    /** The list of the Worlds screen ends with a gap above Restore, so that a row cut by the scroll never touches it. */
     @Test
     fun theListStopsAboveTheBottomRow() {
         for (s in listOf(smallest(), screen())) {
             val l = s.layout!!
             assertTrue(l.worldList.bottom + 4 <= l.restore.y, "the list ends at ${l.worldList.bottom}, Restore starts at ${l.restore.y}")
-            assertTrue(l.worldList.bottom + 4 <= l.supportId.y)
         }
     }
 

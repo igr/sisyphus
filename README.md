@@ -59,8 +59,9 @@ The stores sell each world as a product of the same name, except Google Play, wh
 
 All game code is in `composeApp/src/commonMain`. The screen is one small framebuffer (about 150 pixels wide),
 scaled up by a whole number, so every pixel stays sharp. There are no image files: all art is made in code.
-The knob click, the click of every other tap, the sound of buying, the fanfare of a new world, the coin of a new obol, the spell of a vision and the pop of a bubble are sound files in
-`composeApp/src/commonMain/composeResources/files`. The speaker in the Agora Market turns all of them on and off.
+The knob click, the click of every other tap, the sound of buying, the fanfare of a new world, the coin of a new obol, the spell of a vision, the pop of a bubble
+and the loop of the rolling rock are sound files in `composeApp/src/commonMain/composeResources/files`. The speaker in the Agora Market turns all of them on and off.
+The gear across from the help opens the settings: all the sound, the ticks of the knob, the rolling rock, and the player's id and build for support.
 
 - `audio` — reads the game's sounds from their WAV files
 - `gfx` — framebuffer, dithering, pixel font

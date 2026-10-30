@@ -20,6 +20,7 @@ import dev.oblac.sisyphus.scene.drawVision
 import dev.oblac.sisyphus.ui.DEV_STEPS
 import dev.oblac.sisyphus.ui.GAIN_TIME
 import dev.oblac.sisyphus.ui.Layout
+import dev.oblac.sisyphus.ui.SETTINGS
 import dev.oblac.sisyphus.ui.supportTag
 import dev.oblac.sisyphus.ui.Rect
 import dev.oblac.sisyphus.ui.Tab
@@ -35,9 +36,9 @@ import kotlin.random.Random
 
 /**
  * What a finger touched. [LIST] is a finger on the list of the Worlds screen: a drag scrolls it, and on the worlds a tap chooses one when the finger lifts.
- * [MOVE] is the Yes that goes to another world. [COPY] copies the player's id for support.
+ * [MOVE] is the Yes that goes to another world. [COPY] copies the player's id for support. [SETTINGS] opens or closes the settings.
  */
-enum class Touch { NONE, KNOB, SOUND, SHOP, BUY, DEV, HELP, AGAIN, WORLDS, LIST, MOVE, COPY }
+enum class Touch { NONE, KNOB, SOUND, SHOP, BUY, DEV, HELP, AGAIN, WORLDS, LIST, MOVE, COPY, SETTINGS }
 
 /** New obols on the main screen: how many came together, and the seconds since. */
 class Gain(val obols: Int, val age: Double)
@@ -51,7 +52,7 @@ private const val TOUCH_SLOP = 6
 /** A finger on a list that moves less than this, in virtual pixels, taps; more scrolls. */
 private const val TAP_SLOP = 3f
 
-/** Seconds that the Worlds screen says "Copied" after a tap copied the player's id. */
+/** Seconds that the settings say "Copied" after a tap copied the player's id. */
 private const val COPIED_FOR = 2.0
 
 /** A coasting list slows down by this much a second, like the knob. */
@@ -62,7 +63,7 @@ private const val STOP_SPEED = 20.0
 
 /**
  * Owns the framebuffer and maps real screen pixels to virtual ones.
- * Platform code only forwards touches and shows [pixels]. The Worlds screen shows [build], the build number of the app, after the player's id.
+ * Platform code only forwards touches and shows [pixels]. The settings show [build], the build number of the app, after the player's id.
  */
 class Screen(
     val game: Game,
@@ -95,6 +96,9 @@ class Screen(
         private set
     /** The Worlds screen covers the whole screen while it is open; tapping the day opens it. */
     var worldsOpen = false
+        private set
+    /** The settings cover the whole screen while they are open; the gear across from the help opens them. */
+    var settingsOpen = false
         private set
     /** The tab that the Worlds screen shows. It stays as it was shown last, until the app closes. */
     var tab = Tab.WORLDS
@@ -136,9 +140,9 @@ class Screen(
     var ending: Ending? = null
         private set
 
-    /** The player's id at the store's service: a tap on the Worlds screen copies it, for support. Null without a store. */
+    /** The player's id at the store's service: a tap in the settings copies it, for support. Null without a store. */
     val supportId: String? get() = billing.userId
-    /** Seconds that the Worlds screen still says that the id is copied. */
+    /** Seconds that the settings still say that the id is copied. */
     private var copied = 0.0
 
     /** New obols that just came: the coin of the count glints, and their number rises under the count and fades. */
@@ -193,7 +197,7 @@ class Screen(
 
     fun update(dt: Double) {
         geo?.top = game.summit?.let { floor(it).toInt() }
-        game.covered = agoraOpen || worldsOpen || helpOpen || ending != null
+        game.covered = agoraOpen || worldsOpen || settingsOpen || helpOpen || ending != null
         game.update(dt)
         gain = gain?.let { Gain(it.obols, it.age + dt) }?.takeIf { it.age < GAIN_TIME }
         copied = max(0.0, copied - dt)
@@ -237,6 +241,9 @@ class Screen(
         if (agoraOpen) {
             ui.agora(pixels, l, game.shop, game.soundOn, devOpen, openWorlds)
             offer?.let { game.shop.next(it) }?.let { ui.offer(pixels, l, it) }
+        } else if (settingsOpen) {
+            ui.settings(pixels, l, listOf(game.soundOn, game.ticksOn, game.rollOn))
+            supportTag(supportId, build)?.let { ui.supportId(pixels, l.supportId, it, copied > 0) }
         } else if (worldsOpen) {
             ui.tabs(pixels, l, tab, game.newLabors, game.newJokers || game.newTales)
             when (tab) {
@@ -245,7 +252,6 @@ class Screen(
                 Tab.CARDS -> ui.cards(pixels, l, worldsScroll, game::met, game::partsHeard)
             }
             if (canRestore) ui.restore(pixels, l.restore, restoring)
-            supportTag(supportId, build)?.let { ui.supportId(pixels, l.supportId, it, copied > 0) }
             openCard?.let { ui.openCard(pixels, l, it, game.met(it)) }
             openTale?.let { ui.openTale(pixels, l, it, talePage, game.partsHeard(it)) }
             moving?.let { ui.confirm(pixels, l, it) }
@@ -269,12 +275,14 @@ class Screen(
             ui.quote(pixels, l.quote, game.quotes, game.clock, voice)
             ui.knob(pixels, l, game)
             ui.helpButton(pixels, l.helpIcon)
+            ui.settingsButton(pixels, l.settingsIcon)
         }
         val count = game.shop.obols.toInt()
-        if (!worldsOpen) ui.coins(pixels, l.coinIcon, if (game.climbed != null) null else count)
-        if (!agoraOpen && !worldsOpen && !helpOpen) gain?.let { ui.gain(pixels, l.coinIcon, it.obols, it.age, count) }
+        val covered = agoraOpen || worldsOpen || settingsOpen
+        if (!worldsOpen && !settingsOpen) ui.coins(pixels, l.coinIcon, if (game.climbed != null) null else count)
+        if (!covered && !helpOpen) gain?.let { ui.gain(pixels, l.coinIcon, it.obols, it.age, count) }
         if (helpOpen) ui.help(pixels, l, game.day, game.shop.obols, game.climbed)
-        if (!agoraOpen && !worldsOpen) ending?.let { ui.ending(pixels, l, it, game.climbs) }
+        if (!covered) ending?.let { ui.ending(pixels, l, it, game.climbs) }
         return pixels
     }
 
@@ -284,7 +292,7 @@ class Screen(
         if (paying) return Touch.NONE
         val x = (xPx - offsetX) / scale
         val y = (yPx - offsetY) / scale
-        if (!worldsOpen && !agoraOpen) ending?.let {
+        if (!worldsOpen && !agoraOpen && !settingsOpen) ending?.let {
             if (!it.waiting) return Touch.NONE
             it.choose()
             showWorlds(Tab.WORLDS)
@@ -294,6 +302,7 @@ class Screen(
             helpOpen = false
             return Touch.HELP
         }
+        if (settingsOpen) return pressSettings(x, y, l)
         if (!worldsOpen && l.coinIcon.near(x, y, TOUCH_SLOP)) {
             cover()
             agoraOpen = !agoraOpen
@@ -384,6 +393,11 @@ class Screen(
             helpOpen = true
             return Touch.HELP
         }
+        if (l.settingsIcon.near(x, y, TOUCH_SLOP)) {
+            cover()
+            settingsOpen = true
+            return Touch.SETTINGS
+        }
         val dx = x - (l.knobX + 0.5)
         val dy = y - (l.knobY + 0.5)
         if (y < l.quote.bottom && sqrt(dx * dx + dy * dy) > l.knobR * 1.4) return Touch.NONE
@@ -444,14 +458,29 @@ class Screen(
             billing.restore { restoring = false }
             return Touch.WORLDS
         }
-        if (supportId != null && l.supportId.near(x, y, TOUCH_SLOP)) {
-            copied = COPIED_FOR
-            return Touch.COPY
-        }
         if (!l.worldList.near(x, y, 0)) return Touch.NONE
         drag = ListDrag(x, y, listScroll, stopped = abs(listSpeed) > STOP_SPEED)
         listSpeed = 0.0
         return Touch.LIST
+    }
+
+    /** In the settings, a tap on a row turns its sound off or on, a tap on the id copies it, and a tap on the title row closes them. */
+    private fun pressSettings(x: Float, y: Float, l: Layout): Touch {
+        if (l.agoraTitle.near(x, y, 0)) {
+            settingsOpen = false
+            return Touch.SETTINGS
+        }
+        when (SETTINGS.indices.firstOrNull { l.settingsRow(it).near(x, y, 0) }) {
+            0 -> game.toggleSound()
+            1 -> game.toggleTicks()
+            2 -> game.toggleRoll()
+            else -> {
+                if (supportId == null || !l.supportId.near(x, y, TOUCH_SLOP)) return Touch.NONE
+                copied = COPIED_FOR
+                return Touch.COPY
+            }
+        }
+        return Touch.SOUND
     }
 
     fun move(xPx: Float, yPx: Float) {
@@ -559,7 +588,7 @@ class Screen(
     }
 
     /**
-     * Back closes the help, the offer, a question, an open card or tale, the Worlds screen or the Agora. Tells whether there was something to close.
+     * Back closes the help, the offer, a question, an open card or tale, the Worlds screen, the settings or the Agora. Tells whether there was something to close.
      * While the store's payment sheet is open, back waits for it.
      */
     fun back(): Boolean {
@@ -590,6 +619,10 @@ class Screen(
         }
         if (worldsOpen) {
             worldsOpen = false
+            return true
+        }
+        if (settingsOpen) {
+            settingsOpen = false
             return true
         }
         if (!agoraOpen) return false

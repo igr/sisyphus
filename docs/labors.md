@@ -69,7 +69,7 @@ At 5 minutes a day, a climb takes about a week of play: about 2,300 turns of the
 8. **At the start.** Labors that are already done when the game starts, for example from the counts of an older saved game, get no news. They show the dot.
 9. **No climbs under the day.** The main screen no longer shows the peak and the number of climbs under the day. The Labors tab shows them, in Hills climbed. The ending still says how many times Sisyphus reached the top.
 
-The bottom row of the Worlds screen, "Restore" and the support ID, stays on both tabs.
+The bottom row of the Worlds screen, "Restore", stays on both tabs. The support ID is in the settings.
 
 The help says: "The sun moves only while you push. Tap the day for worlds and labors." The text is this short so that the notes of the help fit the scene on the smallest phone.
 

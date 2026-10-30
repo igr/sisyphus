@@ -9,13 +9,14 @@ import platform.AVFAudio.AVAudioFormat
 import platform.AVFAudio.AVAudioPCMBuffer
 import platform.AVFAudio.AVAudioPlayerNode
 import platform.AVFAudio.AVAudioPlayerNodeBufferInterrupts
+import platform.AVFAudio.AVAudioPlayerNodeBufferLoops
 import platform.AVFAudio.AVAudioSession
 import platform.AVFAudio.AVAudioSessionCategoryAmbient
 import platform.AVFAudio.setPreferredIOBufferDuration
 
 /**
  * Plays the knob click, the click of every other tap, the sound of buying, the fanfare, the coin, the spell, the victory and the pop of a bubble. The ambient session mixes with other apps' music
- * and stays quiet when the phone is on silent.
+ * and stays quiet when the phone is on silent. The roll of the rock loops from its first push, and its volume follows the push.
  */
 @OptIn(ExperimentalForeignApi::class)
 internal class EngineSound : Sound {
@@ -29,7 +30,8 @@ internal class EngineSound : Sound {
     private val spellPlayer = AVAudioPlayerNode()
     private val victoryPlayer = AVAudioPlayerNode()
     private val popupPlayer = AVAudioPlayerNode()
-    private val nodes = players + uiPlayer + winPlayer + fanfarePlayer + coinPlayer + spellPlayer + victoryPlayer + popupPlayer
+    private val rollPlayer = AVAudioPlayerNode()
+    private val nodes = players + uiPlayer + winPlayer + fanfarePlayer + coinPlayer + spellPlayer + victoryPlayer + popupPlayer + rollPlayer
     private var clickBuffer: AVAudioPCMBuffer? = null
     private var uiBuffer: AVAudioPCMBuffer? = null
     private var winBuffer: AVAudioPCMBuffer? = null
@@ -38,6 +40,8 @@ internal class EngineSound : Sound {
     private var spellBuffer: AVAudioPCMBuffer? = null
     private var victoryBuffer: AVAudioPCMBuffer? = null
     private var popupBuffer: AVAudioPCMBuffer? = null
+    private var rollBuffer: AVAudioPCMBuffer? = null
+    private var rolling = false
     private var next = 0
 
     init {
@@ -50,7 +54,7 @@ internal class EngineSound : Sound {
         }
     }
 
-    override fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray, spell: FloatArray, victory: FloatArray, popup: FloatArray) {
+    override fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray, spell: FloatArray, victory: FloatArray, popup: FloatArray, roll: FloatArray) {
         clickBuffer = buffer(click)
         uiBuffer = buffer(ui)
         winBuffer = buffer(win)
@@ -59,6 +63,7 @@ internal class EngineSound : Sound {
         spellBuffer = buffer(spell)
         victoryBuffer = buffer(victory)
         popupBuffer = buffer(popup)
+        rollBuffer = buffer(roll)
     }
 
     override fun prepare() {
@@ -112,6 +117,15 @@ internal class EngineSound : Sound {
         val buffer = popupBuffer ?: return
         if (!start()) return
         popupPlayer.scheduleBuffer(buffer, atTime = null, options = AVAudioPlayerNodeBufferInterrupts, completionHandler = null)
+    }
+
+    override fun roll(level: Float) {
+        rollPlayer.volume = level
+        val buffer = rollBuffer ?: return
+        if (level == 0f || rolling && engine.running) return
+        if (!start()) return
+        rollPlayer.scheduleBuffer(buffer, atTime = null, options = AVAudioPlayerNodeBufferLoops or AVAudioPlayerNodeBufferInterrupts, completionHandler = null)
+        rolling = true
     }
 
     override fun pause() {

@@ -50,11 +50,13 @@ The last two columns show what happens to each value when Sisyphus reaches the t
 | `met.0` to `met.11` | How many times the player met each joker, by the id of the joker. A joker met once or more has the card face up, and the count tells which line comes next. | Kept | Kept |
 | `jokersSeen` | The cards seen face up on the Cards tab, one bit for each id: 1 for Diogenes, 2 for Alice, up to 2048 for Scheherazade. | Kept | Kept |
 | `sound` | 1 when the sound is on, 0 when it is off. | Kept | Kept |
+| `ticks` | 1 when the knob ticks, 0 when the settings turned the ticks off. | Kept | Kept |
+| `roll` | 1 when the rock rolls with a sound, 0 when the settings turned the roll off. | Kept | Kept |
 | `savedAt` | The time of the last save, in seconds since 1970. | Saved again | Saved again |
 
 When a key is not there, the game uses a start value:
 
-- `sound`: on.
+- `sound`, `ticks` and `roll`: on.
 - `summit`: no final climb.
 - `quoteSeed`: a random number.
 - `nextVision`: from 70 to 100 turns, at random, in a new game, at the start of each climb, and in a game saved before the visions. A count saved with other numbers is never more than the longest wait between visions now: 600 turns.
@@ -91,7 +93,7 @@ The game saves all keys at these times:
 - When the app goes to the background, and when the desktop window closes.
 - After a purchase, after a dev screen button, at the top, after a move to another world, and when the Labors tab or the Cards tab opens.
 
-The sound setting saves only the `sound` key, at the moment that the player changes it.
+A switch of the settings, or the speaker of the Agora, saves only its own key, `sound`, `ticks` or `roll`, at the moment that the player changes it.
 
 ## Time away
 

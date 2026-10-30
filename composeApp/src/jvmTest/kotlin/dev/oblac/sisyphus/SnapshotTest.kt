@@ -294,6 +294,21 @@ class SnapshotTest {
         }
     }
 
+    /** The settings with every sound on, on a big phone, and with all the sound off on the narrowest one, so that the other rows are dim. */
+    @Test
+    fun settings() {
+        for ((name, size, store) in listOf(
+            Triple("15-settings", listOf(1179, 2556, 177, 102), emptyMap()),
+            Triple("15-settings-small", listOf(1080, 2340, 144, 102), mapOf("sound" to 0.0, "roll" to 0.0)),
+        )) {
+            val s = Screen(Game(MemoryStore(store), seed = 3), seed = 5, build = "105")
+            s.resize(size[0], size[1], size[2], size[3])
+            val gear = s.layout!!.settingsIcon
+            s.press((gear.x + gear.w / 2f) * s.scale + s.offsetX, (gear.y + gear.h / 2f) * s.scale + s.offsetY)
+            write(s.render(), name, 3)
+        }
+    }
+
     /** The Labors tab with none done on the narrowest phone, and with some done on a big one; and the dot after the day. */
     @Test
     fun labors() {

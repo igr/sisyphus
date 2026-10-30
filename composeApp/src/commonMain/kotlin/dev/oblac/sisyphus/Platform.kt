@@ -4,6 +4,8 @@ import androidx.compose.ui.graphics.ImageBitmap
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.gfx.PixelFont
 import dev.oblac.sisyphus.gfx.Pixels
+import kotlin.math.min
+import kotlin.math.sqrt
 import kotlin.time.Clock
 
 interface Store {
@@ -64,9 +66,9 @@ object NoHaptics : Haptics {
 interface Sound {
     /**
      * Takes the knob click, the click of every other tap, the sound of buying, the fanfare, the coin, the spell of a vision,
-     * the victory at the top and the pop of a bubble, as mono samples at 44.1 kHz.
+     * the victory at the top, the pop of a bubble and the loop of the rolling rock, as mono samples at 44.1 kHz.
      */
-    fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray, spell: FloatArray, victory: FloatArray, popup: FloatArray) {}
+    fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray, spell: FloatArray, victory: FloatArray, popup: FloatArray, roll: FloatArray) {}
     /** Called when a finger touches the knob, before the first click. */
     fun prepare() {}
     /** One detent of the knob. */
@@ -85,6 +87,8 @@ interface Sound {
     fun victory() {}
     /** Plays when a bubble opens, over a stone or a joker. */
     fun popup() {}
+    /** The rock rolls in a loop as loud as [level]: 0 while it stands still, 1 at a brisk push. */
+    fun roll(level: Float) {}
     /** Releases the audio hardware until the next click. */
     fun pause() {}
 }
@@ -92,6 +96,13 @@ interface Sound {
 /** Each detent of the knob clicks, unless the sound is off. */
 fun Sound.tick(on: Boolean) {
     if (on) click()
+}
+
+private const val BRISK_TURNS = 1.5
+
+/** The rock rolls as fast as he pushes it, [turns] a second, and loudest at [BRISK_TURNS] a second. It is silent while the sound is off. */
+fun Sound.rock(turns: Double, on: Boolean) {
+    roll(if (on) sqrt(min(1.0, turns / BRISK_TURNS)).toFloat() else 0f)
 }
 
 /** A new obol plays the coin, unless the sound is off. */
@@ -128,7 +139,7 @@ fun Sound.play(touch: Touch, on: Boolean) {
         Touch.KNOB -> prepare()
         Touch.BUY -> win()
         Touch.MOVE -> fanfare()
-        Touch.SOUND, Touch.SHOP, Touch.DEV, Touch.HELP, Touch.AGAIN, Touch.WORLDS, Touch.COPY -> ui()
+        Touch.SOUND, Touch.SHOP, Touch.DEV, Touch.HELP, Touch.AGAIN, Touch.WORLDS, Touch.COPY, Touch.SETTINGS -> ui()
     }
 }
 

@@ -98,6 +98,17 @@ private val SPEAKER_OFF = listOf(
     "...#.......",
 )
 
+/** In the bottom-right corner of the main screen, across from the help: it opens the settings. */
+private val GEAR = listOf(
+    "..#.#..",
+    ".#####.",
+    "##...##",
+    ".#...#.",
+    "##...##",
+    ".#####.",
+    "..#.#..",
+)
+
 internal val COIN = listOf(
     "..###..",
     ".#hhh#.",
@@ -180,7 +191,7 @@ private val BLACK = rgb(0x000000)
 
 /** The question before buying a world, and what the world costs: once, and the store's price when it has answered. */
 /**
- * The bottom-right corner of the Worlds screen: "ID" and the last characters of the player's id for support, then the build
+ * The bottom-right corner of the settings: "ID" and the last characters of the player's id for support, then the build
  * of the game, such as "ID cdef [41]". A tap copies the whole id.
  */
 internal fun supportTag(id: String?, build: String?): String? =
@@ -236,6 +247,15 @@ internal fun buyText(price: String?) = "You pay ${if (price == null) "" else "$p
 
 /** The button on the Worlds screen that asks the store for the worlds bought before. */
 internal const val RESTORE = "Restore"
+
+internal const val SETTINGS_TITLE = "Settings"
+
+/** The rows of the settings, from the top: the name of each switch, and what it turns on and off. */
+internal val SETTINGS = listOf(
+    "Sound" to "All the sounds of the game.",
+    "Knob ticks" to "A soft click at each step of the knob.",
+    "Rolling rock" to "The rock rolls as you push.",
+)
 
 /** What going to another world costs, in its question. */
 internal const val MOVE_WARNING = "The climb starts over there: day 1, no items and no obols. Your climbs stay."
@@ -383,6 +403,36 @@ class UiRenderer {
     }
 
     fun helpButton(px: Pixels, r: Rect) = PixelFont.draw(px, "(?)", r.x, r.y, TERRA)
+
+    fun settingsButton(px: Pixels, r: Rect) = mark(px, r.x, r.y, GEAR, TERRA)
+
+    /**
+     * The settings: a row for all the sound, for the ticks of the knob and for the roll of the rock, each with its switch.
+     * [on] tells which are on, in the order of [SETTINGS]. While all the sound is off, the other rows are dim.
+     */
+    fun settings(px: Pixels, layout: Layout, on: List<Boolean>) {
+        val t = layout.agoraTitle
+        PixelFont.draw(px, SETTINGS_TITLE, t.x, t.y, CREAM)
+        px.hline(t.x, t.right - 1, t.bottom + 2, TERRA_DARK)
+        for ((i, setting) in SETTINGS.withIndex()) {
+            val (name, note) = setting
+            val r = layout.settingsRow(i)
+            val dim = i > 0 && !on[0]
+            PixelFont.draw(px, name, r.x, r.y + 3, if (dim) DISABLED else CREAM)
+            for ((k, line) in PixelFont.wrap(note, layout.settingsText).withIndex()) {
+                PixelFont.draw(px, line, r.x, r.y + 3 + (k + 1) * PixelFont.LINE_HEIGHT, if (dim) DISABLED else TERRA_LIGHT)
+            }
+            switch(px, layout.settingsSwitch(i), on[i], dim)
+        }
+    }
+
+    /** A switch of the settings: bright while on, dark while off or [dim]. */
+    private fun switch(px: Pixels, r: Rect, on: Boolean, dim: Boolean) {
+        val bright = on && !dim
+        val label = if (on) "On" else "Off"
+        frame(px, r, if (bright) TERRA else TERRA_DARK)
+        PixelFont.draw(px, label, r.x + (r.w - PixelFont.width(label) + 1) / 2, r.y + 3, if (bright) CREAM else DISABLED)
+    }
 
     /** The help, over the main screen: all dims but the day, the obol bar, the obols and the knob, and a note points at each. */
     fun help(px: Pixels, layout: Layout, day: Int, obols: Double, climbed: Double? = null) {

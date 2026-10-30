@@ -55,6 +55,9 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     /** In the bottom-left corner of the main screen, "(?)" opens the help. */
     val helpIcon = Rect(left + 2, bottom - SPEAKER_HEIGHT - 1, PixelFont.width("(?)"), PixelFont.CAP_HEIGHT)
 
+    /** In the bottom-right corner of the main screen, across from the help, the gear opens the settings. */
+    val settingsIcon = Rect(coinIcon.right - GEAR, helpIcon.y, GEAR, GEAR)
+
     /** Where the scene draws "DAY n" in its top-left corner, outline included. */
     fun dayLabel(day: Int) = Rect(scene.x + 3, scene.y + 3, PixelFont.width("DAY $day") + 2, PixelFont.CAP_HEIGHT + 2)
 
@@ -224,8 +227,20 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     /** In the bottom-left corner of the Worlds screen, the button that asks the store for the worlds bought before. */
     val restore = Rect(left + 2, agoraSound.y, PixelFont.width(RESTORE), PixelFont.CAP_HEIGHT)
 
-    /** In the bottom-right corner of the Worlds screen, across from Restore, the player's id for support and the build of the game. */
+    /** In the bottom-right corner of the settings, the player's id for support and the build of the game. */
     val supportId = PixelFont.width("ID 3f9a [999]").let { w -> Rect(coinIcon.right - w, agoraSound.y, w, PixelFont.CAP_HEIGHT) }
+
+    /** The switch of a row of the settings: wide enough for "Off". */
+    private val switchWidth = PixelFont.width("Off") + 10
+
+    /** One row of the settings, from the top: the name and the note of a sound at the left, and its switch at the right. */
+    fun settingsRow(index: Int) = Rect(agoraTitle.x, agoraTitle.bottom + 6 + index * (SETTINGS_ROW + 8), agoraTitle.w, SETTINGS_ROW)
+
+    /** The switch of a row of the settings, On or Off, at the right of its name. */
+    fun settingsSwitch(index: Int) = settingsRow(index).let { Rect(it.right - switchWidth, it.y, switchWidth, BUTTON_HEIGHT) }
+
+    /** The width of the name and the note of a row of the settings, before its switch. */
+    val settingsText = agoraTitle.w - switchWidth - 4
 
     val knobX: Int
     val knobY: Int
@@ -244,6 +259,9 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
         const val BAND_HEIGHT = 9
         const val SPEAKER_WIDTH = 11
         const val SPEAKER_HEIGHT = 7
+        const val GEAR = 7
+        /** A row of the settings: its name on the line of its switch, and two lines of its note under it. */
+        const val SETTINGS_ROW = 3 + 3 * PixelFont.LINE_HEIGHT
         const val COIN_SIZE = 7
         /** The obol bar: four tiles of the Greek key, each 7 pixels wide. */
         const val OBOL_BAR = 28

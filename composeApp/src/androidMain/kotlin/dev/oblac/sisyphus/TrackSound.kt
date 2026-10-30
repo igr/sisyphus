@@ -7,7 +7,8 @@ import dev.oblac.sisyphus.audio.SAMPLE_RATE
 
 /**
  * Plays the knob click: three short tracks take turns, each restarted at a detent.
- * The click of every other tap, the sound of buying, the fanfare, the coin, the spell, the victory and the pop of a bubble have a track each. Without audio it stays silent.
+ * The click of every other tap, the sound of buying, the fanfare, the coin, the spell, the victory and the pop of a bubble have a track each.
+ * The roll of the rock loops on a track of its own, which pauses while the rock stands. Without audio it stays silent.
  */
 internal class TrackSound : Sound {
     private var tracks: List<AudioTrack> = emptyList()
@@ -18,9 +19,10 @@ internal class TrackSound : Sound {
     private var spellTrack: AudioTrack? = null
     private var victoryTrack: AudioTrack? = null
     private var popupTrack: AudioTrack? = null
+    private var rollTrack: AudioTrack? = null
     private var next = 0
 
-    override fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray, spell: FloatArray, victory: FloatArray, popup: FloatArray) {
+    override fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray, spell: FloatArray, victory: FloatArray, popup: FloatArray, roll: FloatArray) {
         try {
             tracks = List(3) { track(click) }.filter { it.state == AudioTrack.STATE_INITIALIZED }
             uiTrack = track(ui).takeIf { it.state == AudioTrack.STATE_INITIALIZED }
@@ -30,6 +32,7 @@ internal class TrackSound : Sound {
             spellTrack = track(spell).takeIf { it.state == AudioTrack.STATE_INITIALIZED }
             victoryTrack = track(victory).takeIf { it.state == AudioTrack.STATE_INITIALIZED }
             popupTrack = track(popup).takeIf { it.state == AudioTrack.STATE_INITIALIZED }
+            rollTrack = track(roll).takeIf { it.state == AudioTrack.STATE_INITIALIZED }?.apply { setLoopPoints(0, roll.size, -1) }
         } catch (e: Exception) {
             tracks = emptyList()
             uiTrack = null
@@ -39,6 +42,7 @@ internal class TrackSound : Sound {
             spellTrack = null
             victoryTrack = null
             popupTrack = null
+            rollTrack = null
         }
     }
 
@@ -75,6 +79,21 @@ internal class TrackSound : Sound {
         popupTrack?.restart()
     }
 
+    override fun roll(level: Float) {
+        val track = rollTrack ?: return
+        val playing = track.playState == AudioTrack.PLAYSTATE_PLAYING
+        if (level == 0f) {
+            if (playing) track.pause()
+            return
+        }
+        track.setVolume(level)
+        if (!playing) track.play()
+    }
+
+    override fun pause() {
+        roll(0f)
+    }
+
     fun release() {
         tracks.forEach { it.release() }
         uiTrack?.release()
@@ -84,6 +103,7 @@ internal class TrackSound : Sound {
         spellTrack?.release()
         victoryTrack?.release()
         popupTrack?.release()
+        rollTrack?.release()
     }
 
     private fun AudioTrack.restart() {
