@@ -50,8 +50,8 @@ Apple reviews the first purchases only with a version: on the version page, add 
 
 ## Screenshots
 
-- iPhone 6.9" Display: `../screenshots/6.9-inch/1-morning.png` to `5-rain.png`
-- iPhone 6.3" and 6.1" Display: `../screenshots/6.3-inch/1-morning.png` to `5-rain.png`
+- iPhone 6.9" Display: `../screenshots/6.9-inch/1-morning.png` to `5-diogenes.png`
+- iPhone 6.3" and 6.1" Display: `../screenshots/6.3-inch/1-morning.png` to `5-diogenes.png`
 
 ## Build
 

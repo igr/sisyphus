@@ -33,7 +33,7 @@ Turn the bronze knob and push the boulder up an endless hill. Calm pixel art.
 
 - App icon (512 × 512): `icon-512.png`
 - Feature graphic (1024 × 500): `feature-graphic.png`
-- Phone screenshots (1320 × 2640): `screenshots/1-morning.png` to `5-rain.png`.
+- Phone screenshots (1320 × 2640): `screenshots/1-morning.png` to `5-diogenes.png`.
 
 Google Play takes no picture that is more than twice as tall as it is wide, so its screenshots are the 6.9-inch iPhone screenshots of `../screenshots/` with 114 rows cut at the top and at the bottom. After new iPhone screenshots, cut them again, from this folder:
 

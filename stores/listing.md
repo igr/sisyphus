@@ -50,9 +50,19 @@ Both stores take this text: the What's New of the App Store, and the release not
 
 ## Screenshots
 
-`screenshots/` holds the screenshots of both stores, taken on the iPhone simulator, five of each size: `1-morning.png` to `5-rain.png`.
+`screenshots/` holds the screenshots of both stores, taken on the iPhone simulator, five of each size: `1-morning.png`, `2-vision.png`, `3-sunset.png`, `4-night.png` and `5-diogenes.png`.
 
-- `6.9-inch/`: 1320 × 2868, from the iPhone 16 Pro Max. App Store Connect asks for this size, and can scale it for the smaller iPhones.
-- `6.3-inch/`: 1206 × 2622, from the iPhone 16 Pro, for the 6.3" and 6.1" displays.
+- `6.9-inch/`: 1320 × 2868, from the iPhone 17 Pro Max. App Store Connect asks for this size, and can scale it for the smaller iPhones.
+- `6.3-inch/`: 1206 × 2622, from the iPhone 17 Pro, for the 6.3" and 6.1" displays.
+
+To take them again, install a Release build on a new simulator, and launch it once for each shot with the saved keys as arguments, such as `xcrun simctl launch <sim> dev.oblac.sisyphus -sisyphus.effort 1762.56`. Each shot starts from a new install, with `-sisyphus.laborsSeen 20 -sisyphus.quotesDrawn 1 -sisyphus.nextStele 50000`, and `-sisyphus.nextJoker 50000` in all but Diogenes. The screenshots must have no alpha channel.
+
+| Shot | Arguments |
+|---|---|
+| `1-morning` | `-sisyphus.effort 1762.56 -sisyphus.position 420 -sisyphus.quoteSeed 694 -sisyphus.knob 0.6 -sisyphus.obols 4` |
+| `2-vision` | `-sisyphus.effort 7214.4 -sisyphus.position 700 -sisyphus.quoteSeed 1070 -sisyphus.knob 1.2 -sisyphus.obols 11 -sisyphus.visionSeed 1 -sisyphus.visionsDrawn 1 -sisyphus.nextVision 0.02`, then a turn of the knob; the shot is taken when the Sphinx asks |
+| `3-sunset` | `-sisyphus.effort 9905.76 -sisyphus.position 900 -sisyphus.quoteSeed 805 -sisyphus.knob 4.0 -sisyphus.obols 17` |
+| `4-night` | `-sisyphus.effort 10938.24 -sisyphus.position 580 -sisyphus.quoteSeed 312 -sisyphus.knob 5.4 -sisyphus.obols 23` |
+| `5-diogenes` | `-sisyphus.effort 7110.72 -sisyphus.position 100 -sisyphus.quoteSeed 1879 -sisyphus.knob 2.3 -sisyphus.obols 8 -sisyphus.joker 0 -sisyphus.met.0 0 -sisyphus.nextJoker 134` |
 
 Google Play takes no picture that is more than twice as tall as it is wide. Its screenshots in `playstore/screenshots/` are the 6.9-inch ones, cut to 1320 × 2640: see `playstore/listing.md`.
