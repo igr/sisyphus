@@ -71,11 +71,12 @@ class SoundFileTest {
         assertTrue(fanfare.size in 2 * SAMPLE_RATE..5 * SAMPLE_RATE, "${fanfare.size} samples")
     }
 
+    /** The coins rustle softly before the first clink, so it comes within a tenth of a second, not at once. */
     @Test
-    fun theCoinRingsWithinTenMillisecondsAndEndsWithinThreeSeconds() {
+    fun theCoinsClinkWithinATenthOfASecondAndEndWithinASecond() {
         val coin = runBlocking { loadCoin() }
-        assertTrue(coin.take(SAMPLE_RATE / 100).any { abs(it) > 0.1f })
-        assertTrue(coin.size in SAMPLE_RATE / 2..3 * SAMPLE_RATE, "${coin.size} samples")
+        assertTrue(coin.take(SAMPLE_RATE / 10).any { abs(it) > 0.1f })
+        assertTrue(coin.size in SAMPLE_RATE / 4..SAMPLE_RATE, "${coin.size} samples")
     }
 
     @Test
