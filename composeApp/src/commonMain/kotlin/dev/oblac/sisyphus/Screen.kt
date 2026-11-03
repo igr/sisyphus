@@ -254,7 +254,7 @@ class Screen(
         val renderer = sceneRenderer ?: return pixels
         ui.background(pixels)
         if (agoraOpen) {
-            ui.agora(pixels, l, game.shop, game.soundOn, devOpen, openWorlds)
+            ui.agora(pixels, l, game.shop, devOpen, openWorlds)
             offer?.let { game.shop.next(it) }?.let { ui.offer(pixels, l, it) }
         } else if (settingsOpen) {
             ui.settings(pixels, l, listOf(game.soundOn, game.ticksOn, game.rollOn))
@@ -336,10 +336,6 @@ class Screen(
                 if (l.offer.near(x, y, 0) && !l.offerNo.near(x, y, 0)) return Touch.NONE
                 offer = null
                 return Touch.SHOP
-            }
-            if (l.agoraSound.near(x, y, TOUCH_SLOP)) {
-                game.toggleSound()
-                return Touch.SOUND
             }
             if (dev && l.agoraTitle.near(x, y, 0)) {
                 devOpen = !devOpen

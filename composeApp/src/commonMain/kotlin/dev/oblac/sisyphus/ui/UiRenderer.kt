@@ -81,26 +81,6 @@ private val MEANDER = listOf(
     ".######",
 )
 
-private val SPEAKER_ON = listOf(
-    "...#....#..",
-    "..##..#..#.",
-    "####...#..#",
-    "####...#..#",
-    "####...#..#",
-    "..##..#..#.",
-    "...#....#..",
-)
-
-private val SPEAKER_OFF = listOf(
-    "...#.......",
-    "..##..#...#",
-    "####...#.#.",
-    "####....#..",
-    "####...#.#.",
-    "..##..#...#",
-    "...#.......",
-)
-
 /** In the bottom-right corner of the main screen, across from the help: it opens the settings. */
 private val GEAR = listOf(
     "..#.#..",
@@ -346,13 +326,6 @@ class UiRenderer {
         if (typing && floor(clock * 4).toInt() % 2 == 0) px.fillRect(cursorX, cursorY, 3, PixelFont.CAP_HEIGHT, TERRA)
     }
 
-    fun speaker(px: Pixels, r: Rect, on: Boolean) {
-        val color = if (on) TERRA else TERRA_DARK
-        for ((y, row) in (if (on) SPEAKER_ON else SPEAKER_OFF).withIndex()) {
-            for ((x, ch) in row.withIndex()) if (ch == '#') px[r.x + x, r.y + y] = color
-        }
-    }
-
     /** The obols: a coin and how many there are, outlined like the day across from them. Without [obols], only the coin. */
     fun coins(px: Pixels, r: Rect, obols: Int?) {
         val x = coinOf(r, obols)
@@ -512,8 +485,8 @@ class UiRenderer {
         px.hline(x - 2, x + 2, tip - 2, TERRA_LIGHT)
     }
 
-    /** The Agora: what the obols can buy next, line by line, and the sound setting. */
-    fun agora(px: Pixels, layout: Layout, shop: Shop, soundOn: Boolean, dev: Boolean = false, openWorlds: Boolean = false) {
+    /** The Agora: what the obols can buy next, line by line. */
+    fun agora(px: Pixels, layout: Layout, shop: Shop, dev: Boolean = false, openWorlds: Boolean = false) {
         val t = layout.agoraTitle
         PixelFont.draw(px, if (dev) "Dev" else AGORA_TITLE, t.x, t.y, CREAM)
         if (!dev) PixelFont.draw(px, itemsBought(shop), layout.agoraCount.x, layout.agoraCount.y, TERRA)
@@ -523,7 +496,6 @@ class UiRenderer {
             px.draw(NOTE_HERO, layout.agoraNote.x, layout.agoraNote.y)
             PixelFont.draw(px, AGORA_NOTE, layout.agoraNote.x + NOTE_HERO.width + 3, layout.agoraNote.y, NOT_DONE)
         }
-        speaker(px, layout.agoraSound, soundOn)
     }
 
     /** The offer over the Agora: the item's picture, name and details, its price, and Yes and No. */

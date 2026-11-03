@@ -94,7 +94,7 @@ The game saves all keys at these times:
 - When the app goes to the background, and when the desktop window closes.
 - After a purchase, after a dev screen button, at the top, after a move to another world, and when the Labors tab or the Cards tab opens.
 
-A switch of the settings, or the speaker of the Agora, saves only its own key, `sound`, `ticks` or `roll`, at the moment that the player changes it.
+A switch of the settings saves only its own key, `sound`, `ticks` or `roll`, at the moment that the player changes it.
 
 ## Time away
 

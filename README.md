@@ -62,7 +62,7 @@ All game code is in `composeApp/src/commonMain`. The screen is one small framebu
 scaled up by a whole number, so every pixel stays sharp. A screen wider than a 16:9 phone, such as a tablet, shows it
 with bars at the sides. There are no image files: all art is made in code.
 The knob click, the click of every other tap, the sound of buying, the fanfare of a new world, the coin of a new obol, the spell of a vision, the pop of a bubble
-and the loop of the rolling rock are sound files in `composeApp/src/commonMain/composeResources/files`. The speaker in the Agora Market turns all of them on and off.
+and the loop of the rolling rock are sound files in `composeApp/src/commonMain/composeResources/files`.
 The gear across from the help opens the settings: all the sound, the ticks of the knob, the rolling rock, a link to the privacy policy, and the player's id and build for support.
 
 - `audio` — reads the game's sounds from their WAV files

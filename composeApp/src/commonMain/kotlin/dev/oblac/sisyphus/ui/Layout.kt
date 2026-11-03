@@ -52,8 +52,11 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
      */
     fun helper(slot: Int) = Rect(scene.right - 3 - (slot + 1) * HELPER - slot * 2, scene.bottom - 3 - HELPER, HELPER, HELPER)
 
+    /** The row at the bottom of each screen: the help and the gear, the note of the Agora, Restore, the privacy link and the support ID. */
+    val bottomRow = Rect(left + 2, bottom - GEAR - 1, coinIcon.right - left - 2, GEAR)
+
     /** In the bottom-left corner of the main screen, "(?)" opens the help. */
-    val helpIcon = Rect(left + 2, bottom - SPEAKER_HEIGHT - 1, PixelFont.width("(?)"), PixelFont.CAP_HEIGHT)
+    val helpIcon = Rect(left + 2, bottomRow.y, PixelFont.width("(?)"), PixelFont.CAP_HEIGHT)
 
     /** In the bottom-right corner of the main screen, across from the help, the gear opens the settings. */
     val settingsIcon = Rect(coinIcon.right - GEAR, helpIcon.y, GEAR, GEAR)
@@ -61,16 +64,13 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     /** Where the scene draws "DAY n" in its top-left corner, outline included. */
     fun dayLabel(day: Int) = Rect(scene.x + 3, scene.y + 3, PixelFont.width("DAY $day") + 2, PixelFont.CAP_HEIGHT + 2)
 
-    /** In the Agora, the speaker in the bottom-right corner turns the sound on and off. */
-    val agoraSound = Rect(coinIcon.right - SPEAKER_WIDTH, bottom - SPEAKER_HEIGHT - 1, SPEAKER_WIDTH, SPEAKER_HEIGHT)
-
-    /** At the bottom of the Agora, across from the speaker, a small Sisyphus and the note that all 15 items lead to the top. */
-    val agoraNote = Rect(agoraTitle.x, agoraSound.y, agoraSound.x - 2 - agoraTitle.x, PixelFont.CAP_HEIGHT)
+    /** At the bottom of the Agora, a small Sisyphus and the note that all 15 items lead to the top. */
+    val agoraNote = Rect(agoraTitle.x, bottomRow.y, agoraTitle.w, PixelFont.CAP_HEIGHT)
 
     /** One of the five lines of the Agora, from the top. */
     fun agoraRow(index: Int): Rect {
         val y0 = agoraTitle.bottom + 6
-        val h = (agoraSound.y - 6 - y0) / 5
+        val h = (bottomRow.y - 6 - y0) / 5
         return Rect(agoraTitle.x, y0 + index * h, agoraTitle.w, h)
     }
 
@@ -115,7 +115,7 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
         4 + PixelFont.LINE_HEIGHT + 4 + BUTTON_HEIGHT + 5
 
     /** The offer: a window over the Agora that shows an item and asks whether to buy it. */
-    val offer = Rect(agoraTitle.x, agoraTitle.bottom + (agoraSound.y - agoraTitle.bottom - offerHeight) / 2, agoraTitle.w, offerHeight)
+    val offer = Rect(agoraTitle.x, agoraTitle.bottom + (bottomRow.y - agoraTitle.bottom - offerHeight) / 2, agoraTitle.w, offerHeight)
 
     /** In the offer, the item's picture at twice its size. */
     val offerIcon = Rect(offer.x + (offer.w - OFFER_ICON) / 2, offer.y + 5, OFFER_ICON, OFFER_ICON)
@@ -127,7 +127,7 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     val offerNo = Rect(offer.x + offer.w / 2 + 4, offerYes.y, OFFER_BUTTON, BUTTON_HEIGHT)
 
     /** On the Worlds screen, the window that shows the list of worlds. The list scrolls when they do not fit. */
-    val worldList = Rect(agoraTitle.x, agoraTitle.bottom + 6, agoraTitle.w, agoraSound.y - agoraTitle.bottom - 12)
+    val worldList = Rect(agoraTitle.x, agoraTitle.bottom + 6, agoraTitle.w, bottomRow.y - agoraTitle.bottom - 12)
 
     /** How far a list of [count] worlds can scroll. */
     fun worldScroll(count: Int) = max(0, count * (WORLD_ROW + 6) - 6 - worldList.h)
@@ -216,7 +216,7 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     private val confirmHeight = 5 + PixelFont.LINE_HEIGHT + 4 + CONFIRM_LINES * PixelFont.LINE_HEIGHT + 4 + BUTTON_HEIGHT + 5
 
     /** The question before going to another world, in the middle of the Worlds screen. */
-    val confirm = Rect(agoraTitle.x, agoraTitle.bottom + (agoraSound.y - agoraTitle.bottom - confirmHeight) / 2, agoraTitle.w, confirmHeight)
+    val confirm = Rect(agoraTitle.x, agoraTitle.bottom + (bottomRow.y - agoraTitle.bottom - confirmHeight) / 2, agoraTitle.w, confirmHeight)
 
     /** In the question, the room for what going there means, below its title. */
     val confirmText = Rect(confirm.x + 5, confirm.y + 5 + PixelFont.LINE_HEIGHT + 4, confirm.w - 10, CONFIRM_LINES * PixelFont.LINE_HEIGHT)
@@ -225,13 +225,13 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     val confirmNo = Rect(confirm.x + confirm.w / 2 + 4, confirmYes.y, OFFER_BUTTON, BUTTON_HEIGHT)
 
     /** In the bottom-left corner of the Worlds screen, the button that asks the store for the worlds bought before. */
-    val restore = Rect(left + 2, agoraSound.y, PixelFont.width(RESTORE), PixelFont.CAP_HEIGHT)
+    val restore = Rect(left + 2, bottomRow.y, PixelFont.width(RESTORE), PixelFont.CAP_HEIGHT)
 
     /** In the bottom-left corner of the settings, the link to the privacy policy. */
-    val privacyLink = Rect(left + 2, agoraSound.y, PixelFont.width(PRIVACY), PixelFont.CAP_HEIGHT)
+    val privacyLink = Rect(left + 2, bottomRow.y, PixelFont.width(PRIVACY), PixelFont.CAP_HEIGHT)
 
     /** In the bottom-right corner of the settings, the player's id for support and the build of the game. */
-    val supportId = PixelFont.width("ID 3f9a [999]").let { w -> Rect(coinIcon.right - w, agoraSound.y, w, PixelFont.CAP_HEIGHT) }
+    val supportId = PixelFont.width("ID 3f9a [999]").let { w -> Rect(coinIcon.right - w, bottomRow.y, w, PixelFont.CAP_HEIGHT) }
 
     /** The switch of a row of the settings: wide enough for "Off". */
     private val switchWidth = PixelFont.width("Off") + 10
@@ -260,8 +260,6 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     companion object {
         const val BEZEL = 3
         const val BAND_HEIGHT = 9
-        const val SPEAKER_WIDTH = 11
-        const val SPEAKER_HEIGHT = 7
         const val GEAR = 7
         /** A row of the settings: its name on the line of its switch, and two lines of its note under it. */
         const val SETTINGS_ROW = 3 + 3 * PixelFont.LINE_HEIGHT

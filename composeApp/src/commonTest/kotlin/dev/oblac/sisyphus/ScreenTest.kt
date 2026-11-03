@@ -1132,7 +1132,7 @@ class ScreenTest {
     fun theWorldsFitTheSmallestPhone() {
         val s = smallest()
         val l = s.layout!!
-        assertTrue(l.worldRow(0).y > l.agoraTitle.bottom && l.worldList.bottom <= l.agoraSound.y)
+        assertTrue(l.worldRow(0).y > l.agoraTitle.bottom && l.worldList.bottom <= l.bottomRow.y)
         s.tap(l.dayLabel(s.game.day))
         val first = l.worldRow(0)
         s.tap(first)
@@ -1369,16 +1369,13 @@ class ScreenTest {
         assertFalse(s.agoraOpen)
     }
 
+    /** The sound is in the settings: the bottom-right corner of the Agora, where the speaker was, does nothing. */
     @Test
-    fun theSpeakerLivesInTheAgora() {
-        val store = MemoryStore()
-        val s = screen(store)
+    fun theAgoraHasNoSpeaker() {
+        val s = screen()
         val l = s.layout!!
         s.tap(l.coinIcon)
-        assertEquals(Touch.SOUND, s.tap(l.agoraSound))
-        assertFalse(s.game.soundOn)
-        assertFalse(Game(store, seed = 1).soundOn)
-        assertEquals(Touch.SOUND, s.tap(l.agoraSound))
+        assertEquals(Touch.NONE, s.tap(l.settingsIcon))
         assertTrue(s.game.soundOn)
     }
 
@@ -1450,7 +1447,7 @@ class ScreenTest {
             assertTrue(PixelFont.width(item.name) <= l.offerText.w, item.name)
             assertTrue(PixelFont.wrap(item.details, l.offerText.w).size * PixelFont.LINE_HEIGHT <= l.offerText.h, item.name)
         }
-        assertTrue(l.offer.y >= l.agoraTitle.bottom && l.offer.bottom <= l.agoraSound.y)
+        assertTrue(l.offer.y >= l.agoraTitle.bottom && l.offer.bottom <= l.bottomRow.y)
         assertTrue(l.offerYes.bottom <= l.offer.bottom && l.offerNo.right <= l.offer.right)
     }
 
@@ -1515,7 +1512,7 @@ class ScreenTest {
             assertTrue(PixelFont.width(item.note) + 16 <= row.w, item.note)
         }
         assertTrue(row.h >= 3 * PixelFont.LINE_HEIGHT)
-        assertTrue(l.agoraRow(4).bottom <= l.agoraSound.y)
+        assertTrue(l.agoraRow(4).bottom <= l.bottomRow.y)
     }
 
     @Test
@@ -2262,7 +2259,6 @@ class ScreenTest {
         val l = smallest().layout!!
         assertTrue(NOTE_HERO.width + 3 + PixelFont.width(AGORA_NOTE) <= l.agoraNote.w)
         assertTrue(NOTE_HERO.height <= l.agoraNote.h)
-        assertTrue(l.agoraNote.right + 2 <= l.agoraSound.x)
         assertTrue(AGORA_NOTE.all(PixelFont::hasGlyph))
     }
 
