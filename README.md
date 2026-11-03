@@ -4,7 +4,7 @@ A small pixel-art game for iOS and Android, made with Kotlin Multiplatform and C
 Turn the knob, and Sisyphus pushes the rock up the hill. The knob clicks at each step.
 The sun moves only while the rock is pushed: by him, or by the gods he hires.
 Each day has its own weather. Wise words appear under the display as you push.
-Earn obols as you push, and spend them in the Agora Market: better rocks, helpers, blessings and beauty.
+Earn obols as you push, and spend them in the Agora: better rocks, helpers, blessings and beauty.
 When everything is bought, a final climb leads to the top. There the rock rolls down, and everything begins again, in the same world or in a new one.
 Tap the day to choose another world: Corinth, Mount Etna, The Underworld, Cairo or Mount Fuji. There the climb starts over.
 The same screen lists the labors: honors for all your climbs, such as Tina Turner for 10,000 turns of the knob.
@@ -28,7 +28,7 @@ Website, support and privacy policy: https://katemariongames.com/sisyphus/. The 
   (roll it out in Play Console) and a build in App Store Connect (submit it for review there).
   Never send a test build to the stores: do not promote internal builds to production, or submit TestFlight builds from `just beta`.
   The texts, the screenshots and the privacy policy for the stores are in `stores/`: see `stores/listing.md`.
-- Dev screen: in debug builds (Run in Xcode, `installDebug`, `just run`), tap the "Agora Market" title
+- Dev screen: in debug builds (Run in Xcode, `installDebug`, `just run`), tap the "Agora" title
   to add or take away obols, to reset the shop, to start the climb again, to go three clicks before the next obol,
   to go near the top, or to open every world without buying.
   Release builds do not have it.

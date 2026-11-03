@@ -55,7 +55,7 @@ At 5 minutes a day, a climb takes about a week of play: about 2,300 turns of the
 
 ## What the player sees
 
-1. **The tabs.** The title row of the Worlds screen holds "Worlds" and "Labors". The shown tab is cream, the other one is gray. A tap on the other tab shows it. A tap on the shown tab closes the screen, as a tap on the title does today. The terra line stays under the title row.
+1. **The tabs.** The title row of the Worlds screen holds "Worlds" and "Labors". The shown tab is cream, the other one is gray. A tap on the other tab shows it, and a tap on the shown tab keeps it. The X in the top-right corner of the title row closes the screen. The terra line stays under the title row.
 2. **Opening.** A tap on the day opens the tab that was shown last since the app started. When the dot shows, it opens the Labors tab.
 3. **The list.** Each category has a header, with its name in its color and how many of its labors are done, such as "2/5". Under it stands one card. The list scrolls as the list of worlds does: a drag, and a coast after a quick swipe.
 4. **The card** shows, from the top:

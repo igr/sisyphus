@@ -32,6 +32,7 @@ import dev.oblac.sisyphus.gfx.Pixels
 import dev.oblac.sisyphus.ui.AGORA_NOTE
 import dev.oblac.sisyphus.ui.BACKGROUND
 import dev.oblac.sisyphus.ui.COIN_COLORS
+import dev.oblac.sisyphus.ui.CROSS
 import dev.oblac.sisyphus.ui.CARDS_TITLE
 import dev.oblac.sisyphus.ui.NOTE_HERO
 import dev.oblac.sisyphus.ui.DAY_NOTE
@@ -141,14 +142,63 @@ class ScreenTest {
         assertFalse(s.game.knob.held)
     }
 
+    /** The obols open the Agora. There they do not close it: the X in their corner does. */
     @Test
-    fun theCoinOpensAndClosesTheAgora() {
+    fun theCoinOpensTheAgoraAndTheXClosesIt() {
         val s = screen()
         val l = s.layout!!
         assertEquals(Touch.SHOP, s.tap(l.coinIcon))
         assertTrue(s.agoraOpen)
-        assertEquals(Touch.SHOP, s.tap(l.coinIcon))
+        assertEquals(Touch.NONE, s.tap(l.agoraCoins))
+        assertTrue(s.agoraOpen)
+        assertEquals(Touch.SHOP, s.tap(l.closeIcon))
         assertFalse(s.agoraOpen)
+    }
+
+    /** In the Agora, the obols stand left of the X: the room between the outline of their count and the X is as empty as in the settings. */
+    @Test
+    fun theAgoraShowsTheObolsLeftOfTheX() {
+        fun row(open: Screen.(Layout) -> Unit): Pair<List<Int>, List<Int>> {
+            val s = screen(MemoryStore(mapOf("obols" to 345.0)))
+            val l = s.layout!!
+            s.open(l)
+            val px = s.render()
+            val r = l.agoraCoins
+            fun pixels(columns: IntRange) = (r.y until r.bottom).flatMap { y -> columns.map { px[it, y] } }
+            return pixels(r.x until r.right) to pixels(r.right + 1 until l.closeIcon.x)
+        }
+        val (coins, room) = row { tap(it.coinIcon) }
+        assertTrue(coins.any { it in COIN_COLORS.values })
+        assertEquals(row { tap(it.settingsIcon) }.second, room)
+    }
+
+    /** The X stands in the top-right corner of the Agora, of each tab of the Worlds screen, and of the settings. */
+    @Test
+    fun theXShowsOnEachScreenOverTheGame() {
+        fun shows(open: Screen.(Layout) -> Unit): Boolean {
+            val s = screen()
+            val l = s.layout!!
+            s.open(l)
+            val px = s.render()
+            val r = l.closeIcon
+            val ink = CROSS.flatMapIndexed { dy, row -> row.indices.filter { row[it] == '#' }.map { px[r.x + it, r.y + dy] } }
+            return ink.distinct().size == 1 && ink[0] != BACKGROUND
+        }
+        assertTrue(shows { tap(it.coinIcon) }, "the Agora")
+        assertTrue(shows { tap(it.dayLabel(game.day)) }, "the Worlds tab")
+        assertTrue(shows { tap(it.dayLabel(game.day)); tap(it.laborsTab) }, "the Labors tab")
+        assertTrue(shows { tap(it.dayLabel(game.day)); tap(it.cardsTab) }, "the Cards tab")
+        assertTrue(shows { tap(it.settingsIcon) }, "the settings")
+    }
+
+    /** On the smallest phone, the title row of the Agora holds its title, its count of items, 9999 obols and the X; that of the settings, its title and the X. */
+    @Test
+    fun theTitlesAndTheXFitTheSmallestPhone() {
+        val l = smallest().layout!!
+        assertTrue(l.agoraCount.right + 4 <= l.agoraCoins.x, "the count ends at ${l.agoraCount.right}, the obols start at ${l.agoraCoins.x}")
+        assertTrue(l.agoraCoins.right + 4 <= l.closeIcon.x)
+        assertTrue(l.agoraTitle.x + PixelFont.width(SETTINGS_TITLE) + 4 <= l.closeIcon.x)
+        assertEquals(l.coinIcon.right, l.closeIcon.right)
     }
 
     @Test
@@ -315,7 +365,7 @@ class ScreenTest {
     fun closingTheAgoraLeavesTheDevScreen() {
         val s = devScreen()
         s.openDev()
-        s.tap(s.layout!!.coinIcon)
+        s.tap(s.layout!!.closeIcon)
         s.tap(s.layout!!.coinIcon)
         assertTrue(s.agoraOpen)
         assertFalse(s.devOpen)
@@ -343,7 +393,7 @@ class ScreenTest {
         val s = Screen(Game(MemoryStore(mapOf("position" to 900.0)), seed = 1), seed = 2, dev = true, billing = FakeBilling()).apply { resize(1179, 2556, 177, 102) }
         val l = s.layout!!
         fun chooseEtna() {
-            s.tap(l.coinIcon)
+            s.tap(l.closeIcon)
             s.tap(l.dayLabel(s.game.day))
             s.choose(l.worldRow(Place.ETNA.ordinal))
         }
@@ -654,14 +704,17 @@ class ScreenTest {
         assertTrue(area(s.render(), l.settingsIcon).any { (it shr 16 and 0xFF) > 0x80 })
     }
 
+    /** The gear opens the settings, and the X closes them: their title does not. */
     @Test
-    fun theGearOpensTheSettingsAndTheirTitleClosesThem() {
+    fun theGearOpensTheSettingsAndTheXClosesThem() {
         val s = screen()
         val l = s.layout!!
         assertEquals(Touch.SETTINGS, s.tap(l.settingsIcon))
         assertTrue(s.settingsOpen)
         assertFalse(s.game.knob.held)
-        assertEquals(Touch.SETTINGS, s.tap(l.agoraTitle))
+        assertEquals(Touch.NONE, s.tap(l.agoraTitle))
+        assertTrue(s.settingsOpen)
+        assertEquals(Touch.SETTINGS, s.tap(l.closeIcon))
         assertFalse(s.settingsOpen)
     }
 
@@ -674,7 +727,7 @@ class ScreenTest {
         assertFalse(s.back())
     }
 
-    /** Behind the settings, the knob does not turn, and the obols do not open the Agora: their corner is on the title row, which closes the settings. */
+    /** Behind the settings, the knob does not turn, and the obols do not open the Agora. */
     @Test
     fun theSettingsTakeNoTouchOfTheGameBehindThem() {
         val s = screen()
@@ -682,8 +735,8 @@ class ScreenTest {
         s.tap(l.settingsIcon)
         assertEquals(Touch.NONE, s.tap(l.knobX + l.knobR * 0.6f, l.knobY + 0.5f))
         assertFalse(s.game.knob.held)
-        assertEquals(Touch.SETTINGS, s.tap(l.coinIcon))
-        assertFalse(s.settingsOpen)
+        assertEquals(Touch.NONE, s.tap(l.coinIcon))
+        assertTrue(s.settingsOpen)
         assertFalse(s.agoraOpen)
     }
 
@@ -1018,7 +1071,7 @@ class ScreenTest {
         assertEquals(Touch.WORLDS, s.tap(l.dayLabel(s.game.day)))
         assertTrue(s.worldsOpen)
         assertFalse(s.agoraOpen)
-        assertEquals(Touch.WORLDS, s.tap(l.worldsTab))
+        assertEquals(Touch.WORLDS, s.tap(l.closeIcon))
         assertFalse(s.worldsOpen)
     }
 
@@ -1732,7 +1785,7 @@ class ScreenTest {
         s.tap(l.coinIcon)
         s.update(1 / 60.0)
         assertTrue(s.game.covered)
-        s.tap(l.coinIcon)
+        s.tap(l.closeIcon)
         s.update(1 / 60.0)
         assertFalse(s.game.covered)
     }
@@ -1771,7 +1824,7 @@ class ScreenTest {
         assertFalse("only" in DAY_NOTE, "the gods of the Agora move the sun too")
     }
 
-    /** A tap on a tab that is not shown shows it; a tap on the shown tab closes the screen, which opens again on it. */
+    /** A tap on a tab that is not shown shows it, and a tap on the shown tab keeps it. The X closes the screen, which opens again on the tab shown last. */
     @Test
     fun theWorldsScreenHasThreeTabs() {
         val s = screen()
@@ -1786,12 +1839,14 @@ class ScreenTest {
         assertEquals(Touch.WORLDS, s.tap(l.cardsTab))
         assertTrue(s.cardsShown)
         assertFalse(s.laborsShown)
-        assertEquals(Touch.WORLDS, s.tap(l.cardsTab))
+        assertEquals(Touch.NONE, s.tap(l.cardsTab))
+        assertTrue(s.worldsOpen)
+        assertEquals(Touch.WORLDS, s.tap(l.closeIcon))
         assertFalse(s.worldsOpen)
         s.tap(l.dayLabel(s.game.day))
         assertTrue(s.cardsShown)
         s.tap(l.laborsTab)
-        assertEquals(Touch.WORLDS, s.tap(l.laborsTab))
+        assertEquals(Touch.WORLDS, s.tap(l.closeIcon))
         assertFalse(s.worldsOpen)
         s.tap(l.dayLabel(s.game.day))
         assertTrue(s.laborsShown)
@@ -1843,8 +1898,8 @@ class ScreenTest {
         s.tap(l.coinIcon)
         assertNull(s.openCard)
         assertTrue(s.worldsOpen)
-        s.tap(l.coinIcon)
-        assertFalse(s.worldsOpen)
+        assertEquals(Touch.NONE, s.tap(l.coinIcon))
+        assertTrue(s.worldsOpen)
         assertFalse(s.agoraOpen)
     }
 
@@ -2137,7 +2192,7 @@ class ScreenTest {
         val l = smallest().layout!!
         assertTrue(l.worldsTab.right + 4 <= l.laborsTab.x)
         assertTrue(l.laborsTab.right + 4 <= l.cardsTab.x)
-        assertTrue(l.cardsTab.right <= l.agoraTitle.right, "the tabs end at ${l.cardsTab.right}, the row at ${l.agoraTitle.right}")
+        assertTrue(l.cardsTab.right + 4 <= l.closeIcon.x, "the tabs end at ${l.cardsTab.right}, the X starts at ${l.closeIcon.x}")
     }
 
     @Test

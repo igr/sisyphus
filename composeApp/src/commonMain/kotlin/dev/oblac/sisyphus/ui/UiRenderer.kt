@@ -81,6 +81,17 @@ private val MEANDER = listOf(
     ".######",
 )
 
+/** In the top-right corner of the Agora, the Worlds screen and the settings: it closes them. */
+internal val CROSS = listOf(
+    "#.....#",
+    ".#...#.",
+    "..#.#..",
+    "...#...",
+    "..#.#..",
+    ".#...#.",
+    "#.....#",
+)
+
 /** In the bottom-right corner of the main screen, across from the help: it opens the settings. */
 private val GEAR = listOf(
     "..#.#..",
@@ -219,7 +230,7 @@ internal val NOTE_HERO = sprite(
 internal const val DAY_NOTE = "Pushing moves the sun. Tap the day for worlds and labors."
 
 /** The title of the Agora. */
-internal const val AGORA_TITLE = "Agora Market"
+internal const val AGORA_TITLE = "Agora"
 
 /** After the title of the Agora, how many of its items are bought, such as "3/15". */
 internal fun itemsBought(shop: Shop) = "${shop.bought}/${items(shop.place).size}"
@@ -391,6 +402,8 @@ class UiRenderer {
     fun helpButton(px: Pixels, r: Rect) = PixelFont.draw(px, "(?)", r.x, r.y, TERRA)
 
     fun settingsButton(px: Pixels, r: Rect) = mark(px, r.x, r.y, GEAR, TERRA)
+
+    fun closeButton(px: Pixels, r: Rect) = mark(px, r.x, r.y, CROSS, TERRA)
 
     /**
      * The settings: a row for all the sound, for the ticks of the knob and for the roll of the rock, each with its switch.

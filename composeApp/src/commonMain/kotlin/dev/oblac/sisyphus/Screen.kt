@@ -255,12 +255,15 @@ class Screen(
         ui.background(pixels)
         if (agoraOpen) {
             ui.agora(pixels, l, game.shop, devOpen, openWorlds)
+            ui.closeButton(pixels, l.closeIcon)
             offer?.let { game.shop.next(it) }?.let { ui.offer(pixels, l, it) }
         } else if (settingsOpen) {
             ui.settings(pixels, l, listOf(game.soundOn, game.ticksOn, game.rollOn))
+            ui.closeButton(pixels, l.closeIcon)
             supportTag(supportId, build)?.let { ui.supportId(pixels, l.supportId, it, copied > 0) }
         } else if (worldsOpen) {
             ui.tabs(pixels, l, tab, game.newLabors, game.newJokers || game.newTales)
+            ui.closeButton(pixels, l.closeIcon)
             when (tab) {
                 Tab.WORLDS -> ui.worlds(pixels, l, game.place, worldsScroll, worlds)
                 Tab.LABORS -> ui.labors(pixels, l, game.counts, worldsScroll)
@@ -294,7 +297,7 @@ class Screen(
         }
         val count = game.shop.obols.toInt()
         val covered = agoraOpen || worldsOpen || settingsOpen
-        if (!worldsOpen && !settingsOpen) ui.coins(pixels, l.coinIcon, if (game.climbed != null) null else count)
+        if (!worldsOpen && !settingsOpen) ui.coins(pixels, if (agoraOpen) l.agoraCoins else l.coinIcon, if (game.climbed != null) null else count)
         if (!covered && !helpOpen) gain?.let { ui.gain(pixels, l.coinIcon, it.obols, it.age, count) }
         if (helpOpen) ui.help(pixels, l, game.day, game.shop.obols, game.climbed)
         if (!covered) ending?.let { ui.ending(pixels, l, it, game.climbs) }
@@ -318,9 +321,9 @@ class Screen(
             return Touch.HELP
         }
         if (settingsOpen) return pressSettings(x, y, l)
-        if (!worldsOpen && l.coinIcon.near(x, y, TOUCH_SLOP)) {
+        if (!worldsOpen && !agoraOpen && l.coinIcon.near(x, y, TOUCH_SLOP)) {
             cover()
-            agoraOpen = !agoraOpen
+            agoraOpen = true
             devOpen = false
             offer = null
             return Touch.SHOP
@@ -335,6 +338,11 @@ class Screen(
                 }
                 if (l.offer.near(x, y, 0) && !l.offerNo.near(x, y, 0)) return Touch.NONE
                 offer = null
+                return Touch.SHOP
+            }
+            if (l.closeIcon.near(x, y, TOUCH_SLOP)) {
+                agoraOpen = false
+                devOpen = false
                 return Touch.SHOP
             }
             if (dev && l.agoraTitle.near(x, y, 0)) {
@@ -417,8 +425,7 @@ class Screen(
     }
 
     /**
-     * On the Worlds screen: a tap on a tab, or else near one, goes to the nearest tab. One that is not shown shows; a tap on the
-     * shown tab, or anywhere else on the title row, closes the screen.
+     * On the Worlds screen: the X closes the screen, and a tap on a tab, or else near one, shows the nearest tab.
      * The list scrolls or chooses a world, and Yes goes there, or first buys it. An open card closes at any tap; an open tale turns
      * its page, or closes. Restore asks the store for the worlds bought before.
      */
@@ -453,15 +460,15 @@ class Screen(
             openCard = null
             return Touch.WORLDS
         }
+        if (l.closeIcon.near(x, y, TOUCH_SLOP)) {
+            worldsOpen = false
+            return Touch.WORLDS
+        }
         val tabs = listOf(Tab.WORLDS to l.worldsTab, Tab.LABORS to l.laborsTab, Tab.CARDS to l.cardsTab)
         val touched = tabs.firstOrNull { (_, r) -> r.near(x, y, 0) }
             ?: tabs.filter { (_, r) -> r.near(x, y, TOUCH_SLOP) }.minByOrNull { (_, r) -> r.gap(x, y) }
         if (touched != null && touched.first != tab) {
             show(touched.first)
-            return Touch.WORLDS
-        }
-        if (l.agoraTitle.near(x, y, 0)) {
-            worldsOpen = false
             return Touch.WORLDS
         }
         if (canRestore && !restoring && l.restore.near(x, y, TOUCH_SLOP)) {
@@ -475,9 +482,9 @@ class Screen(
         return Touch.LIST
     }
 
-    /** In the settings, a tap on a row turns its sound off or on, a tap on the id copies it, and a tap on the title row closes them. */
+    /** In the settings, a tap on a row turns its sound off or on, a tap on the id copies it, and the X closes them. */
     private fun pressSettings(x: Float, y: Float, l: Layout): Touch {
-        if (l.agoraTitle.near(x, y, 0)) {
+        if (l.closeIcon.near(x, y, TOUCH_SLOP)) {
             settingsOpen = false
             return Touch.SETTINGS
         }

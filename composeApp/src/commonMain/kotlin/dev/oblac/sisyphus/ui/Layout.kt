@@ -33,8 +33,8 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     val quote = Rect(left + 2, band.bottom + 4, right - left - 4, PixelFont.LINE_HEIGHT * 4)
 
     /**
-     * The obols, in the top-right corner of the display across from the day. They open and close the Agora,
-     * and stay in the same place there. The Worlds screen shows no obols.
+     * The obols, in the top-right corner of the display across from the day. They open the Agora, where the X takes their place
+     * and they stand left of it. The Worlds screen shows no obols.
      */
     val coinIcon = (COIN_SIZE + 2 + PixelFont.width("9999")).let { w -> Rect(scene.right - 4 - w, scene.y + 4, w, COIN_SIZE) }
 
@@ -45,6 +45,15 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
 
     /** After the title of the Agora, how many of its items are bought, such as "3/15". */
     val agoraCount = Rect(agoraTitle.x + PixelFont.width(AGORA_TITLE) + 6, agoraTitle.y, PixelFont.width("15/15"), PixelFont.CAP_HEIGHT)
+
+    /**
+     * In the top-right corner of the Agora, the Worlds screen and the settings, the X closes them. In the Agora, it stands where
+     * the obols were tapped to open it.
+     */
+    val closeIcon = Rect(coinIcon.right - CLOSE, coinIcon.y, CLOSE, CLOSE)
+
+    /** In the Agora, the obols stand left of the X. */
+    val agoraCoins = Rect(closeIcon.x - 4 - coinIcon.w, coinIcon.y, coinIcon.w, COIN_SIZE)
 
     /**
      * In the display's bottom-right corner, the sidekick, the god and the blessing bought so far, outlined, in that order:
@@ -261,6 +270,7 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
         const val BEZEL = 3
         const val BAND_HEIGHT = 9
         const val GEAR = 7
+        const val CLOSE = 7
         /** A row of the settings: its name on the line of its switch, and two lines of its note under it. */
         const val SETTINGS_ROW = 3 + 3 * PixelFont.LINE_HEIGHT
         const val COIN_SIZE = 7
