@@ -64,4 +64,7 @@ play {
 dependencies {
     implementation(project(":composeApp"))
     implementation(libs.activity.compose)
+    // The app has no fragments, but the billing of RevenueCat brings fragment 1.1.0 through Play services,
+    // and Google Play reports it as outdated.
+    constraints { implementation(libs.fragment) }
 }
