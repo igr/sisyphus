@@ -35,13 +35,16 @@ class JokersOnThePathTest {
     private val read = Config.READ_TURNS * PX_PER_TURN
     private val room = Config.JOKER_ROOM * PX_PER_TURN
 
-    /** Turns the knob a frame at a time, about a turn a second, for up to [seconds], until [done]. Tells whether it came. */
-    private fun Game.turnUntil(seconds: Double = 120.0, done: () -> Boolean): Boolean {
+    /**
+     * Turns the knob a frame at a time, about a turn a second, or faster with a bigger [step], for up to [seconds], until [done].
+     * Tells whether it came.
+     */
+    private fun Game.turnUntil(seconds: Double = 120.0, step: Double = 0.1, done: () -> Boolean): Boolean {
         var touch = 0.0
         knob.grab(touch)
         repeat((seconds / DT).toInt()) {
             if (done()) return true
-            touch += 0.1
+            touch += step
             knob.drag(touch)
             update(DT)
         }
@@ -80,6 +83,71 @@ class JokersOnThePathTest {
         assertTrue(g.nextJoker!! - g.position in ahead)
         g.save()
         assertEquals(1.0, s.load("met.2"))
+    }
+
+    /** How long the last text of a bubble shows at least: a second, and a second for each 20 letters. */
+    private fun readTime(text: String) = Config.READ_PAUSE + text.length / Config.READ_LETTERS
+
+    /**
+     * At about five turns a second, he walks through the bubble before its last text can be read. The text stays over the joker
+     * behind him, also while he walks on, until it has shown for its reading time.
+     */
+    @Test
+    fun aFastWalkLeavesTheLastTextUntilItIsRead() {
+        val at = 1000.0 + near + 24
+        val g = game(store("position" to 1000.0, "nextJoker" to at, "joker" to 2.0))
+        val last = JOKERS[2].jokes[0].texts.last()
+        assertTrue(g.turnUntil(step = 0.5) { g.jesting == last })
+        val from = g.clock
+        assertTrue(g.turnUntil(step = 0.5) { g.metJoker != null })
+        assertNull(g.jesting)
+        val stays = g.lingering
+        assertNotNull(stays)
+        assertEquals(last, stays.text)
+        assertEquals(at, stays.at)
+        assertEquals(JOKERS[2].name, stays.note)
+        assertSame(JOKERS[2], stays.joker)
+        assertTrue(g.turnUntil(step = 0.5) { g.lingering == null })
+        assertEquals(readTime(last), g.clock - from, 2 * DT)
+    }
+
+    /** At about a turn a second, the last text shows for 6 seconds, long enough to read it: nothing stays when he is met. */
+    @Test
+    fun aSlowWalkLeavesNoTextBehind() {
+        val g = game(store("position" to 1000.0, "nextJoker" to 1000.0 + near + 24, "joker" to 2.0))
+        assertTrue(g.turnUntil { g.metJoker != null })
+        assertNull(g.lingering)
+    }
+
+    /** A bubble that he never saw, as after a jump of the dev screen, leaves no text behind. */
+    @Test
+    fun aBubbleNeverSeenLeavesNoTextBehind() {
+        val at = 1000.0
+        val g = game(store("position" to at - near + 2 * read, "nextJoker" to at))
+        g.update(DT)
+        assertNotNull(g.metJoker)
+        assertNull(g.lingering)
+    }
+
+    @Test
+    fun aBubbleThatOpensClosesTheTextThatStays() {
+        val g = game(store("position" to 1000.0, "nextJoker" to 1000.0 + near + 24, "joker" to 2.0))
+        assertTrue(g.turnUntil(step = 0.5) { g.metJoker != null })
+        assertNotNull(g.lingering)
+        g.nearTheNextJoker()
+        g.update(DT)
+        assertNotNull(g.jesting)
+        assertNull(g.lingering)
+    }
+
+    @Test
+    fun noTextStaysAtTheTop() {
+        val at = 1000.0 + near + 24
+        val g = game(store("position" to 1000.0, "nextJoker" to at, "summit" to at - near + 2 * read + PX_PER_TURN))
+        assertTrue(g.turnUntil(step = 0.5) { g.metJoker != null })
+        assertNotNull(g.lingering)
+        assertTrue(g.turnUntil(step = 0.5) { g.atTop })
+        assertNull(g.lingering)
     }
 
     @Test

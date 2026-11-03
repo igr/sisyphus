@@ -67,6 +67,15 @@ object Config {
     const val READ_TURNS = 6
 
     /**
+     * The last text of a bubble shows for at least this many seconds, and a second more for each [READ_LETTERS] letters of it.
+     * When he walks through the bubble sooner, the text stays that long, so that it can be read at any pace.
+     */
+    const val READ_PAUSE = 1.0
+
+    /** The letters read in a second, after [READ_PAUSE]. */
+    const val READ_LETTERS = 20.0
+
+    /**
      * The first joker of a climb stands this many turns of walking ahead, at random, so that he talks on day 1: day 2 begins
      * after 53 turns, and his bubble ends 9 turns after he is reached.
      */

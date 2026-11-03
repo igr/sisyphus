@@ -25,11 +25,13 @@ import dev.oblac.sisyphus.scene.SANDSTONE
 import dev.oblac.sisyphus.scene.lookOf
 import dev.oblac.sisyphus.scene.World
 import dev.oblac.sisyphus.ui.Layout
+import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /** The narrow phones, in virtual pixels: the narrowest, a 1080 × 1920 Android phone, the shortest, and the iPhone 8 Plus. */
@@ -240,6 +242,27 @@ class LookTest {
             assertTrue(bubble(near) > bubble(far) + 100, "${joker.name}, line ${line + 1} shows no bubble")
         }
         assertEquals(bubble(scene(JOKERS[0], 0, 0, near = false)), bubble(scene(JOKERS[0], 0, 0, near = true, vision = true)))
+    }
+
+    /** A joker passed too fast for his last text to be read: it stays in the picture after he has left it, and goes when it was read. */
+    @Test
+    fun theTextThatStaysShowsInThePicture() {
+        val at = 1000.0 + Config.NEAR_TURNS * PX_PER_TURN + 24
+        val keys = mapOf("effort" to (0.5 - START_TIME) * DAY_LENGTH, "position" to 1000.0, "nextJoker" to at, "nextVision" to 600.0)
+        val game = Game(MemoryStore(keys), seed = 3)
+        val world = World(4).also { it.reset(geo, Weather.CLEAR) }
+        val paper = rgb(0xF1E4C8)
+        fun paper(): Int {
+            val px = Pixels(geo.width, geo.height)
+            SceneRenderer(geo).render(px, game, world, banner = 0.0, hud = false)
+            return px.data.count { it == paper }
+        }
+        game.turn(30 * PI, step = 0.5)
+        assertNull(game.jesting)
+        val staying = paper()
+        repeat(1200) { if (game.lingering != null) game.update(DT) }
+        assertNull(game.lingering)
+        assertTrue(staying > paper() + 100, "$staying pixels of paper")
     }
 
     /**

@@ -181,6 +181,12 @@ enum class Place(val id: Int, val title: String, val note: String, val product: 
 }
 
 /**
+ * The last text of a bubble that he walked through before it could be read: it stays over the stone or the joker at [at],
+ * with its [note], the part of the tale such as "9/15" or the name of the [joker].
+ */
+class Lingering(val text: String, val at: Double, val note: String, val joker: Joker?)
+
+/**
  * The state of the push. The knob moves Sisyphus up the hill, whichever way it turns.
  * Effort is what moves the sun: days pass only when he works. A strong rock and strong helpers
  * earn obols faster, but move the sun at most [Config.SUN_CAP] times faster. Helpers on their own push
@@ -341,6 +347,12 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
      * after it, or in its place, plays its sound once.
      */
     private var bubble: Any? = null
+    /** The last text of a bubble that he walked through before it was read: it stays until then, or until another bubble opens. */
+    var lingering: Lingering? = null
+        private set
+    /** The text that the open bubble, or the one that stays, showed at the end of the last update, and for how many seconds. */
+    private var said: String? = null
+    private var saidFor = 0.0
     /** The touches of the knob when the answers showed, and of the touch whose turn picks an answer. */
     private var askedGrabs = 0
     private var answerGrabs = 0
@@ -431,8 +443,9 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         if (rolling < STILL) rolling = 0.0
         stillFor = if (moved > 1e-4) 0.0 else stillFor + dt
         tick(dt)
-        // While paused, as under Control Center on iOS, the frames go on, but the wise words and a kept vision wait for the player.
+        // While paused, as under Control Center on iOS, the frames go on, but the wise words, the bubbles and a kept vision wait for the player.
         val shown = if (pausedAt == null) dt else 0.0
+        keepReading(shown)
         val drawn = quotes.drawn
         quotes.update(shown, moved, stillFor)
         if (quotes.drawn != drawn) dirty = true
@@ -575,6 +588,9 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     /** The text that the next stone tells in a popup over it while he is near it: the texts of its part one after the other, each for [Config.READ_TURNS]. */
     val telling: String? get() = near?.let { part?.texts?.getOrNull((it / READ).toInt()) }
 
+    /** The note of the popup over the stone of [part]: which part of the tale it tells, such as "9/15". */
+    fun partNote(part: Int) = "${part + 1}/${tale.parts.size}"
+
     /**
      * The tale of a new climb: the tale of Sisyphus while it is not told, then a tale not told yet, at random.
      * When all are told, any tale but the one of the climb before.
@@ -598,6 +614,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         val at = nextStele ?: return
         val texts = part?.texts ?: return
         if ((near ?: return) < texts.size * READ) return
+        linger(texts.last(), at, partNote(stelesTold), null)
         nextStele = null
         passed += Stele(at, stelesTold)
         stelesTold++
@@ -642,10 +659,35 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     private fun passJoker() {
         val at = nextJoker ?: return
         if ((nearJoker ?: return) < joke.texts.size * READ) return
+        linger(joke.texts.last(), at, joker.name, joker)
         met[joker.id]++
         metJoker = at to joker
         nextJoker = null
         dirty = true
+    }
+
+    /** How long the last text of a bubble shows at least, in seconds, so that it can be read. */
+    private fun readTime(text: String) = Config.READ_PAUSE + text.length / Config.READ_LETTERS
+
+    /**
+     * He walked through a bubble: its last [text] stays over the stone or the joker at [at] when it showed, but not long enough
+     * to be read. A text that never showed, as after a jump of the dev screen, does not come.
+     */
+    private fun linger(text: String, at: Double, note: String, joker: Joker?) {
+        if (text == said && saidFor < readTime(text)) lingering = Lingering(text, at, note, joker)
+    }
+
+    /**
+     * Counts the seconds that the text of the open bubble, or the text that stays, has shown. The text that stays goes once it
+     * has shown for its reading time, when another bubble opens, or at the top.
+     */
+    private fun keepReading(dt: Double) {
+        val open = telling ?: jesting
+        if (open != null || atTop) lingering = null
+        val text = open ?: lingering?.text
+        saidFor = if (text != null && text == said) saidFor + dt else 0.0
+        said = text
+        lingering?.let { if (saidFor >= readTime(it.text)) lingering = null }
     }
 
     /**
@@ -764,6 +806,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
         restartTale()
         nextJoker = null
         metJoker = null
+        lingering = null
         placeJoker(Config.FIRST_JOKER)
         quotesAtStart = quotes.drawn
         quotes = QuoteBox(quoteSeed, drawn = quotesAtStart, firstTime = true, news = ::nextNews)

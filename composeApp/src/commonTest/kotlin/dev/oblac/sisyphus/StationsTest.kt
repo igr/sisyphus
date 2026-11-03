@@ -16,6 +16,7 @@ import kotlin.math.PI
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertSame
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -30,13 +31,16 @@ class StationsTest {
 
     private fun game(store: MemoryStore = store()) = Game(store, seed = 1, wall = { 0.0 })
 
-    /** Turns the knob a frame at a time, about a turn a second, for up to [seconds], until [done]. Tells whether it came. */
-    private fun Game.turnUntil(seconds: Double = 120.0, done: () -> Boolean): Boolean {
+    /**
+     * Turns the knob a frame at a time, about a turn a second, or faster with a bigger [step], for up to [seconds], until [done].
+     * Tells whether it came.
+     */
+    private fun Game.turnUntil(seconds: Double = 120.0, step: Double = 0.1, done: () -> Boolean): Boolean {
         var touch = 0.0
         knob.grab(touch)
         repeat((seconds / DT).toInt()) {
             if (done()) return true
-            touch += 0.1
+            touch += step
             knob.drag(touch)
             update(DT)
         }
@@ -111,6 +115,30 @@ class StationsTest {
         assertTrue(g.position - (opens(at) + read) in 0.0..1.0, "told at ${g.position}")
         assertNull(g.telling)
         assertEquals(at, g.steles.first().at)
+    }
+
+    /**
+     * At about five turns a second, he walks through the popup before its text can be read. The text stays over the stone behind
+     * him until it has shown for a second, and a second for each 20 letters.
+     */
+    @Test
+    fun aFastWalkLeavesThePartUntilItIsRead() {
+        val g = game()
+        g.buy(Line.GODS)
+        val at = g.nextStele!!
+        val text = SISYPHUS.parts[0].texts.last()
+        assertTrue(g.turnUntil(step = 0.5) { g.telling == text })
+        val from = g.clock
+        assertTrue(g.turnUntil(step = 0.5) { g.stelesTold == 1 })
+        val stays = g.lingering
+        assertNotNull(stays)
+        assertEquals(text, stays.text)
+        assertEquals(at, stays.at)
+        assertEquals("1/${SISYPHUS.parts.size}", stays.note)
+        assertNull(stays.joker)
+        repeat(1200) { if (g.lingering != null) g.update(DT) }
+        assertNull(g.lingering)
+        assertEquals(Config.READ_PAUSE + text.length / Config.READ_LETTERS, g.clock - from, 2 * DT)
     }
 
     @Test

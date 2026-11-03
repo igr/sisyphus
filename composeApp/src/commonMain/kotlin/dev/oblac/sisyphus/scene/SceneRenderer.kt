@@ -1,6 +1,7 @@
 package dev.oblac.sisyphus.scene
 
 import dev.oblac.sisyphus.game.Game
+import dev.oblac.sisyphus.game.Joker
 import dev.oblac.sisyphus.game.Line
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.gfx.PixelFont
@@ -192,6 +193,7 @@ class SceneRenderer(private val geo: SceneGeometry) {
         if (hud) drawDay(px, game.day, game.newLabors || game.newJokers || game.newTales, banner)
         drawTelling(px, game, p)
         drawJesting(px, game, p)
+        drawLingering(px, game, p)
     }
 
     private fun orb(p: Double): Orb? {
@@ -440,9 +442,14 @@ class SceneRenderer(private val geo: SceneGeometry) {
         val text = game.telling ?: return
         val at = game.nextStele ?: return
         if (game.visionHolds) return
-        val x = steleLeft(at, p) + LIMESTONE.slab.width / 2
+        drawStonePopup(px, text, at, game.partNote(game.stelesTold), p)
+    }
+
+    /** The popup over the stone at [at], also once the stone has left the picture: its tail then points down at the edge. */
+    private fun drawStonePopup(px: Pixels, text: String, at: Double, note: String, p: Int) {
+        val x = (steleLeft(at, p) + LIMESTONE.slab.width / 2).coerceIn(3, px.width - 4)
         val y = floor(geo.baseY + geo.rockDy - geo.rockR).toInt() - 3
-        drawPopup(px, text, x, y, "${game.stelesTold + 1}/${game.tale.parts.size}", ceiling = HUD_ROWS)
+        drawPopup(px, text, x, y, note, ceiling = HUD_ROWS)
     }
 
     /** The left column of a stone [at] pixels walked, when he has walked [p]: at [at], the front of the rock reaches it. All stones have the same shape. */
@@ -470,9 +477,26 @@ class SceneRenderer(private val geo: SceneGeometry) {
         val text = game.jesting ?: return
         val at = game.nextJoker ?: return
         if (game.visionHolds) return
+        drawJokerBubble(px, text, at, game.joker, p)
+    }
+
+    /** The bubble over [joker] at [at], also once he has left the picture: its tail then points down at the edge. */
+    private fun drawJokerBubble(px: Pixels, text: String, at: Double, joker: Joker, p: Int) {
         val x = jokerMiddle(at, p).coerceIn(3, px.width - 4)
-        val y = min(floor(geo.baseY + geo.rockDy - geo.rockR).toInt(), jokerTop(at, p, JOKER_SPRITES[game.joker.id])) - 3
-        drawPopup(px, text, x, y, game.joker.name, ceiling = HUD_ROWS)
+        val y = min(floor(geo.baseY + geo.rockDy - geo.rockR).toInt(), jokerTop(at, p, JOKER_SPRITES[joker.id])) - 3
+        drawPopup(px, text, x, y, joker.name, ceiling = HUD_ROWS)
+    }
+
+    /**
+     * The last text of a bubble that he walked through too fast to read it: it stays over its stone or joker until it was read,
+     * also once they have left the picture. A vision hides it while it holds him.
+     */
+    private fun drawLingering(px: Pixels, game: Game, p: Int) {
+        val lingering = game.lingering ?: return
+        if (game.visionHolds) return
+        val joker = lingering.joker
+        if (joker != null) drawJokerBubble(px, lingering.text, lingering.at, joker, p)
+        else drawStonePopup(px, lingering.text, lingering.at, lingering.note, p)
     }
 
     /** The middle column of a joker [at] pixels walked, when he has walked [p]: at [at], the front of the rock reaches it. */
