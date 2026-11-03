@@ -1,10 +1,10 @@
 # Store listing
 
-What the App Store and Google Play share. Copy these into App Store Connect and Play Console; the character counts are within the limits of both stores. What only one store has is in its own folder.
+What the App Store and Google Play share, and the text of the website. Copy these into App Store Connect and Play Console; the character counts are within the limits of both stores. What only one store has is in its own folder.
 
 | Path | What it holds |
 |---|---|
-| `listing.md` | The shared texts: the name, the links, the description and What's New |
+| `listing.md` | The shared texts: the name, the links, the description, What's New and the text of the website |
 | `privacy.md` | The privacy policy, which the website shows at https://katemariongames.com/sisyphus/privacy-policy/ |
 | `screenshots/` | The screenshots, taken on the iPhone simulator |
 | `appstore/` | The fields of App Store Connect |
@@ -66,3 +66,40 @@ To take them again, install a Release build on a new simulator, and launch it on
 | `5-diogenes` | `-sisyphus.effort 7110.72 -sisyphus.position 100 -sisyphus.quoteSeed 1879 -sisyphus.knob 2.3 -sisyphus.obols 8 -sisyphus.joker 0 -sisyphus.met.0 0 -sisyphus.nextJoker 134` |
 
 Google Play takes no picture that is more than twice as tall as it is wide. Its screenshots in `playstore/screenshots/` are the 6.9-inch ones, cut to 1320 × 2640: see `playstore/listing.md`.
+
+## Website
+
+The page https://katemariongames.com/sisyphus/ shows these texts. When they change here, change them there. The counts of the tales, the jokers and the wise words grow with the game: count them again before an update.
+
+| Field | Value |
+|---|---|
+| Line above the name | PIXEL-ART GAME · IOS & ANDROID |
+| Line under the name | Every day, Sisyphus pushes his rock up the hill. Today, you turn the knob. |
+| Meta description (142/160) | A calm pixel-art game for iPhone and Android. Turn the bronze knob, push the rock up the hill, and meet gods, jokers and old tales on the way. |
+
+### About the game
+
+Sisyphus is a small, calm pixel-art game. Under a window to a Greek hillside sits a bronze knob. Turn it, and Sisyphus leans into his boulder and climbs. Stop, and he holds on and catches his breath.
+
+As you push, you earn obols. Spend them in the Agora on rocks, helpers, gods, blessings and sights. Buy all fifteen, and the top of the hill comes in sight. Then the rock rolls down, and the climb begins again, on the same hill or in a new world.
+
+- Five worlds. Corinth is free. Mount Etna, The Underworld, Cairo and Mount Fuji are one-time purchases.
+- Days pass only when you push, or when the gods you hire push for you, even while the app is closed. Each day has its own weather.
+- Gods come in visions and ask you questions. Turn the knob left or right to answer.
+- Stones by the path tell 16 old tales, and 12 jokers, from Diogenes to Cthulhu, tell riddles.
+- More than 600 wise words, from Camus and Heraclitus to the Rock itself.
+- Labors to do and cards to collect.
+- Clicks and haptics with every turn of the knob.
+- No ads, no accounts, no tracking.
+
+### Screenshots
+
+Use the five screenshots of `screenshots/6.9-inch/`, with these alt texts:
+
+| Screenshot | Alt text |
+|---|---|
+| `1-morning.png` | Morning on the hill in Corinth |
+| `2-vision.png` | The Sphinx asks a question in a vision |
+| `3-sunset.png` | Sunset over the sea |
+| `4-night.png` | Night on the hill |
+| `5-diogenes.png` | Diogenes with his lamp by the path |
