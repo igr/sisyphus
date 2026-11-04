@@ -33,11 +33,29 @@ A tiny pixel-art meditation. Turn the bronze knob, push the boulder up an endles
 
 pixel art,knob,boulder,hill,greek,myth,stoic,quotes,calm,relax,zen,idle,retro,philosophy,meditation
 
-## Notes for App Review
+## Notes for App Review (2215/4000)
 
-No account or login is needed. Drag a finger in a circle on the bronze knob at the bottom of the screen to push the rock. The gear in the bottom-right corner opens the settings: the sound switches, the link to the privacy policy and the support ID. A tap on the day in the top-left corner opens a screen with three tabs at the top: Worlds, Labors and Cards. When a labor is done, or a joker or a tale is new, the tap opens that tab first: tap "Worlds" at the top left to see the worlds. The four worlds with a lock are the in-app purchases: tap one, then Yes, and the payment sheet opens. Restore is at the bottom left.
+Sisyphus: Push the Rock is a calm pixel-art game. Turn the knob, and Sisyphus pushes his rock up the hill. No account or login is needed. The game has no ads and no tracking.
 
-New in 2.0: obols come as you push. The coin count in the top-right corner opens the Agora, where obols buy rocks, helpers, gods, blessings and sights. A god pushes on his own, also while the app is closed. Gods come in visions and ask a question: turn the knob to the left or to the right to pick an answer. Stones by the path tell tales, and jokers tell riddles; the Cards tab keeps them. All of this is in Corinth, the free world.
+How to play: drag a finger in a circle on the bronze knob at the bottom of the screen. One circle is one turn. The sun moves only while you push, so a day passes only when you turn the knob. In a new climb:
+- After 20 to 40 turns, a joker stands by the path and tells a riddle in a bubble.
+- After 36 turns, the first obol comes. The coin count in the top-right corner shows the obols.
+- After 70 to 100 turns, on day 2, a god comes in a vision and asks a question. Turn the knob to the left or to the right to pick an answer.
+- From day 3, stones by the path tell old tales.
+
+Screens: the X in the top-right corner closes each screen.
+- The coin count opens the Agora. There, obols buy rocks, helpers, gods, blessings and sights. A god pushes on his own, also while the app is closed.
+- The day in the top-left corner opens a screen with three tabs: Worlds, Labors and Cards. When a labor is done, or a joker or a tale is new, this tap opens that tab first. Then tap "Worlds" at the top left to see the worlds.
+- The gear in the bottom-right corner opens the settings: the sound switches, the link to the privacy policy and the support ID.
+- The (?) in the bottom-left corner opens the help.
+
+In-app purchases: the four worlds with a lock on the Worlds tab: Mount Etna, The Underworld, Cairo and Mount Fuji. Each is a non-consumable purchase of $1.99. You can buy one at any time. No progress is needed first. Tap a world with a lock, then Yes, and the payment sheet opens. After the purchase, the new world begins at once, with its own sky, landmark, items and gods. The climb starts over there at day 1. Corinth, the first world, is free. Restore is in the bottom-left corner of the Worlds screen.
+
+Data: the game keeps its progress on the device. RevenueCat handles the purchases with an anonymous ID. The game asks for no personal data.
+
+This version replaces 2.0, which we removed from review before the review started. 2.0.1 adds the X that closes each screen, a new coin sound and small fixes.
+
+Contact: contact@katemariongames.com
 
 ## In-app purchases
 
