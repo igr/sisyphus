@@ -10,7 +10,7 @@ import com.revenuecat.purchases.kmp.models.StoreProduct
 import com.revenuecat.purchases.kmp.models.StoreTransaction
 import dev.oblac.sisyphus.game.Place
 
-/** RevenueCat's key for its Test Store, where buying is free. Only debug builds use it. */
+/** RevenueCat's key for its Test Store, where buying is free. Only debug builds use it, and only builds with [DEV_TOOLS] hold it. */
 private const val TEST_STORE_KEY = "test_yTNXCLnrSyIXtunligUHmteApIR"
 
 /** RevenueCat's key for the App Store, or for Google Play. */
@@ -23,12 +23,12 @@ private const val WORLDS = "worlds"
  * The worlds bought through RevenueCat. The product of a world unlocks the entitlement of the same name.
  * Debug builds buy in the Test Store. The iOS SDK does not stop a release build with the Test Store key, so only debug builds may set [testStore].
  */
-class RevenueCatBilling(testStore: Boolean) : Billing {
+internal class RevenueCatBilling(testStore: Boolean) : Billing {
     private var owned = emptySet<String>()
     private var packages = emptyMap<String, Package>()
 
     init {
-        if (!Purchases.isConfigured) Purchases.configure(if (testStore) TEST_STORE_KEY else STORE_KEY)
+        if (!Purchases.isConfigured) Purchases.configure(if (DEV_TOOLS && testStore) TEST_STORE_KEY else STORE_KEY)
         Purchases.sharedInstance.delegate = object : PurchasesDelegate {
             override fun onCustomerInfoUpdated(customerInfo: CustomerInfo) = take(customerInfo)
 

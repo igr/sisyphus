@@ -37,6 +37,10 @@ kotlin {
         }
     }
     sourceSets {
+        // Xcode makes the App Store and TestFlight builds in its Release configuration. They leave out the dev screen
+        // and the key of the Test Store, because Apple rejects an app with hidden features: see stores/appstore/check.py.
+        val devTools = providers.environmentVariable("CONFIGURATION").orNull != "Release"
+        commonMain { kotlin.srcDir(if (devTools) "src/withDevTools/kotlin" else "src/withoutDevTools/kotlin") }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)

@@ -71,7 +71,7 @@ private const val STOP_SPEED = 20.0
  * Owns the framebuffer and maps real screen pixels to virtual ones.
  * Platform code only forwards touches and shows [pixels]. The settings show [build], the build number of the app, after the player's id.
  */
-class Screen(
+class Screen internal constructor(
     val game: Game,
     seed: Int = Random.nextInt(),
     private val dev: Boolean = false,
@@ -92,7 +92,7 @@ class Screen(
     var agoraOpen = false
         private set
     /** In dev builds, tapping the Agora's title shows the dev screen in its place: it sets the obols and resets the shop. */
-    var devOpen = false
+    internal var devOpen = false
         private set
     /** The line whose next item the Agora offers in a window, asking Yes or No before it is bought. */
     var offer: Line? = null
@@ -132,7 +132,7 @@ class Screen(
     var restoring = false
         private set
     /** In dev builds, the dev screen opens every world without the store, until it is tapped again or the app restarts. */
-    var openWorlds = false
+    internal var openWorlds = false
         private set
     /** How far the list of the shown tab of the Worlds screen is scrolled, in virtual pixels. */
     val worldsScroll get() = listScroll.roundToInt()
@@ -254,7 +254,7 @@ class Screen(
         val renderer = sceneRenderer ?: return pixels
         ui.background(pixels)
         if (agoraOpen) {
-            ui.agora(pixels, l, game.shop, devOpen, openWorlds)
+            if (DEV_TOOLS && devOpen) ui.devScreen(pixels, l, openWorlds) else ui.agora(pixels, l, game.shop)
             ui.closeButton(pixels, l.closeIcon)
             offer?.let { game.shop.next(it) }?.let { ui.offer(pixels, l, it) }
         } else if (settingsOpen) {
@@ -345,11 +345,11 @@ class Screen(
                 devOpen = false
                 return Touch.SHOP
             }
-            if (dev && l.agoraTitle.near(x, y, 0)) {
+            if (DEV_TOOLS && dev && l.agoraTitle.near(x, y, 0)) {
                 devOpen = !devOpen
                 return Touch.DEV
             }
-            if (devOpen) {
+            if (DEV_TOOLS && devOpen) {
                 val step = DEV_STEPS.indices.firstOrNull { l.devStep(it).near(x, y, 0) }
                 when {
                     step != null -> game.addObols(DEV_STEPS[step])

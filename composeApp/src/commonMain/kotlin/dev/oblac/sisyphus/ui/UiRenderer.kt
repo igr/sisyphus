@@ -499,13 +499,13 @@ class UiRenderer {
     }
 
     /** The Agora: what the obols can buy next, line by line. */
-    fun agora(px: Pixels, layout: Layout, shop: Shop, dev: Boolean = false, openWorlds: Boolean = false) {
+    fun agora(px: Pixels, layout: Layout, shop: Shop) {
         val t = layout.agoraTitle
-        PixelFont.draw(px, if (dev) "Dev" else AGORA_TITLE, t.x, t.y, CREAM)
-        if (!dev) PixelFont.draw(px, itemsBought(shop), layout.agoraCount.x, layout.agoraCount.y, TERRA)
+        PixelFont.draw(px, AGORA_TITLE, t.x, t.y, CREAM)
+        PixelFont.draw(px, itemsBought(shop), layout.agoraCount.x, layout.agoraCount.y, TERRA)
         px.hline(t.x, t.right - 1, t.bottom + 2, TERRA_DARK)
-        if (dev) devScreen(px, layout, openWorlds) else for (line in Line.entries) row(px, layout.agoraRow(line.ordinal), line, shop)
-        if (!dev && !shop.allBought) {
+        for (line in Line.entries) row(px, layout.agoraRow(line.ordinal), line, shop)
+        if (!shop.allBought) {
             px.draw(NOTE_HERO, layout.agoraNote.x, layout.agoraNote.y)
             PixelFont.draw(px, AGORA_NOTE, layout.agoraNote.x + NOTE_HERO.width + 3, layout.agoraNote.y, NOT_DONE)
         }
@@ -817,10 +817,13 @@ class UiRenderer {
     }
 
     /**
-     * In dev builds only: buttons that add or take away obols, reset the shop, start the climb again,
+     * In dev builds only, in place of the Agora: buttons that add or take away obols, reset the shop, start the climb again,
      * take him near the next obol or near the top, set the next stone of the tale just ahead, and open every world.
      */
-    private fun devScreen(px: Pixels, layout: Layout, openWorlds: Boolean) {
+    internal fun devScreen(px: Pixels, layout: Layout, openWorlds: Boolean) {
+        val t = layout.agoraTitle
+        PixelFont.draw(px, "Dev", t.x, t.y, CREAM)
+        px.hline(t.x, t.right - 1, t.bottom + 2, TERRA_DARK)
         val obols = layout.agoraRow(0)
         PixelFont.draw(px, "Obols", obols.x, obols.y, TERRA)
         DEV_STEPS.forEachIndexed { i, step -> button(px, layout.devStep(i), if (step > 0) "+$step" else "$step") }

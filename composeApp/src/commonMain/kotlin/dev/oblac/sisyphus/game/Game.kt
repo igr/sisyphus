@@ -539,20 +539,20 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     }
 
     /** For dev builds: a vision comes at once. */
-    fun summonVision() {
+    internal fun summonVision() {
         voices.end()
         come(voices.summon(place))
     }
 
     /** For dev builds: the next labor of the knob turns is done at the next click of the knob. */
-    fun nearTheNextLabor() {
+    internal fun nearTheNextLabor() {
         val next = LABORS.firstOrNull { it.category == Category.TURNS && !it.done(counts) } ?: return
         turnsPushed = next.goal - 1.0 / TICKS_PER_TURN
         save()
     }
 
     /** For dev builds: a vision comes at the next click of the knob. */
-    fun nearTheNextVision() {
+    internal fun nearTheNextVision() {
         voices.soon(1.0 / TICKS_PER_TURN)
         save()
     }
@@ -814,13 +814,13 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     }
 
     /** For dev builds: adds [step] obols, or takes them away, but never below zero. */
-    fun addObols(step: Int) {
+    internal fun addObols(step: Int) {
         shop.add(step.toDouble())
         save()
     }
 
     /** For dev builds: the shop starts over, and with it the final climb. */
-    fun resetShop() {
+    internal fun resetShop() {
         shop.reset()
         summit = null
         restartTale()
@@ -828,10 +828,10 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     }
 
     /** For dev builds: the climb starts again from day 1, with no items and no obols. */
-    fun resetClimb() = begin()
+    internal fun resetClimb() = begin()
 
     /** For dev builds: he pushes on until [CLICKS_TO_OBOL] clicks of the knob are left before the next obol. The sun moves with him. */
-    fun nearTheNextObol() {
+    internal fun nearTheNextObol() {
         val turns = (floor(shop.obols) + 1 - shop.obols) * shop.nextObol / shop.bonus - CLICKS_TO_OBOL.toDouble() / TICKS_PER_TURN
         if (turns <= 0) return
         var moved = turns * min(shop.bonus, Config.SUN_CAP) * PX_PER_TURN
@@ -843,7 +843,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     }
 
     /** For dev builds: the next stone of the tale stands a turn into its popup, also before it is due, so that its part shows at once. */
-    fun nearTheNextStone() {
+    internal fun nearTheNextStone() {
         if (part == null) return
         nextStele = position + (Config.NEAR_TURNS - 1) * PX_PER_TURN
         keepRoom()
@@ -854,7 +854,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
      * For dev builds: the next joker in the order of the cards stands a turn into his bubble, so that he talks at once.
      * A stone too near him stands [Config.JOKER_ROOM] turns past him.
      */
-    fun nearTheNextJoker() {
+    internal fun nearTheNextJoker() {
         joker = JOKERS[devJokers++ % JOKERS.size]
         val at = position + (Config.NEAR_TURNS - 1) * PX_PER_TURN
         nextJoker = at
@@ -864,7 +864,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     }
 
     /** For dev builds: everything bought, and the top two turns away. */
-    fun nearTheTop() {
+    internal fun nearTheTop() {
         shop.complete()
         beginClimb()
         summit?.let { position = it - 2 * Config.SUN_CAP * PX_PER_TURN }

@@ -84,41 +84,41 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     }
 
     /** In the dev screen, the button for one of [DEV_STEPS], below the "Obols" title. */
-    fun devStep(index: Int): Rect {
+    internal fun devStep(index: Int): Rect {
         val r = agoraRow(0)
         val w = (r.w - 2 * (DEV_STEPS.size - 1)) / DEV_STEPS.size
         return Rect(r.x + index * (w + 2), r.y + PixelFont.LINE_HEIGHT, w, BUTTON_HEIGHT)
     }
 
     /** In the dev screen, the button that empties the shop, below the "Shop" title. */
-    val devResetShop = agoraRow(1).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("Reset") + 8, BUTTON_HEIGHT) }
+    internal val devResetShop get() = agoraRow(1).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("Reset") + 8, BUTTON_HEIGHT) }
 
     /** In the dev screen, below the "Climb" title, the button that starts the climb again: day 1, no items and no obols. */
-    val devResetClimb = agoraRow(2).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("Reset") + 8, BUTTON_HEIGHT) }
+    internal val devResetClimb get() = agoraRow(2).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("Reset") + 8, BUTTON_HEIGHT) }
 
     /** In the dev screen, the button that takes him to a few clicks of the knob before the next obol. */
-    val devNextObol = Rect(devResetClimb.right + 2, devResetClimb.y, PixelFont.width("Obol") + 8, BUTTON_HEIGHT)
+    internal val devNextObol get() = Rect(devResetClimb.right + 2, devResetClimb.y, PixelFont.width("Obol") + 8, BUTTON_HEIGHT)
 
     /** In the dev screen, the button that buys everything and takes him to two turns below the top. */
-    val devTop = Rect(devNextObol.right + 2, devResetClimb.y, PixelFont.width("Top") + 8, BUTTON_HEIGHT)
+    internal val devTop get() = Rect(devNextObol.right + 2, devResetClimb.y, PixelFont.width("Top") + 8, BUTTON_HEIGHT)
 
     /** In the dev screen, after Top, the button that sets the next stone of the tale just ahead, so that its popup shows. */
-    val devStone = Rect(devTop.right + 2, devResetClimb.y, PixelFont.width("Stone") + 8, BUTTON_HEIGHT)
+    internal val devStone get() = Rect(devTop.right + 2, devResetClimb.y, PixelFont.width("Stone") + 8, BUTTON_HEIGHT)
 
     /** In the dev screen, the button that opens every world without the store, and gives the store's answer back. */
-    val devWorlds = agoraRow(3).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("As bought") + 8, BUTTON_HEIGHT) }
+    internal val devWorlds get() = agoraRow(3).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("As bought") + 8, BUTTON_HEIGHT) }
 
     /** In the dev screen, after the worlds, the button that brings the next joker, a turn into his bubble. */
-    val devJoker = Rect(devWorlds.right + 2, devWorlds.y, PixelFont.width("Joker") + 8, BUTTON_HEIGHT)
+    internal val devJoker get() = Rect(devWorlds.right + 2, devWorlds.y, PixelFont.width("Joker") + 8, BUTTON_HEIGHT)
 
     /** In the dev screen, under the voices, the button that brings a vision at once. */
-    val devVision = agoraRow(4).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("Now") + 8, BUTTON_HEIGHT) }
+    internal val devVision get() = agoraRow(4).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("Now") + 8, BUTTON_HEIGHT) }
 
     /** In the dev screen, next to Now, the button that brings a vision at the next click of the knob. */
-    val devNextVision = Rect(devVision.right + 2, devVision.y, PixelFont.width("Next turn") + 8, BUTTON_HEIGHT)
+    internal val devNextVision get() = Rect(devVision.right + 2, devVision.y, PixelFont.width("Next turn") + 8, BUTTON_HEIGHT)
 
     /** In the dev screen, after Next turn, the Labor button that does the next labor of the knob turns at the next click of the knob. */
-    val devNextLabor = Rect(devNextVision.right + 2, devVision.y, PixelFont.width("Labor") + 8, BUTTON_HEIGHT)
+    internal val devNextLabor get() = Rect(devNextVision.right + 2, devVision.y, PixelFont.width("Labor") + 8, BUTTON_HEIGHT)
 
     private val offerHeight = 5 + OFFER_ICON + 5 + PixelFont.LINE_HEIGHT + 3 + OFFER_LINES * PixelFont.LINE_HEIGHT +
         4 + PixelFont.LINE_HEIGHT + 4 + BUTTON_HEIGHT + 5
@@ -310,4 +310,4 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
 enum class Tab { WORLDS, LABORS, CARDS }
 
 /** The obols each button of the dev screen adds or takes away, from the left. */
-val DEV_STEPS = listOf(-10, -1, 1, 10, 100)
+internal val DEV_STEPS = listOf(-10, -1, 1, 10, 100)

@@ -21,17 +21,20 @@ Website, support and privacy policy: https://katemariongames.com/sisyphus/. The 
   The Google Play bundle: `./gradlew :androidApp:bundleRelease` (see `stores/playstore/listing.md`).
 - Desktop window on a Mac, for quick checks: `just run` (or `./gradlew :composeApp:run`)
 - Test builds: `just beta` uploads the current commit to Google Play internal testing and to TestFlight
-  (`just beta-android`, `just beta-ios` for one of them). These builds have the dev screen.
+  (`just beta-android`, `just beta-ios` for one of them). The Android builds have the dev screen.
+  The TestFlight builds do not: they are store builds, because Apple rejects an app with hidden features (guideline 5.6).
   Commit first: the build number is the commit count, so every upload needs its own commit.
   Android needs the Play service account key in `~/.android/sisyphus-play.json`; iOS uses the account signed in to Xcode.
 - Store releases: `just release` uploads the current commit without the dev screen: a production draft on Google Play
   (roll it out in Play Console) and a build in App Store Connect (submit it for review there).
-  Never send a test build to the stores: do not promote internal builds to production, or submit TestFlight builds from `just beta`.
+  Before the upload to Apple, `stores/appstore/check.py` stops it if the app holds the dev screen or the Test Store key.
+  Never send a test build to the stores: do not promote internal builds to production.
   The texts, the screenshots and the privacy policy for the stores are in `stores/`: see `stores/listing.md`.
 - Dev screen: in debug builds (Run in Xcode, `installDebug`, `just run`), tap the "Agora" title
   to add or take away obols, to reset the shop, to start the climb again, to go three clicks before the next obol,
   to go near the top, or to open every world without buying.
-  Release builds do not have it.
+  Release builds do not show it. iOS release builds, which Xcode makes in its Release configuration, do not even hold it:
+  `composeApp/build.gradle.kts` then takes `DEV_TOOLS` from `src/withoutDevTools`, and the compiler leaves the dev screen out.
 - Tests: `./gradlew :composeApp:jvmTest`. The tests also write PNG snapshots and `clicks.wav`
   to `composeApp/build/snapshots`.
 
@@ -45,7 +48,7 @@ The stores sell each world as a product of the same name, except Google Play, wh
 - Debug builds buy in RevenueCat's Test Store: a test sheet, and no money. All other builds buy in the App Store
   and Google Play. TestFlight and the Play license testers buy in the sandbox.
 - The iOS SDK does not stop a release build that has the Test Store key, so the apps choose the key:
-  `SisyphusApp.swift` and `MainActivity.kt` set `testStore` only in debug builds.
+  `MainActivity.kt` sets `testStore` only in debug builds, and iOS release builds do not hold the key (`DEV_TOOLS`).
 - The keys are public. The Test Store key is in `RevenueCatBilling.kt`, the store keys in `RevenueCatBilling.android.kt`
   and `RevenueCatBilling.ios.kt`.
 - Support: the settings show the end of the player's RevenueCat id and the build, and a tap copies the whole id.

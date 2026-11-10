@@ -11,15 +11,15 @@ run:
 play-price *args:
     python3 stores/playstore/price.py {{args}}
 
-# uploads this commit, with the dev screen, to Google Play internal testing and to TestFlight
+# uploads this commit to Google Play internal testing, with the dev screen, and to TestFlight, without it
 beta: beta-android beta-ios
 
 # uploads this commit, with the dev screen, to Google Play internal testing
 beta-android: _committed
     ./gradlew :androidApp:publishReleaseBundle -PversionCode={{build}} -Pbeta
 
-# uploads this commit, with the dev screen, to TestFlight
-beta-ios: _committed (_ios "BETA")
+# uploads this commit to TestFlight, as a store build: Apple rejects an app with a hidden dev screen
+beta-ios: release-ios
 
 # uploads this commit, without the dev screen, for the stores: a production draft on Google Play, a build in App Store Connect
 release: release-android release-ios
@@ -28,13 +28,14 @@ release: release-android release-ios
 release-android: _committed
     ./gradlew :androidApp:publishReleaseBundle -PversionCode={{build}} --track production --release-status draft
 
-# uploads this commit to App Store Connect; submit it for review there
-release-ios: _committed (_ios "")
+# uploads this commit to App Store Connect, where it goes to TestFlight; submit it for review there
+release-ios: _committed _ios
 
-# archives and uploads to App Store Connect; Apple's rsync goes first, Homebrew's breaks the export
-_ios conditions:
+# archives, checks that the app has no dev screen and no Test Store, and uploads to App Store Connect; Apple's rsync goes first, Homebrew's breaks the export
+_ios:
     rm -rf build/Sisyphus.xcarchive build/upload
-    PATH=/usr/bin:/bin:/usr/sbin:/sbin:$PATH xcodebuild -project iosApp/iosApp.xcodeproj -scheme Sisyphus -configuration Release -destination 'generic/platform=iOS' -archivePath build/Sisyphus.xcarchive -allowProvisioningUpdates archive CURRENT_PROJECT_VERSION={{build}} SWIFT_ACTIVE_COMPILATION_CONDITIONS="{{conditions}}"
+    PATH=/usr/bin:/bin:/usr/sbin:/sbin:$PATH xcodebuild -project iosApp/iosApp.xcodeproj -scheme Sisyphus -configuration Release -destination 'generic/platform=iOS' -archivePath build/Sisyphus.xcarchive -allowProvisioningUpdates archive CURRENT_PROJECT_VERSION={{build}}
+    python3 -I stores/appstore/check.py build/Sisyphus.xcarchive
     PATH=/usr/bin:/bin:/usr/sbin:/sbin:$PATH xcodebuild -exportArchive -archivePath build/Sisyphus.xcarchive -exportOptionsPlist iosApp/ExportOptions.plist -exportPath build/upload -allowProvisioningUpdates
 
 # the build number is the commit count, so each upload needs its own commit
