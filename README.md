@@ -31,7 +31,8 @@ Website, support and privacy policy: https://katemariongames.com/sisyphus/. The 
   (roll it out in Play Console) and a build in App Store Connect (submit it for review there).
   Before the upload to Apple, `stores/appstore/check.py` stops it if the app holds the dev screen or the Test Store key.
   Never send a test build to the stores: do not promote internal builds to production.
-  These recipes come from `release.just` of gamekit, which the `justfile` imports. The `justfile` writes again the steps that Sisyphus does in its own way.
+  These recipes come from `release.just` of gamekit, which the `justfile` imports. Its Android betas give Gradle the property `beta`, which shows the dev screen,
+  and it runs `stores/appstore/check.py` before each upload to Apple.
   The texts, the screenshots and the privacy policy for the stores are in `stores/`: see `stores/listing.md`.
 - Dev screen: in debug builds (Run in Xcode, `installDebug`, `just run`), tap the "Agora" title
   to add or take away obols, to reset the shop, to start the climb again, to go three clicks before the next obol,
