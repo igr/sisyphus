@@ -1,20 +1,12 @@
 package dev.oblac.sisyphus
 
 import androidx.compose.ui.window.ComposeUIViewController
+import dev.oblac.gamekit.IosStore
 import dev.oblac.sisyphus.game.Game
 import platform.Foundation.NSBundle
-import platform.Foundation.NSUserDefaults
 import platform.UIKit.UIPasteboard
 import platform.UIKit.UISelectionFeedbackGenerator
 import platform.UIKit.UIViewController
-
-private class DefaultsStore : Store {
-    private val defaults = NSUserDefaults.standardUserDefaults
-    override fun load(key: String): Double? =
-        if (defaults.objectForKey("sisyphus.$key") != null) defaults.doubleForKey("sisyphus.$key") else null
-
-    override fun save(key: String, value: Double) = defaults.setDouble(value, "sisyphus.$key")
-}
 
 private class IosHaptics : Haptics {
     private val generator = UISelectionFeedbackGenerator()
@@ -31,7 +23,7 @@ private fun bundleBuild(): String? = NSBundle.mainBundle.infoDictionary?.get("CF
  * The App Store and TestFlight builds do not hold either: see [DEV_TOOLS].
  */
 class SisyphusController {
-    private val game = Game(DefaultsStore())
+    private val game = Game(IosStore("sisyphus."))
     private val haptics = IosHaptics()
     private val sound = EngineSound()
     private val screen = Screen(game, dev = DEV_TOOLS, billing = RevenueCatBilling(testStore = DEV_TOOLS), build = bundleBuild())

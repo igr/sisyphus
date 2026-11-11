@@ -1,5 +1,6 @@
 package dev.oblac.sisyphus
 
+import dev.oblac.gamekit.MemoryStore
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.game.Place
 import dev.oblac.sisyphus.game.Weather

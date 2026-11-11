@@ -1,5 +1,6 @@
 package dev.oblac.sisyphus
 
+import dev.oblac.gamekit.MemoryStore
 import dev.oblac.sisyphus.game.Config
 import dev.oblac.sisyphus.game.DAY_LENGTH
 import dev.oblac.sisyphus.game.Game
@@ -82,7 +83,7 @@ class JokersOnThePathTest {
         assertEquals(at to JOKERS[2], g.metJoker)
         assertTrue(g.nextJoker!! - g.position in ahead)
         g.save()
-        assertEquals(1.0, s.load("met.2"))
+        assertEquals(1.0, s.double("met.2"))
     }
 
     /** How long the last text of a bubble shows at least: a second, and a second for each 20 letters. */
@@ -266,9 +267,9 @@ class JokersOnThePathTest {
         }
         val met = walk(100.0)
         val none = walk(1e7)
-        assertEquals(1.0, met.load("met.0"))
-        assertEquals(0.0, none.load("met.0"))
-        assertEquals(none.load("nextVision"), met.load("nextVision"))
+        assertEquals(1.0, met.double("met.0"))
+        assertEquals(0.0, none.double("met.0"))
+        assertEquals(none.double("nextVision"), met.double("nextVision"))
     }
 
     @Test

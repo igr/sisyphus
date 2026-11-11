@@ -6,13 +6,8 @@ import android.content.Context
 import android.view.HapticFeedbackConstants
 import android.view.View
 import androidx.compose.runtime.Composable
+import dev.oblac.gamekit.AndroidStore
 import dev.oblac.sisyphus.game.Game
-
-private class PrefsStore(context: Context) : Store {
-    private val prefs = context.getSharedPreferences("sisyphus", Context.MODE_PRIVATE)
-    override fun load(key: String): Double? = prefs.getString(key, null)?.toDoubleOrNull()
-    override fun save(key: String, value: Double) = prefs.edit().putString(key, value.toString()).apply()
-}
 
 private class ViewHaptics(private val view: View) : Haptics {
     override fun tick() {
@@ -26,7 +21,7 @@ private class ViewHaptics(private val view: View) : Haptics {
  * The settings show [build].
  */
 class SisyphusController(private val context: Context, view: View, dev: Boolean, testStore: Boolean, build: String) {
-    private val game = Game(PrefsStore(context))
+    private val game = Game(AndroidStore(context.getSharedPreferences("sisyphus", Context.MODE_PRIVATE)))
     private val haptics = ViewHaptics(view)
     private val sound = TrackSound()
     private val screen = Screen(game, dev = dev, billing = RevenueCatBilling(testStore), build = build)

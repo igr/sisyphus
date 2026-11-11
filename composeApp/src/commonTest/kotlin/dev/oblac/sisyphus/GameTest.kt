@@ -1,5 +1,6 @@
 package dev.oblac.sisyphus
 
+import dev.oblac.gamekit.MemoryStore
 import dev.oblac.sisyphus.game.CLIMB
 import dev.oblac.sisyphus.game.Config
 import dev.oblac.sisyphus.game.DAY_LENGTH
@@ -138,7 +139,7 @@ class GameTest {
         val game = Game(store, seed = 1)
         game.turn(PI)
         game.save()
-        assertEquals(game.effort, store.load("effort"))
+        assertEquals(game.effort, store.double("effort"))
         assertEquals(game.effort, Game(store, seed = 1).effort)
     }
 
@@ -167,7 +168,7 @@ class GameTest {
         repeat(1060) { game.update(1.0) }
         assertEquals(1, game.shop.obols.toInt())
         assertTrue(game.shop.nextObol in Config.WORK_PER_OBOL * (1 - Config.OBOL_SPREAD)..Config.WORK_PER_OBOL * (1 + Config.OBOL_SPREAD))
-        assertEquals(game.shop.nextObol, store.load("nextObol"))
+        assertEquals(game.shop.nextObol, store.double("nextObol"))
         assertEquals(game.shop.nextObol, Game(store, seed = 2, wall = { 0.0 }).shop.nextObol)
     }
 
@@ -282,7 +283,7 @@ class GameTest {
         game.pause()
         now += 3600.0
         game.pause()
-        assertEquals(0.0, store.load("savedAt"))
+        assertEquals(0.0, store.double("savedAt"))
         game.resume()
         assertEquals(6 * PX_PER_TURN, game.effort, 1e-6)
     }
@@ -438,11 +439,11 @@ class GameTest {
             assertFalse(g.ticksOn)
             assertFalse(g.rollOn)
         }
-        assertEquals(0.0, store.load("ticks"))
-        assertEquals(0.0, store.load("roll"))
+        assertEquals(0.0, store.double("ticks"))
+        assertEquals(0.0, store.double("roll"))
         game.toggleTicks()
         assertTrue(game.ticksOn)
-        assertEquals(1.0, store.load("ticks"))
+        assertEquals(1.0, store.double("ticks"))
     }
 
     @Test

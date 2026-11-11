@@ -13,13 +13,61 @@ import platform.AVFAudio.AVAudioPlayerNodeBufferLoops
 import platform.AVFAudio.AVAudioSession
 import platform.AVFAudio.AVAudioSessionCategoryAmbient
 import platform.AVFAudio.setPreferredIOBufferDuration
+import platform.darwin.dispatch_async
+import platform.darwin.dispatch_queue_create
 
 /**
  * Plays the knob click, the click of every other tap, the sound of buying, the fanfare, the coin, the spell, the victory and the pop of a bubble. The ambient session mixes with other apps' music
  * and stays quiet when the phone is on silent. The roll of the rock loops from its first push, and its volume follows the push.
+ * All work with the audio is on a queue of its own, never on the main thread: the session, the engine and its players, the buffers, and each sound.
+ * Over Bluetooth, such as AirPods, a start of the engine can wait for the audio hardware, and the knob and the frames must go on.
  */
-@OptIn(ExperimentalForeignApi::class)
 internal class EngineSound : Sound {
+    private val queue = dispatch_queue_create("dev.oblac.sisyphus.sound", null)
+    private lateinit var engine: Engine
+
+    init {
+        dispatch_async(queue) { engine = Engine() }
+    }
+
+    override fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray, spell: FloatArray, victory: FloatArray, popup: FloatArray, roll: FloatArray) =
+        on { it.load(click, ui, win, fanfare, coin, spell, victory, popup, roll) }
+
+    override fun prepare() = on { it.start() }
+
+    override fun click() = on { it.click() }
+
+    override fun ui() = on { it.ui() }
+
+    override fun win() = on { it.win() }
+
+    override fun fanfare() = on { it.fanfare() }
+
+    override fun coin() = on { it.coin() }
+
+    override fun spell() = on { it.spell() }
+
+    override fun victory() = on { it.victory() }
+
+    override fun popup() = on { it.popup() }
+
+    override fun roll(level: Float) = on { it.roll(level) }
+
+    override fun pause() = on { it.pause() }
+
+    /** Does the [work] on the [queue]: so always after the engine is ready. */
+    private fun on(work: (Engine) -> Unit) = dispatch_async(queue) { work(engine) }
+}
+
+/** The engine with its players and buffers. Only the queue of [EngineSound] uses it. The category of the session comes first, before the engine takes the audio hardware. */
+@OptIn(ExperimentalForeignApi::class)
+private class Engine {
+    init {
+        val session = AVAudioSession.sharedInstance()
+        session.setCategory(AVAudioSessionCategoryAmbient, error = null)
+        session.setPreferredIOBufferDuration(0.008, error = null)
+    }
+
     private val engine = AVAudioEngine()
     private val format = AVAudioFormat(standardFormatWithSampleRate = SAMPLE_RATE.toDouble(), channels = 1u)
     private val players = List(3) { AVAudioPlayerNode() }
@@ -45,16 +93,13 @@ internal class EngineSound : Sound {
     private var next = 0
 
     init {
-        val session = AVAudioSession.sharedInstance()
-        session.setCategory(AVAudioSessionCategoryAmbient, error = null)
-        session.setPreferredIOBufferDuration(0.008, error = null)
         for (player in nodes) {
             engine.attachNode(player)
             engine.connect(player, to = engine.mainMixerNode, format = format)
         }
     }
 
-    override fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray, spell: FloatArray, victory: FloatArray, popup: FloatArray, roll: FloatArray) {
+    fun load(click: FloatArray, ui: FloatArray, win: FloatArray, fanfare: FloatArray, coin: FloatArray, spell: FloatArray, victory: FloatArray, popup: FloatArray, roll: FloatArray) {
         clickBuffer = buffer(click)
         uiBuffer = buffer(ui)
         winBuffer = buffer(win)
@@ -66,60 +111,56 @@ internal class EngineSound : Sound {
         rollBuffer = buffer(roll)
     }
 
-    override fun prepare() {
-        start()
-    }
-
-    override fun click() {
+    fun click() {
         val buffer = clickBuffer ?: return
         if (!start()) return
         val player = players[next++ % players.size]
         player.scheduleBuffer(buffer, atTime = null, options = AVAudioPlayerNodeBufferInterrupts, completionHandler = null)
     }
 
-    override fun ui() {
+    fun ui() {
         val buffer = uiBuffer ?: return
         if (!start()) return
         uiPlayer.scheduleBuffer(buffer, atTime = null, options = AVAudioPlayerNodeBufferInterrupts, completionHandler = null)
     }
 
-    override fun win() {
+    fun win() {
         val buffer = winBuffer ?: return
         if (!start()) return
         winPlayer.scheduleBuffer(buffer, atTime = null, options = AVAudioPlayerNodeBufferInterrupts, completionHandler = null)
     }
 
-    override fun fanfare() {
+    fun fanfare() {
         val buffer = fanfareBuffer ?: return
         if (!start()) return
         fanfarePlayer.scheduleBuffer(buffer, atTime = null, options = AVAudioPlayerNodeBufferInterrupts, completionHandler = null)
     }
 
-    override fun coin() {
+    fun coin() {
         val buffer = coinBuffer ?: return
         if (!start()) return
         coinPlayer.scheduleBuffer(buffer, atTime = null, options = AVAudioPlayerNodeBufferInterrupts, completionHandler = null)
     }
 
-    override fun spell() {
+    fun spell() {
         val buffer = spellBuffer ?: return
         if (!start()) return
         spellPlayer.scheduleBuffer(buffer, atTime = null, options = AVAudioPlayerNodeBufferInterrupts, completionHandler = null)
     }
 
-    override fun victory() {
+    fun victory() {
         val buffer = victoryBuffer ?: return
         if (!start()) return
         victoryPlayer.scheduleBuffer(buffer, atTime = null, options = AVAudioPlayerNodeBufferInterrupts, completionHandler = null)
     }
 
-    override fun popup() {
+    fun popup() {
         val buffer = popupBuffer ?: return
         if (!start()) return
         popupPlayer.scheduleBuffer(buffer, atTime = null, options = AVAudioPlayerNodeBufferInterrupts, completionHandler = null)
     }
 
-    override fun roll(level: Float) {
+    fun roll(level: Float) {
         rollPlayer.volume = level
         val buffer = rollBuffer ?: return
         if (level == 0f || rolling && engine.running) return
@@ -129,7 +170,7 @@ internal class EngineSound : Sound {
     }
 
     /** Every sound stops: a paused engine would play the rest of a long sound, such as the victory, at its next start. */
-    override fun pause() {
+    fun pause() {
         for (player in nodes) player.stop()
         rolling = false
         if (engine.running) engine.pause()
@@ -139,7 +180,7 @@ internal class EngineSound : Sound {
      * An engine that stopped, in a pause or by itself when the output changes, such as AirPods or a car, has lost the loop of the
      * roll: the next push schedules it again.
      */
-    private fun start(): Boolean {
+    fun start(): Boolean {
         if (!engine.running) {
             rolling = false
             if (!engine.startAndReturnError(null)) return false

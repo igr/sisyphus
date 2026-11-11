@@ -8,19 +8,6 @@ import kotlin.math.min
 import kotlin.math.sqrt
 import kotlin.time.Clock
 
-interface Store {
-    fun load(key: String): Double?
-    fun save(key: String, value: Double)
-}
-
-class MemoryStore(values: Map<String, Double> = emptyMap()) : Store {
-    private val values = values.toMutableMap()
-    override fun load(key: String) = values[key]
-    override fun save(key: String, value: Double) {
-        values[key] = value
-    }
-}
-
 /** The worlds bought with money. Each is bought once and owned forever; the store answers later, through `done`. */
 interface Billing {
     fun owns(place: Place): Boolean

@@ -2,7 +2,7 @@
 
 The game saves all of its data on the device, and there is no account. Only the purchases of worlds go over the network: the store keeps each purchase, and RevenueCat keeps the worlds of each player under an anonymous id. The save holds no purchases.
 
-Each saved value is one number under a short key. The code that reads and writes the keys is in `Game.kt`.
+Each saved value is one number under a short key. The code that reads and writes the keys is in `Game.kt`. Each platform keeps them with the `Store` of gamekit, in the places that follow.
 
 ## Where the data is
 

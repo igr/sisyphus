@@ -5,17 +5,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import dev.oblac.gamekit.DesktopStore
 import dev.oblac.sisyphus.game.Game
-import java.util.prefs.Preferences
-
-private class PreferencesStore : Store {
-    private val prefs = Preferences.userRoot().node("dev/oblac/sisyphus")
-    override fun load(key: String): Double? = prefs.get(key, null)?.toDoubleOrNull()
-    override fun save(key: String, value: Double) = prefs.put(key, value.toString())
-}
 
 fun main() = application {
-    val game = remember { Game(PreferencesStore()) }
+    val game = remember { Game(DesktopStore("dev/oblac/sisyphus")) }
     Window(
         onCloseRequest = {
             game.save()

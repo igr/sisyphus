@@ -14,6 +14,8 @@ Website, support and privacy policy: https://katemariongames.com/sisyphus/. The 
 
 ## Run
 
+- gamekit: the game uses gamekit, the library of the games in `~/prj/igr/gamekit`. Gradle takes it from the local Maven repository, `~/.m2`.
+  Before the first build, publish the version that `gradle/libs.versions.toml` pins: see the README of gamekit.
 - iOS: open `iosApp/iosApp.xcodeproj`, select the **Sisyphus** scheme and an iPhone simulator, then Run.
   For a real iPhone, set your signing team in the target settings.
 - Android: `./gradlew :androidApp:installDebug` with a phone or emulator connected.
@@ -29,6 +31,7 @@ Website, support and privacy policy: https://katemariongames.com/sisyphus/. The 
   (roll it out in Play Console) and a build in App Store Connect (submit it for review there).
   Before the upload to Apple, `stores/appstore/check.py` stops it if the app holds the dev screen or the Test Store key.
   Never send a test build to the stores: do not promote internal builds to production.
+  These recipes come from `release.just` of gamekit, which the `justfile` imports. The `justfile` writes again the steps that Sisyphus does in its own way.
   The texts, the screenshots and the privacy policy for the stores are in `stores/`: see `stores/listing.md`.
 - Dev screen: in debug builds (Run in Xcode, `installDebug`, `just run`), tap the "Agora" title
   to add or take away obols, to reset the shop, to start the climb again, to go three clicks before the next obol,
@@ -76,7 +79,9 @@ The gear across from the help opens the settings: all the sound, the ticks of th
 - `ui` — layout, frame, Greek key band, quote panel, knob, the cards of the jokers
 - `Screen.kt` maps touches to virtual pixels; `App.kt` shows the framebuffer in Compose
 - `mobileMain` — the purchases of worlds, through RevenueCat, for both phones. The desktop has every world.
-- `iosMain`, `androidMain`, `jvmMain` — saving, sound and haptics for each platform; `androidApp` is the Android app
+- `iosMain`, `androidMain`, `jvmMain` — saving with the store of gamekit, sound and haptics for each platform; `androidApp` is the Android app.
+  On iOS, all work with the sound is on a queue of its own, never on the main thread: over Bluetooth, a start of the audio engine can wait for the audio hardware.
+  The Android activity uses `enableFullScreen()` of gamekit. It follows a change of the font size, the display size, the language or the keyboard itself (`configChanges`), so the game in play goes on.
 
 The data that the game saves on the device is listed in [docs/saved-data.md](docs/saved-data.md).
 

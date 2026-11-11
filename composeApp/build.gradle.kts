@@ -42,6 +42,7 @@ kotlin {
         val devTools = providers.environmentVariable("CONFIGURATION").orNull != "Release"
         commonMain { kotlin.srcDir(if (devTools) "src/withDevTools/kotlin" else "src/withoutDevTools/kotlin") }
         commonMain.dependencies {
+            api(libs.gamekit)
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.ui)

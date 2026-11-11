@@ -1,5 +1,7 @@
 package dev.oblac.sisyphus
 
+import dev.oblac.gamekit.MemoryStore
+import dev.oblac.gamekit.Store
 import dev.oblac.sisyphus.game.CLIMB
 import dev.oblac.sisyphus.game.Config
 import dev.oblac.sisyphus.game.DAY_LENGTH
@@ -346,7 +348,7 @@ class ScreenTest {
         s.openDev()
         for (button in listOf(4, 3, 3, 1)) assertEquals(Touch.DEV, s.tap(l.devStep(button)))
         assertEquals(119.0, s.game.shop.obols, 1e-9)
-        assertEquals(119.0, store.load("obols"))
+        assertEquals(119.0, store.double("obols"))
         repeat(13) { s.tap(l.devStep(0)) }
         assertEquals(0.0, s.game.shop.obols)
     }
@@ -358,7 +360,7 @@ class ScreenTest {
         s.openDev()
         assertEquals(Touch.DEV, s.tap(s.layout!!.devResetShop))
         assertTrue(Line.entries.all { s.game.shop.tier(it) == 0 })
-        assertEquals(0.0, store.load("shop.rock"))
+        assertEquals(0.0, store.double("shop.rock"))
     }
 
     @Test
@@ -751,7 +753,7 @@ class ScreenTest {
         val on = switches()
         for (i in SETTINGS.indices) assertEquals(Touch.SOUND, s.tap(l.settingsSwitch(i)))
         assertEquals(listOf(false, false, false), listOf(s.game.soundOn, s.game.ticksOn, s.game.rollOn))
-        assertEquals(listOf(0.0, 0.0, 0.0), listOf("sound", "ticks", "roll").map { store.load(it) })
+        assertEquals(listOf(0.0, 0.0, 0.0), listOf("sound", "ticks", "roll").map { store.double(it) })
         val off = switches()
         for (i in SETTINGS.indices) assertNotEquals(on[i], off[i], "switch $i")
         val row = l.settingsRow(1)
@@ -1036,7 +1038,7 @@ class ScreenTest {
         assertEquals(FIRST_OBOL, s.game.shop.nextObol)
         assertEquals(2, s.game.climbs)
         assertEquals(Place.CORINTH, s.game.place)
-        assertEquals(0.0, store.load("position"))
+        assertEquals(0.0, store.double("position"))
     }
 
     /** The next obol is three clicks of the knob away, and the sun has moved as if he pushed all the way there. */
@@ -1051,7 +1053,7 @@ class ScreenTest {
         assertEquals(3 * 1.5 / 24, (3 - s.game.shop.obols) * 150, 1e-6)
         val turns = 0.75 * 150 / 1.5 - 3.0 / 24
         assertEquals(turns * Config.SUN_CAP * PX_PER_TURN, s.game.effort - effort, 1e-6)
-        assertEquals(s.game.shop.obols, store.load("obols"))
+        assertEquals(s.game.shop.obols, store.double("obols"))
     }
 
     @Test

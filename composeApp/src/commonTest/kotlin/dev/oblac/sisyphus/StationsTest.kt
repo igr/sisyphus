@@ -1,5 +1,6 @@
 package dev.oblac.sisyphus
 
+import dev.oblac.gamekit.MemoryStore
 import dev.oblac.sisyphus.game.Config
 import dev.oblac.sisyphus.game.DAY_LENGTH
 import dev.oblac.sisyphus.game.Game
@@ -422,7 +423,7 @@ class StationsTest {
         fun nextVision(told: Int): Double? {
             val store = store("talesTold" to told.toDouble())
             Game(store, seed = 7, wall = { 0.0 }).startOver()
-            return store.load("nextVision")
+            return store.double("nextVision")
         }
         assertEquals(nextVision(0), nextVision(1))
     }
@@ -433,7 +434,7 @@ class StationsTest {
         val g = game(store)
         assertSame(ORPHEUS, g.tale)
         g.save()
-        assertEquals(2.0, store.load("tale"))
+        assertEquals(2.0, store.double("tale"))
         assertSame(ORPHEUS, game(store).tale)
     }
 

@@ -1,7 +1,7 @@
 package dev.oblac.sisyphus.game
 
-import dev.oblac.sisyphus.MemoryStore
-import dev.oblac.sisyphus.Store
+import dev.oblac.gamekit.MemoryStore
+import dev.oblac.gamekit.Store
 import dev.oblac.sisyphus.gfx.hash01
 import dev.oblac.sisyphus.wallSeconds
 import kotlin.math.PI
@@ -194,11 +194,11 @@ class Lingering(val text: String, val at: Double, val note: String, val joker: J
  * Everything the player can see comes back from [store] when the game starts again.
  */
 class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(), private val wall: () -> Double = ::wallSeconds) {
-    val knob = Knob(store.load(KEY_KNOB) ?: 0.0)
+    val knob = Knob(store.double(KEY_KNOB) ?: 0.0)
 
-    var position = store.load(KEY_POSITION) ?: 0.0
+    var position = store.double(KEY_POSITION) ?: 0.0
         private set
-    var effort = store.load(KEY_EFFORT) ?: 0.0
+    var effort = store.double(KEY_EFFORT) ?: 0.0
         private set
 
     /** Pixels walked up during the last update. */
@@ -215,39 +215,39 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     var clock = 0.0
         private set
 
-    var soundOn = store.load(KEY_SOUND) != 0.0
+    var soundOn = store.double(KEY_SOUND) != 0.0
         private set
     /** The knob ticks at each step, unless the settings turned the ticks off. */
-    var ticksOn = store.load(KEY_TICKS) != 0.0
+    var ticksOn = store.double(KEY_TICKS) != 0.0
         private set
     /** The rock rolls as he pushes, unless the settings turned the roll off. */
-    var rollOn = store.load(KEY_ROLL) != 0.0
+    var rollOn = store.double(KEY_ROLL) != 0.0
         private set
 
     /** The world he pushes in. */
-    var place = store.load(KEY_PLACE)?.toInt().let { id -> Place.entries.firstOrNull { it.id == id } } ?: Place.CORINTH
+    var place = store.double(KEY_PLACE)?.toInt().let { id -> Place.entries.firstOrNull { it.id == id } } ?: Place.CORINTH
         private set
     private val random = Random(seed)
     var shop = Shop(
-        Line.entries.associateWith { store.load(shopKey(it))?.toInt() ?: 0 }, store.load(KEY_OBOLS) ?: 0.0, place,
-        store.load(KEY_NEXT_OBOL)?.takeIf { it > 0 }, random,
+        Line.entries.associateWith { store.double(shopKey(it))?.toInt() ?: 0 }, store.double(KEY_OBOLS) ?: 0.0, place,
+        store.double(KEY_NEXT_OBOL)?.takeIf { it > 0 }, random,
     )
         private set
 
     /** Where the hill ends, in pixels walked; null until all 15 items are bought and the final climb begins. */
-    var summit = store.load(KEY_SUMMIT)?.takeIf { it >= 0 }?.let { min(it, position + CLIMB) }
+    var summit = store.double(KEY_SUMMIT)?.takeIf { it >= 0 }?.let { min(it, position + CLIMB) }
         private set
     /** How many times Sisyphus reached the top. Starting over keeps it. */
-    var climbs = store.load(KEY_CLIMBS)?.toInt() ?: 0
+    var climbs = store.double(KEY_CLIMBS)?.toInt() ?: 0
         private set
     /** The player's own turns that pushed, in all climbs and worlds. */
-    var turnsPushed = store.load(KEY_TURNS_PUSHED) ?: 0.0
+    var turnsPushed = store.double(KEY_TURNS_PUSHED) ?: 0.0
         private set
     /** The days pushed through in all the climbs before this one. */
-    var daysBefore = store.load(KEY_DAYS_BEFORE)?.toInt() ?: 0
+    var daysBefore = store.double(KEY_DAYS_BEFORE)?.toInt() ?: 0
         private set
     /** How many labors were done when the Labors tab was last open. */
-    var laborsSeen = store.load(KEY_LABORS_SEEN)?.toInt() ?: 0
+    var laborsSeen = store.double(KEY_LABORS_SEEN)?.toInt() ?: 0
         private set
     /** How far the final climb has come: from 0 when it begins to 1 at the top; null before it begins. */
     val climbed: Double? get() = summit?.let { (1 - (it - position) / CLIMB).coerceIn(0.0, 1.0) }
@@ -258,21 +258,21 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
             ?: emptyList()
 
     /** The tale that the stones of this climb tell, one part for each item bought. An old save tells the tale of Sisyphus. */
-    var tale = store.load(KEY_TALE)?.let { TALES.getOrNull(it.toInt()) } ?: SISYPHUS
+    var tale = store.double(KEY_TALE)?.let { TALES.getOrNull(it.toInt()) } ?: SISYPHUS
         private set
     /** The tales told so far, one bit for each id. A tale is told when its last part is told. */
-    var talesTold = store.load(KEY_TALES_TOLD)?.toInt() ?: 0
+    var talesTold = store.double(KEY_TALES_TOLD)?.toInt() ?: 0
         private set
     /** The cards of the tales told that the player has seen on the Cards tab, one bit for each id. */
-    var talesSeen = store.load(KEY_TALES_SEEN)?.toInt() ?: 0
+    var talesSeen = store.double(KEY_TALES_SEEN)?.toInt() ?: 0
         private set
     /** The tales take their own random numbers, so that the visions and the sights stay the same. */
     private val taleRandom = Random(seed + 1)
     /** The parts of the tale told in this climb. An old save counts its items as told. */
-    var stelesTold = store.load(KEY_STELES_TOLD)?.toInt() ?: min(shop.bought, tale.parts.size)
+    var stelesTold = store.double(KEY_STELES_TOLD)?.toInt() ?: min(shop.bought, tale.parts.size)
         private set
     /** Where the next stone stands, in pixels walked, until its part is told; null when no stone stands ahead. */
-    var nextStele = store.load(KEY_NEXT_STELE)?.takeIf { it >= 0 }
+    var nextStele = store.double(KEY_NEXT_STELE)?.takeIf { it >= 0 }
         private set
     /** The stones whose parts were told in this run of the app. */
     private val passed = mutableListOf<Stele>()
@@ -282,15 +282,15 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     /** The jokers take their own random numbers, so that the visions, the sights and the tales stay the same. */
     private val jokerRandom = Random(seed + 2)
     /** The next joker by the path. An id that the game does not have is Diogenes. */
-    var joker = store.load(KEY_JOKER)?.let { JOKERS.getOrNull(it.toInt()) } ?: JOKERS.first()
+    var joker = store.double(KEY_JOKER)?.let { JOKERS.getOrNull(it.toInt()) } ?: JOKERS.first()
         private set
     /** Where the next joker stands, in pixels walked, until he has talked; null when none stands ahead yet. */
-    var nextJoker = store.load(KEY_NEXT_JOKER)?.takeIf { it >= 0 }
+    var nextJoker = store.double(KEY_NEXT_JOKER)?.takeIf { it >= 0 }
         private set
     /** How many times the player met each joker, by id, in all climbs and worlds. */
-    private val met = IntArray(JOKERS.size) { id -> store.load(metKey(JOKERS[id]))?.toInt() ?: 0 }
+    private val met = IntArray(JOKERS.size) { id -> store.double(metKey(JOKERS[id]))?.toInt() ?: 0 }
     /** The cards seen face up on the Cards tab, one bit for each id. */
-    var jokersSeen = store.load(KEY_JOKERS_SEEN)?.toInt() ?: 0
+    var jokersSeen = store.double(KEY_JOKERS_SEEN)?.toInt() ?: 0
         private set
     /** The joker met last in this climb and this run of the app, and where he stands: he stays by the path behind him. */
     var metJoker: Pair<Double, Joker>? = null
@@ -303,10 +303,10 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     /** The climb has begun: he has pushed the rock up from the foot of the hill, and a move to another world loses it. */
     val begun get() = position > 0
 
-    private val quoteSeed = store.load(KEY_QUOTE_SEED)?.toInt() ?: seed
+    private val quoteSeed = store.double(KEY_QUOTE_SEED)?.toInt() ?: seed
     /** How many wise words had come when this climb began: until one more comes, a restart shows the first words of the climb again. */
-    private var quotesAtStart = store.load(KEY_QUOTES_AT_START)?.toInt() ?: 0
-    var quotes = (store.load(KEY_QUOTES_DRAWN)?.toInt() ?: 0).let { drawn ->
+    private var quotesAtStart = store.double(KEY_QUOTES_AT_START)?.toInt() ?: 0
+    var quotes = (store.double(KEY_QUOTES_DRAWN)?.toInt() ?: 0).let { drawn ->
         QuoteBox(quoteSeed, drawn = drawn, firstTime = effort == 0.0 || drawn == quotesAtStart, news = ::nextNews)
     }
         private set
@@ -322,11 +322,11 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
             if (obols > 0) value(obols)
         }
 
-    private val visionSeed = store.load(KEY_VISION_SEED)?.toInt() ?: seed
+    private val visionSeed = store.double(KEY_VISION_SEED)?.toInt() ?: seed
     /** The gods who come as visions, and ask. Only the player's own turns bring them. */
     val voices = Voices(
-        visionSeed, store.load(KEY_VISIONS_DRAWN)?.toInt() ?: 0, store.load(KEY_NEXT_VISION),
-        store.load(KEY_RIGHT_ANSWERS)?.toInt() ?: 0, random,
+        visionSeed, store.double(KEY_VISIONS_DRAWN)?.toInt() ?: 0, store.double(KEY_NEXT_VISION),
+        store.double(KEY_RIGHT_ANSWERS)?.toInt() ?: 0, random,
     )
     val vision: Vision? get() = voices.vision
     /** A vision holds him while it comes and asks: he walks again as it leaves, and the texts by the path show again with him. */
@@ -366,7 +366,7 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
     private var pausedAt: Double? = null
 
     init {
-        store.load(KEY_SAVED_AT)?.let { away(wall() - it) }
+        store.double(KEY_SAVED_AT)?.let { away(wall() - it) }
         beginClimb()
         placeJoker(Config.FIRST_JOKER)
         bubble = openBubble()
@@ -873,49 +873,49 @@ class Game(private val store: Store = MemoryStore(), seed: Int = Random.nextInt(
 
     fun toggleSound() {
         soundOn = !soundOn
-        store.save(KEY_SOUND, if (soundOn) 1.0 else 0.0)
+        store.put(KEY_SOUND, if (soundOn) 1.0 else 0.0)
     }
 
     fun toggleTicks() {
         ticksOn = !ticksOn
-        store.save(KEY_TICKS, if (ticksOn) 1.0 else 0.0)
+        store.put(KEY_TICKS, if (ticksOn) 1.0 else 0.0)
     }
 
     fun toggleRoll() {
         rollOn = !rollOn
-        store.save(KEY_ROLL, if (rollOn) 1.0 else 0.0)
+        store.put(KEY_ROLL, if (rollOn) 1.0 else 0.0)
     }
 
     fun save() {
-        store.save(KEY_EFFORT, effort)
-        store.save(KEY_POSITION, position)
-        store.save(KEY_KNOB, knob.angle)
-        store.save(KEY_QUOTE_SEED, quoteSeed.toDouble())
-        store.save(KEY_QUOTES_DRAWN, quotes.drawn.toDouble())
-        store.save(KEY_QUOTES_AT_START, quotesAtStart.toDouble())
-        store.save(KEY_OBOLS, shop.obols)
-        store.save(KEY_NEXT_OBOL, shop.nextObol)
-        store.save(KEY_SAVED_AT, pausedAt ?: wall())
-        store.save(KEY_SUMMIT, summit ?: -1.0)
-        store.save(KEY_CLIMBS, climbs.toDouble())
-        store.save(KEY_PLACE, place.id.toDouble())
-        store.save(KEY_NEXT_VISION, voices.count)
-        store.save(KEY_VISION_SEED, visionSeed.toDouble())
-        store.save(KEY_VISIONS_DRAWN, voices.drawn.toDouble())
-        store.save(KEY_RIGHT_ANSWERS, voices.rightAnswers.toDouble())
-        store.save(KEY_TURNS_PUSHED, turnsPushed)
-        store.save(KEY_DAYS_BEFORE, daysBefore.toDouble())
-        store.save(KEY_LABORS_SEEN, laborsSeen.toDouble())
-        store.save(KEY_STELES_TOLD, stelesTold.toDouble())
-        store.save(KEY_NEXT_STELE, nextStele ?: -1.0)
-        store.save(KEY_TALE, tale.id.toDouble())
-        store.save(KEY_TALES_TOLD, talesTold.toDouble())
-        store.save(KEY_TALES_SEEN, talesSeen.toDouble())
-        store.save(KEY_NEXT_JOKER, nextJoker ?: -1.0)
-        store.save(KEY_JOKER, joker.id.toDouble())
-        store.save(KEY_JOKERS_SEEN, jokersSeen.toDouble())
-        for (joker in JOKERS) store.save(metKey(joker), met[joker.id].toDouble())
-        for (line in Line.entries) store.save(shopKey(line), shop.tier(line).toDouble())
+        store.put(KEY_EFFORT, effort)
+        store.put(KEY_POSITION, position)
+        store.put(KEY_KNOB, knob.angle)
+        store.put(KEY_QUOTE_SEED, quoteSeed.toDouble())
+        store.put(KEY_QUOTES_DRAWN, quotes.drawn.toDouble())
+        store.put(KEY_QUOTES_AT_START, quotesAtStart.toDouble())
+        store.put(KEY_OBOLS, shop.obols)
+        store.put(KEY_NEXT_OBOL, shop.nextObol)
+        store.put(KEY_SAVED_AT, pausedAt ?: wall())
+        store.put(KEY_SUMMIT, summit ?: -1.0)
+        store.put(KEY_CLIMBS, climbs.toDouble())
+        store.put(KEY_PLACE, place.id.toDouble())
+        store.put(KEY_NEXT_VISION, voices.count)
+        store.put(KEY_VISION_SEED, visionSeed.toDouble())
+        store.put(KEY_VISIONS_DRAWN, voices.drawn.toDouble())
+        store.put(KEY_RIGHT_ANSWERS, voices.rightAnswers.toDouble())
+        store.put(KEY_TURNS_PUSHED, turnsPushed)
+        store.put(KEY_DAYS_BEFORE, daysBefore.toDouble())
+        store.put(KEY_LABORS_SEEN, laborsSeen.toDouble())
+        store.put(KEY_STELES_TOLD, stelesTold.toDouble())
+        store.put(KEY_NEXT_STELE, nextStele ?: -1.0)
+        store.put(KEY_TALE, tale.id.toDouble())
+        store.put(KEY_TALES_TOLD, talesTold.toDouble())
+        store.put(KEY_TALES_SEEN, talesSeen.toDouble())
+        store.put(KEY_NEXT_JOKER, nextJoker ?: -1.0)
+        store.put(KEY_JOKER, joker.id.toDouble())
+        store.put(KEY_JOKERS_SEEN, jokersSeen.toDouble())
+        for (joker in JOKERS) store.put(metKey(joker), met[joker.id].toDouble())
+        for (line in Line.entries) store.put(shopKey(line), shop.tier(line).toDouble())
         dirty = false
         sinceSave = 0.0
     }
