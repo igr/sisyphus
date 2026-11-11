@@ -14,7 +14,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
@@ -22,6 +21,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import dev.oblac.gamekit.steps
 import dev.oblac.sisyphus.audio.loadClick
 import dev.oblac.sisyphus.audio.loadCoin
 import dev.oblac.sisyphus.audio.loadFanfare
@@ -34,9 +34,6 @@ import dev.oblac.sisyphus.audio.loadWin
 import dev.oblac.sisyphus.game.Game
 import dev.oblac.sisyphus.ui.BACKGROUND
 import dev.oblac.sisyphus.ui.PRIVACY_URL
-
-private const val BUSY_FRAME = 14_000_000L
-private const val IDLE_FRAME = 31_000_000L
 
 @Composable
 fun SisyphusApp(
@@ -73,20 +70,11 @@ fun SisyphusApp(
     LaunchedEffect(sound) { sound.load(loadClick(), loadUi(), loadWin(), loadFanfare(), loadCoin(), loadSpell(), loadVictory(), loadPopup(), loadRoll()) }
 
     LaunchedEffect(screen) {
-        var last = 0L
-        var drawn = 0L
-        while (true) {
-            withFrameNanos { now ->
-                if (last != 0L) screen.update(((now - last) / 1e9).coerceIn(0.0, 0.1))
-                sound.rock(game.rolling, game.soundOn && game.rollOn)
-                last = now
-                // Pixel art needs no more than 60 frames while turning, and 30 when the knob rests.
-                val busy = game.knob.held || game.knob.velocity != 0.0
-                if (now - drawn >= if (busy) BUSY_FRAME else IDLE_FRAME) {
-                    drawn = now
-                    frame = now
-                }
-            }
+        // Pixel art needs no more than 60 frames while the knob turns, and 30 when it rests. Between the steps, the screen draws nothing.
+        steps({ if (game.knob.held || game.knob.velocity != 0.0) 60 else 30 }) { seconds ->
+            screen.update(seconds.coerceIn(0.0, 0.1))
+            sound.rock(game.rolling, game.soundOn && game.rollOn)
+            frame++
         }
     }
 
