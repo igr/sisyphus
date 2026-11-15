@@ -14,8 +14,8 @@ Website, support and privacy policy: https://katemariongames.com/sisyphus/. The 
 
 ## Run
 
-- gamekit: the game uses gamekit, the library of the games in `~/prj/igr/gamekit`. Gradle takes it from the local Maven repository, `~/.m2`.
-  Before the first build, publish the version that `gradle/libs.versions.toml` pins: see the README of gamekit.
+- gamekit: the game uses gamekit, the library of the games in `~/prj/igr/gamekit`. Gradle takes it from GitHub Packages of the private repository `igr/gamekit`.
+  The login goes in `~/.gradle/gradle.properties`, `gamekitUsername` and `gamekitPassword`: see the README of gamekit.
 - iOS: open `iosApp/iosApp.xcodeproj`, select the **Sisyphus** scheme and an iPhone simulator, then Run.
   For a real iPhone, set your signing team in the target settings.
 - Android: `./gradlew :androidApp:installDebug` with a phone or emulator connected.
