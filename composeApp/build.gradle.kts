@@ -1,6 +1,4 @@
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -11,16 +9,6 @@ plugins {
 
 kotlin {
     jvmToolchain(17)
-    // The phones share mobileMain: RevenueCat sells the worlds there, and it has no SDK for the desktop.
-    @OptIn(ExperimentalKotlinGradlePluginApi::class)
-    applyDefaultHierarchyTemplate {
-        common {
-            group("mobile") {
-                withCompilations { it.platformType == KotlinPlatformType.androidJvm }
-                group("ios") { withIos() }
-            }
-        }
-    }
     jvm()
     android {
         namespace = "dev.oblac.sisyphus.shared"
@@ -37,8 +25,8 @@ kotlin {
         }
     }
     sourceSets {
-        // Xcode makes the App Store and TestFlight builds in its Release configuration. They leave out the dev screen
-        // and the key of the Test Store, because Apple rejects an app with hidden features: see stores/appstore/check.py.
+        // Xcode makes the App Store and TestFlight builds in its Release configuration. They leave out the dev screen,
+        // because Apple rejects an app with hidden features: see stores/appstore/check.py.
         val devTools = providers.environmentVariable("CONFIGURATION").orNull != "Release"
         commonMain { kotlin.srcDir(if (devTools) "src/withDevTools/kotlin" else "src/withoutDevTools/kotlin") }
         commonMain.dependencies {
@@ -47,9 +35,6 @@ kotlin {
             implementation(libs.compose.foundation)
             implementation(libs.compose.ui)
             implementation(libs.compose.resources)
-        }
-        named("mobileMain").dependencies {
-            implementation(libs.purchases.core)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

@@ -20,7 +20,6 @@ import dev.oblac.sisyphus.ui.DEV_STEPS
 import dev.oblac.sisyphus.ui.GAIN_TIME
 import dev.oblac.sisyphus.ui.Layout
 import dev.oblac.sisyphus.ui.SETTINGS
-import dev.oblac.sisyphus.ui.supportTag
 import dev.oblac.sisyphus.ui.Rect
 import dev.oblac.sisyphus.ui.Tab
 import dev.oblac.sisyphus.ui.UiRenderer
@@ -36,9 +35,9 @@ import kotlin.random.Random
 
 /**
  * What a finger touched. [LIST] is a finger on the list of the Worlds screen: a drag scrolls it, and on the worlds a tap chooses one when the finger lifts.
- * [MOVE] is the Yes that goes to another world. [COPY] copies the player's id for support. [SETTINGS] opens or closes the settings.
+ * [MOVE] is the Yes that goes to another world. [SETTINGS] opens or closes the settings.
  */
-enum class Touch { NONE, KNOB, SOUND, SHOP, BUY, DEV, HELP, AGAIN, WORLDS, LIST, MOVE, COPY, SETTINGS, PRIVACY }
+enum class Touch { NONE, KNOB, SOUND, SHOP, BUY, DEV, HELP, AGAIN, WORLDS, LIST, MOVE, SETTINGS, PRIVACY }
 
 /** New obols on the main screen: how many came together, and the seconds since. */
 class Gain(val obols: Int, val age: Double)
@@ -58,9 +57,6 @@ private const val TOUCH_SLOP = 6
 /** A finger on a list that moves less than this, in virtual pixels, taps; more scrolls. */
 private const val TAP_SLOP = 3f
 
-/** Seconds that the settings say "Copied" after a tap copied the player's id. */
-private const val COPIED_FOR = 2.0
-
 /** A coasting list slows down by this much a second, like the knob. */
 private const val LIST_FRICTION = 3.0
 
@@ -69,13 +65,12 @@ private const val STOP_SPEED = 20.0
 
 /**
  * Owns the framebuffer and maps real screen pixels to virtual ones.
- * Platform code only forwards touches and shows [pixels]. The settings show [build], the build number of the app, after the player's id.
+ * Platform code only forwards touches and shows [pixels]. The settings show [build], the build number of the app.
  */
 class Screen internal constructor(
     val game: Game,
     seed: Int = Random.nextInt(),
     private val dev: Boolean = false,
-    private val billing: Billing = NoBilling,
     private val build: String? = null,
 ) {
     var scale = 1
@@ -122,18 +117,6 @@ class Screen internal constructor(
     /** The world the player asked to go to, waiting for Yes or No: there the climb starts over. */
     var moving: Place? = null
         private set
-    /** A world not bought yet that the player asked to go to, waiting for Yes or No: Yes opens the store's payment sheet. */
-    var buying: Place? = null
-        private set
-    /** The store's payment sheet is open: the screen waits for its answer and takes no touches. */
-    var paying = false
-        private set
-    /** The store looks for the worlds bought before. */
-    var restoring = false
-        private set
-    /** In dev builds, the dev screen opens every world without the store, until it is tapped again or the app restarts. */
-    internal var openWorlds = false
-        private set
     /** How far the list of the shown tab of the Worlds screen is scrolled, in virtual pixels. */
     val worldsScroll get() = listScroll.roundToInt()
     private var listScroll = 0.0
@@ -146,11 +129,6 @@ class Screen internal constructor(
     var ending: Ending? = null
         private set
 
-    /** The player's id at the store's service: a tap in the settings copies it, for support. Null without a store. */
-    val supportId: String? get() = billing.userId
-    /** Seconds that the settings still say that the id is copied. */
-    private var copied = 0.0
-
     /** New obols that just came: the coin of the count glints, and their number rises under the count and fades. */
     var gain: Gain? = null
         private set
@@ -158,8 +136,6 @@ class Screen internal constructor(
     var onCoin: () -> Unit = {}
     /** Called when he reaches the top. */
     var onTop: () -> Unit = {}
-    /** Called when the store's answer, not a touch, begins the climb in a new world: a world just bought. */
-    var onMove: () -> Unit = {}
     /** The coin rings in the next frame: the obols of the time away come before the sounds are ready. */
     private var ring = false
 
@@ -173,10 +149,6 @@ class Screen internal constructor(
     val world = World(seed)
     private var geo: SceneGeometry? = null
     private val ui = UiRenderer()
-    /** The worlds as the screen sees them: what the store says, or every world while the dev screen opens them. */
-    private val worlds = object : Billing by billing {
-        override fun owns(place: Place) = openWorlds || billing.owns(place)
-    }
     private var scene = Pixels(1, 1)
     private var sceneRenderer: SceneRenderer? = null
     private var lastResize = emptyList<Int>()
@@ -214,7 +186,6 @@ class Screen internal constructor(
             onCoin()
         }
         gain = gain?.let { Gain(it.obols, it.age + dt) }?.takeIf { it.age < GAIN_TIME }
-        copied = max(0.0, copied - dt)
         val end = ending ?: if (game.atTop) reachTop() else null
         if (end != null) {
             val black = end.time >= Ending.BLACK_AT
@@ -254,26 +225,24 @@ class Screen internal constructor(
         val renderer = sceneRenderer ?: return pixels
         ui.background(pixels)
         if (agoraOpen) {
-            if (DEV_TOOLS && devOpen) ui.devScreen(pixels, l, openWorlds) else ui.agora(pixels, l, game.shop)
+            if (DEV_TOOLS && devOpen) ui.devScreen(pixels, l) else ui.agora(pixels, l, game.shop)
             ui.closeButton(pixels, l.closeIcon)
             offer?.let { game.shop.next(it) }?.let { ui.offer(pixels, l, it) }
         } else if (settingsOpen) {
             ui.settings(pixels, l, listOf(game.soundOn, game.ticksOn, game.rollOn))
             ui.closeButton(pixels, l.closeIcon)
-            supportTag(supportId, build)?.let { ui.supportId(pixels, l.supportId, it, copied > 0) }
+            build?.let { ui.build(pixels, l.build, it) }
         } else if (worldsOpen) {
             ui.tabs(pixels, l, tab, game.newLabors, game.newJokers || game.newTales)
             ui.closeButton(pixels, l.closeIcon)
             when (tab) {
-                Tab.WORLDS -> ui.worlds(pixels, l, game.place, worldsScroll, worlds)
+                Tab.WORLDS -> ui.worlds(pixels, l, game.place, worldsScroll)
                 Tab.LABORS -> ui.labors(pixels, l, game.counts, worldsScroll)
                 Tab.CARDS -> ui.cards(pixels, l, worldsScroll, game::met, game::partsHeard)
             }
-            if (canRestore) ui.restore(pixels, l.restore, restoring)
             openCard?.let { ui.openCard(pixels, l, it, game.met(it)) }
             openTale?.let { ui.openTale(pixels, l, it, talePage, game.partsHeard(it)) }
             moving?.let { ui.confirm(pixels, l, it) }
-            buying?.let { ui.buy(pixels, l, it, billing.price(it), paying, climbing) }
         } else {
             renderer.render(scene, game, world, banner, rolled = ending?.rolled)
             game.vision?.let { drawVision(scene, it) }
@@ -307,7 +276,6 @@ class Screen internal constructor(
     /** Handles a finger touching the screen and tells what it touched. */
     fun press(xPx: Float, yPx: Float): Touch {
         val l = layout ?: return Touch.NONE
-        if (paying) return Touch.NONE
         val x = (xPx - offsetX) / scale
         val y = (yPx - offsetY) / scale
         if (!worldsOpen && !agoraOpen && !settingsOpen) ending?.let {
@@ -365,7 +333,6 @@ class Screen internal constructor(
                         devOpen = false
                         game.nearTheNextStone()
                     }
-                    l.devWorlds.near(x, y, 0) -> openWorlds = !openWorlds
                     l.devJoker.near(x, y, 0) -> {
                         agoraOpen = false
                         devOpen = false
@@ -426,8 +393,7 @@ class Screen internal constructor(
 
     /**
      * On the Worlds screen: the X closes the screen, and a tap on a tab, or else near one, shows the nearest tab.
-     * The list scrolls or chooses a world, and Yes goes there, or first buys it. An open card closes at any tap; an open tale turns
-     * its page, or closes. Restore asks the store for the worlds bought before.
+     * The list scrolls or chooses a world, and Yes goes there. An open card closes at any tap; an open tale turns its page, or closes.
      */
     private fun pressWorlds(x: Float, y: Float, l: Layout): Touch {
         val to = moving
@@ -435,24 +401,6 @@ class Screen internal constructor(
             if (l.confirmYes.near(x, y, 0)) return goTo(to)
             if (l.confirm.near(x, y, 0) && !l.confirmNo.near(x, y, 0)) return Touch.NONE
             moving = null
-            return Touch.WORLDS
-        }
-        val wanted = buying
-        if (wanted != null) {
-            if (l.confirmYes.near(x, y, 0)) {
-                paying = true
-                billing.buy(wanted) { bought ->
-                    paying = false
-                    buying = null
-                    if (bought) {
-                        goTo(wanted)
-                        onMove()
-                    }
-                }
-                return Touch.WORLDS
-            }
-            if (l.confirm.near(x, y, 0) && !l.confirmNo.near(x, y, 0)) return Touch.NONE
-            buying = null
             return Touch.WORLDS
         }
         openTale?.let { return turnTale(it, x, y, l) }
@@ -471,18 +419,13 @@ class Screen internal constructor(
             show(touched.first)
             return Touch.WORLDS
         }
-        if (canRestore && !restoring && l.restore.near(x, y, TOUCH_SLOP)) {
-            restoring = true
-            billing.restore { restoring = false }
-            return Touch.WORLDS
-        }
         if (!l.worldList.near(x, y, 0)) return Touch.NONE
         drag = ListDrag(x, y, listScroll, stopped = abs(listSpeed) > STOP_SPEED)
         listSpeed = 0.0
         return Touch.LIST
     }
 
-    /** In the settings, a tap on a row turns its sound off or on, a tap on the id copies it, and the X closes them. */
+    /** In the settings, a tap on a row turns its sound off or on, the link opens the privacy policy, and the X closes them. */
     private fun pressSettings(x: Float, y: Float, l: Layout): Touch {
         if (l.closeIcon.near(x, y, TOUCH_SLOP)) {
             settingsOpen = false
@@ -492,12 +435,7 @@ class Screen internal constructor(
             0 -> game.toggleSound()
             1 -> game.toggleTicks()
             2 -> game.toggleRoll()
-            else -> {
-                if (l.privacyLink.near(x, y, TOUCH_SLOP)) return Touch.PRIVACY
-                if (supportId == null || !l.supportId.near(x, y, TOUCH_SLOP)) return Touch.NONE
-                copied = COPIED_FOR
-                return Touch.COPY
-            }
+            else -> return if (l.privacyLink.near(x, y, TOUCH_SLOP)) Touch.PRIVACY else Touch.NONE
         }
         return Touch.SOUND
     }
@@ -514,15 +452,12 @@ class Screen internal constructor(
         game.knob.drag(touchAngle(x - (l.knobX + 0.5), y - (l.knobY + 0.5), l))
     }
 
-    /** While a world is not bought, the Worlds screen can ask the store for the worlds bought before. */
-    private val canRestore get() = Place.entries.any { !worlds.owns(it) }
-
-    /** The climb has begun and the top has not come: going to another world, or buying one, ends it, so the question says so. */
+    /** The climb has begun and the top has not come: going to another world ends it, so the screen asks first. */
     private val climbing get() = game.begun && ending == null
 
     /**
-     * The finger lifts: the knob coasts on, or a tap on the list goes back to the world he is in, or asks to go to another world,
-     * or to buy it. Before the climb has begun, as after the top, nothing is lost, so a world already bought begins at once.
+     * The finger lifts: the knob coasts on, or a tap on the list goes back to the world he is in, or asks to go to another world.
+     * Every world is free. Before the climb has begun, as after the top, nothing is lost, so the world begins at once.
      * On the Cards tab, a tap opens the card of a joker met, or a tale heard. Tells what the lift did.
      */
     fun release(): Touch {
@@ -540,11 +475,8 @@ class Screen internal constructor(
             worldsOpen = false
             return Touch.WORLDS
         }
-        when {
-            !worlds.owns(place) -> buying = place
-            climbing -> moving = place
-            else -> return goTo(place)
-        }
+        if (!climbing) return goTo(place)
+        moving = place
         return Touch.WORLDS
     }
 
@@ -611,10 +543,8 @@ class Screen internal constructor(
 
     /**
      * Back closes the help, the offer, a question, an open card or tale, the Worlds screen, the settings or the Agora. Tells whether there was something to close.
-     * While the store's payment sheet is open, back waits for it.
      */
     fun back(): Boolean {
-        if (paying) return true
         if (helpOpen) {
             helpOpen = false
             return true
@@ -625,10 +555,6 @@ class Screen internal constructor(
         }
         if (moving != null) {
             moving = null
-            return true
-        }
-        if (buying != null) {
-            buying = null
             return true
         }
         if (openCard != null) {
@@ -659,10 +585,9 @@ class Screen internal constructor(
         game.knob.stop()
     }
 
-    /** Opens the Worlds screen on [tab]. The store is asked again for the prices that it could not send before. */
+    /** Opens the Worlds screen on [tab]. */
     private fun showWorlds(tab: Tab) {
         cover()
-        billing.refresh()
         worldsOpen = true
         show(tab)
     }

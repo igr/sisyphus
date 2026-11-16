@@ -3,20 +3,16 @@ kotlin = "2.4.21"
 compose = "1.12.1"
 agp = "9.3.1"
 activity = "1.13.0"
-fragment = "1.8.9"
 coroutines = "1.11.0"
-purchases = "3.15.0"
 gamekit = "0.4.0"
 
 [libraries]
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
-fragment = { module = "androidx.fragment:fragment", version.ref = "fragment" }
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose" }
 compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
 compose-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose" }
 coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "coroutines" }
-purchases-core = { module = "com.revenuecat.purchases:purchases-kmp-core", version.ref = "purchases" }
 gamekit = { module = "dev.oblac.gamekit:gamekit", version.ref = "gamekit" }
 
 [plugins]

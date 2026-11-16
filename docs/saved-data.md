@@ -1,6 +1,6 @@
 # Saved data
 
-The game saves all of its data on the device, and there is no account. Only the purchases of worlds go over the network: the store keeps each purchase, and RevenueCat keeps the worlds of each player under an anonymous id. The save holds no purchases.
+The game saves all of its data on the device, and there is no account. Nothing goes over the network.
 
 Each saved value is one number under a short key. The code that reads and writes the keys is in `Game.kt`. Each platform keeps them with the `Store` of gamekit, in the places that follow.
 
@@ -82,9 +82,8 @@ Saved games know each line and each world by an id, not by a name in the game or
 - The tales have the ids 0 (Sisyphus), 1 (Typhon), 2 (Orpheus), 3 (Isis and Osiris), 4 (Bellerophon), 5 (Empedocles), 6 (Demeter and Persephone), 7 (Hermes), 8 (Phaethon), 9 (Arion), 10 (Daedalus and Icarus), 11 (Io), 12 (Kaguya), 13 (Izanagi and Izanami), 14 (Deucalion and Pyrrha) and 15 (Alcestis).
 - The jokers have the ids 0 (Diogenes), 1 (Alice), 2 (Red Riding Hood), 3 (Don Quixote), 4 (Pinocchio), 5 (Cleopatra), 6 (Sherlock Holmes), 7 (Hamlet), 8 (Count Dracula), 9 (Cthulhu), 10 (Isaac Newton) and 11 (Scheherazade).
 - The game never saves the name of an item. The world and the tier of a line tell which item it is.
-- The worlds that cost money are the entitlements `world_etna`, `world_underworld`, `world_cairo` and `world_fuji` in RevenueCat. A changed entitlement locks the worlds that players bought. The store products have the same names, except on Google Play, where The Underworld is `world_underworld2`.
 
-A test fails when an id or a product changes. New lines and new worlds get new ids, and new worlds get new products.
+A test fails when an id changes. New lines and new worlds get new ids.
 
 ## When the game saves
 

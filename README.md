@@ -8,7 +8,7 @@ Earn obols as you push, and spend them in the Agora: better rocks, helpers, bles
 When everything is bought, a final climb leads to the top. There the rock rolls down, and everything begins again, in the same world or in a new one.
 Tap the day to choose another world: Corinth, Mount Etna, The Underworld, Cairo or Mount Fuji. There the climb starts over.
 The same screen lists the labors: honors for all your climbs, such as Tina Turner for 10,000 turns of the knob.
-Corinth is free. The other worlds are bought once, for $1.99 (`Config.WORLD_PRICE`).
+The game is free: all five worlds, with no in-app purchases, no ads and no accounts. Under the worlds, a note says that more worlds will come.
 
 Website, support and privacy policy: https://katemariongames.com/sisyphus/. The text of the privacy policy is `stores/privacy.md`.
 
@@ -29,39 +29,18 @@ Website, support and privacy policy: https://katemariongames.com/sisyphus/. The 
   Android needs the Play service account key in `~/.android/sisyphus-play.json`; iOS uses the account signed in to Xcode.
 - Store releases: `just release` uploads the current commit without the dev screen: a production draft on Google Play
   (roll it out in Play Console) and a build in App Store Connect (submit it for review there).
-  Before the upload to Apple, `stores/appstore/check.py` stops it if the app holds the dev screen or the Test Store key.
+  Before the upload to Apple, `stores/appstore/check.py` stops it if the app holds the dev screen or code to buy something.
   Never send a test build to the stores: do not promote internal builds to production.
   These recipes come from `release.just` of gamekit, which the `justfile` imports. Its Android betas give Gradle the property `beta`, which shows the dev screen,
   and it runs `stores/appstore/check.py` before each upload to Apple.
   The texts, the screenshots and the privacy policy for the stores are in `stores/`: see `stores/listing.md`.
 - Dev screen: in debug builds (Run in Xcode, `installDebug`, `just run`), tap the "Agora" title
   to add or take away obols, to reset the shop, to start the climb again, to go three clicks before the next obol,
-  to go near the top, or to open every world without buying.
+  to go near the top, to bring the next stone, joker or vision, or to do the next labor.
   Release builds do not show it. iOS release builds, which Xcode makes in its Release configuration, do not even hold it:
   `composeApp/build.gradle.kts` then takes `DEV_TOOLS` from `src/withoutDevTools`, and the compiler leaves the dev screen out.
 - Tests: `./gradlew :composeApp:jvmTest`. The tests also write PNG snapshots and `clicks.wav`
   to `composeApp/build/snapshots`.
-
-## Purchases
-
-RevenueCat sells the worlds, in the project "Sisyphus: Push the Rock". Each world after Corinth has one id,
-`Place.product`, for its entitlement and for its package in the `worlds` offering. The app knows only these two.
-The stores sell each world as a product of the same name, except Google Play, which sells The Underworld as
-`world_underworld2`: a store never gives back a product id, even after a delete.
-
-- Debug builds buy in RevenueCat's Test Store: a test sheet, and no money. All other builds buy in the App Store
-  and Google Play. TestFlight and the Play license testers buy in the sandbox.
-- The iOS SDK does not stop a release build that has the Test Store key, so the apps choose the key:
-  `MainActivity.kt` sets `testStore` only in debug builds, and iOS release builds do not hold the key (`DEV_TOOLS`).
-- The keys are public. The Test Store key is in `RevenueCatBilling.kt`, the store keys in `RevenueCatBilling.android.kt`
-  and `RevenueCatBilling.ios.kt`.
-- Support: the settings show the end of the player's RevenueCat id and the build, and a tap copies the whole id.
-  Find the player in the RevenueCat dashboard by that id.
-- The RevenueCat CLI `rc` shows and changes the products: `rc products list`, `rc offerings verify`.
-  `rc setup apple app7651e8d161` and `rc setup google app62a1b9ad7a` connect the stores, with two-factor sign-in.
-- The price of each world is `Config.WORLD_PRICE`. `just play-price` shows the price of every world on Google Play,
-  and `just play-price --apply` sets it from `Config.WORLD_PRICE` in every country, as the convert of Play Console does.
-  It uses the service account of `just beta`. The Test Store and the App Store change with `rc`.
 
 ## Code
 
@@ -70,7 +49,7 @@ scaled up by a whole number, so every pixel stays sharp. A screen wider than a 1
 with bars at the sides. There are no image files: all art is made in code.
 The knob click, the click of every other tap, the sound of buying, the fanfare of a new world, the coin of a new obol, the spell of a vision, the pop of a bubble
 and the loop of the rolling rock are sound files in `composeApp/src/commonMain/composeResources/files`.
-The gear across from the help opens the settings: all the sound, the ticks of the knob, the rolling rock, a link to the privacy policy, and the player's id and build for support.
+The gear across from the help opens the settings: all the sound, the ticks of the knob, the rolling rock, a link to the privacy policy, and the build for support.
 
 - `audio` — reads the game's sounds from their WAV files
 - `gfx` — framebuffer, dithering, pixel font
@@ -79,7 +58,6 @@ The gear across from the help opens the settings: all the sound, the ticks of th
   from world to world. `Etna.kt`, `Underworld.kt`, `Cairo.kt` and `Fuji.kt` draw those worlds. To add a world, follow `.claude/skills/new-world/SKILL.md`.
 - `ui` — layout, frame, Greek key band, quote panel, knob, the cards of the jokers
 - `Screen.kt` maps touches to virtual pixels; `App.kt` shows the framebuffer in Compose
-- `mobileMain` — the purchases of worlds, through RevenueCat, for both phones. The desktop has every world.
 - `iosMain`, `androidMain`, `jvmMain` — saving with the store of gamekit, sound and haptics for each platform; `androidApp` is the Android app.
   On iOS, all work with the sound is on a queue of its own, never on the main thread: over Bluetooth, a start of the audio engine can wait for the audio hardware.
   The Android activity uses `enableFullScreen()` of gamekit. It follows a change of the font size, the display size, the language or the keyboard itself (`configChanges`), so the game in play goes on.

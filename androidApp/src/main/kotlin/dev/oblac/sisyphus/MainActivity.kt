@@ -13,8 +13,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableFullScreen()
         sisyphus = SisyphusController(
-            this, window.decorView, dev = BuildConfig.DEBUG || BuildConfig.BETA, testStore = BuildConfig.DEBUG,
-            build = BuildConfig.VERSION_CODE.toString(),
+            this, window.decorView, dev = BuildConfig.DEBUG || BuildConfig.BETA, build = BuildConfig.VERSION_CODE.toString(),
         )
         setContent { sisyphus.Content() }
         onBackPressedDispatcher.addCallback(this) {

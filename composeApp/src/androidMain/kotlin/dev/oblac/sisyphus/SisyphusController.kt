@@ -1,7 +1,5 @@
 package dev.oblac.sisyphus
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.view.HapticFeedbackConstants
 import android.view.View
@@ -17,21 +15,16 @@ private class ViewHaptics(private val view: View) : Haptics {
 
 /**
  * The activity holds one of these; it pauses the game when the app leaves the foreground, and resumes it on return.
- * Debug and beta builds pass [dev], which adds the dev screen to the Agora. Debug builds pass [testStore]: they buy worlds for free.
- * The settings show [build].
+ * Debug and beta builds pass [dev], which adds the dev screen to the Agora. The settings show [build].
  */
-class SisyphusController(private val context: Context, view: View, dev: Boolean, testStore: Boolean, build: String) {
+class SisyphusController(context: Context, view: View, dev: Boolean, build: String) {
     private val game = Game(AndroidStore(context.getSharedPreferences("sisyphus", Context.MODE_PRIVATE)))
     private val haptics = ViewHaptics(view)
     private val sound = TrackSound()
-    private val screen = Screen(game, dev = dev, billing = RevenueCatBilling(testStore), build = build)
+    private val screen = Screen(game, dev = dev, build = build)
 
     @Composable
-    fun Content() = SisyphusApp(game, haptics, sound, screen, copy = ::copy)
-
-    private fun copy(text: String) {
-        context.getSystemService(ClipboardManager::class.java).setPrimaryClip(ClipData.newPlainText("Support ID", text))
-    }
+    fun Content() = SisyphusApp(game, haptics, sound, screen)
 
     /** Back closes the Agora; tells whether it did. */
     fun back() = screen.back()

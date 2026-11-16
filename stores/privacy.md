@@ -1,43 +1,26 @@
 # Privacy Policy
 
-Sisyphus for iPhone and Android · Last updated: October 30, 2026
+Sisyphus for iPhone and Android · Last updated: November 16, 2026
 
 ## Short version
 
-Sisyphus has no accounts, no ads and no tracking. Your game stays on your device. Each time the app opens, it asks the App Store or Google Play, and RevenueCat, which worlds you own and what they cost. RevenueCat knows you only by an anonymous id that the app makes. When you buy a world, the store takes the payment, and RevenueCat keeps a record of the purchase under that id, so that the world stays yours.
+Sisyphus collects no data. It has no accounts, no ads, no tracking and no in-app purchases. Your game stays on your device.
 
 ## What the app keeps
 
 The app saves your game on your device: the day, your place on the hill, the items, the obols, the world you are in, the labors, the cards and the settings. This data does not leave your device. Deleting the app deletes it.
 
-## Purchases
-
-Corinth is free. The other worlds are in-app purchases. The App Store or Google Play takes the payment: the app never sees your name, your email or your payment details.
-
-To know which worlds you own, the app uses [RevenueCat](https://www.revenuecat.com), a service for in-app purchases. Each time the app opens, and when you buy or restore a world, RevenueCat receives:
-
-- an anonymous id that the app makes on your device, which is not linked to your name or your email;
-- the record of your purchases: which world, its price and the date;
-- technical details, such as the versions of the app and of the system, and the country of your store;
-- the time when you last used the app.
-
-RevenueCat uses this data for us: to check your purchases, to restore them on another phone, and to count them for our sales reports, such as how many people bought each world. It is not used for ads or tracking. See also the [privacy policy of RevenueCat](https://www.revenuecat.com/privacy).
-
-## Support ID
-
-The settings show the end of your anonymous id. A tap copies the whole id. When you write to support, you can send it, so that we can find your purchases.
-
 ## Network
 
-The app connects to the internet each time it opens, and when you buy or restore a world: only to the App Store or Google Play, and to RevenueCat. It sends nothing about your game. The game works offline; without a network, the prices and the purchases wait.
+The app does not connect to the internet. The Privacy link in the settings opens this page in your browser.
+
+## Earlier purchases
+
+Every world is free now. If you bought a world in version 2.0.1 on Google Play, [RevenueCat](https://www.revenuecat.com), the service that sold it, keeps the record of that purchase under an anonymous id: which world, its price and the date. To have the record deleted, email your Google Play order number to contact@katemariongames.com. See also the [privacy policy of RevenueCat](https://www.revenuecat.com/privacy).
 
 ## Children
 
-Sisyphus collects no personal information from anyone, including children. A purchase needs an account of the store, with its own parental controls.
-
-## Your data
-
-To delete the record of your purchases at RevenueCat, email your support ID to contact@katemariongames.com. Do not post it in a public issue. We delete the record and tell you when it is done. Until then, RevenueCat keeps it. Your purchases stay with the App Store or Google Play, and Restore brings them back.
+Sisyphus collects no personal information from anyone, including children.
 
 ## Changes
 

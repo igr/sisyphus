@@ -67,8 +67,8 @@ The cards of the jokers lie at the top of the Cards tab, above the cards of the 
 
 ## When players meet a new joker
 
-A joker of weight w comes w times in 500 jokers, and a joker comes about once a game day and a half: so about once in 750 / w game days. A save from before the new joker reads `met.<id>` as 0: his card is face down until the player meets him. The dev screen's Joker, in the row "Worlds and jokers", brings the jokers in the order of the cards, so the new joker comes at the last tap of a round.
+A joker of weight w comes w times in 500 jokers, and a joker comes about once a game day and a half: so about once in 750 / w game days. A save from before the new joker reads `met.<id>` as 0: his card is face down until the player meets him. The dev screen's Joker, in the row "Jokers", brings the jokers in the order of the cards, so the new joker comes at the last tap of a round.
 
 ## To see it in the game
 
-Only when the user asks, and ask first, because it changes their save: on the simulator, tap Joker in the row "Worlds and jokers" of the dev screen until the new joker comes. Each tap brings the next joker in the order of the cards, from the first after the app starts, so the new joker comes at tap id + 1. Do not use `just run`: the desktop game has the user's real save.
+Only when the user asks, and ask first, because it changes their save: on the simulator, tap Joker in the row "Jokers" of the dev screen until the new joker comes. Each tap brings the next joker in the order of the cards, from the first after the app starts, so the new joker comes at tap id + 1. Do not use `just run`: the desktop game has the user's real save.

@@ -41,7 +41,6 @@ fun SisyphusApp(
     haptics: Haptics = NoHaptics,
     sound: Sound = Silence,
     screen: Screen = remember(game) { Screen(game) },
-    copy: (String) -> Unit = {},
 ) {
     val uploader = remember { frameUploader() }
     val links = LocalUriHandler.current
@@ -56,14 +55,12 @@ fun SisyphusApp(
         game.onVision = { sound.vision(game.soundOn) }
         game.onBubble = { sound.bubble(game.soundOn) }
         screen.onTop = { sound.top(game.soundOn) }
-        screen.onMove = { sound.play(Touch.MOVE, game.soundOn) }
         onDispose {
             game.onTick = {}
             screen.onCoin = {}
             game.onVision = {}
             game.onBubble = {}
             screen.onTop = {}
-            screen.onMove = {}
         }
     }
 
@@ -88,7 +85,6 @@ fun SisyphusApp(
                     val down = awaitFirstDown()
                     val touch = screen.press(down.position.x, down.position.y)
                     sound.play(touch, game.soundOn)
-                    if (touch == Touch.COPY) screen.supportId?.let(copy)
                     if (touch == Touch.PRIVACY) runCatching { links.openUri(PRIVACY_URL) }
                     when (touch) {
                         Touch.NONE -> return@awaitEachGesture

@@ -105,11 +105,8 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     /** In the dev screen, after Top, the button that sets the next stone of the tale just ahead, so that its popup shows. */
     internal val devStone get() = Rect(devTop.right + 2, devResetClimb.y, PixelFont.width("Stone") + 8, BUTTON_HEIGHT)
 
-    /** In the dev screen, the button that opens every world without the store, and gives the store's answer back. */
-    internal val devWorlds get() = agoraRow(3).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("As bought") + 8, BUTTON_HEIGHT) }
-
-    /** In the dev screen, after the worlds, the button that brings the next joker, a turn into his bubble. */
-    internal val devJoker get() = Rect(devWorlds.right + 2, devWorlds.y, PixelFont.width("Joker") + 8, BUTTON_HEIGHT)
+    /** In the dev screen, below the "Jokers" title, the button that brings the next joker, a turn into his bubble. */
+    internal val devJoker get() = agoraRow(3).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("Joker") + 8, BUTTON_HEIGHT) }
 
     /** In the dev screen, under the voices, the button that brings a vision at once. */
     internal val devVision get() = agoraRow(4).let { Rect(it.x, it.y + PixelFont.LINE_HEIGHT, PixelFont.width("Now") + 8, BUTTON_HEIGHT) }
@@ -138,8 +135,8 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     /** On the Worlds screen, the window that shows the list of worlds. The list scrolls when they do not fit. */
     val worldList = Rect(agoraTitle.x, agoraTitle.bottom + 6, agoraTitle.w, bottomRow.y - agoraTitle.bottom - 12)
 
-    /** How far a list of [count] worlds can scroll. */
-    fun worldScroll(count: Int) = max(0, count * (WORLD_ROW + 6) - 6 - worldList.h)
+    /** How far a list of [count] worlds, with the note under them, can scroll. */
+    fun worldScroll(count: Int) = max(0, worldsNote(count).bottom - worldList.bottom)
 
     /** One world in the list, before it scrolls: its picture, and its name and note below. Tapping it asks to go there. */
     fun worldRow(index: Int) = Rect(worldList.x, worldList.y + index * (WORLD_ROW + 6), worldList.w, WORLD_ROW)
@@ -149,6 +146,9 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
 
     /** The name and the note of a world, below its picture. */
     fun worldText(index: Int) = worldPreview(index).let { Rect(it.x, it.bottom + 3, it.w, 2 * PixelFont.LINE_HEIGHT) }
+
+    /** Under the last of [count] worlds, the note that more worlds will come, after Sisyphus with his rock. */
+    fun worldsNote(count: Int) = Rect(worldList.x, worldRow(count).y, NOTE_HERO.width + 3 + PixelFont.width(WORLDS_NOTE), NOTE_HERO.height)
 
     /**
      * In the title row of the Worlds screen, its three tabs. The Worlds screen shows no obols, so they fit the smallest phone.
@@ -233,14 +233,11 @@ class Layout(val width: Int, val height: Int, safeTop: Int, safeBottom: Int, saf
     val confirmYes = Rect(confirm.x + confirm.w / 2 - 4 - OFFER_BUTTON, confirm.bottom - 5 - BUTTON_HEIGHT, OFFER_BUTTON, BUTTON_HEIGHT)
     val confirmNo = Rect(confirm.x + confirm.w / 2 + 4, confirmYes.y, OFFER_BUTTON, BUTTON_HEIGHT)
 
-    /** In the bottom-left corner of the Worlds screen, the button that asks the store for the worlds bought before. */
-    val restore = Rect(left + 2, bottomRow.y, PixelFont.width(RESTORE), PixelFont.CAP_HEIGHT)
-
     /** In the bottom-left corner of the settings, the link to the privacy policy. */
     val privacyLink = Rect(left + 2, bottomRow.y, PixelFont.width(PRIVACY), PixelFont.CAP_HEIGHT)
 
-    /** In the bottom-right corner of the settings, the player's id for support and the build of the game. */
-    val supportId = PixelFont.width("ID 3f9a [999]").let { w -> Rect(coinIcon.right - w, bottomRow.y, w, PixelFont.CAP_HEIGHT) }
+    /** In the bottom-right corner of the settings, the build of the game, for support. */
+    val build = PixelFont.width(buildTag("9999")).let { w -> Rect(coinIcon.right - w, bottomRow.y, w, PixelFont.CAP_HEIGHT) }
 
     /** The switch of a row of the settings: wide enough for "Off". */
     private val switchWidth = PixelFont.width("Off") + 10

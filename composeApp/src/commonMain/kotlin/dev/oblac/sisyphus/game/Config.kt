@@ -86,10 +86,4 @@ object Config {
 
     /** A joker stands at least this many turns of walking from the next stone, so that his bubble and its popup do not meet. */
     const val JOKER_ROOM = 15
-
-    /**
-     * The price of each world after Corinth, in US dollars. The stores set the price that the game shows, in the money of
-     * each player, so a change here must be made in RevenueCat, App Store Connect and Play Console too.
-     */
-    const val WORLD_PRICE = 1.99
 }

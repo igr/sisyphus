@@ -8,7 +8,7 @@ What the App Store and Google Play share, and the text of the website. Copy thes
 | `privacy.md` | The privacy policy, which the website shows at https://katemariongames.com/sisyphus/privacy-policy/ |
 | `screenshots/` | The screenshots, taken on the iPhone simulator |
 | `appstore/` | The fields of App Store Connect |
-| `playstore/` | The fields of Play Console, its graphics, its screenshots, and `price.py` for the prices of the worlds |
+| `playstore/` | The fields of Play Console, its graphics and its screenshots |
 
 ## App
 
@@ -17,7 +17,7 @@ What the App Store and Google Play share, and the text of the website. Copy thes
 | Name (23/30) | Sisyphus: Push the Rock |
 | Website and support | https://katemariongames.com/sisyphus/ |
 | Privacy policy | https://katemariongames.com/sisyphus/privacy-policy/. Its text is `privacy.md`: publish it there when it changes. The Privacy link in the settings of the game opens it. |
-| Price | Free. Corinth is free; the other four worlds are in-app purchases, $1.99 each (`Config.WORLD_PRICE`). |
+| Price | Free, with all five worlds. No in-app purchases. |
 
 If the name is taken, try "Sisyphus: Endless Hill" or "Sisyphus Knob". The name under the icon on the phone stays "Sisyphus".
 
@@ -36,11 +36,11 @@ Sisyphus is a small, calm pixel-art game. Under a window to a Greek hillside sit
 
 No ads. No accounts. No tracking. Just the hill, the rock and you.
 
-## What's New in 2.0.1 (497/500)
+## What's New in 2.0.1 (482/500)
 
 Both stores take this text: the What's New of the App Store, and the release notes of Google Play, which allow 500 characters.
 
-- Four new worlds, each an in-app purchase: Mount Etna, The Underworld, Cairo and Mount Fuji.
+- Four new worlds, all free: Mount Etna, The Underworld, Cairo and Mount Fuji.
 - The Agora: spend your obols on rocks, helpers, gods, blessings and sights.
 - Buy everything, and the top of the hill comes in sight. Then the climb begins again.
 - Gods come in visions and ask you questions.
@@ -83,7 +83,7 @@ Sisyphus is a small, calm pixel-art game. Under a window to a Greek hillside sit
 
 As you push, you earn obols. Spend them in the Agora on rocks, helpers, gods, blessings and sights. Buy all fifteen, and the top of the hill comes in sight. Then the rock rolls down, and the climb begins again, on the same hill or in a new world.
 
-- Five worlds. Corinth is free. Mount Etna, The Underworld, Cairo and Mount Fuji are one-time purchases.
+- Five worlds, all free: Corinth, Mount Etna, The Underworld, Cairo and Mount Fuji. More worlds to come.
 - Days pass only when you push, or when the gods you hire push for you, even while the app is closed. Each day has its own weather.
 - Gods come in visions and ask you questions. Turn the knob left or right to answer.
 - Stones by the path tell 16 old tales, and 12 jokers, from Diogenes to Cthulhu, tell riddles.

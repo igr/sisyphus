@@ -23,9 +23,9 @@ Turn the bronze knob and push the boulder up an endless hill. Calm pixel art.
 |---|---|
 | App access | All functionality is available without special access. |
 | Ads | No, the app has no ads. |
-| Content rating | Category: Game. Answer "Yes" to fantasy violence (the myths of the tales, told in text, with no blood shown), to mild fear (Dracula, Cthulhu, Death), to references to alcohol (wine in some jokes and tales), and to digital purchases (the worlds). Answer "No" to every other question. Write here the ratings that the summary page gives. |
+| Content rating | Category: Game. Answer "Yes" to fantasy violence (the myths of the tales, told in text, with no blood shown), to mild fear (Dracula, Cthulhu, Death), and to references to alcohol (wine in some jokes and tales). Answer "No" to every other question, also to digital purchases: every world is free. Write here the ratings that the summary page gives. |
 | Target audience | 13 and older. Younger age groups add the Families policy. |
-| Data safety | The app collects one data type, Financial info: Purchase history. It is collected and not shared, not processed ephemerally, and the collection is required. The purposes are App functionality and Analytics: RevenueCat counts the purchases for our sales reports. It is encrypted in transit. Users can ask for its deletion: they email their support ID to contact@katemariongames.com. There are no accounts. |
+| Data safety | The app collects and shares no data. It does not use the network. There are no accounts. |
 | Advertising ID | No. |
 | Government, financial, health, news apps | No. |
 
@@ -43,7 +43,7 @@ for f in ../screenshots/6.9-inch/*.png; do sips --cropToHeightWidth 2640 1320 "$
 
 ## In-app products
 
-The four worlds are one-time products, $1.99 each: `world_etna`, `world_underworld2`, `world_cairo` and `world_fuji`, with the purchase options `world-etna`, `world-underworld`, `world-cairo` and `world-fuji`. The Underworld is `world_underworld2`, because Google never gives back a product id. A new product is made by hand in Play Console. `just play-price` shows the price of each world in every country, and `just play-price --apply` sets them from `Config.WORLD_PRICE` (`price.py`).
+None: every world is free. The four one-time products of the worlds, `world_etna`, `world_underworld2`, `world_cairo` and `world_fuji`, are deactivated in Play Console. Do not delete them: Google never gives back a product id.
 
 ## Build
 

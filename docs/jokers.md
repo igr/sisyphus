@@ -43,7 +43,7 @@ The climb is long, and the same every day. A joker is a small surprise: who stan
 - **The top.** No bubble shows at the top. A new climb, a move to another world and the Reset of the climb put a new joker by the path, 20 to 40 turns into the new climb.
 - **The light.** The light of the time of day falls on the jokers, as on the props. It does not fall on the bubble.
 - **Old saved games.** A game saved before the jokers has met none. Its first joker stands 20 to 40 turns ahead.
-- **The dev screen.** In dev builds, Joker in the row of the worlds, now "Worlds and jokers", brings the next joker in the order of the cards, a turn into the bubble. So a few taps show all 12. A stone too near that joker stands 15 turns past the joker.
+- **The dev screen.** In dev builds, Joker, in the row "Jokers", brings the next joker in the order of the cards, a turn into the bubble. So a few taps show all 12. A stone too near that joker stands 15 turns past the joker.
 
 ## The jokers
 

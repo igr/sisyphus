@@ -59,6 +59,7 @@ import dev.oblac.sisyphus.ui.GAIN
 import dev.oblac.sisyphus.ui.GAIN_TIME
 import dev.oblac.sisyphus.ui.GLINT
 import dev.oblac.sisyphus.ui.Layout
+import dev.oblac.sisyphus.ui.MOVE_WARNING
 import dev.oblac.sisyphus.ui.OBOL_EMPTY
 import dev.oblac.sisyphus.ui.OBOL_FILL
 import dev.oblac.sisyphus.ui.Rect
@@ -68,14 +69,13 @@ import dev.oblac.sisyphus.ui.DOT_BOUGHT
 import dev.oblac.sisyphus.ui.DOT_LATER
 import dev.oblac.sisyphus.ui.DOT_OFFERED
 import dev.oblac.sisyphus.ui.VOICE_FRAME
+import dev.oblac.sisyphus.ui.WORLDS_NOTE
 import dev.oblac.sisyphus.ui.WORLDS_TITLE
 import dev.oblac.sisyphus.ui.barNote
-import dev.oblac.sisyphus.ui.buyText
-import dev.oblac.sisyphus.ui.buyTitle
+import dev.oblac.sisyphus.ui.buildTag
 import dev.oblac.sisyphus.ui.itemIcon
 import dev.oblac.sisyphus.ui.itemsBought
 import dev.oblac.sisyphus.ui.obolsNote
-import dev.oblac.sisyphus.ui.supportTag
 import dev.oblac.sisyphus.ui.worldPreview
 import kotlin.math.cos
 import kotlin.math.sin
@@ -386,32 +386,7 @@ class ScreenTest {
         assertTrue(l.devResetClimb.right < l.devNextObol.x && l.devNextObol.right < l.devTop.x && l.devTop.right < l.devStone.x)
         assertTrue(l.devStone.right <= l.agoraRow(2).right, "the buttons end at ${l.devStone.right}, the row at ${l.agoraRow(2).right}")
         assertTrue(l.devStone.bottom <= l.agoraRow(2).bottom)
-        assertTrue(l.devWorlds.bottom <= l.agoraRow(3).bottom)
-    }
-
-    /** Testers reach every world from the dev screen, without the store. A second tap gives the store's answer back. */
-    @Test
-    fun theDevScreenOpensEveryWorld() {
-        val s = Screen(Game(MemoryStore(mapOf("position" to 900.0)), seed = 1), seed = 2, dev = true, billing = FakeBilling()).apply { resize(1179, 2556, 177, 102) }
-        val l = s.layout!!
-        fun chooseEtna() {
-            s.tap(l.closeIcon)
-            s.tap(l.dayLabel(s.game.day))
-            s.choose(l.worldRow(Place.ETNA.ordinal))
-        }
-        s.openDev()
-        assertEquals(Touch.DEV, s.tap(l.devWorlds))
-        assertTrue(s.openWorlds)
-        chooseEtna()
-        assertEquals(Place.ETNA, s.moving)
-        assertNull(s.buying)
-        s.back()
-        s.back()
-        s.openDev()
-        assertEquals(Touch.DEV, s.tap(l.devWorlds))
-        assertFalse(s.openWorlds)
-        chooseEtna()
-        assertEquals(Place.ETNA, s.buying)
+        assertTrue(l.devJoker.bottom <= l.agoraRow(3).bottom)
     }
 
     @Test
@@ -595,36 +570,16 @@ class ScreenTest {
 
     private val allBought = Line.entries.associate { "shop." + it.id to 3.0 }
 
-    /** At the bottom of the settings, the player's id for support: its last characters. A tap copies the whole id. */
+    /** In the bottom-right corner of the settings, the build of the game, such as "[41]", for support. A tap on it does nothing. */
     @Test
-    fun theSettingsShowTheSupportIdAndATapCopiesIt() {
-        val billing = FakeBilling()
-        val s = Screen(Game(MemoryStore(), seed = 1), seed = 2, billing = billing).apply { resize(1179, 2556, 177, 102) }
-        val l = s.layout!!
-        s.tap(l.settingsIcon)
-        fun corner() = s.render().let { px -> (l.supportId.y until l.supportId.bottom).flatMap { y -> (l.supportId.x until l.supportId.right).map { px[it, y] } } }
-        val tag = corner()
-        assertEquals("ID cdef", supportTag(billing.userId, build = null))
-        assertEquals(Touch.COPY, s.tap(l.supportId))
-        assertEquals(billing.userId, s.supportId)
-        assertNotEquals(tag, corner())
-        s.update(3.0)
-        assertEquals(tag, corner())
-    }
-
-    /** In the settings, the build of the game stands after the player's id, such as "ID cdef [41]". */
-    @Test
-    fun theBuildStandsAfterTheSupportId() {
-        assertEquals("ID cdef [41]", supportTag("abcdef", "41"))
-        assertTrue(supportTag("abcdef", "41")!!.all(PixelFont::hasGlyph))
-        assertEquals("[41]", supportTag(null, "41"))
-        assertNull(supportTag(null, null))
-        fun corner(build: String?) = settings(build).let { (s, px) ->
-            val r = s.layout!!.supportId
-            (r.y until r.bottom).flatMap { y -> (r.x until r.right).map { px[it, y] } }
-        }
+    fun theSettingsShowTheBuild() {
+        assertEquals("[41]", buildTag("41"))
+        assertTrue(buildTag("41").all(PixelFont::hasGlyph))
+        fun corner(build: String?) = settings(build).let { (s, px) -> area(px, s.layout!!.build) }
         assertNotEquals(corner(null), corner("41"))
         assertNotEquals(corner("41"), corner("42"))
+        val (s, _) = settings("41")
+        assertEquals(Touch.NONE, s.tap(s.layout!!.build))
     }
 
     /** The title row of the Worlds screen holds only its title, so that the tabs have room. */
@@ -637,33 +592,28 @@ class ScreenTest {
         assertEquals(row(null), row("41"))
     }
 
-    /** The Worlds screen keeps only Restore at its bottom: the id and the build are in the settings. */
+    /** The build is in the settings, not at the bottom of the Worlds screen. */
     @Test
-    fun theWorldsScreenShowsNoSupportId() {
-        fun corner(build: String?) = worlds(build).let { (s, px) ->
-            val r = s.layout!!.supportId
-            (r.y until r.bottom).flatMap { y -> (r.x until r.right).map { px[it, y] } }
-        }
+    fun theWorldsScreenShowsNoBuild() {
+        fun corner(build: String?) = worlds(build).let { (s, px) -> area(px, s.layout!!.build) }
         assertEquals(corner(null), corner("41"))
-        val (s, _) = worlds("41")
-        assertEquals(Touch.NONE, s.tap(s.layout!!.supportId))
     }
 
-    /** The Worlds screen of a phone with a store and [build], and its pixels. */
+    /** The Worlds screen of a phone with [build], and its pixels. */
     private fun worlds(build: String?): Pair<Screen, Pixels> {
-        val s = Screen(Game(MemoryStore(), seed = 1), seed = 2, billing = FakeBilling(), build = build).apply { resize(1179, 2556, 177, 102) }
+        val s = Screen(Game(MemoryStore(), seed = 1), seed = 2, build = build).apply { resize(1179, 2556, 177, 102) }
         s.tap(s.layout!!.dayLabel(s.game.day))
         return s to s.render()
     }
 
-    /** The settings of a phone with a store and [build], and their pixels. */
+    /** The settings of a phone with [build], and their pixels. */
     private fun settings(build: String?): Pair<Screen, Pixels> {
-        val s = Screen(Game(MemoryStore(), seed = 1), seed = 2, billing = FakeBilling(), build = build).apply { resize(1179, 2556, 177, 102) }
+        val s = Screen(Game(MemoryStore(), seed = 1), seed = 2, build = build).apply { resize(1179, 2556, 177, 102) }
         s.tap(s.layout!!.settingsIcon)
         return s to s.render()
     }
 
-    /** In the bottom-left corner of the settings, across from the support ID, a link opens the privacy policy. */
+    /** In the bottom-left corner of the settings, across from the build, a link opens the privacy policy. */
     @Test
     fun theSettingsLinkToThePrivacyPolicy() {
         val (s, px) = settings(build = "41")
@@ -672,26 +622,16 @@ class ScreenTest {
         assertEquals(Touch.PRIVACY, s.tap(l.privacyLink))
         assertTrue(s.settingsOpen)
         val small = smallest().layout!!
-        assertEquals(small.supportId.y, small.privacyLink.y)
-        assertTrue(small.privacyLink.right + 4 <= small.supportId.x)
+        assertEquals(small.build.y, small.privacyLink.y)
+        assertTrue(small.privacyLink.right + 4 <= small.build.x)
     }
 
     @Test
-    fun withoutAStoreThereIsNoSupportId() {
-        val s = screen()
-        val l = s.layout!!
-        s.tap(l.settingsIcon)
-        assertNull(s.supportId)
-        assertEquals(Touch.NONE, s.tap(l.supportId))
-    }
-
-    @Test
-    fun theSupportIdFitsUnderTheSettingsOnTheSmallestPhone() {
+    fun theBuildFitsUnderTheSettingsOnTheSmallestPhone() {
         val l = smallest().layout!!
-        assertTrue(PixelFont.width("Copied") <= l.supportId.w)
-        assertTrue(PixelFont.width("ID cdef [999]") <= l.supportId.w)
-        assertEquals(l.coinIcon.right, l.supportId.right)
-        assertTrue(l.settingsRow(SETTINGS.size - 1).bottom + 6 <= l.supportId.y, "the last row ends at ${l.settingsRow(SETTINGS.size - 1).bottom}")
+        assertTrue(PixelFont.width(buildTag("9999")) <= l.build.w)
+        assertEquals(l.coinIcon.right, l.build.right)
+        assertTrue(l.settingsRow(SETTINGS.size - 1).bottom + 6 <= l.build.y, "the last row ends at ${l.settingsRow(SETTINGS.size - 1).bottom}")
     }
 
     private fun area(px: Pixels, r: Rect) = (r.y until r.bottom).flatMap { y -> (r.x until r.right).map { px[it, y] } }
@@ -957,10 +897,10 @@ class ScreenTest {
         assertTrue(left.last < right.first)
     }
 
-    /** A screen at the top, after Camus' words have had time to be read, with [billing] as the store. */
-    private fun afterTheWords(billing: Billing = NoBilling): Screen {
+    /** A screen at the top, after Camus' words have had time to be read. */
+    private fun afterTheWords(): Screen {
         val store = MemoryStore(allBought + mapOf("position" to 100.0, "summit" to 100.0, "effort" to 50_000.0))
-        val s = Screen(Game(store, seed = 1), seed = 2, billing = billing).apply { resize(1179, 2556, 177, 102) }
+        val s = Screen(Game(store, seed = 1), seed = 2).apply { resize(1179, 2556, 177, 102) }
         val dt = 1 / 60.0
         repeat(((Ending.BLACK_AT + Ending.READ) / dt).toInt() + 2) { s.update(dt) }
         assertTrue(s.ending!!.waiting)
@@ -994,24 +934,6 @@ class ScreenTest {
         assertEquals(Place.CORINTH, s.game.place)
         repeat((2.0 / dt).toInt()) { s.update(dt) }
         assertNull(s.ending)
-    }
-
-    @Test
-    fun afterTheTopAWorldJustBoughtBeginsWithItsFanfare() {
-        val billing = FakeBilling()
-        val s = afterTheWords(billing)
-        val l = s.layout!!
-        var fanfares = 0
-        s.onMove = { fanfares++ }
-        s.tap(l.knobX.toFloat(), l.knobY.toFloat())
-        s.choose(l.worldRow(Place.ETNA.ordinal))
-        assertEquals(Place.ETNA, s.buying)
-        s.tap(l.confirmYes)
-        billing.pending!!(true)
-        assertNull(s.moving)
-        assertFalse(s.worldsOpen)
-        assertEquals(Place.ETNA, s.game.place)
-        assertEquals(1, fanfares)
     }
 
     @Test
@@ -1196,6 +1118,26 @@ class ScreenTest {
         assertTrue(l.worldRow(Place.entries.size - 1).bottom - s.worldsScroll <= l.worldList.bottom)
     }
 
+    /** Under the last world, the list says that more worlds will come: scrolled to its end, the note shows, also on the smallest phone. */
+    @Test
+    fun underTheWorldsMoreWorldsWillCome() {
+        assertEquals("More worlds to come...", WORLDS_NOTE)
+        assertTrue(WORLDS_NOTE.all(PixelFont::hasGlyph))
+        for (s in listOf(smallest(), Screen(Game(MemoryStore(), seed = 1), seed = 2).apply { resize(1179, 1800) })) {
+            val l = s.layout!!
+            val count = Place.entries.size
+            s.tap(l.dayLabel(s.game.day))
+            val first = l.worldRow(0)
+            s.tap(first)
+            s.drag(first.x + 10f, first.y + 10f - 1000f)
+            s.release()
+            val note = l.worldsNote(count).offset(0, -s.worldsScroll)
+            assertTrue(note.y >= l.worldRow(count - 1).bottom - s.worldsScroll)
+            assertTrue(note.right <= l.worldList.right && note.bottom <= l.worldList.bottom, "the note ends at ${note.bottom}")
+            assertTrue(area(s.render(), note).any { it != BACKGROUND })
+        }
+    }
+
     @Test
     fun everyWorldHasItsOwnPicture() {
         val pictures = Place.entries.map { place ->
@@ -1220,172 +1162,25 @@ class ScreenTest {
         assertFalse(s.worldsOpen)
     }
 
-    /** A store that sells every world but [owned] for the price of [Config.WORLD_PRICE]. A purchase waits in [pending] until the test answers for the player. */
-    private class FakeBilling(vararg owned: Place) : Billing {
-        private val owned = owned.toMutableSet()
-        override val userId = "\$RCAnonymousID:0123456789abcdef"
-        var pending: ((Boolean) -> Unit)? = null
-        var restores = 0
-        var refreshes = 0
-        override fun owns(place: Place) = place.product == null || place in owned
-        override fun price(place: Place) = "\$${Config.WORLD_PRICE}"
-        override fun buy(place: Place, done: (Boolean) -> Unit) {
-            pending = { bought ->
-                pending = null
-                if (bought) owned += place
-                done(bought)
-            }
-        }
-        override fun restore(done: () -> Unit) {
-            restores++
-            done()
-        }
-        override fun refresh() {
-            refreshes++
-        }
-    }
-
-    /** The Worlds screen asks the store again for what it could not send before, such as the prices after a start with no network. */
+    /** Every world is free: in the middle of a climb, a tap on any other world only asks to go there, and Yes goes. */
     @Test
-    fun theWorldsScreenAsksTheStoreAgain() {
-        val billing = FakeBilling()
-        val s = worlds(billing)
-        assertEquals(1, billing.refreshes)
-        assertTrue(s.back())
-        s.tap(s.layout!!.dayLabel(s.game.day))
-        assertEquals(2, billing.refreshes)
-    }
-
-    /** The Worlds screen, open in [place], with [billing] as the store, and him [position] pixels up the hill. */
-    private fun worlds(billing: Billing, place: Place = Place.CORINTH, position: Double = 0.0) =
-        Screen(Game(MemoryStore(mapOf("place" to place.id.toDouble(), "position" to position)), seed = 1), seed = 2, billing = billing).apply {
-            resize(1179, 2556, 177, 102)
-            tap(layout!!.dayLabel(game.day))
-        }
-
-    @Test
-    fun aWorldNotBoughtAsksToBuyItFirst() {
-        val billing = FakeBilling()
-        val s = worlds(billing)
-        val l = s.layout!!
-        assertEquals(Touch.WORLDS, s.choose(l.worldRow(Place.ETNA.ordinal)))
-        assertEquals(Place.ETNA, s.buying)
-        assertNull(s.moving)
-        assertEquals(Touch.WORLDS, s.tap(l.confirmNo))
-        assertNull(s.buying)
-        assertNull(billing.pending)
-    }
-
-    /** The player buys a world to go there: it begins at once, with its fanfare, even in the middle of a climb. */
-    @Test
-    fun onceBoughtTheWorldBeginsAtOnce() {
-        val billing = FakeBilling()
-        val s = worlds(billing, position = 900.0)
-        val l = s.layout!!
-        var fanfares = 0
-        s.onMove = { fanfares++ }
-        s.choose(l.worldRow(Place.ETNA.ordinal))
-        assertEquals(Touch.WORLDS, s.tap(l.confirmYes))
-        assertTrue(s.paying)
-        assertEquals(Touch.NONE, s.tap(l.confirmNo), "the store asks now")
-        assertEquals(Touch.NONE, s.tap(l.coinIcon), "the store asks now")
-        assertTrue(s.back(), "the store asks now")
-        billing.pending!!(true)
-        assertFalse(s.paying)
-        assertNull(s.buying)
-        assertNull(s.moving)
-        assertFalse(s.worldsOpen)
-        assertEquals(Place.ETNA, s.game.place)
-        assertEquals(0.0, s.game.position)
-        assertEquals(1, fanfares)
-    }
-
-    /** In the middle of a climb, the question to buy a world also says that the climb starts over there, since the world begins at once. */
-    @Test
-    fun inTheMiddleOfAClimbTheQuestionToBuyAWorldSaysTheClimbStartsOver() {
-        fun lines(position: Double): Int {
-            val s = worlds(FakeBilling(), position = position)
+    fun everyWorldIsFree() {
+        for (place in Place.entries - Place.CORINTH) {
+            val s = screen(MemoryStore(mapOf("position" to 900.0)))
             val l = s.layout!!
-            s.choose(l.worldRow(Place.ETNA.ordinal))
-            val px = s.render()
-            val r = l.confirmText
-            return (0 until Layout.CONFIRM_LINES).count { i ->
-                area(px, Rect(r.x, r.y + i * PixelFont.LINE_HEIGHT, r.w, PixelFont.LINE_HEIGHT)).any { it != BACKGROUND }
+            s.tap(l.dayLabel(s.game.day))
+            val row = l.worldRow(place.ordinal)
+            if (row.bottom > l.worldList.bottom) {
+                val first = l.worldRow(0)
+                s.tap(first)
+                s.drag(first.x + 10f, first.y + 10f - 1000f)
+                s.release()
             }
+            s.choose(Rect(row.x, row.y - s.worldsScroll, row.w, row.h))
+            assertEquals(place, s.moving)
+            assertEquals(Touch.MOVE, s.tap(l.confirmYes))
+            assertEquals(place, s.game.place)
         }
-        assertTrue(lines(900.0) > lines(0.0))
-    }
-
-    @Test
-    fun whenThePlayerDoesNotPayNothingChanges() {
-        val billing = FakeBilling()
-        val s = worlds(billing)
-        val l = s.layout!!
-        s.choose(l.worldRow(Place.UNDERWORLD.ordinal))
-        s.tap(l.confirmYes)
-        billing.pending!!(false)
-        assertFalse(s.paying)
-        assertNull(s.buying)
-        assertNull(s.moving)
-        assertTrue(s.worldsOpen)
-        assertEquals(Place.CORINTH, s.game.place)
-    }
-
-    @Test
-    fun aWorldBoughtBeforeIsNotSoldAgain() {
-        val s = worlds(FakeBilling(Place.ETNA), position = 900.0)
-        s.choose(s.layout!!.worldRow(Place.ETNA.ordinal))
-        assertNull(s.buying)
-        assertEquals(Place.ETNA, s.moving)
-    }
-
-    /** Beta testers went to other worlds before worlds cost money: they stay, and pay only to come back after they leave. */
-    @Test
-    fun aPlayerStaysInAWorldNotBought() {
-        val s = worlds(FakeBilling(), Place.ETNA)
-        assertEquals(Place.ETNA, s.game.place)
-        assertEquals(Touch.WORLDS, s.choose(s.layout!!.worldRow(Place.ETNA.ordinal)))
-        assertNull(s.buying)
-        assertFalse(s.worldsOpen)
-        assertEquals(Place.ETNA, s.game.place)
-    }
-
-    @Test
-    fun backClosesTheQuestionToBuy() {
-        val s = worlds(FakeBilling())
-        s.choose(s.layout!!.worldRow(Place.ETNA.ordinal))
-        assertEquals(Place.ETNA, s.buying)
-        assertTrue(s.back())
-        assertNull(s.buying)
-        assertTrue(s.worldsOpen)
-    }
-
-    @Test
-    fun restoreAsksTheStoreForTheWorldsBoughtBefore() {
-        val billing = FakeBilling()
-        val s = worlds(billing)
-        assertEquals(Touch.WORLDS, s.tap(s.layout!!.restore))
-        assertEquals(1, billing.restores)
-        assertFalse(s.restoring)
-    }
-
-    @Test
-    fun withEveryWorldBoughtThereIsNothingToRestore() {
-        val billing = FakeBilling(*Place.entries.toTypedArray())
-        val s = worlds(billing)
-        assertEquals(Touch.NONE, s.tap(s.layout!!.restore))
-        assertEquals(0, billing.restores)
-    }
-
-    @Test
-    fun pricesTheFontCannotWriteShowAmountAndCurrency() {
-        assertEquals("$0.99", shownPrice("$0.99", 990_000, "USD"))
-        assertEquals("0,99 €", shownPrice("0,99\u00A0€", 990_000, "EUR"))
-        assertEquals("£0.99", shownPrice("£0.99", 990_000, "GBP"))
-        assertEquals("CHF 1.00", shownPrice("CHF 1.00", 1_000_000, "CHF"))
-        assertEquals("89 INR", shownPrice("₹89.00", 89_000_000, "INR"))
-        assertEquals("89.50 INR", shownPrice("₹89.50", 89_500_000, "INR"))
-        assertEquals("160 JPY", shownPrice("¥160", 160_000_000, "JPY"))
     }
 
     /** A tablet or an unfolded phone shows the game in the shape of a tall phone, with bars at the sides, so that the scene keeps its height. */
@@ -1403,16 +1198,10 @@ class ScreenTest {
     }
 
     @Test
-    fun theOfferOfAWorldFitsTheSmallestPhone() {
+    fun theQuestionToGoToAWorldFitsTheSmallestPhone() {
         val l = smallest().layout!!
-        val price = "10.99 CHF"
-        for (place in Place.entries.filter { it.product != null }) {
-            assertTrue(PixelFont.width(buyTitle(place)) <= l.confirmText.w, place.title)
-            assertTrue(PixelFont.width(place.title) + 4 + PixelFont.width(price) + 2 + Layout.COIN_SIZE <= l.worldText(0).w, place.title)
-        }
-        assertTrue(PixelFont.wrap(buyText(price, climbing = true), l.confirmText.w).size <= Layout.CONFIRM_LINES)
-        assertTrue(l.restore.right <= l.worldList.right)
-        assertTrue(l.restore.y >= l.worldList.bottom)
+        for (place in Place.entries) assertTrue(PixelFont.width("Go to ${place.title}?") <= l.confirmText.w, place.title)
+        assertTrue(PixelFont.wrap(MOVE_WARNING, l.confirmText.w).size <= Layout.CONFIRM_LINES)
     }
 
     @Test
@@ -2175,9 +1964,8 @@ class ScreenTest {
     @Test
     fun theJokerButtonFitsTheSmallestPhone() {
         val l = smallest().layout!!
-        assertEquals(l.devWorlds.y, l.devJoker.y)
-        assertTrue(l.devJoker.x > l.devWorlds.right)
-        assertTrue(l.devJoker.right <= l.agoraRow(3).right, "the buttons end at ${l.devJoker.right}, the row at ${l.agoraRow(3).right}")
+        assertTrue(l.devJoker.right <= l.agoraRow(3).right, "the button ends at ${l.devJoker.right}, the row at ${l.agoraRow(3).right}")
+        assertTrue(l.devJoker.y > l.agoraRow(3).y && l.devJoker.bottom <= l.agoraRow(3).bottom)
     }
 
     @Test
@@ -2222,17 +2010,6 @@ class ScreenTest {
         assertEquals(Touch.NONE, s.release())
         assertEquals(l.laborScroll, s.worldsScroll)
         assertTrue(l.laborCards.last().bottom - l.laborScroll <= l.worldList.bottom)
-    }
-
-    @Test
-    fun restoreStaysOnBothTabs() {
-        val s = Screen(Game(MemoryStore(), seed = 1), seed = 2, billing = FakeBilling(), build = "41").apply { resize(1179, 2556, 177, 102) }
-        val l = s.layout!!
-        s.tap(l.dayLabel(s.game.day))
-        fun bottom() = s.render().let { px -> (l.restore.y until l.restore.bottom).flatMap { y -> (0 until px.width).map { px[it, y] } } }
-        val worlds = bottom()
-        s.tap(l.laborsTab)
-        assertEquals(worlds, bottom())
     }
 
     @Test
@@ -2288,12 +2065,12 @@ class ScreenTest {
         assertTrue(contrast >= 4.5, "contrast $contrast")
     }
 
-    /** The list of the Worlds screen ends with a gap above Restore, so that a row cut by the scroll never touches it. */
+    /** The list of the Worlds screen ends with a gap above the bottom row, so that a row cut by the scroll never touches it. */
     @Test
     fun theListStopsAboveTheBottomRow() {
         for (s in listOf(smallest(), screen())) {
             val l = s.layout!!
-            assertTrue(l.worldList.bottom + 4 <= l.restore.y, "the list ends at ${l.worldList.bottom}, Restore starts at ${l.restore.y}")
+            assertTrue(l.worldList.bottom + 4 <= l.bottomRow.y, "the list ends at ${l.worldList.bottom}, the bottom row starts at ${l.bottomRow.y}")
         }
     }
 
